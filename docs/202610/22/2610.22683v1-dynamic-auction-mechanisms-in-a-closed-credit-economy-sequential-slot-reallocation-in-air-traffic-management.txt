@@ -1,0 +1,1831 @@
+Title: Dynamic Auction Mechanisms in a Closed-Credit Economy: Sequential Slot Reallocation in Air Traffic Management
+
+URL Source: https://arxiv.org/pdf/2610.22683v1
+
+Published Time: Mon, 19 Oct 2026 00:22:24 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# Dynamic Auction Mechanisms in a Closed-Credit Economy: Sequential Slot Reallocation in Air Traffic Management 
+
+Jihun Kim, Pan-Yang Su, Maria G. Mendoza, Victoria Marie Tuck, Chinmay Maheshwari, S. Shankar Sastry 
+
+Abstract — Indivisible resources allocated in advance may need to be reallocated when capacity reductions make existing assignments infeasible, yet monetary compensation is often impractical or undesirable. We develop a sequential resource reallocation scheme using reusable artificial credits, where agents hold pre-existing resource rights and have heterogeneous marginal valuations over time blocks. Capacity reductions produce fractional endowments, which our closed-credit scheme resolves into indivisible final allocations. We model agents’ intertemporal preferences through a predicted-value-to-go func-tion and characterize conditions ensuring that their optimal demand is non-increasing in price. We propose an ascending-auction mechanism that partitions agents into subgroups and uses the minimum subgroup market-clearing price as a common transaction price. We show that the mechanism preserves non-myopic individual rationality and weak nontrader neutrality. Moreover, we establish Pareto efficiency under optimal-demand clearing in the unified market and bound the expected gain from misreporting by the probability that an agent changes the common price. Simulations of airport slot reallocation demonstrate reductions in total modeled delay and cancellation costs relative to a ground-delay baseline. 
+
+I. I NTRODUCTION 
+
+We study dynamic auction markets in which long-lived agents enter with existing resource endowments, resource capacities are uncertain, and monetary transfers are restricted. Such problems arise when scarce resource rights are al-located in advance but must subsequently be adjusted as uncertain capacities are realized. Unlike a sequence of static allocation problems, previous allocations create endowments: agents retain rights to previously allocated resources, so subsequent reallocation requires exchange among agents. This intertemporal exchange structure arises naturally in transportation capacity, advance reservations, and other set-tings in which usage rights are allocated before uncertainty is fully resolved. Our goal is to design a mechanism with desirable eco-nomic properties, including Pareto efficiency, incentive com-patibility, individual rationality, and weak nontrader neutral-ity, a counterpart of weak budget balance in our model. Our mechanism builds on artificial currencies. Although credits have no intrinsic value, they can acquire endogenous value by providing access to resources in future markets. We capture this future benefit through a predicted-value-to-go function that enters agents’ utilities and influences their willingness to          
+
+> This work was supported by the National Aeronautics and Space Administration (NASA). Jihun Kim, Pan-Yang Su, Maria G. Mendoza, and S. Shankar Sastry are with the University of California, Berkeley. Victoria Marie Tuck is with the University of Pennsylvania. Chinmay Maheshwari is with the Johns Hopkins University. Correspondence to:
+> jihun.kim@berkeley.edu
+
+trade. Existing artificial-currency mechanisms study repeated access to shared resources [1], [2]. Our setting focuses on reallocating block-specific resource rights assigned before capacity uncertainty is resolved. Agents trade relative to their scaled endowments, balancing current resource values against the continuation value of credits. This creates a dynamic exchange problem with capacity uncertainty and pre-existing resource rights. 
+
+Theoretical difficulties. Even when predicted-value-to-go functions are affine with strictly positive slopes, which yield quasilinear preferences over current allocations and net credit transfers, the mechanism-design problem remains challenging. Unlike bilateral trade and conventional double auctions [3], [4], [5], agents are not exogenously designated as buyers or sellers. Each agent enters with a resource endowment and may become a buyer or a seller depending on its valuation, credit balance, and the market price. Moreover, unlike standard multi-unit auctions with budget constraints [6], the mechanism must accommodate both sides of the market while respecting agents’ credit constraints. Our first result, Theorem 1, demonstrates a fundamental limitation of this exchange problem. We show that Pareto efficiency, incentive compatibility, invidual rationality, and weak nontrader neutrality cannot in general be achieved simultaneously. The result follows by embedding bilat-eral trade as a special case and applying the Myerson– Satterthwaite impossibility theorem [3]. 
+
+Proposed mechanism. Motivated by this impossibility, we propose an ascending-auction mechanism (Algorithm 1) that preserves individual rationality and weak nontrader neutrality. We characterize conditions on the predicted-value-to-go functions that ensure price-monotone demand (Propo-sition 3), which lays the foundation for ascending price discovery. Building on budget-constrained multi-unit auc-tions [6] and multi-unit double auctions [5], the mechanism partitions agents into G subgroups, conducts price discovery within each subgroup, and uses the minimum subgroup price as the common transaction price. Subgrouping restricts trading opportunities but can also limit an agent’s influence on the common price. We establish a conditional Pareto-efficiency guarantee when G = 1 (Theorem 3) and bound manipulation gains in terms of the probability of changing the common price (Theorem 4). All proofs are deferred to the supplementary material. 
+
+Airport slot allocation. We apply our mechanism to airport slot allocation [7]. Airlines plan flights well in ad-vance, while available capacity remains uncertain. Using our mechanism, we develop a day-of market that uses reusable arXiv:2610.22683v1 [cs.GT] 15 Oct 2026 credits to elicit airlines’ demands and compensate them for releasing capacity across successive time blocks. We evaluate its performance through simulations. II. R ELATED WORK 
+
+Dynamic allocation without money. Resource alloca-tion with artificial currencies has a long history, including pseudomarkets [8] and approximate competitive equilibrium from equal incomes [9]. A growing literature extends this idea to repeated resource-allocation problems, including spot mechanisms [10] and dynamic approximate competitive equilibrium from equal incomes [11]. These approaches typically focus on repeated resource allocation problems, while we deal with exchange problems where agents have endowments. Banerjee et al. [12] study reusable resources with unit demand within each round and potentially multi-round usage requirements. Our agents may demand multiple units within a block, with different marginal valuations, and trade relative to pre-existing resource endowments. Karma mechanisms [1], [2] are particularly related to our setting, where they use artificial currencies, called “karma,” to coordinate resource allocation. Their models, however, differ from ours. Elokda et al. [1] study repeated competition for a resource with heterogeneous urgency but without initial resource endowments, while Vuppalapati et al. [2] incorpo-rate fair shares but focus on demand quantities rather than heterogeneous marginal valuations. Our model combines het-erogeneous multi-unit valuations with credit-based exchange of resource rights under capacity uncertainty. A related literature studies dynamic exchange, including [13], [14]. These models, however, are motivated primarily by organ exchange and have a different allocation structure from ours. In particular, organ-exchange models typically focus on one-to-one or compatibility-constrained matching, while our application involves allocating capacity to agents with potentially multi-unit demand. Methodologically, our approach is closely related to [15], which uses artificial currencies to translate monetary mecha-nisms into approximately incentive-compatible nonmonetary mechanisms in repeated allocation environments. Our setting differs because previously allocated rights become endow-ments and reallocation therefore takes the form of exchange. As a result, the guarantees developed for repeated assignment problems do not carry over directly. 
+
+Bilateral Exchange and Double Auctions. The difficulty of exchange under private information was first formalized by Myerson and Satterthwaite [3], in what is now known as the Myerson–Satterthwaite theorem. Subsequent work extends this impossibility to richer exchange environments, including settings with multiple goods or multiple agents [16], [17]. More recently, [18] studies a two-stage market in which previously allocated resources are subsequently exchanged and derives related impossibility results. Our work is closely related to this line of research, but considers exchange mediated by an artificial currency whose value derives from future allocation opportunities. People have proposed methods to get around the impos-sibility results by trading off different properties. Our work is related to double auctions [4]. Recently, Segal-Halevi et al. proposed a truthful multi-unit double-auction mechanism [5]. They split the agents into two groups, run auctions separately, and exchange the prices. This mechanism ensures truthfulness. Our model is more difficult in two aspects. First, their models assume that the roles are exogeneously given, but our agents can be either sellers or buyers depending on the prices. Second, our agents have budget constraints, so naively swapping the prices may result in budget constraint violation. 
+
+Airspace market design. Previous work considers me-diated slot trading [7], preference-based slot scheduling [19], combinatorial exchanges [20], and auction-based slot reallocation [21]. These approaches either rely on real-money transfers, which may be undesirable or impractical in operational airspace markets, or lack an alternative currency to facilitate exchange. Our work bridges this gap by adopting artificial credits as a medium of exchange, enabling flexible slot reallocation without real-money transactions. Credit-based approaches have also been explored in airspace management, albeit for different purposes. In [22], [23], airlines assign credits to flights to influence rerouting and delay decisions, but not theoretical analysis is given. In [24], these credits serve as flight-specific delay-cost weights in a traffic flow optimization model, which is different from our use an artificial currency. More recently, Im et al. [25] study decentralized negotia-tion through asset trading, using regulatory oversight to guide consensus toward efficient and equitable outcomes. Their focus is coordination over a common decision, whereas ours is the sequential reallocation of scarce capacity among agents with pre-existing rights. Thus, applying their negotiation mechanism to our setting is computationally infeasible. III. M ODEL 
+
+We study sequential reallocation of indivisible resources when capacity shocks may leave too few items to fulfill agents’ initial allocations (endowments ). We scale these endowments proportionally to the remaining capacity and design a mechanism that allocates integer quantities while ac-counting for the scaled entitlements through credit transfers. Agents receiving fewer items than their scaled entitlements receive credits, while those receiving more pay credits. Credit balances carry forward for use in subsequent blocks. 
+
+A. Preliminaries 
+
+Consider a set I of agents and a set B of time blocks. Each block b ∈ B consists of a collection of discrete items, and we refer to the number of items as the capacity of the block. Block b has nominal capacity Cb and realized operational capacity ¯Cb ≤ Cb.Agent i ∈ I initially holds its initial allocations for each block b ∈ B, represented by ebi ∈ Z+ items in block b,which we refer to as its initial endowment . The total initial Fig. 1. A capacity reduction limits available indivisible items, prompting agents to compete using credits. Unallocated demand rolls over to the next block, while unused credits are carried forward. Here, agents represent airlines and items represent flight slots. 
+
+endowments do not exceed the nominal capacity: P 
+
+> i∈I
+
+ebi ≤
+
+Cb.
+
+Following a capacity reduction, we scale each agent’s en-dowment ebi proportionally and define its scaled endowment 
+
+as ¯ebi = ebi · ¯Cb/C b, which clearly satisfies P 
+
+> i∈I
+
+¯ebi ≤ ¯Cb.While ebi is integer-valued, ¯ebi need not be. We interpret ¯ebi as an accounting entitlement denominated in items rather than a physical allocation; the final allocation of items remains integer-valued. Each agent i enters block b with a credit balance wbi ∈ R+.The initial balance w1 
+
+> i
+
+is given, while the balances in subse-quent blocks are determined endogenously by the outcomes of earlier blocks. Fig. 1 illustrates our sequential resource reallocation scheme under such a closed-credit economy. For each block b, the market determines a final allocation 
+
+{xb, ∗ 
+
+> i
+
+}i∈I and a clearing price p∗ 
+
+> b
+
+≥ 0. Let N bi ∈ Z+
+
+denote the maximum number of items that agent i can operate in block b. Then, the allocation should satisfy xb, ∗ 
+
+> i
+
+∈{0, 1, . . . , N bi }, and all units in block b are traded at the same unit price p∗ 
+
+> b
+
+. Relative to its scaled endowment, agent 
+
+i makes the net credit payment 1
+
+T bi =  xb, ∗ 
+
+> i
+
+− ¯ebi
+
+p∗ 
+
+> b
+
+. (1) Thus, an agent that acquires more capacity than its scaled endowment pays credits, whereas an agent that releases endowments receives credits. Its credit balance therefore evolves according to 
+
+wb+1  
+
+> i
+
+= wbi − T bi = wbi −  xb, ∗ 
+
+> i
+
+− ¯ebi
+
+p∗ 
+
+> b
+
+. (2) This transition connects decisions across blocks: spending credits in the current block reduces an agent’s purchasing power in future blocks, while releasing endowments in-creases it. For each block b, the outcome must respect the available capacity and agents’ credit budgets. The budget constraints require net purchases to be affordable and are automatically satisfied when xbi ≤ ¯ebi .
+
+Definition 1 (Feasible Allocation-Price Pair) . Given re-alized capacity ¯Cb, credit balances {wbi }i∈I , and scaled endowments {¯ebi }i∈I , an allocation-price pair ({xbi }i∈I , p b)
+
+is feasible if the following constraints hold:    
+
+> 1The payment Tbiin (1) can take both positive or negative values, denoting payment or rebate, respectively.
+
+1) Price Nonnegativity: pb ≥ 0.2) Domain constraints: xbi ∈ { 0, 1, . . . , N bi } for all i ∈ I.3) Budget constraints: (xbi − ¯ebi )pb ≤ wbi for all i ∈ I.4) Capacity constraints: P 
+
+> i∈I
+
+xbi ≤ ¯Cb.Recall that ¯ebi need not be integer-valued. It represents an accounting entitlement rather than a physical allocation: the final allocation xbi remains integer-valued, while ¯ebi
+
+determines the agent’s net trading position and hence its net credit payment. Thus, fractional physical items are never allocated, and any non-integer baseline is resolved solely through financial credit adjustments. 
+
+B. Predicted Non-myopic Value 
+
+Let vbi (k) ∈ R+ denote agent i’s marginal value for its 
+
+kth item in block b. Let Jb+1  
+
+> i
+
+(w) denote agent i’s predicted-value-to-go , evaluated at block b, from entering block b + 1 
+
+with credit balance w, which is nondecreasing in w.2 Thus, any future utility is absorbed into Jb+1  
+
+> i
+
+. Credits have no intrinsic value. Their value arises endogenously from the future allocation opportunities they provide. Consider block b at a unit price p ≥ 0. Suppose agent i
+
+enters the block with credit balance w and scaled endowment 
+
+e. If it chooses a final allocation of K items, its credit balance in the next block is w − (K − e)p. The agent therefore solves the following predicted non-myopic value 
+
+maximization problem: 
+
+max   
+
+> K∈{ 0,1,...,N bi}
+> K
+
+X
+
+> k=1
+
+vbi (k) + Jb+1  
+
+> i
+
+(w − (K − e)p)
+
+s.t. (K − e)p ≤ w. 
+
+(3) The constraint requires any net purchase to be affordable. When K < e , the agent instead releases capacity and receives 
+
+(e − K)p credits. The marginal gain in the objective from increasing the allocation from k − 1 to k is 
+
+∆bi (k, p, w, e ) ≡ vbi (k) − [Jb+1  
+
+> i
+
+(w − (k − 1 − e)p)
+
+− Jb+1  
+
+> i
+
+(w − (k − e)p)] .
+
+(4) The bracketed difference in predicted-value-to-go Jb+1  
+
+> i
+
+(·)
+
+captures the opportunity cost of spending additional credits in the current block. Thus, subject to budget feasibility 
+
+(K − e)p ≤ w, the kth item is weakly preferred to stopping at k − 1 if and only if 
+
+∆bi (k, p, w, e ) ≥ 0. (5) Under the following conditions, (5) characterizes an optimal demand. 
+
+Proposition 1 (Optimal Demand) . Suppose the marginal valuation vbi (k) is nonincreasing in k and the predicted-value-to-go Jb+1  
+
+> i
+
+(w) is concave in the credit balance w.Then, given the price p, budget w and endowment e, the   
+
+> 2In the spirit of approximate dynamic programming, Jb+1
+> iapproximates the agent’s expected future utility as a function of its credit balance, with other state variables held fixed. It need not coincide with the true value-to-go.
+
+marginal gain ∆bi (k, p, w, e ) is nonincreasing in k, and the largest feasible k ≥ 1 satisfying (5) is an optimal demand (with optimal demand 0 if no such k exists). 
+
+Economically, the conditions of Proposition 1 ensure that as the agent acquires more items, the marginal utility of the next item falls while the opportunity cost of the required credits rises. 
+
+C. Price Monotonicity of Optimal Demand 
+
+The predicted-value-to-go function Jb+1  
+
+> i
+
+determines the endogenous value of credits for future time blocks. In this section, we characterize the class of predicted-value-to-go functions under which optimal demand is nonincreasing in the price p. This price monotonicity serves as a core foundation for our mechanism design. 
+
+Proposition 2 (Price Monotonicity of Marginal Gains) . Let 
+
+J : [0 , ∞) → R. For w ≥ 0 and a ∈ R, define 
+
+Fw,a (p) = J(w − ap ) − J(w − (a + 1) p)
+
+on the feasible price interval 
+
+Pw,a = {p ≥ 0 : w − (a + 1) p ≥ 0}.
+
+Then Fw,a is nondecreasing on Pw,a for every w ≥ 0 and 
+
+a ∈ R if and only if J is concave on [0 , ∞) and z 7 −→ 
+
+zJ ′
+
+> +
+
+(z) is nondecreasing on (0 , ∞), where J′ 
+
+> +
+
+denotes the right derivative of a concave function. 
+
+Taking J = Jb+1  
+
+> i
+
+and a = k − 1 − e, we have 
+
+∆bi (k, p, w, e ) = vbi (k) − Fw,k −1−e(p).
+
+Therefore, under the conditions of Proposition 2, the marginal gain is nonincreasing in the price on its feasible domain. The condition of concavity corresponds to a diminishing marginal value of additional wealth. The additional condi-tion that w 7 → wJ ′
+
+> +
+
+(w) is nondecreasing implies that this marginal value cannot decay too quickly as wealth increases. Standard examples satisfying these conditions include affine functions, power functions wα for α ∈ (0 , 1] , and logarithmic functions ln( w+b) for b > 0. We define such a function class below. 
+
+Definition 2. Let J denote the class of concave functions J :[0 , ∞) → R for which the map z 7 → zJ ′
+
+> +
+
+(z) is nondecreasing on (0 , ∞).Combining Propositions 1 and 2 yields the price mono-tonicity of optimal demand. 
+
+Proposition 3 (Price Monotonicity of Optimal Demand) .
+
+Suppose that the marginal valuation vbi (k) is nonincreasing in k and Jb+1  
+
+> i
+
+(w) ∈ J . Then, for a given budget w
+
+and endowment e, the largest optimal demand (defined in Proposition 1) is nonincreasing in the price p.
+
+Within the class J , consider the special case of affine predicted-value-to-go functions Jb+1  
+
+> i
+
+(w) = αb+1  
+
+> i
+
+w + βb+1  
+
+> i
+
+.Here, the threshold rule (5) simplifies to: 
+
+∆bi (k, p, w, e ) = vbi (k) − αb+1  
+
+> i
+
+p ≥ 0 ⇐⇒ vbi (k)
+
+αb+1 
+
+> i
+
+≥ p. 
+
+(6) Thus, under an affine predicted-value-to-go function, the agent follows the standard quasilinear demand rule with credit-denominated marginal values vbi (k)/α b+1  
+
+> i
+
+independent of (w, e ), subject to budget feasibility. The coefficient αb+1 
+
+> i
+
+of the predicted-value-to-go function acts as the endogenous conversion rate between item value and future credits. IV. P ROBLEM FORMULATION 
+
+Under the model in Section III, a mechanism is a mapping from the primitives to a feasible allocation-price pair. Our goal is to design a mechanism such that some desirable (normative ) properties are satisfied. 
+
+A. Normative Properties 
+
+Non-myopic individual rationality. We first define non-myopic individual rationality relative to the administrative allocation that would arise in the absence of trade. Since the scaled endowment ¯ebi need not be integer-valued, write 
+
+¯ebi = ⌊¯ebi ⌋ + rbi , rbi ∈ [0 , 1) .
+
+If rbi = 0, agent i retains ¯ebi items without trading. If 
+
+rbi ∈ (0 , 1) , we take the administrative baseline to be the allocation obtained by rounding the scaled entitlement down to ⌊¯ebi ⌋ items. Accordingly, participation in each time block is evaluated relative to this floor-based administrative allo-cation, with the fractional residual rbi settled at the clearing price p∗ 
+
+> b
+
+.
+
+Definition 3 (Non-myopic Individual Rationality) . A mecha-nism for block b satisfies Non-myopic Individual Rational-ity (NIR) if, for every resulting allocation xbi with a clearing price p∗ 
+
+> b
+
+and net credit payment T bi , every agent i ∈ I obtains a non-myopic utility inclusive of its predicted-value-to-go 
+
+Jb+1  
+
+> i
+
+weakly greater than its administrative baseline 3:
+
+> xbi
+
+X
+
+> k=1
+
+vbi (k) + Jb+1  
+
+> i
+
+(wbi − T bi ) ≥ 
+
+> ⌊¯ebi⌋
+
+X
+
+> k=1
+
+vbi (k) + Jb+1  
+
+> i
+
+(wbi ). (7) Non-myopic IR guarantees that participating in each block market does not make an agent worse off than the corre-sponding non-trading administrative baseline. 
+
+Weak nontrader neutrality. In a standard open-money economy, Weak Budget Balance (WBB) ensures that the auctioneer does not face a deficit. We retain the analogous accounting condition for credit transfers. 
+
+Definition 4 (Weak Budget Balance) . A mechanism satisfies Weak Budget Balance (WBB) if, for every block b, the aggregate net credit payment collected from the agents is nonnegative: X
+
+> i∈I
+
+T bi = X
+
+> i∈I
+
+(xbi − ¯ebi )p∗ 
+
+> b
+
+≥ 0. (8)    
+
+> 3The rebate rbip∗
+> bmay be added to the budget in the administrative baseline as is done later. The comparison statement holds in both cases.
+
+In a closed-credit economy, however, the relevant concern is not an external monetary deficit but the effect of credit cre-ation on agents’ future purchasing power. If the mechanism injects credits to finance a deficit in the current block, total outstanding credits increase while the balances of nontrading agents remain unchanged. Their relative purchasing power is therefore diluted. Because credits carry over across blocks and derive their value from future allocation opportunities, such dilution can affect future block outcomes. To formalize this protection of future purchasing power, we introduce the following counterpart of WBB for a closed-credit economy. A nontrader in block b is an agent i with zero net payment, T bi = 0 .
+
+Definition 5 (Weak Nontrader Neutrality) . A mechanism satisfies Weak Nontrader Neutrality (WNN) if, for every block b and every nontrader i ∈ I, the agent’s relative credit balance is weakly preserved: 
+
+wb+1 
+
+> i
+
+P 
+
+> j∈I
+
+wb+1 
+
+> j
+
+≥ wbi
+
+P 
+
+> j∈I
+
+wbj
+
+. (9) WNN ensures that a nontrader’s share of total credits does not decrease following settlement. The following lemma relates this condition to WBB. 
+
+Lemma 1 (Equivalence between WBB and WNN) . Suppose that, in block b, there exists at least one nontrader i ∈ I with 
+
+wbi > 0. Then WNN in block b holds if and only if WBB in block b holds. Proof. For any nontrader i with T bi = 0 , its credit balance remains unchanged: wb+1  
+
+> i
+
+= wbi . Summing the credit tran-sitions across all agents gives P 
+
+> j∈I
+
+wb+1  
+
+> j
+
+= P 
+
+> j∈I
+
+wbj −
+
+P 
+
+> j∈I
+
+T bj . Since wbi > 0, WNN for this nontrader is equiva-lent to 
+
+wb+1 
+
+> i
+
+P 
+
+> j∈I
+
+wb+1 
+
+> j
+
+≥ wbi
+
+P 
+
+> j∈I
+
+wbj
+
+(10) 
+
+⇐⇒ wbi
+
+P 
+
+> j∈I
+
+wbj − P 
+
+> j∈I
+
+T bj
+
+≥ wbi
+
+P 
+
+> j∈I
+
+wbj
+
+⇐⇒ X
+
+> j∈I
+
+T bj ≥ 0,
+
+which is precisely WBB. 
+
+Non-myopic Pareto efficiency. We adapt [6, Defini-tion 2.3] to account for agents’ predicted value-to-go. The resulting property rules out feasible changes that make any agent or the auctioneer strictly better off without making another participant worse off. 
+
+Definition 6 (Non-myopic Pareto Efficiency) . An allocation 
+
+{xbi }i∈I and net payment {T bi }i∈I in block b is Non-myopic Pareto Efficient (NPE) if it is feasible and there exists no alternative feasible allocation {˜xbi }i∈I and net payment 
+
+{ ˜T bi }i∈I such that 
+
+> ˜xbi
+
+X
+
+> k=1
+
+vbi (k) + Jb+1 
+
+> i
+
+
+
+wbi − ˜T bi
+
+
+
+≥
+
+> xbi
+
+X
+
+> k=1
+
+vbi (k) + Jb+1 
+
+> i
+
+ wbi − T bi
+
+
+
+(11) for every i ∈ I, and 
+
+X
+
+> i∈I
+
+˜T bi ≥ X
+
+> i∈I
+
+T bi , (12) with at least one of these inequalities being strict. 
+
+Non-myopic incentive compatibility. The following prop-erty requires truthful reporting to maximize an agent’s expected utility from its current allocation and remaining credits, given truthful reports by the other agents. 
+
+Definition 7 (Non-myopic Incentive Compatibility) . Let 
+
+vbi = ( vbi (1) , . . . , v bi (N bi )) denote agent i’s true marginal valuation profile in block b, and let ˆvbi denote an arbitrary report. Also, let vb 
+
+> −i
+
+denote the true valuation profiles by all other agents. For any report profile (ˆ vbi , vb
+
+> −i
+
+), let xbi (ˆ vbi , vb
+
+> −i
+
+)
+
+and T bi (ˆ vbi , vb
+
+> −i
+
+) denote, respectively, the allocation and net credit payment assigned to agent i by the mechanism. A mechanism is Non-myopic Incentive Compatible (NIC) if for every i and block b, truthful reporting maximizes agent i’s expected non-myopic utility over the other agents’ valuation profiles vb
+
+> −i
+
+:
+
+Evb
+
+> −i
+
+  
+
+> xbi(vbi,vb
+> −i)
+
+X
+
+> k=1
+
+vbi (k) + Jb+1 
+
+> i
+
+ wbi − T bi (vbi , vb
+
+> −i
+
+) vbi
+
+
+
+≥ Evb
+
+> −i
+
+  
+
+> xbi(ˆ vbi,vb
+> −i)
+
+X
+
+> k=1
+
+vbi (k) + Jb+1 
+
+> i
+
+ wbi − T bi (ˆ vbi , vb
+
+> −i
+
+) vbi
+
+ ,
+
+(13) for every true valuation profile vbi and every report ˆvbi , where expectations are conditional on vbi and are taken over the other agents’ types and the mechanism’s randomization. 
+
+B. An Impossibility Result 
+
+Now, we show that there is no mechanism that satisfies all the properties in Section IV-A. Our result is a closed-credit analogue of the Myerson–Satterthwaite impossibility theorem [3]. 
+
+Theorem 1 (Impossibility) . Consider a block consisting of a buyer, a seller, and a nontrader with a positive credit balance. If the buyer’s and seller’s valuations are independently distributed with overlapping supports, no mechanism can simultaneously satisfy NIR, WNN, NPE, and NIC. Proof. It suffices to establish impossibility for the base case where the predicted-value-to-go function Jb+1  
+
+> i
+
+(w) is affine in w. Under affine predicted-value-to-go function, the relationship (6) shows that the setting reduces to a standard bilateral trade environment with quasilinear preferences and normalized valuations. Furthermore, by Lemma 1, WNN im-plies WBB in the presence of the positive-balance nontrader. Thus, any mechanism satisfying NPE, NIC, NIR, and WNN would induce a bilateral trading mechanism satisfying Pareto efficiency, incentive compatibility, individual rationality, and weak budget balance under quasilinear preferences, contra-dicting the Myerson–Satterthwaite theorem [3]. Thus, a closed-credit economy does not in general avoid the classical impossibility of jointly achieving efficiency, incentive compatibility, individual rationality, and budget balance. V. M ECHANISM DESIGN 
+
+Motivated by Theorem 1, we prioritize NIR and WNN: NIR protects participation in the current block , while WNN preserves nontraders’ shares of total credits across blocks . We propose an ascending auction with subgrouping that satisfies these requirements and analyze its efficiency and incentive guarantees. 
+
+A. Proposed Mechanism 
+
+Our mechanism has three steps: group splitting procedure, subgroup-based ascending auctions, and aggregate allocation. We present each step below, and Algorithm 1 summarizes the mechanism. 
+
+1) Group Splitting Procedure: For each block b, the procedure SPLIT AGENTS AND CAPACITIES (b, G ) partitions the agents into G balanced subgroups {Ig }Gg=1 and assigns integer subgroup capacities that sum to ¯Cb. Specifically, the procedure runs as follows. 1) Sort agents in descending order of scaled endowments 
+
+¯ebi . When there is a tie, use the credit balance wbi to break it. 2) Sequentially assign the agents to the subgroup with the lowest aggregate scaled endowment. 3) Each subgroup Ig is then assigned ⌊ eCb,g ⌋ items ,where eCb,g is the target capacity: eCb,g = ¯Cb ·
+
+(P 
+
+> i∈Ig
+
+¯ebi )/(P 
+
+> i∈I
+
+¯ebi ).4) The remaining R = ¯Cb − PGg=1 ⌊ eCb,g ⌋ items are assigned according to the Largest Remainder (Hamilton) method. That is, they are assigned one at a time to the subgroups with the largest fractional remainders. We denote the final capacity by ¯Cb,g . The above procedure guarantees that PGg=1 ¯Cb,g = ¯Cb.
+
+2) Subgroup-Based Ascending Auction: After construct-ing the subgroups, we run an ascending price-discovery procedure separately within each subgroup. In block b, for a given price p ≥ 0, agent i reports its integer demand Dbi (p). Any valid demand submission must satisfy domain and budget constraints in Definition 1: 
+
+Dbi (p) ∈ { 0, . . . , N bi } and (Dbi (p) − ¯ebi )p ≤ wbi . When agent 
+
+i is truthful, its reported demand corresponds to an optimal solution to its dynamic choice problem, 
+
+Dbi (p) ∈ arg max   
+
+> K∈{ 0,...,N bi}
+
+( KX
+
+> k=1
+
+vbi (k) + Jb+1 
+
+> i
+
+ wbi − (K − ¯ebi )p)
+
+(14) subject to (K − ¯ebi )p ≤ wbi . If the maximizer is not unique, the agent selects the largest maximizer. We let Dbg (p) = P 
+
+> i∈Ig
+
+Dbi (p) denote the aggregate demand. We require each agent’s reported demand Dbi (p) (and thus aggregate demand Dbg (p)) to be nonincreasing in 
+
+p. Under truthful reporting, agents automatically sat-isfy this requirement whenever vbi (k) is nonincreasing 
+
+Algorithm 1 Block Dynamic Ascending Auction with Sub-group Rationing  
+
+> 1:
+
+procedure RUN BLOCK AUCTION (b, G, ∆p) 
+
+> 2:
+
+{Ig , ¯Cb,g }Gg=1 ← SPLIT AGENTS AND CAPACITIES (b, G ) 
+
+> 3:
+
+for g = 1 to G do  
+
+> 4:
+
+pb,g ← SUBGROUP PRICE DISCOVERY (Ig , ¯Cb,g , b, ∆p) 
+
+> 5:
+
+p∗ 
+
+> b
+
+← min 1≤g≤G pb,g  
+
+> 6:
+
+for g = 1 to G do  
+
+> 7:
+
+Dbg (p∗ 
+
+> b
+
+) ← P 
+
+> i∈Ig
+
+Dbi (p∗ 
+
+> b
+
+) 
+
+> 8:
+
+if Dbg (p∗ 
+
+> b
+
+) ≤ ¯Cb,g then  
+
+> 9:
+
+xb, ∗ 
+
+> i
+
+← Dbi (p∗ 
+
+> b
+
+), ∀i ∈ Ig 
+
+> 10:
+
+else  
+
+> 11:
+
+for each i ∈ Ig do  
+
+> 12:
+
+xguar  
+
+> i
+
+← min {Dbi (p∗ 
+
+> b
+
+), ⌊¯ebi ⌋}  
+
+> 13:
+
+xb, ∗ 
+
+> i
+
+← xguar  
+
+> i
+> 14:
+
+Rg ← ¯Cb,g − P 
+
+> i∈Ig
+
+xguar  
+
+> i
+> 15:
+
+Draw a random ordering πg of the agents in Ig ,independently of their reported demands.  
+
+> 16:
+
+for each i in the order πg do  
+
+> 17:
+
+yi ← min {Dbi (p∗ 
+
+> b
+
+) − xguar  
+
+> i
+
+, R g } 
+
+> 18:
+
+xb, ∗ 
+
+> i
+
+← xb, ∗ 
+
+> i
+
++ yi, Rg ← Rg − yi 
+
+> 19:
+
+if Rg = 0 then  
+
+> 20:
+
+break  
+
+> 21:
+
+for each i ∈ I do  
+
+> 22:
+
+T bi ← (xb, ∗ 
+
+> i
+
+− ¯ebi )p∗ 
+
+> b
+> 23:
+
+bwb+1  
+
+> i
+
+← wbi − T bi 
+
+> 24:
+
+for each i ∈ I do 4 
+
+> 25:
+
+wb+1  
+
+> i
+
+← bwb+1 
+
+> i
+
+P 
+
+> j∈I
+
+wbj
+
+P 
+
+> j∈I
+
+bwb+1  
+
+> j
+> 26:
+
+return {xb, ∗ 
+
+> i
+
+}i∈I , p ∗ 
+
+> b
+
+, {T bi }i∈I , {wb+1  
+
+> i
+
+}i∈I
+
+in k and Jb+1  
+
+> i
+
+(w) ∈ J , as established in Proposi-tion 3. Leveraging this price monotonicity, the procedure SUBGROUP PRICE DISCOVERY (Ig , ¯Cb,g , b, ∆p) runs as fol-lows. 1) p ← 0.2) Consider three situations and increase the price when there is over demand. a) If Dbg (p) < ¯Cb,g , then return max {0, p − ∆p}.b) If Dbg (p) = ¯Cb,g , then return p.c) If Dbg (p) > ¯Cb,g , then p ← p + ∆ p and repeat. Let pb,g denote the resulting price in subgroup Ig .
+
+3) Aggregate Allocation: After the ascending auctions for all the subgroups, we set the common transaction price to the minimum subgroup price, p∗ 
+
+> b
+
+= min 1≤g≤G pb,g . Because 
+
+p∗ 
+
+> b
+
+is no larger than any subgroup discovery price, the demands at p∗ 
+
+> b
+
+have already been encountered during the corresponding ascending procedures and may be reused. At the common unit price p∗ 
+
+> b
+
+, a subgroup whose aggregate demand does not exceed its assigned capacity receives its          
+
+> 4Since auniform rescaling of all credit balances preserves relative purchasing power of all agents, the regulatory authority may normalize end-of-block balances to maintain a stationary aggregate credit supply across sequential blocks.
+
+demanded allocation. If a subgroup is oversubscribed, each agent first receives up to the integer part of its scaled endowment, subject to its demand. The remaining capacity is rationed by random ordering rule among the agents’ excess demands. Algorithm 1 describes the whole procedure. 
+
+4) Block Transitions: After running Algorithm 1 in block 
+
+b, we update each agent’s maximum resource requirement for the next block. Agent i has N bi − xb, ∗ 
+
+> i
+
+units of unmet demand, which it may withdraw or carry forward. Let ℓbi
+
+denote the number of units carried forward, where ℓbi ∈{0, . . . , N bi − xb, ∗ 
+
+> i
+
+}. We set N b+1  
+
+> i
+
+= eb+1  
+
+> i
+
++ ℓbi . Thus, the next block’s maximum resource requirement combines the agent’s initial endowment for that block with its carried-over unmet demand. If all unmet demand is carried forward, this becomes N b+1  
+
+> i
+
+= eb+1  
+
+> i
+
++ N bi − xb, ∗ 
+
+> i
+
+.
+
+B. Theoretical Analysis 1) Feasibility and Market Clearance: We first establish that the mechanism produces a feasible allocation-price pair (see Definition 1) and clears the block capacity, i.e., no capacity is left unallocated whenever p∗ 
+
+> b
+
+> 0.
+
+Theorem 2. If each agent’s reported demand Dbi (p) follows 
+
+(14) , Algorithm 1 gives a feasible allocation-price pair 
+
+({xb, ∗ 
+
+> i
+
+}i∈I , p ∗ 
+
+> b
+
+) that achieves market clearance: p∗ 
+
+> b
+
+> 0
+
+implies P 
+
+> i∈I
+
+xb, ∗ 
+
+> i
+
+= ¯Cb.2) Individual Rationality, Nontrader Protection, and Ef-ficiency: We establish NIR and WNN for every number of subgroups G and provide sufficient conditions for NPE when 
+
+G = 1 . Note that, by Theorem 1, NIR and WNN cannot in general be combined with both NPE and NIC. 
+
+Theorem 3. Consider Algorithm 1 under the conditions of Theorem 2. Suppose that the assumptions of Proposition 1 and Lemma 1 hold. Then: 1) NIR and WNN. The mechanism satisfies NIR and WNN for every number of subgroups G.2) NPE under optimal-demand clearing. If G = 1 , each predicted-value-to-go Jb+1  
+
+> i
+
+is strictly increasing, all agents report their demands truthfully, and every agent receives their reported demand 5 at price p∗ 
+
+> b
+
+, then the allocation and associated transfers T bi = ( xb, ∗ 
+
+> i
+
+− ¯ebi )p∗
+
+> b
+
+are NPE. 3) Approximate Incentive Compatibility: We quantify the incentive effects of subgrouping by bounding the expected gain from misreporting in terms of the probability that an agent changes the common price. Fix a block b, its public state, and the predicted-value-to-go functions. For a report profile ˆvb, define agent i’s predicted                    
+
+> 5In this case, NPE holds if either P
+> i∈IDbi(0) ≤¯Cbor
+> P
+> i∈IDbi(k∆p) = ¯Cbfor some k∈Z≥0, since all reported demands are fully allocated. Otherwise, price-grid jumps may require rationing, which need not preserve individual optimality or NPE. Designing efficiency-preserving rationing rules is left for future work.
+
+non-myopic utility, evaluated at its true valuations, as 
+
+U bi (ˆ vb; vbi ) =  
+
+> xb, ∗
+> i(ˆ vb)
+
+X
+
+> k=1
+
+vbi (k) + Jb+1 
+
+> i
+
+ wbi − T bi (ˆ vb) .
+
+Expectations are taken over the other agents’ types and the mechanism’s random ordering. 
+
+Definition 8 (Approximate NIC) . A mechanism is ϵ-NIC in block b if, for every agent i, true type vbi , and admissible report ˆvbi ,
+
+EU bi ((ˆ vbi , vb
+
+> −i
+
+); vbi ) − U bi (( vbi , vb
+
+> −i
+
+); vbi ) vbi
+
+ ≤ ϵ. 
+
+Thus, truthful reporting is optimal up to expected utility gain 
+
+ϵ.Define the maximum probability that a unilateral misreport changes the common price by 
+
+qbG := sup  
+
+> i, vbi,ˆvbi
+
+P p∗ 
+
+> b
+
+(ˆ vbi , vb
+
+> −i
+
+)̸ = p∗ 
+
+> b
+
+(vbi , vb
+
+> −i
+
+) vbi
+
+,
+
+where the supremum is over admissible types and reports. 
+
+Theorem 4 (Approximate NIC under subgrouping) . Con-sider Algorithm 1 under the conditions of Theorem 2and Proposition 1. Suppose that individual total valuations satisfy the uniform bound sup i∈I, vbi
+
+PN bi 
+
+> k=1
+
+vbi (k) ≤ V b < ∞,and each predicted-value-to-go Jb+1  
+
+> i
+
+is finite-valued and nondecreasing. Define 
+
+Wb := X
+
+> i∈I
+
+wbi , Mb := V b+max 
+
+> i∈I
+
+Jb+1  
+
+> i
+
+(Wb) − Jb+1  
+
+> i
+
+(0) .
+
+Then the mechanism is (MbqbG)-NIC. For a fixed market, Mb
+
+is independent of G. In particular, if qbG ≤ c/G for a constant 
+
+c independent of G, the mechanism is (Mbc/G )-NIC. 
+
+The bound MbqbG explains how increasing G can improve incentive compatibility: additional subgroups provide com-peting prices beyond an individual agent’s control, potentially reducing its influence on the common price. Since p∗ 
+
+> b
+
+=min g pb,g , a deviation can change this price only if the agent’s subgroup attains the truthful minimum or its deviation lowers its subgroup price below that minimum. When qbG ≤
+
+c/G , the resulting guarantee improves with G for a fixed market. This improvement is conditional, since smaller subgroups may also be more sensitive to individual reports. Balancing endowments alone therefore does not guarantee that qbG
+
+decreases with G.VI. E XPERIMENTS 
+
+We simulate the sequential block auction market for arrival slots at San Francisco International Airport (SFO) on August 20, 2026. The arrival schedule published the day before [26] (591 arrivals, 52 airlines) serves as the endowment and as a proxy for the months-ahead allocation under current practice. Nominal capacity is 52 arrivals/hr [27]; we consider a mild (S1) and a severe (S2) capacity reduction (Fig. 2). Fig. 2. Scheduled arrivals per hour at SFO (bars) against capacity (dashed red). Shading marks the capacity reduction: in S1 (top), capacity drops to 39 arrivals/hr from 08:00 to 12:00; in S2 (bottom), zero capacity from 08:00 to 10:00 and reduced capacity to 26 arrivals/hr until 15:00. Lines show realized arrivals per hour under the ground delay baseline (GD) and our mechanism with each budget initialization. 
+
+a) Delay and cancellation costs.: Aircraft type and seats Sf come from BTS T-100 Segment data, matched by operating carrier and origin–SFO route [28]. For arrival delay 
+
+d (assigned slot minus scheduled time, in minutes), the cost of flight f is 
+
+cf (d) = ρf (d − g)+ + ρf (d − bf )+.
+
+The first term is the cost of this arrival and the second is the delay propagated to the aircraft’s next departure. ρf is the airline’s operating cost per minute for the aircraft type (BTS Form 41, Schedules P-5.2 and P-7 [28]) and g = 15 
+
+min is the on-time threshold [29]. We assume a buffer time 
+
+bf ∼ U [15 , 20] min, the slack the aircraft can absorb before the delay cuts into its turnaround and propagates to the next departure. We assume a flight is canceled once its delay exceeds 3 hours, the U.S. DOT threshold for a significant delay on domestic itineraries, beyond which passengers are entitled to a refund [30]. The cancellation cost is a refund of $305 per passenger, the average U.S. domestic one-way itinerary fare [31]. 
+
+b) Slot valuation and credits.: Airline i’s value for its 
+
+kth slot in block b (Sec. III-B) is the cost it avoids by not delaying to b + 1 , vbi (k) = cf (db+1 ) − cf (db). f is the airline’s flight with the kth highest avoided cost, and db is its delay when landing at the midpoint of block b. Initial credits are assigned to each airline i in proportion to weight 
+
+ωi, W = |I| ¯w as w1 
+
+> i
+
+= W ω i/ P 
+
+> j
+
+ωj . We compare four weights ωi: Equal (ωi = 1 ); Exposure , the cost of delaying all of i’s flights by one block, ωi = Ui = P  
+
+> f∈Fi
+
+cf (B);
+
+Seats , i’s total number of seats (or passengers it carries), 
+
+ωi = P  
+
+> f∈Fi
+
+Sf ; and Flights , i’s total number of flights, 
+
+ωi = |Fi|.
+
+c) Results. : Table I compares our mechanism under each credit initialization with the ground delay baseline (GD), which assigns slots by ration-by-schedule followed                                                                                                     
+
+> TABLE I DAY -OF AUCTION OUTCOMES BY BUDGET INITIALIZATION .
+> S1 S2 Metric GD Eq. Exp. Seat Flt GD Eq. Exp. Seat Flt Delay cost ( $k) 72.2 42.5 25.9 29.8 27.1 4,855 2,987 4,386 4,532 4,401 Cancel. cost ( $k) 000001,222 2,012 1,018 820 1,252 Total cost ( $k) 72.2 42.5 25.9 29.8 27.1 6,077 4,999 5,404 5,353 5,653 Canceled 0000030 51 34 31 33 Delay >15 (min) a78 33 28 23 43 352 289 344 347 346 Pax delayed (k) b11.0 4.8 3.2 2.7 6.1 47.9 38.5 48.0 48.6 47.4 Pax canceled (k) c000004.0 6.6 3.3 2.7 4.1 Propagated d66 21 19 17 28 352 286 343 347 346 GD: ground delay baseline (RBS + compression). Ours with budget initialization methods: equal, exposure, seats, and flights (Eq., Exp., Seat, Flt). Cost (USD) and number of passengers are in thousands.
+> aNumber of delays beyond the 15-min grace period.
+> bPassengers on landed flights delayed >15 min; canceled passengers excluded.
+> cPassengers on canceled flights.
+> dFlights whose arrival delay exceeds their turnaround buffer ( df> b f), so the delay cascades to the aircraft’s next flight.
+
+by compression [7]. In S1, no flights are canceled, and our mechanism improves on GD in every metric under every ini-tialization. Exposure yields the lowest total cost (64% below GD), while seats yields the least delay beyond 15 min and fewest propagated delays. In S2, our mechanism lowers total cost by 7–18% under every initialization but cancels at least as many flights as GD. Exposure, seats, and flights cancel about as many flights as GD (31–34 vs. 30) while lowering delay cost by 7–10%; exposure and seats also cancel fewer passengers (3.3k and 2.7k vs. 4.0k), i.e., smaller flights. 
+
+Equal attains the lowest total cost by canceling the most flights (51), which reduces propagated delays and delays beyond 15 min by ∼18%. Whether this trade is desirable depends on how airlines value cancellations. We value a cancellation only by the refund owed to its passengers; in practice, airlines also weigh rebooking, crew and aircraft repositioning, and reputation, which would raise this cost. These magnitudes depend on parameters we estimate from public data: operating cost per minute by aircraft type, turnaround slack, and cancellation costs. Our goal is not to predict exact savings but to show that a market informed by heterogeneous costs, in which airlines trade, improves on current practice. GD assigns slots in schedule order and ignores costs. In our mechanism, each airline bids using its own costs and trading allows slots to move to flights with higher delay costs. Figure 3 depicts the budget share (ratios in (9)) of the airlines in S2. The start of a dark line segment marks a block when the airline did not trade ( T bi = 0 ). These dark segments are always non-decreasing, which shows that non-participation does not decrease their budget share, validating WNN. We also report that the smallest value gained from participating in the market minus a rebate value for each partial unit at the clearing price each block is 0, which is non-negative thus validating NIR. Lastly, we show that our allocations satisfy the conditions of a feasible allocation–price pair (Def. 1). In Fig. 4(a), clearing prices are nonnegative, rise during the capacity reduction as pending flights accumulate, and peak before Fig. 3. Relative credit balance wbi / P 
+
+> j
+
+wbj by block (S2, equal budgets), for the five airlines with the largest credit flows; gray lines show the remaining airlines. Dark segments mark blocks in which the airline does not trade ( T bi = 0 ), faded segments mark blocks in which it trades. 
+
+Fig. 4. Feasible Allocation-Price Pair (S2, equal budgets, contested blocks only). (a) Clearing price per block, in credits. (b) Slots allocated to each airline as a fraction of its pending flights N bi , for the five airlines with the most pending flights across contested blocks. Dashed line marks the bound 
+
+N bi .
+
+the reduction ends. In Fig. 4(b), each airline’s allocation remains within its pending flights: the ratio never exceeds one, so the domain constraint holds. During the reduction, airlines land 3–45% of their pending flights per block, and the fraction varies across airlines according to their bids rather than schedule order. Once capacity is restored, the ratio approaches one for most airlines by blocks 16–17, as the backlog clears. Allocations are always at or below the capacity line in Fig. 2, showing the capacity constraints have been respected. Finally, in Fig. 3, we see strictly positive budget shares, which shows an airline’s payment never exceeds their budget. VII. C ONCLUSION 
+
+We study credit-based markets for sequential resource real-location under capacity uncertainty and existing endowments. We establish an impossibility result for jointly achieving NIR, WNN, NPE, and NIC, and propose a group-splitting ascending-auction mechanism that preserves NIR and WNN while providing conditional efficiency and approximate in-centive guarantees. Simulations illustrate its application to airport slot allocation. Future work will develop principled subgroup-selection and budget allocation rules and derive sharper efficiency and incentive guarantees. REFERENCES [1] E. Elokda, S. Bolognani, A. Censi, F. D¨ orfler, and E. Frazzoli, “A self-contained karma economy for the dynamic allocation of common resources,” Dynamic Games and Applications , vol. 14, no. 3, pp. 578–610, 2024. [2] M. Vuppalapati, G. Fikioris, R. Agarwal, A. Cidon, A. Khandelwal, and ´ E. Tardos, “Karma: Resource allocation for dynamic demands,” in 17th USENIX Symposium on Operating Systems Design and Im-plementation (OSDI 23) , Boston, MA: USENIX Association, 2023, pp. 645–662, ISBN : 978-1-939133-34-2. [3] R. B. Myerson and M. A. Satterthwaite, “Efficient mechanisms for bilateral trading,” Journal of Economic Theory , vol. 29, no. 2, pp. 265–281, 1983. [4] R. McAfee, “A dominant strategy double auction,” Journal of Eco-nomic Theory , vol. 56, no. 2, pp. 434–450, 1992, ISSN : 0022-0531. [5] E. Segal-Halevi, A. Hassidim, and Y. Aumann, “Muda: A truthful multi-unit double-auction mechanism,” in Proceedings of the Thirty-Second AAAI Conference on Artificial Intelligence , 2018, pp. 1193– 1201. [6] S. Dobzinski, R. Lavi, and N. Nisan, “Multi-unit auctions with budget limits,” Games and Economic Behavior , vol. 74, no. 2, pp. 486–503, 2012, ISSN : 0899-8256. [7] T. W. M. Vossen and M. O. Ball, “Slot trading opportunities in collaborative ground delay programs,” Transportation Science ,vol. 40, no. 1, pp. 29–43, 2006. [8] A. Hylland and R. Zeckhauser, “The efficient allocation of indi-viduals to positions,” Journal of Political Economy , vol. 87, no. 2, pp. 293–314, 1979. [9] E. Budish, “The combinatorial assignment problem: Approximate competitive equilibrium from equal incomes,” Journal of Political Economy , vol. 119, no. 6, pp. 1061–1103, 2011. [10] J. Combe, V. Nora, and O. Tercieux, “Dynamic assignment without money: Optimality of spot mechanisms,” Theoretical Economics ,vol. 20, no. 1, pp. 255–301, 2025. [11] T. Nguyen, A. Teytelboym, and S. Vardi, Dynamic combinatorial assignment , 2023. arXiv: 2303 . 13967 [econ.TH] . [Online]. Available: https://arxiv.org/abs/2303.13967 
+
+[12] S. Banerjee, G. Fikioris, and E. Tardos, “Robust pseudo-markets for reusable public resources,” in Proceedings of the 24th ACM Confer-ence on Economics and Computation , ser. EC ’23, London, United Kingdom: Association for Computing Machinery, 2023, p. 241, 
+
+> ISBN
+
+: 9798400701047. [13] M. U. ¨ Unver, “Dynamic kidney exchange,” The Review of Economic Studies , vol. 77, no. 1, pp. 372–414, 2010, ISSN : 0034-6527. [14] C. Hajaj, J. P. Dickerson, A. Hassidim, T. Sandholm, and D. Sarne, “Strategy-proof and efficient kidney exchange using a credit mecha-nism,” in Proceedings of the Twenty-Ninth AAAI Conference on Ar-tificial Intelligence , Austin, Texas: AAAI Press, 2015, pp. 921–928, 
+
+> ISBN
+
+: 0262511290. [15] A. Gorokh, S. Banerjee, and K. Iyer, “From monetary to nonmon-etary mechanism design via artificial currencies,” Mathematics of Operations Research , vol. 46, no. 3, pp. 835–855, 2021. [16] N. Figueroa and V. Skreta, “Efficient mechanisms for multi-asset bilateral trading,” Journal of Public Economic Theory , vol. 28, no. 2, e70109, 2026. [17] Y. E. Xu, H. Zhang, and V. Conitzer, “Non-excludable bilateral trade between groups,” in Proceedings of the Thirty-Eighth AAAI Conference on Artificial Intelligence and Thirty-Sixth Conference on Innovative Applications of Artificial Intelligence and Fourteenth Symposium on Educational Advances in Artificial Intelligence , AAAI Press, 2024, ISBN : 978-1-57735-887-9. [18] P.-Y. Su, Y. Ju, S. Moura, and S. Sastry, “Two-stage mechanism design for electric vehicle charging with day-ahead reservations,” in 
+
+2025 IEEE 64th Conference on Decision and Control (CDC) , 2025, pp. 3995–4002. [19] J. Fairbrother, K. G. Zografos, and K. D. Glazebrook, “A slot-scheduling mechanism at congested airports that incorporates ef-ficiency, fairness, and airline preferences,” Transportation Science ,vol. 54, no. 1, pp. 115–138, 2020. [20] P. Pellegrini, L. Castelli, and R. Pesenti, “Secondary trading of airport slots as a combinatorial exchange,” Transportation Research Part E: Logistics and Transportation Review , vol. 48, no. 5, pp. 1009–1022, 2012, ISSN : 1366-5545. [21] H. Lee, J. Jung, and D.-J. Lee, “An auction-based airport slot reallocation scheme considering the grandfather rights of airlines,” 
+
+Journal of Air Transport Management , vol. 118, p. 102 612, 2024. [22] K. Sheth and S. Gutierrez-Nolasco, “Incorporating user preferences in collaborative traffic flow management,” in AIAA Guidance, Navi-gation and Control Conference and Exhibit , 2008, p. 7398. [23] K. Sheth and S. Gutierrez-Nolasco, “Enhancing collaboration in air traffic flow management,” in 9th AIAA Aviation Technology, Integration, and Operations Conference (ATIO) .[24] J. Rios, K. Sheth, and S. Guitierrez-Nolasco, “Incorporating user preferences within an optimal traffic flow management framework,” in AIAA Guidance, Navigation, and Control Conference .[25] J. Im, J.-P. Clarke, U. Topcu, and D. Fridovich-Keil, “Iterative negotiation and oversight: A case study in decentralized air traffic management,” Transportation Research Part C: Emerging Technolo-gies , vol. 194, p. 106 051, 2027, ISSN : 0968-090X. [26] FlightStats, Flight tracker: Arrivals at san francisco international airport (SFO), 20 august 2026 , 2026. [Online]. Available: https: / / www . flightstats . com / v2 / flight - tracker / arrivals/SFO 
+
+[27] Federal Aviation Administration, Airport capacity profile: San fran-cisco international airport (SFO) , FAA Airport Planning and Envi-ronmental Division (APP-400), 2019. [Online]. Available: https: / / www . faa . gov / airports / planning _ capacity / profiles 
+
+[28] Bureau of Transportation Statistics, TranStats: Air carrier statistics (Form 41 traffic, T-100 segment, all carriers) and air carrier financial reports (Form 41 financial data, schedules P-5.2 and P-7) , U.S. Department of Transportation, 2026. [Online]. Available: https: //www.transtats.bts.gov/DataIndex.asp 
+
+[29] Bureau of Transportation Statistics, Airline on-time statistics and delay causes , U.S. Department of Transportation, TranStats, Source: Airline Service Quality Performance 234, 2026. [Online]. Available: 
+
+https : / / www . bts . gov / explore - topics - and -geography/topics/time-data 
+
+[30] U.S. Department of Transportation, Refunds , Office of Aviation Consumer Protection, 2025. [Online]. Available: https : / / www . transportation . gov / individuals / aviation -consumer-protection/refunds 
+
+[31] Bureau of Transportation Statistics, First quarter 2026 average air fare increases 4.7% from fourth quarter 2025 , U.S. Department of Transportation, 2026. [Online]. Available: https://www.bts. gov/newsroom/first- quarter- 2026- average- air-fare-increases-47-fourth-quarter-2025 
+
+APPENDIX 
+
+A. Proof of Proposition 1 Proof. Since Jb+1  
+
+> i
+
+is concave, the credit opportunity cost (the bracketed difference in (4)) is nondecreasing in k. Along with 
+
+vbi (k) being nonincreasing, ∆bi (k, p, w, e ) is nonincreasing in 
+
+k, so (5) characterizes an optimal demand. 
+
+B. Proof of Proposition 2 Proof. Necessity. Suppose that every Fw,a is nondecreasing on its feasible price interval. We first establish that J is nondecreasing on [0 , ∞) and continuous on (0 , ∞). Taking w = 0 and a = −1 gives 
+
+F0,−1(p) = J(p) − J(0) , so J is nondecreasing on [0 , ∞).Fix c > 0. Since a monotone function has at most countably many discontinuities, we can choose a continuity point d ∈ (0 , c ). Set 
+
+w = 2 c − d, a = 1 , p0 = c − d. 
+
+Then p0 is an interior point of the feasible interval [0 , w/ 2] ,and 
+
+Fw, 1(p) = J(w − p) − J(w − 2p).
+
+Writing J(c−) and J(c+) for the one-sided limits of J at 
+
+c, continuity at d gives 
+
+lim 
+
+> p↑p0
+
+Fw, 1(p) = J(c+) − J(d),
+
+and 
+
+lim 
+
+> p↓p0
+
+Fw, 1(p) = J(c−) − J(d).
+
+Monotonicity of Fw, 1 therefore implies J(c+) ≤ J(c−). To-gether with J(c−) ≤ J(c) ≤ J(c+) , this proves continuity at c. Thus J is continuous on (0 , ∞).We next establish concavity. Fix 0 < u < v and h > 0.For sufficiently large positive integers n, set 
+
+an = n, wn = u + ( n + 1) h, pn = h − v − un + 1 .
+
+Both pn and h are feasible, with 0 ≤ pn ≤ h. Since 
+
+wn − (n + 1) pn = v, wn − np n = v + pn,
+
+monotonicity yields Fwn,n (pn) ≤ Fwn,n (h), so 
+
+J(v + pn) − J(v) ≤ J(u + h) − J(u).
+
+Letting n → ∞ and using the interior continuity established above gives 
+
+J(v + h) − J(v) ≤ J(u + h) − J(u).
+
+Taking v = u + h proves midpoint concavity. Together with interior continuity, this establishes concavity on (0 , ∞).Because J is nondecreasing and finite-valued, the limit 
+
+L := lim z↓0 J(z) exists and is finite, with J(0) ≤ L. For 
+
+y > 0 and t ∈ (0 , 1) , interior concavity gives 
+
+J((1 − t)ε + ty ) ≥ (1 − t)J(ε) + tJ (y).
+
+Letting ε ↓ 0 yields 
+
+J(ty ) ≥ (1 − t)L + tJ (y) ≥ (1 − t)J(0) + tJ (y).
+
+Hence J is concave on [0 , ∞).The right derivative J′
+
+> +
+
+(z) therefore exists and is finite for every z > 0. Fix 0 < x < y , and set 
+
+h = y − x, r = xh .
+
+Taking w = 0 and a = −(r + 1) gives the nondecreasing function 
+
+F0,−(r+1) (p) = J(( r + 1) p) − J(rp ).
+
+Its right derivative at p = h is nonnegative: 
+
+0 ≤ (r + 1) J′
+
+> +
+
+(y) − rJ ′
+
+> +
+
+(x) = yJ ′
+
+> +
+
+(y) − xJ ′
+
+> +
+
+(x)
+
+y − x .
+
+Thus zJ ′
+
+> +
+
+(z) is nondecreasing. 
+
+Sufficiency. Suppose that J is concave on [0 , ∞) and zJ ′
+
+> +
+
+(z)
+
+is nondecreasing on (0 , ∞).These conditions imply that J is differentiable on (0 , ∞).Indeed, for every c > 0, concavity gives J′−(c) ≥ J′
+
+> +
+
+(c),whereas monotonicity gives 
+
+cJ ′−(c) = lim  
+
+> z↑c
+
+zJ ′
+
+> +
+
+(z) ≤ cJ ′
+
+> +
+
+(c).
+
+Thus the one-sided derivatives coincide. Moreover, J′(x) ≥ 0 for every x > 0. Otherwise, choosing 
+
+y > x and using concavity would give yJ ′(y) ≤ yJ ′(x) <xJ ′(x), contradicting monotonicity of zJ ′(z). Hence J is nondecreasing on (0 , ∞). Concavity at zero implies J(0) ≤
+
+L := lim z↓0 J(z), and this limit is finite. Consequently, J is nondecreasing on [0 , ∞) as well. Fix w ≥ 0 and a ∈ R. At any feasible price p > 0 for which 
+
+x = w − (a + 1) p > 0, y = w − ap = x + p, 
+
+differentiation gives F ′
+
+> w,a
+
+(p) = J′(x) + a J′(x) − J′(y).Since w = y + a(y − x) ≥ 0, we have a ≥ − y/ (y − x).Concavity and monotonicity of zJ ′(z) yield 
+
+F ′
+
+> w,a
+
+(p) ≥ J′(x) − yy − x
+
+ J′(x) − J′(y)
+
+= yJ ′(y) − xJ ′(x)
+
+y − x ≥ 0.
+
+The derivative argument establishes monotonicity wher-ever p > 0 and w − (a + 1) p > 0. We now check the remaining feasible prices in four cases. 1) w > 0. Continuity of J on (0 , ∞) gives 
+
+lim p↓0 Fw,a (p) = 0 = Fw,a (0) , extending monotonicity to p = 0 . If a + 1 > 0, the feasible interval also has the finite upper endpoint pmax = w/ (a + 1) , where 
+
+Fw,a (pmax ) = J(pmax ) − J(0) 
+
+≥ J(pmax ) − L
+
+= lim 
+
+> p↑pmax
+
+Fw,a (p).
+
+Thus monotonicity is preserved at this endpoint. If a +1 ≤ 0, there is no finite upper endpoint. 2) w = 0 and a > −1. The feasible interval is the singleton {0}, so monotonicity holds trivially. 3) w = 0 and a = −1. We have F0,−1(p) = J(p) − J(0) ,which is nondecreasing because J is nondecreasing. 4) w = 0 and a < −1. The derivative argument applies for every p > 0. Moreover, lim p↓0 F0,a (p) = L − L =0 = F0,a (0) , extending monotonicity to p = 0 .Thus Fw,a is nondecreasing on its entire feasible interval. 
+
+C. Proof of Proposition 3 Proof. Let Dbi (p) be the largest optimal demand defined in Proposition 1. Fix p1 ≤ p2. If Dbi (p2) = 0 , the result is trivial. Otherwise, ∆bi (Dbi (p2), p 2, w, e ) ≥ 0 from (5). Since Jb+1  
+
+> i
+
+∈ J , Proposition 2 implies that ∆bi (k, p, w, e )
+
+is nonincreasing in p, leading to ∆bi (Dbi (p2), p 1, w, e ) ≥
+
+∆bi (Dbi (p2), p 2, w, e ) ≥ 0.Moreover, we verify budget feasibility. Since Dbi (p2) is feasible at p2, we have w −(Dbi (p2)−e)p2 ≥ 0. If Dbi (p2) ≥
+
+e, then p1 ≤ p2 implies w−(Dbi (p2)−e)p1 ≥ w−(Dbi (p2)−
+
+e)p2 ≥ 0. If Dbi (p2) < e , the agent is a net seller, which ensures feasibility for any p1 ≥ 0. This ensures that Dbi (p2)
+
+is budget-feasible at price p1.Thus, Dbi (p2) fulfills (5) under budget feasibility at p1.By definition in Proposition 1, Dbi (p1) is the largest demand at p1 satisfying (5) under budget feasibility; it follows that 
+
+Dbi (p1) ≥ Dbi (p2).
+
+D. Proof of Theorem 2 Proof. The rule dictates agent demand Dbi (p) is nonincreas-ing in p, and it satisfies domain and budget constraints. We check the following four conditions. 
+
+a) Price Nonnegativity: By construction, p∗ 
+
+> b
+
+≥ 0.
+
+b) Domain/Budget Constraints: Algorithm 1 ensures that xb, ∗ 
+
+> i
+
+≤ Dbi (p∗ 
+
+> b
+
+), so xb, ∗ 
+
+> i
+
+∈ {0, ..., N bi } and (xb, ∗ 
+
+> i
+
+−
+
+¯ebi )p∗ 
+
+> b
+
+≤ (Dbi (p∗ 
+
+> b
+
+) − ¯ebi )p∗ 
+
+> b
+
+≤ wbi , which holds for all p∗ 
+
+> b
+
+≥ 0,establishing the budget constraint. 
+
+c) Capacity Constraints: For each subgroup g, if 
+
+Dbg (p∗ 
+
+> b
+
+) ≤ ¯Cb,g , the algorithm assigns xb, ∗ 
+
+> i
+
+= Dbi (p∗ 
+
+> b
+
+), while if Dbg (p∗ 
+
+> b
+
+) > ¯Cb,g , it allocates exactly ¯Cb,g items through the guaranteed allocation and random ordering rule. Since P 
+
+> i∈Ig
+
+xb, ∗ 
+
+> i
+
+≤ ¯Cb,g for all g ∈ { 1, . . . , G }, it holds that 
+
+P 
+
+> i∈I
+
+xb, ∗ 
+
+> i
+
+≤ PGg=1 ¯Cb,g = ¯Cb.
+
+d) Market Clearance: Suppose that p∗ 
+
+> b
+
+> 0. It suffices to prove that P 
+
+> i∈I
+
+xb, ∗ 
+
+> i
+
+= ¯Cb. Since p∗ 
+
+> b
+
+= min g pb,g ≤ pb,g 
+
+and agent demand Dbi (p) is nonincreasing in p, the S UB -
+
+> GROUP
+
+PRICE DISCOVERY rule yields Dbg (p∗ 
+
+> b
+
+) ≥ Dbg (pb,g ) ≥
+
+¯Cb,g when p∗ 
+
+> b
+
+> 0. Thus, for every subgroup, either 
+
+Dbg (p∗ 
+
+> b
+
+) = ¯Cb,g and its demand is allocated in full, or 
+
+Dbg (p∗ 
+
+> b
+
+) > ¯Cb,g and the random ordering rule allocates exactly ¯Cb,g items. Thus, P 
+
+> i∈Ig
+
+xb, ∗ 
+
+> i
+
+= ¯Cb,g for all g ∈{1, . . . , G }, which leads to P 
+
+> i∈I
+
+xb, ∗ 
+
+> i
+
+= PGg=1 ¯Cb,g =¯Cb.
+
+E. Proof of Theorem 3 Proof. We prove NIR, WNN, and NPE below. 
+
+a) Proof of NIR: Fix an agent i and observe that T bi =(xb, ∗ 
+
+> i
+
+− ¯ebi )p∗ 
+
+> b
+
+and ⌊¯ebi ⌋ − ¯ebi = −rbi . It follows that 
+
+> xb, ∗
+> i
+
+X
+
+> k=1
+
+∆bi (k, p ∗ 
+
+> b
+
+, w bi , ¯ebi ) − 
+
+> ⌊¯ebi⌋
+
+X
+
+> k=1
+
+∆bi (k, p ∗ 
+
+> b
+
+, w bi , ¯ebi ) (15) recovers the difference between the left-hand and the right-hand sides of (7) (see (4) for the definition of ∆bi (k, p, w, e )). By Proposition 1, ∆bi (k, p, w, e ) is nonincreasing in 
+
+k. Also, since Dbi (p∗ 
+
+> b
+
+) is budget-feasible and optimal, 
+
+∆bi (k, p ∗ 
+
+> b
+
+, w bi , ¯ebi ) ≥ 0 for all k ∈ { 1, . . . , D bi (p∗ 
+
+> b
+
+)}. To show NIR, we need to show that the term (15) is nonnegative for the following two cases. 1) Dbi (p∗ 
+
+> b
+
+) ≥ ⌊ ¯ebi ⌋. By the rationing rule, ⌊¯ebi ⌋ ≤ xb, ∗ 
+
+> i
+
+≤
+
+Dbi (p∗ 
+
+> b
+
+). Hence, we have ∆bi (k, p ∗ 
+
+> b
+
+, w bi , ¯ebi ) ≥ 0 for all 
+
+k ∈ {⌊ ¯ebi ⌋ + 1 , . . . , x b, ∗ 
+
+> i
+
+}. Thus, (15) is nonnegative. 2) Dbi (p∗ 
+
+> b
+
+) < ⌊¯ebi ⌋. In this case, xb, ∗ 
+
+> i
+
+= Dbi (p∗ 
+
+> b
+
+). Since 
+
+Dbi (p∗ 
+
+> b
+
+) is an optimal demand and ⌊¯ebi ⌋ is budget-feasible, we get ∆bi (k, p ∗ 
+
+> b
+
+, w bi , ¯ebi ) < 0 for all k ∈{Dbi (p∗ 
+
+> b
+
+)+1 , . . . , ⌊¯ebi ⌋} by Proposition 1. This case also yields (15) to be nonnegative. 
+
+b) Proof of WNN: By Lemma 1, WNN and WBB are equivalent. Thus, it suffices to prove that P 
+
+> i∈I
+
+(xb, ∗ 
+
+> i
+
+−
+
+¯ebi )p∗ 
+
+> b
+
+≥ 0 (see (8)). If p∗ 
+
+> b
+
+= 0 , the inequality is trivial. Sup-pose that p∗ 
+
+> b
+
+> 0. Then, Theorem 2 implies that P 
+
+> i∈I
+
+xb, ∗ 
+
+> i
+
+=¯Cb. Since P 
+
+> i∈I
+
+¯ebi ≤ ¯Cb, we have P 
+
+> i∈I
+
+(xb, ∗ 
+
+> i
+
+− ¯ebi ) ≥ 0.c) Proof of NPE when G = 1: By Theorem 2, the resulting allocation-price pair is feasible and satisfies 
+
+p∗
+
+> b
+
+ ¯Cb − P 
+
+> i∈I
+
+xb, ∗
+
+> i
+
+
+
+= 0 . Suppose, toward a contradiction, that a feasible alternative ({˜xbi }i∈I , { ˜T bi }i∈I ) Pareto domi-nates the outcome in the sense of Definition 6. Optimality of xb, ∗ 
+
+> i
+
+at price p∗ 
+
+> b
+
+and strict monotonicity of 
+
+Jb+1  
+
+> i
+
+imply that ˜T bi ≤ p∗ 
+
+> b
+
+(˜ xbi − ¯ebi ) for every i ∈ I. If not, purchasing ˜xbi at price p∗ 
+
+> b
+
+would be budget-feasible and leave strictly more credits than the alternative. It would therefore yield strictly higher utility than the alternative, contradicting optimality of xb, ∗ 
+
+> i
+
+. Moreover, the displayed inequality must be strict whenever agent i strictly prefers the alternative. Summing these inequalities and using feasibility and mar-ket clearing yields 
+
+X
+
+> i∈I
+
+˜T bi ≤ p∗
+
+> b
+
+X
+
+> i∈I
+
+˜xbi − X
+
+> i∈I
+
+¯ebi
+
+!
+
+≤ p∗ 
+
+> b
+
+¯Cb − X
+
+> i∈I
+
+¯ebi
+
+!
+
+= X
+
+> i∈I
+
+T bi .
+
+Thus, the auctioneer cannot be strictly better off. If any agent is strictly better off, the first inequality is strict, making the auctioneer strictly worse off. Both cases contradict Pareto dominance. 
+
+F. Proof of Theorem 4 Proof. For each G, the group splitting procedure in Sec-tion V-A.1 ensures that the subgroup partition and capacities are independent of agents’ reports. Fix an agent i, its true type vbi , and a deviation ˆvbi . Compare truthful reporting and the deviation using the same realization of the other agents’ types and the same random ordering. Let Ei denote the event that the deviation changes the common price. On Eci , the common price is unchanged, say p. The other agents’ demands at p are therefore unchanged. For fixed opponents’ demands and ordering, the allocation rule can be written as xi(d) = min {d, K i}, where d is agent i’s reported demand at p and Ki does not depend on its report. To see this, let rj = min {Dbj (p), ⌊¯ebj ⌋} for j̸ = i. For i ∈ Ig , the cap is 
+
+Ki = max 
+
+
+
+⌊¯ebi ⌋, ¯Cb,g − X 
+
+> j∈Ig\{ i}
+
+rj − X
+
+> j∈Ig
+> j≺i
+
+ Dbj (p) − rj
+
+
+
+,
+
+where j ≺ i means that j precedes i in the random ordering. By Proposition 1, agent i’s true utility at price p has non-increasing marginal gains. Consequently, min {Dbi (p), K i}
+
+maximizes its utility over the budget-feasible quantities not exceeding Ki. Truthful reporting therefore yields weakly higher utility than any deviation on Eci .To bound the gain on Ei, observe that budget feasibility and weak budget balance imply, under either report, 
+
+0 ≤ wbi − T bi ≤ X
+
+> j∈I
+
+(wbj − T bj ) = Wb − X
+
+> j∈I
+
+T bj ≤ Wb.
+
+Since valuations are nonnegative and Jb+1  
+
+> i
+
+is nondecreasing, every resulting utility lies in Jb+1  
+
+> i
+
+(0) , V b + Jb+1  
+
+> i
+
+(Wb).Thus, the gain from deviation is at most Mb on Ei and is nonpositive on Eci , so 
+
+EU bi ((ˆ vbi , vb
+
+> −i
+
+); vbi ) − U bi (( vbi , vb
+
+> −i
+
+); vbi ) vbi
+
+
+
+≤ Mb P(Ei | vbi ) ≤ MbqbG.
+
+Taking the supremum over agents, true types, and admissible deviations proves the claim.

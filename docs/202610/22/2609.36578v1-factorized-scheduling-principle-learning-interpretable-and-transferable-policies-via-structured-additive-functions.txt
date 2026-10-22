@@ -1,0 +1,1126 @@
+Title: Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions
+
+URL Source: https://arxiv.org/pdf/2609.36578v1
+
+Published Time: Wed, 30 Sep 2026 00:46:55 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+# Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+Hong Je-Gal 1 Hyun-Suk Lee 1 2 
+
+## Abstract 
+
+Scheduling problems arise from repeatedly se-lecting one item from a set of candidates based on their states. These problems often reduce to assigning priority scores and choosing the highest-ranked item. In this work, we propose a fac-torized scheduling principle (FSP) framework to learn interpretable and transferable schedul-ing rules. The FSP framework represents system states as condition distributions and decomposes a global scheduling principle into additive univari-ate and pairwise components with identifiability constraints. The scheduling principle enables the framework to maintain a simple priority-based structure during deployment. This principle is learned by using a policy-based objective com-bined with a temporal-difference signal defined on the condition distribution. Experiments on syn-thetic and realistic scheduling tasks demonstrate the FSP framework’s strong performance, inter-pretability, and zero-shot generalization across different system scales. 
+
+## 1. Introduction 
+
+Scheduling is a fundamental decision-making problem that arises whenever a system must repeatedly select one item among a set of candidates. Regardless of the application domain, a large class of scheduling problems follows a com-mon structure: at each decision point, the system evaluates the priority of candidate items based on their conditions and selects one with the highest priority (Shani et al., 2005; Lu & Yang, 2016; Ferr´ a et al., 2003; Wei et al., 2018; Stidham & Weber, 1993; Han & Liu, 2008). This structure suggests that scheduling could be reduced to simple priority-based rules 
+
+> 1
+
+Department of Artificial Intelligence and Robotics, Sejong University, South Korea 2Artificial Intelligence Robotics Institute (AIRI), Sejong University, South Korea. Correspondence to: Hyun-Suk Lee <hyunsuk@sejong.ac.kr >.
+
+Proceedings of the 43 rd International Conference on Machine Learning , Seoul, South Korea. PMLR 306, 2026. Copyright 2026 by the author(s). 
+
+in principle (Haupt, 1989). In practice, however, deploying effective scheduling strategies remains difficult, particularly when system conditions or candidate populations vary. Traditionally, classical index-based approaches, such as the Gittins and Whittle indices, formalize the concept of item-level priority rules and demonstrate that these rules can yield transparent and reusable decision strategies (Whittle, 1988; Liu & Zhao, 2010; Gittins et al., 2011). Their item-wise structure yields per-item priority scores, allowing the evalu-ation independent of the number or ordering of candidates. However, deriving such indices often relies on strong mod-eling assumptions and low-dimensional structures, which limits their applicability in modern high-dimensional envi-ronments (Scully & Terenin, 2025). Moreover, extending these indices to new systems usually requires manual re-design or heuristic adaptation (Maatouk et al., 2020; Rob-ledo Rela˜ no et al., 2024). In contrast, recent learning-based approaches, particularly reinforcement learning (RL), provide greater flexibility by optimizing policies directly from experience data (Xu et al., 2017; Wei et al., 2018; Ye et al., 2019; Huang et al., 2021). These policies can achieve strong empirical performance in specific environments. However, they generally operate on joint state representations in which item features are encoded together, tying policy behavior to item ordering or a fixed candidate set size. This entanglement makes the learned decision rule difficult to interpret and brittle when the candidate set changes (e.g., when new items ap-pear or the size varies). As a result, even if the underlying scheduling logic should conceptually remain similar, poli-cies trained in one environment often fail to transfer to systems with different item populations (Lee et al., 2019). These limitations reveal a gap between the classical and learning-based approaches. Classical approaches offer trans-parency and transferability but rely on restrictive assump-tions, while learning-based approaches provide flexibility at the expense of interpretability and transferability. This raises an attractive but unexplored question: Can schedul-ing principles themselves be learned from experience data, while remaining interpretable and reusable across systems? 
+
+In this work, we propose a factorized scheduling principle (FSP) framework to address this question for item-selection 1arXiv:2609.36578v1 [cs.LG] 29 Sep 2026 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+scheduling problems, where decisions are naturally gov-erned by relative priorities among candidate items. The FSP framework learns a global scheduling principle defined over item-level features, rather than a black-box policy tied to a specific state representation or candidate set. Since the principle is defined on item-level features rather than joint state vectors, it naturally generalizes to different candidate sets without depending on item indices or state concate-nation. The key idea is that scheduling decisions can be governed by how each item’s conditions contribute to its priority, regardless of the identities or number of other items. The contributions of this paper are summarized as follows: • We introduce a novel formulation that learns an inter-pretable and transferable scheduling principle directly from experience using complementary local and tem-poral signals. • We design a structured additive representation that de-composes the scheduling principle into interpretable feature-level contributions and interactions, while en-suring identifiability through centering constraints. • We provide theoretical analysis establishing identifia-bility, approximation guarantees, ranking consistency, and transfer properties of the learned principle. • Through synthetic and realistic scheduling exper-iments, we demonstrate that the FSP framework achieves strong performance, interpretability, and zero-shot generalization across candidate populations. 
+
+Conflict of Interest Disclosure. The authors declare no financial conflicts of interest related to this work. 
+
+## 2. Background and Motivation 
+
+2.1. Motivation for Learning Scheduling Principles 
+
+A wide range of real-world systems rely on scheduling to select an item from a set of candidates, e.g., wireless base stations choosing which user to serve (Ferr´ a et al., 2003; Wei et al., 2018), operating systems deciding which process to execute, manufacturing lines prioritizing jobs (Ouelhadj & Petrovic, 2009), logistics platforms dispatching tasks to workers (Delaram & Valilai, 2018; Su & Dong, 2025), and recommender systems selecting an item to display (Shani et al., 2005; Lu & Yang, 2016; Huang et al., 2021). Tra-ditionally, scheduling has relied on hand-crafted heuristics (e.g., shortest-job-first in computing and proportional fair-ness in wireless networks) or analytically derived priority rules (e.g., Gittins index and Whittle index). They are ef-fective and transparent in their intended settings (Liu & Zhao, 2010; Maatouk et al., 2020), but these heuristics are inflexible; their logic does not easily transfer across systems and often requires careful re-engineering. RL is a flexible alternative that optimizes policies directly from experience data, achieving strong empirical results across application domains (Xu et al., 2017; Wei et al., 2018; Ye et al., 2019). However, such RL-based schedulers are often make it diffi-cult to interpret their decision logic and sensitive to changes in system configurations or candidate populations (Lee et al., 2019; Milani et al., 2024). These limitations highlight the need for a different paradigm: learning explicit scheduling principles that operate directly on item-level features and remain valid across systems within the same application domain, rather than relying on entangled black-box policies tied to a specific state or candi-date set. Such a scheduling principle should make transpar-ent how each feature and feature interaction contributes to an item’s scheduling priority, thereby inducing a consistent ordering over items regardless of the size or composition of the candidate set. The FSP framework introduced in this pa-per is designed to achieve this goal. It represents scheduling priorities as a structured additive function over descriptive features. The FSP framework combines the adaptability of learning-based methods with the interpretability and trans-ferability of classical scheduling heuristics. 
+
+2.2. Standard Scheduling Problem 
+
+We model a standard scheduling problem as a discrete-time Markov decision process (MDP) in which, at each step, a system selects an item from the candidate set. Specifically, at time step t, the environment presents a set of candidate items N = {1, · · · , N }. Each candidate item n has a fea-ture vector xtn = ( xtn, 1, · · · , x tn,K ) ∈ X (e.g., channel qual-ity, demand level, and queue length), where X = [0 , 1] K
+
+is a feature space 1.The system state is defined as st ∈ S ,which consists of all the information required for scheduling. Typically, it is defined as a concatenated vector of the can-didate items’ features (xt
+
+> 1
+
+, · · · , xtN ) ∈ [0 , 1] K×N , which implicitly ties the state representation to both the number and the ordering of candidate items. The action is defined as at = n ∈ N = A, where n is the index of the chosen item. Scheduling the item at yields a reward r(st, a t) and transitions to a next state distribution 
+
+st+1 ∼ P (·| st, a t). The goal of the problem is to find a pol-icy π(a|s) that maximizes the expected discounted return: 
+
+max  
+
+> π
+
+J(π) = Eπ
+
+" ∞X
+
+> t=0
+
+γtr(st, a t)
+
+#
+
+, (1) where γ is a discount factor. This standard scheduling formulation is convenient because each candidate item is directly represented by an index in the action space. For this reason, it is widely adopted across a broad range of application domains. (Stidham & Weber, 1993; Chang et al., 2000; Ferr´ a et al., 2003; Shani    
+
+> 1Without loss of generality, we assume that feature vectors are normalized to [0 ,1] K.
+
+2Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+et al., 2005; Han & Liu, 2008; Lu & Yang, 2016; Xu et al., 2017; Wei et al., 2018; Ye et al., 2019; Huang et al., 2021). However, it suffers from several critical limitations: • No explicit principle : The learning objective focuses on estimating full state-action value functions Q(s, a )
+
+or policies π(a|s) that depend on the entire candidate set and its joint configuration. As a result, the effect of an individual item’s feature vector cannot be isolated into a shared, item-level priority rule. This prevents the emergence of a global scheduling principle that can be consistently evaluated across different candidate sets. • Lack of interpretability : The learned Q function or policy is a high-dimensional black-box mapping from a joint state representation to actions. Since the contri-bution of individual features or feature interactions is not explicitly parameterized, it is difficult to attribute scheduling decisions to specific feature conditions or to analyze the learned behavior analytically. • Poor transferability : Since actions are defined by item indices and the policy is trained on a fixed candidate set size N , the learned strategy is inherently coupled to the training distribution of candidate sets. Even if the underlying task structure remains unchanged, the policy may not preserve the same scheduling strategy, if the number of items, their ordering, or their feature distribution changes. These limitations motivate our alternative framework, which factorizes scheduling decisions over item features and their interactions. Rather than learning an index-specific action map tied to a fixed candidate set, FSP learns a priority rule defined in feature space, allowing it to be evaluated on arbitrary candidate sets and yielding an interpretable, trans-ferable global scheduling principle. 
+
+## 3. Proposed Framework: Factorized Scheduling Principle 
+
+Here, we present an FSP framework built on the idea that scheduling policies should be guided by an interpretable and transferable global scheduling principle S : X → R, rather than by opaque black-box models. Beyond the empirical ev-idence from classical heuristics, the structure of scheduling problems naturally suggests the existence of such a princi-ple: decisions are made by selecting an item based on its feature conditions, which largely determine the resulting re-ward. Accordingly, the priority of an item can be described as a function S(x) of its feature vector, which is evaluated consistently regardless of the particular candidate set. In what follows, we describe the FSP framework by detail-ing (i) how the state is represented as a distribution of item features, (ii) how the global principle is defined as a struc-tured additive function, (iii) how candidate items are scored and selected, and (iv) how the global principle is learned from experience. We provide a high-level overview of the FSP framework in Figure 1. The following subsections in-troduce each component in detail. 
+
+3.1. Condition Distribution as State Representation 
+
+At time step t, the system is characterized by a collection of item-level feature vectors {xtn}n∈N , where xtn ∈ [0 , 1] K
+
+describes the condition of item n. However, as mentioned in Section 2.2, this representation is not invariant to the iden-tity or ordering of items. Therefore, a state representation is needed that can appropriately describe the scheduling priorities over items while being invariant to permutations and accommodating variable-sized candidate sets. To this end, we express the state as a condition distribution 
+
+over the feature space: 
+
+¯st(x) = 
+
+> N
+
+X
+
+> n=1
+
+δ(x − xtn),
+
+where δ(·) is a Dirac delta function. This captures the cur-rent population of items as point masses at their feature locations. Since scheduling priorities are functions of item feature conditions, it is natural to represent the system state in terms of the distribution of item features. Furthermore, unlike a concatenated feature vector (xt
+
+> 1
+
+, · · · , xtN ), this dis-tributional representation remains valid regardless of the number of items, N , and it abstracts away item identities, including their indices, while retaining the relevant condi-tions for scheduling. In practice, each delta function can be replaced with a smooth kernel bump function κ(x, xtn),yielding 
+
+¯st(x) = 
+
+> N
+
+X
+
+> n=1
+
+κ(x, xtn).
+
+This smooth density field avoids discontinuities, supports differentiable approximations, and interacts well with basis-function parameterizations of the global principle. Conse-quently, this condition distribution ¯st(x) can describe can-didate items in a stable and transferable manner. It is not intended to redefine the underlying MDP, but rather to pro-vide a transferable description of candidate conditions. 
+
+3.2. Global Scheduling Principle 
+
+We define a function S : X → R, called the global schedul-ing principle, that encodes the priority associated with any feature condition x. Unlike state-specific value functions from the standard MDP perspective, this principle is in-tended to capture general rules of scheduling that can be applied across different candidate sets and environments. The goal of the FSP framework is to learn S(x) in a way that explains why certain items are preferred under specific feature conditions, and that generalizes across systems with 3Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions Candidate Items          
+
+> Variable Cardinality N
+> Candidate Items
+> Selection Rule Scheduling Score
+> The principle is learned from experience Permutation- and Cardinality-Invariant State Representation
+> Item 1 State-Value
+> Marginal Effect Pairwise Interaction
+> Additive Structure of :
+> Condition Distribution Global Scheduling Principle Scoring and Selection
+> Item 2 Item 3 Item N
+> (Greedy as )
+> Value Evaluation
+
+Figure 1. Illustrative overview of the FSP framework. 
+
+different numbers or identities of items. First, we list design goals that a good structure of S should satisfy: • Continuity : Representing smooth effects of feature levels, avoiding discretization artifacts. • Interpretability : Decomposing into components that can be visualized as human-readable geometrization. • Transferability : Remaining applicable when the num-ber or identity of items changes. • Identifiability : Ensuring that marginal and interaction effects are uniquely separated without overlap. To achieve these goals, we introduce a structured addi-tive formulation with identifiability constraints. The addi-tive structure introduces an explicit inductive bias toward reusable, item-level scheduling rules, while remaining ex-pressive enough to capture feature interactions. Its smooth one- and two-dimensional components provide continuity and interpretability, while its definition on item-level fea-tures ensures transferability. The centering constraints guar-antee identifiability. We parameterize S as a structured addi-tive function as 
+
+S(x) = 
+
+> K
+
+X
+
+> k=1
+
+ϕk(xk) + X
+
+> (k,l )∈P
+
+ψkl (xk, x l),
+
+where ϕk are one-dimensional curves (marginal effects for each feature), P denotes the set of feature pairs with interac-tions, and ψkl are two-dimensional surfaces (interactions for selected pairs). To ensure identifiability (i.e., uniquely sepa-rate marginal and interaction effects), we consider centering constraints under the measure on [0 , 1] as follows: (mean) 
+
+Z 10
+
+ϕk(xk) dx k = 0 , (2) (row) 
+
+Z 10
+
+ψkl (xk, x l) dx k = 0 , (3) (column) 
+
+Z 10
+
+ψkl (xk, x l) dx l = 0 , (4) (global) 
+
+Z 10
+
+Z 10
+
+ψkl (xk, x l) dx kdx l = 0 . (5) These centering conditions ensure that ψkl captures only pure interactions beyond the one-dimensional marginals ϕk,without ambiguity from additive shifts. In practice, we can use smooth function bases, such as spline or lattice parameterizations, to parameterize the one- and two-dimensional components {ϕk} and {ψkl }. These pa-rameterizations are well-suited for representing continuous feature effects, enable direct visualization of marginal and interaction components, and admit well-established approx-imation guarantees. It is worth noting that the choice of spline or lattice bases is not essential, but provides a con-crete instantiation that supports both interpretability and the theoretical analysis presented later. 
+
+3.3. Scheduling Scoring and Selection Rule 
+
+Scheduling requires evaluating a variable set of candidate items in a consistent way; using the global principle S(x)
+
+over the feature space, each item can be scored directly by its feature vector. For a candidate item n with xtn, the scheduling score is simply given by score (xtn) = S(xtn).
+
+This connects the global scheduling principle to the local decision: the policy prefers items whose feature conditions are globally assessed as high priority. Then, we can define the value of a condition distribution ¯st as the sum of item-level scores: 
+
+V (¯ st) = 
+
+Z
+
+¯st(x) S(x) dx =
+
+> N
+
+X
+
+> n=1
+
+S(xtn),
+
+where alternative normalizations (e.g., averaging) can be used without changing the induced item ranking. This en-sures that the evaluation of states is consistent with the evaluation of their constituent items. With this scheduling scoring, we adopt a softmax policy over item scores as 
+
+π(n|S, {xtn}n∈N ) = exp( S(xtn)/τ )
+
+PNn′=1 exp( S(xtn′ )/τ ) , (6) where τ is the temperature parameter that balances exploita-tion and exploration. As τ → 0, the policy becomes greedy 4Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+and selects the highest-scoring item, while larger values of 
+
+τ induce stochasticity, allowing exploration of alternative actions. In this policy, every decision can be explained by the feature levels or interactions that contribute to the item’s priority since each score decomposes via the functions ϕk
+
+and ψkl , making the policy transparent. We can inspect why a particular item was chosen by linking it directly to the interpretable components of the global principle. 
+
+3.4. Learning the Global Scheduling Principle 
+
+In the FSP framework, the goal of training is not to ob-tain an unbiased policy gradient estimator, but to directly shape the global scheduling principle S(x) through com-plementary local and temporal signals. Instead of training a separate policy and value function, the framework derives them from the same principle, making the learning process more interpretable. At each time step t, an experience is obtained, which is defined as a tuple (¯ st, n t, r t, ¯st+1 ) of the current condition distribution, chosen item, observed reward, and the next condition distribution. Using the experience, we employ two complementary loss terms to learn the global scheduling principle S. First, a policy likelihood loss encourages S to assign high scores to actions that yielded high reward: 
+
+Llik = − rt log π(n|S, {xtn}n∈N ),
+
+where π is the softmax policy induced by S(xtn)’s. Also, a value regression loss enforces temporal consistency of the global value V (¯ st) with temporal difference targets: 
+
+Lval = ( yt − V (¯ st)) 2,
+
+where yt = rt + γV (¯ st+1 ) is a target value. Furthermore, to maintain interpretability and identifiability, we consider the structural regularization terms, including l2 penalties on the coefficients of additive functions to control complexity and centering penalties of ψkl to ensure identifiability. The training loss for the global scheduling principle S is given by 
+
+L = Llik + λ Lval + Ω( ϕ, ψ ), (7) where λ is a hyperparameter that controls the trade-off between the likelihood loss and the value regression loss and Ω collects regularization terms. The parameters of the structured additive function S, i.e., {ϕ, ψ }, are updated via stochastic gradient descent using the loss. This procedure directly trains the global scheduling principle, yielding both interpretability and transferability. 
+
+Why combine the two losses? We consider these two losses since they provide complementary learning signals. 
+
+Llik shapes the local ranking of items within each condition distribution by directly linking observed rewards to chosen actions. On the other hand, Lval enforces global consistency 
+
+across time by aligning state values with long-term returns. Using only policy likelihood loss captures immediate pref-erences across the candidate items, but it ignores future consequences. Using only value regression loss yields con-sistent state values, but it may not prioritize items correctly. By combining both losses, the learned principle S(x) faith-fully reflects both local action-level preferences and global temporal structure. 
+
+3.5. Theoretical Analysis 
+
+We provide theoretical analysis of the FSP framework with respect to interpretability, performance, and transferability. We assume the existence of the ground-truth principle S⋆
+
+and establish guarantees under mild regularity assumptions. These assumptions are used to state clean theoretical guaran-tees. In realistic coupled systems, an exact additive ground-truth principle may not exist; in such cases, FSP should be interpreted as learning an approximate surrogate principle that captures the dominant reusable priority structure. The detailed technical assumptions and proofs are provided in Appendix B. 
+
+Interpretability. A requirement for interpretable schedul-ing principles is that their decomposition into one- and two-dimensional components be well-defined and meaningfully inspected as shown in Theorem 3.1. 
+
+Theorem 3.1 (Identifiability) . Under the centering con-straints in Equations (2) –(5) , the additive scheduling princi-ple S(x) = P 
+
+> k
+
+ϕk(xk) + P 
+
+> (k,l )∈P
+
+ψkl (xk, x l) is unique. 
+
+Performance. The approximation theorem in Theorem 3.2 shows that the concrete instantiations of the structured additive principle, such as spline or lattice parameteriza-tions, can approximate any sufficiently smooth ground-truth principle with controllable error. Based on this precise ap-proximation, the learned principle should preserve the rank-ing of candidate items and deliver near-optimal scheduling performance as stated in Theorem 3.3. 
+
+Theorem 3.2 (Approximation error) . For any Lipschitz-continuous ground-truth principle S⋆ with bounded second mixed derivatives, there exists an additive scheduling princi-ple ˆS parameterized with spline and lattice basis functions such that ∥S⋆ − ˆS∥∞ = O(R−2), where R is the resolution of the basis functions. 
+
+Theorem 3.3 (Ranking consistency & Greedy regret) . Sup-pose the learned principle ˆS satisfies ∥S⋆ − ˆS∥∞ ≤ ϵ.Then, for any features of the candidate items, if S⋆(xi) >S⋆(xj ) + 2 ϵ, we have ˆS(xi) > ˆS(xj ). Therefore, the principle-based ordering is preserved up to a 2ϵ mar-gin. Furthermore, let x⋆ = argmax n S⋆(xn) and ˆx =argmax n ˆS(xn). Then, the instantaneous regret of schedul-ing scores satisfies S⋆(x⋆) − S⋆(ˆ x) ≤ 2ϵ. 
+
+5Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions                        
+
+> Table 1. Comparison of learned representations across scheduling approaches.
+> APPROACH LEARNED REPRESENTATION TRANSFERABILITY INTERPRETABILITY
+> INDEX POLICIES ANALYTICALLY DEFINED INDEX LIMITED HIGH
+> INDEX LEARNING APPROXIMATED INDEX LIMITED LOW –M EDIUM
+> RL SCHEDULING POLICY OR Q(s, a )NOLOW
+> STRUCTURED /A DDITIVE RL ADDITIVE POLICY OR VALUE NOMEDIUM –H IGH
+> FSP ( OURS )PRIORITY PRINCIPLE S(x)EXPLICITLY CONSIDERED HIGH
+
+Transferability. A key goal of the FSP framework is to generalize across different system characteristics (e.g., can-didate sets with different sizes or item identities and dif-ferent marginal feature distributions) under a shared super-vision mechanism (e.g., reward structures or scheduling strategies). The principle invariance in Theorem 3.4 shows that a shared conditional supervision mechanism ensures that the learned scheduling principle is invariant to system characteristics. 
+
+Theorem 3.4 (Principle invariance) . Let Y denote the super-vision signal. Suppose two systems A and B have different system characteristics, but share the same conditional su-pervision mechanism, i.e., for all x ∈ X , PA(Y |X = x) = 
+
+PB (Y |X = x). If the loss function is strictly convex, then the unique minimizer S⋆ of the expected loss (population risk) between S and Y coincides across systems A and B,and depends only on the conditional law Y |X.
+
+## 4. Related Work 
+
+Classical index-based scheduling originates from the multi-armed bandit literature. The Gittins index provides an op-timal priority rule for rested bandits by assigning a scalar index to each arm based solely on its own state (Gittins et al., 2011; Scully & Terenin, 2025). The Whittle index ex-tended this idea to restless bandits via Lagrangian relaxation to derive heuristic index policies (Whittle, 1988). Despite lacking general optimality guarantees, it has been widely applied in stochastic scheduling (Liu & Zhao, 2010; Maa-touk et al., 2020). To relax the analytical requirements of closed-form indices, subsequent work has explored learning or approximating index functions from data (Fu et al., 2019; Xiong & Li, 2023; Robledo Rela˜ no et al., 2024). While these methods preserve the interpretability of index-based rules, they still rely on indexability assumptions or treat the learned function as a direct proxy for an explicit index. Learning-based scheduling has been widely studied through RL, where policies or value functions are optimized directly from experience data. Such approaches have demonstrated strong empirical performance in various domains, including recommender systems, wireless scheduling, and job-shop environments (Xu et al., 2017; Wei et al., 2018; Ye et al., 2019; Huang et al., 2021). However, RL-based schedulers typically operate on joint state representations and learn black-box policies or Q-functions, making the learned deci-sion logic difficult to interpret and sensitive to changes in candidate sets (Lee et al., 2019; Milani et al., 2024). To address these limitations, several works incorporate struc-tured and additive models, such as generalized additive models (Hastie, 2017) and neural additive models (Agar-wal et al., 2021), into learning-based scheduling to improve transparency while retaining learning-based optimization. Similar ideas have been applied to sequential decision prob-lems by decomposing value or action-value functions to reveal feature-level effects in learned policies (Siems et al., 2023; Danach et al., 2025). Despite improved interpretabil-ity, these approaches typically treat the learned structure as a proxy for value estimation or embed it within policy optimization. As a result, they do not explicitly define or learn a transferable scheduling principle that can be applied independently of the policy or value representation. In con-trast, our FSP framework explicitly learns a global priority principle S(x) and enforces desired temporal properties. Table 1 summarizes these distinctions. 
+
+## 5. Experiments 
+
+5.1. Synthetic Experiment 
+
+We first validate the proposed framework on a controlled synthetic environment to examine whether the learning procedure can recover a known global scheduling prin-ciple. We consider a scheduling system with 8 candidate items (i.e., N = 8 ), with a four-dimensional feature space 
+
+x = ( x1, x 2, x 3, x 4) ∈ [0 , 1] 4. At each time step t, the environment presents the features of item n {xtn} drawn i.i.d. from the uniform distribution on [0 , 1] 4. We define a synthetic global scheduling principle 
+
+S⋆(x) = 2 sin( x1π) + 0 .5( x2 − 0.5) 2+1.5 max( x3 − 0.3, 0) + 0 .2 − 0.8( x4 − 0.5) 2+0.6 sin(2 x1π)( x2 − 0.5) .
+
+This additive form captures nonlinear marginal effects of each feature and an interaction term of x1 and x2. When the policy selects item nt with feature xtnt , the reward is generated as rt = S⋆(xtnt ) + ϵt, where ϵt ∼ N (0 , σ 2). This ensures that the expected reward is aligned with the true principle, while introducing stochasticity. The FSP framework parameterizes S(x) as a structured additive function using spline bases for each coordinate. 6Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+The scheduling principle ˆS is learned, i.e., the parameters are updated, by minimizing the combined likelihood and value regression loss in Eq. (7). We use the averaged state-value V (¯ st) = 1 
+
+> Nt
+
+P 
+
+> n
+
+S(xtn) to stabilize training. True Estimated 0.0 0.5 1.0            
+
+> x1
+> −10
+> φ1
+> (a) ϕ10.00.51.0
+> x1
+> −0.10.00.1
+> ψ12  slice (b) ψ12 with x2= 0 .25
+> Figure 2. Visual comparison of the component functions of ˆSwith the true principle S⋆.
+
+First, we evaluate how ˆS closely approximates the true prin-ciple S⋆. The function recovery metric, defined as the L2
+
+distance between ˆS and S⋆ over a dense grid in [0 , 1] 4, is 0.013. This implies that the approximation of S⋆ is quite accurate. This is also shown clearly in Figure 2, which pro-vides the visual comparison of the recovered principle, ˆϕ1
+
+and ˆψ12 with x2 = 0 .25 , with the true principle. From the figure, we can see that the learned ˆS closely follows the true principle S⋆. More visual comparisons of the recovered principle are provided in Appendix C.                                
+
+> Table 2. Transfer performance with varying N, where ˆSis trained with N= 8 .
+> NRANKING CONSISTENCY AVG .REWARD REWARD GAP TO ORACLE
+> 40.9940 2.5262 7.9×10 −5
+> 80.9947 2.7783 1.76 ×10 −4
+> 16 0.9942 2.9377 2.37 ×10 −4
+> 32 0.9941 3.0558 6.15 ×10 −4
+
+We provide the ranking consistency and scheduling perfor-mance while varying the number of candidate items, N ,in Table 2. Ranking consistency is assessed by the propor-tion of pairs (i, j ) for which sign( S⋆(xi) − S⋆(xj )) = sign( ˆS(xi) − ˆS(xj )) . Across all settings of N , the learned policy achieves very close performance to the oracle, with average reward gaps on the order of 10 −4. This indicates that the FSP framework is capable of approximating the optimal policy with very high fidelity. Moreover, the item ranking accuracy remains consistently around 99 .4% , con-firming that the learned value functions preserve the relative ordering of states almost perfectly. As N increases, the av-erage reward increases as expected due to the item diversity, yet the discrepancy between the learned and oracle policies remains negligible. This result demonstrates that the factor-ized representation generalizes robustly under transfer and scales reliably with larger environments. This synthetic experiment directly verifies the identifiabil-ity and learnability of the global scheduling principle. The successful recovery of S⋆ shown in the results provides ev-idence that the FSP framework can discover interpretable and transferable principles that guide scheduling. 
+
+5.2. Realistic Scheduling Experiment 
+
+To validate the interpretability and robustness of the learned scheduling principles, we evaluate our framework on three realistic item-selection tasks with distinct structural charac-teristics: wireless user scheduling, inventory replenishment, and warehouse clearance. For each task, we use a four-dimensional feature vector xn ∈ [0 , 1] 4, which includes an intentionally uninformative random feature. This allows us to examine whether the learned principle emphasizes task-relevant conditions while suppressing spurious dimensions. The three tasks share a common single-item selection form, but differ in their coupling structure and penalty sensitivity. The detailed specifications for the realistic scheduling tasks are provided in Appendix D. The selection of these tasks is motivated by the need to examine the transferability of scheduling policies. The wire-less user scheduling task represents a system in which item selection is strongly coupled to item configurations. This is because the agent’s decision for one user significantly affects others through shared penalties. In contrast, the inventory replenishment task provides a quasi-additive environment, where the system dynamics are relatively more localized. This approximate additivity can make item priorities more stable across feature-distribution changes for a fixed system size N . The warehouse clearance task complements these cases by introducing shared clearance capacity and severe overflow penalties, so poor rankings can cause large nega-tive rewards. By comparing these tasks, we evaluate whether FSP can retain transferability across different values of N ,even in highly coupled or penalty-sensitive settings, while achieving comparable levels of generalization within N
+
+in more localized environments, thereby testing whether a reusable priority rule transfers across changes in system size and feature distribution. We first evaluate the performance and transferability of the FSP framework on each realistic task. As a baseline, we consider the Whittle-index (Whittle, 1988), deep Q-network (DQN) (Mnih et al., 2015), advantage actor-critic (A2C) (Mnih et al., 2016), proximal policy optimization (PPO) (Schulman et al., 2017), trust region policy optimization (TRPO) (Schulman et al., 2015), quantile regression DQN (QR-DQN) (Dabney et al., 2018), and neural additive model (NAM) (Agarwal et al., 2021) trained on the same environ-ments. Following Table 1, we use the Whittle-index as an index-policy baseline for transfer comparison. DQN, A2C, PPO, TRPO, QR-DQN, and NAM are included as fixed-size 7Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+Table 3. In-distribution reward, 10 ID , and out-of-distribution average rewards under varying N and system populations. FSP and Whittle are learned on the 10 ID system and transferred without retraining; the other baselines are trained for each N .                                                                                                                       
+
+> TASK NFSP WHITTLE NAM DQN A2C PPO TRPO QR-DQN WIRELESS
+> 10 ID 0.109 0.114 0.129 0.112 0.094 0.107 0.112 0.127 50.085 ±0.001 0.096 ±0.000 0.131 ±0.000 -0.073 ±0.002 0.127 ±0.000 0.129 ±0.000 0.130 ±0.000 0.126 ±0.000 10 0.103 ±0.001 0.115 ±0.001 0.109 ±0.001 -1.313 ±0.003 0.095 ±0.001 0.104 ±0.001 0.112 ±0.001 0.119 ±0.001 15 -0.285 ±0.002 -0.337 ±0.002 -0.251 ±0.001 -1.965 ±0.002 -0.426 ±0.002 -0.372 ±0.002 -0.368 ±0.002 -0.386 ±0.002 20 -0.781 ±0.001 -0.888 ±0.001 -0.752 ±0.001 -2.609 ±0.001 -1.045 ±0.002 -0.971 ±0.002 -0.951 ±0.002 -1.019 ±0.002 INVENTORY
+> 10 ID -0.353 -0.344 -0.361 -0.355 -0.479 -0.566 -0.566 -0.487 5-0.206 ±0.011 -0.231 ±0.010 -0.232 ±0.014 -0.228 ±0.012 -0.157 ±0.017 -0.137 ±0.016 -0.142 ±0.018 -0.127 ±0.015 10 -0.412 ±0.008 -0.405 ±0.009 -0.456 ±0.018 -0.429 ±0.008 -0.520 ±0.018 -0.554 ±0.021 -0.575 ±0.019 -0.503 ±0.013 15 -0.712 ±0.008 -0.723 ±0.008 -0.763 ±0.017 -0.727 ±0.008 -0.701 ±0.023 -0.700 ±0.020 -0.679 ±0.017 -0.643 ±0.012 20 -0.726 ±0.008 -0.921 ±0.011 -0.849 ±0.022 -0.742 ±0.008 -1.047 ±0.027 -1.052 ±0.027 -1.022 ±0.024 -0.974 ±0.015 WAREHOUSE
+> 10 ID 0.823 0.737 0.446 0.883 0.824 0.866 0.826 0.884 50.630 ±0.021 0.596 ±0.021 -9.272 ±0.920 -10.913 ±1.374 -1.677 ±0.714 -9.587 ±1.041 -4.789 ±1.086 -0.610 ±0.289 10 0.738 ±0.019 0.677 ±0.019 -18.031 ±1.269 -35.238 ±1.931 0.682 ±0.021 -7.817 ±1.470 0.696 ±0.021 -1.974 ±0.457 15 0.712 ±0.014 0.621 ±0.014 -25.995 ±2.208 -16.747 ±2.807 -68.798 ±0.030 -0.931 ±0.375 0.601 ±0.015 0.637 ±0.015 20 0.649 ±0.023 0.605 ±0.015 -30.154 ±2.545 -9.063 ±1.913 -92.641 ±0.035 -83.264 ±0.118 0.545 ±0.015 -63.028 ±0.412
+
+learning baselines, highlighting the structural limitations of DRL policies or additive models whose representations are tied to a fixed candidate set size. For each task, we train the FSP policy and estimate the Whittle-index only once on a training system with N =10 . Then, to demonstrate transferability, we apply FSP and Whittle-index policies to environments with N ∈{5, 10 , 15 , 20 } and under different feature distributions, without any retraining, in a zero-shot manner. In contrast, other learning-based policies are trained individually for each system size N due to their lack of transferability. In Table 3, we provide both the in-distribution (ID) result on the training system and the out-of-distribution (OOD) transfer results across varying N and system populations (i.e., variations in the distribution of item features). The OOD transfer results are averaged over 100 instances and reported with a 95% confidence interval. The comparison of the ID performance, 10 ID , validates the scheduling per-formance of the FSP policy. Across all three tasks, the FSP policy achieves competitive performance relative to baseline policies. These results suggest that, even in realistic envi-ronments without a guaranteed global scheduling principle, a reusable and interpretable principle can be learned that generalizes across system conditions. The OOD performance across N ∈ { 5, 10 , 15 , 20 } evalu-ates different generalization settings for different methods. For FSP and the Whittle-index policy, the OOD results mea-sure zero-shot transfer across both candidate set sizes and system populations. For the fixed-size learning baselines, the results measure generalization to different system popu-lations at a fixed N .For the wireless user scheduling task, the strongly coupled item configurations make transfer more difficult as the can-didate set size increases. Despite relying on a single schedul-ing principle learned on the 10 ID system, the FSP policy becomes increasingly competitive at larger values of N .The Whittle-index policy performs better than the FSP pol-icy at N = 5 and N = 10 , but the FSP policy overtakes it at N = 15 and N = 20 . This suggests that a purely item-wise index approximation becomes less effective when system-level coupling effects become stronger. Among the fixed-size learning baselines, the NAM policy is one of the strongest methods and achieves the best reward in most OOD settings, suggesting that an additive value representa-tion can be effective in this task. However, this result does not indicate zero-shot transfer across system sizes, because the NAM policy is trained separately for each value of N .Several other separately trained baselines are also stronger than FSP in smaller systems. In contrast, several fixed-size DRL policies, including DQN, A2C, PPO, TRPO, and QR-DQN, deteriorate substantially from N = 15 onward de-spite being trained separately for each system size. This indicates that strong per-size training does not necessarily yield robust population generalization, nor does it imply a reusable scheduling principle across larger systems. For the inventory replenishment task, the localized and quasi-additive dynamics make per-size learning baselines competitive in selected regimes. Several DRL policies other than the DQN policy outperform the FSP policy at N = 5 
+
+and N = 15 , showing that fixed-size learning baselines can exploit the relatively weak coupling when they are trained separately for each system size. However, this advantage is not consistent across N , as the FSP policy overtakes these DRL policies at N = 10 and becomes the best-performing method at N = 20 despite being trained only on the 10 ID 
+
+system. The Whittle-index policy only slightly outperforms the FSP policy at the training system size N = 10 and falls behind at the other tested system sizes. Thus, although per-size training can be competitive in this quasi-additive environment, the FSP policy exhibits more stable transfer 8Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+as a single scheduling principle and becomes particularly strong at the largest tested system size. For the warehouse clearance task, distribution shifts can cause costly scheduling ranking errors, which may result in severe overflow penalties. Many fixed-size learning policies therefore incur large negative rewards under OOD evalua-tion. The NAM and DQN policies fail across all tested sys-tem sizes, while A2C, PPO, and QR-DQN also deteriorate at several values of N . In contrast, the FSP policy achieves the highest reward across all tested system sizes despite being trained only on the 10 ID system. The Whittle-index policy is more stable than most fixed-size learning policies, but it remains below the FSP policy for every tested system size. This indicates that the FSP policy is the most robust method in this task, maintaining stable zero-shot transfer under both system-size and population shifts. These OOD results over different tasks show that FSP does not merely fit the training system, but learns a reusable scheduling principle that remains robust under changes in system size and heterogeneous item populations. 0.0 0.5 1.0        
+
+> h(Channel)
+> −0.20.00.2
+> φ1
+> (a) ϕ10.00.51.0
+> ξ(Noise)
+> −0.20.00.2
+> φ4(b) ϕ4
+> Figure 3. Two of four one-dimensional component functions of the FSP policy in the wireless user scheduling task.
+
+To show the interpretability of the FSP framework, Figure 3 illustrates the selected additive components from the learned principle for the wireless user scheduling task. In Figure 3a, the scoring function ϕ1(h) associated with the chan-nel condition is monotonically increasing, indicating that users with better channel quality are consistently assigned higher priority. This aligns with domain intuition, as im-proved channel conditions directly lead to higher achievable rewards. In contrast, the scoring function ϕ4(ξ) correspond-ing to the intentionally uninformative noise feature remains nearly flat, confirming that the learned scheduling principle correctly assigns negligible importance to irrelevant infor-mation. These results demonstrate that the FSP framework learns interpretable prioritization rules that reflect meaning-ful domain factors, while suppressing spurious correlations. This transparency provides insight into the learned decision logic and helps explain why the same priority rule can be reused across system instances. Additional results and more detailed analyses of the real-istic experiments, including reward performance as well as additive one-dimensional and two-dimensional pairwise components, are provided in Appendix E. 
+
+## 6. Discussions 
+
+Towards more practical scheduling. Practical systems often involve additional system factors, sub-decisions be-yond item selection, and multi-item decisions. Such fac-tors can be incorporated through additional additive system terms or item-system interaction components without sac-rificing interpretability. Moreover, the principle can be ex-tended to handle sub-decisions and multi-item selection by introducing structured residual components and considering the learned scores as reusable primitives for combinato-rial settings. These observations suggest that the proposed framework naturally extends to more realistic and complex scheduling scenarios. 
+
+Scalability. Although FSP is designed to be reusable across different candidate set sizes, scalability remains a lim-itation in high-dimensional feature spaces. In particular, the number of possible pairwise interaction components grows quadratically with the number of features, so parameterizing all interaction components may increase computational cost and reduce interpretability. While our experiments demon-strate strong scalability with respect to the number of can-didate items N , this issue may become more important in high-dimensional scheduling systems. Therefore, applying FSP to larger feature spaces may require sparse interaction selection, low-rank interaction structures, or domain-guided restrictions on admissible interactions. 
+
+Assumption on the existence of a global principle. Our theoretical analysis assumes the existence of a global scheduling principle S⋆ that determines rewards as a func-tion of feature conditions. This assumption enables iden-tifiability and regret guarantees, but may be restrictive in settings where no exact additive structure exists. In such cases, the proposed framework should be viewed as learning an approximate yet interpretable surrogate principle. Nev-ertheless, realistic scheduling experiments reveal that the learned principle remains informative and robust even when the system does not strictly follow an additive structure. 
+
+## 7. Conclusion 
+
+In this paper, we proposed the FSP framework, which learns an interpretable scheduling priority rule directly from expe-rience. It preserves a simple, priority-based factorized struc-ture while achieving robust performance and transferabil-ity across different system scales and feature distributions. Through experiments on both synthetic and realistic tasks, we demonstrated that the framework can learn reusable and interpretable scheduling principles that generalize beyond the training system, even when an exact global principle is not guaranteed. These results show that the proposed frame-work provides a practical approach for learning interpretable and transferable scheduling rules. 9Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+## Acknowledgements 
+
+This work was supported in part by the National Re-search Foundation of Korea (NRF) grant funded by the Korea government (MSIT) (RS-2025-24523498 and RS-2026-25482257) and in part by the IITP(Institute of In-formation & Communications Technology Planning & Evaluation)-ITRC(Information Technology Research Cen-ter) grant funded by the Korea government (Ministry of Sci-ence and ICT) (IITP-2026-RS-2021-II211816). We thank all reviewers for their valuable comments and suggestions. 
+
+## Impact Statement 
+
+This paper presents work whose goal is to advance the field of machine learning, with a focus on learning interpretable and transferable scheduling principles. The proposed frame-work is intended to improve transparency and robustness of decision-making systems, and does not introduce new ethical risks beyond those typically associated with learning-based optimization methods. We do not anticipate any nega-tive societal impacts from this work in the near future. 
+
+## References 
+
+Agarwal, R., Melnick, L., Frosst, N., Zhang, X., Lengerich, B., Caruana, R., and Hinton, G. E. Neural additive mod-els: Interpretable machine learning with neural nets. In 
+
+Advances in Neural Information Processing Systems , vol-ume 34, pp. 4699–4711, 2021. Chang, H. S., Givan, R., and Chong, E. K. On-line schedul-ing via sampling. In Proceedings of the International Con-ference on Artificial Intelligence Planning and Scheduling (AIPS) , pp. 62–71, 2000. Dabney, W., Rowland, M., Bellemare, M., and Munos, R. Distributional reinforcement learning with quantile re-gression. In Proceedings of the AAAI conference on artificial intelligence , volume 32, 2018. Danach, K., Aly, W. H. F., Tarhini, A., and Laouadi, S. Toward transparent optimization: A systematic review of explainable AI in decision-making systems. European Journal of Pure and Applied Mathematics , 18(4):6707– 6707, 2025. Delaram, J. and Valilai, O. F. A mathematical model for task scheduling in cloud manufacturing systems focusing on global logistics. Procedia manufacturing , 17:387–394, 2018. Ferr´ a, H. L., Lau, K., Leckie, C., and Tang, A. Applying reinforcement learning to packet scheduling in routers. In 
+
+Proceedings of The Innovative Applications Conference on Artificial Intelligence (IAAI) , pp. 79–84, 2003. Fu, J., Nazarathy, Y., Moka, S., and Taylor, P. G. Towards Q-learning the Whittle index for restless bandits. In Pro-ceedings of 2019 Australian & New Zealand Control Conference (ANZCC) , pp. 249–254. IEEE, 2019. Gittins, J., Glazebrook, K. D., and Weber, R. Multi-armed bandit allocation indices . Wiley-Blackwell, London, 2011. ISBN 9780470670026. Han, Z. and Liu, K. R. Resource allocation for wireless net-works: Basics, techniques, and applications . Cambridge university press, 2008. Hastie, T. J. Generalized additive models. Statistical models in S , pp. 249–307, 2017. Haupt, R. A survey of priority rule-based scheduling. 
+
+Operations-Research-Spektrum , 11(1):3–16, 1989. Huang, L., Fu, M., Li, F., Qu, H., Liu, Y., and Chen, W. A deep reinforcement learning based long-term recom-mender system. Knowledge-Based Systems , 213:106706, 2021. Lee, H.-S., Kim, J.-Y., and Lee, J.-W. Resource allocation in wireless networks with deep reinforcement learning: A circumstance-independent approach. IEEE Systems Journal , 14(2):2589–2592, 2019. Liu, K. and Zhao, Q. Indexability of restless bandit problems and optimality of Whittle index for dynamic multichannel access. IEEE Transactions on Information Theory , 56 (11):5547–5567, 2010. Lu, Z. and Yang, Q. Partially observable Markov deci-sion process for recommender systems. arXiv preprint arXiv:1608.07793 , 2016. Maatouk, A., Kriouile, S., Assad, M., and Ephremides, A. On the optimality of the Whittle’s index policy for min-imizing the age of information. IEEE Transactions on Wireless Communications , 20(2):1263–1277, 2020. Milani, S., Topin, N., Veloso, M., and Fang, F. Explainable reinforcement learning: A survey and comparative review. 
+
+ACM Computing Surveys , 56(7):1–36, 2024. Mnih, V., Kavukcuoglu, K., Silver, D., Rusu, A. A., Veness, J., Bellemare, M. G., Graves, A., Riedmiller, M., Fidje-land, A. K., Ostrovski, G., et al. Human-level control through deep reinforcement learning. nature , 518(7540): 529–533, 2015. Mnih, V., Badia, A. P., Mirza, M., Graves, A., Lillicrap, T., Harley, T., Silver, D., and Kavukcuoglu, K. Asynchronous methods for deep reinforcement learning. In International conference on machine learning , pp. 1928–1937. PmLR, 2016. 10 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+Ouelhadj, D. and Petrovic, S. A survey of dynamic schedul-ing in manufacturing systems. Journal of scheduling , 12 (4):417–431, 2009. Robledo Rela˜ no, F., Borkar, V., Ayesta, U., and Avrachenkov, K. Tabular and deep learning for the Whittle index. ACM Transactions on Modeling and Per-formance Evaluation of Computing Systems , 9(3):1–21, 2024. Schulman, J., Levine, S., Abbeel, P., Jordan, M., and Moritz, P. Trust region policy optimization. In International conference on machine learning , pp. 1889–1897. PMLR, 2015. Schulman, J., Wolski, F., Dhariwal, P., Radford, A., and Klimov, O. Proximal policy optimization algorithms. 
+
+arXiv preprint arXiv:1707.06347 , 2017. Schumaker, L. Spline functions: basic theory . Cambridge university press, 2007. Scully, Z. and Terenin, A. The Gittins index: A design principle for decision making under uncertainty. In Tuto-rials in Operations Research: Advances in Analytics and Operations Research: Improving Decisions to Secure the Future , pp. 28–70. INFORMS, 2025. Shani, G., Heckerman, D., Brafman, R. I., and Boutilier, C. An MDP-based recommender system. Journal of Machine Learning Research , 6(9), 2005. Siems, J., Schambach, M., Schulze, S., and Otterbach, J. S. Interpretable reinforcement learning via neural ad-ditive models for inventory management. arXiv preprint arXiv:2303.10382 , 2023. Stidham, S. and Weber, R. A survey of Markov decision models for control of networks of queues. Queueing systems , 13(1):291–314, 1993. Su, J. and Dong, S. Multi-objective optimization for dy-namic logistics scheduling based on hierarchical deep reinforcement learning. Scientific Reports , 15(1):33544, 2025. Wei, Y., Yu, F. R., Song, M., and Han, Z. User scheduling and resource allocation in HetNets with hybrid energy supply: An actor-critic reinforcement learning approach. 
+
+IEEE Transactions on Wireless Communications , 17(1): 680–692, Jan. 2018. Whittle, P. Restless bandits: Activity allocation in a chang-ing world. Journal of applied probability , 25(A):287–298, 1988. Xiong, G. and Li, J. Finite-time analysis of Whittle index based Q-learning for restless multi-armed bandits with neural network function approximation. Advances in Neu-ral Information Processing Systems , 36:29048–29073, 2023. Xu, Z., Wang, Y., Tang, J., Wang, J., and Gursoy, M. C. A deep reinforcement learning based framework for power-efficient resource allocation in cloud RANs. In Proceed-ings of the IEEE International Conference on Communi-cations (ICC) , May 2017. Ye, H., Li, G. Y., and Juang, B.-H. F. Deep reinforcement learning based resource allocation for V2V communica-tions. IEEE Transactions on Vehicular Technology , 68 (4):3163–3173, 2019. 11 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+## A. Algorithmic Details 
+
+This appendix provides the learning and inference algorithms for the global scheduling principle S(x). The learning algorithm updates the parameters of the structured additive model {ϕk, ψ kl }, Θ, using both likelihood-based and value-regression losses, while enforcing regularization and identifiability constraints. The inference algorithm shows how the learned principle is used at deployment to score and select items. 
+
+Algorithm 1 Learning the Global Scheduling Principle S(x)
+
+Require: Feature space [0 , 1] K , temperature τ > 0, discount factor γ ∈ [0 , 1] , trade-off hyperparameter λ ≥ 0, learning rate η
+
+1: Model: S(x; Θ) = PKk=1 ϕk(xk) + P 
+
+> (k,l )∈P
+
+ψkl (xk, x l)
+
+2: Identifiability: Impose the constraints in Eq. (2)–(5). 
+
+3: Initialize parameters Θ ← { ϕk}Kk=1 ∪ { ψkl }(k,l )∈P 
+
+4: for t = 1 , 2, · · · do 
+
+5: Observe candidate set at time step t, N (t) = {xtn}N t
+
+> n=1
+
+6: Compute item scores sn ← S(xtn; Θ) for all n ∈ N (t)
+
+7: Obtain the softmax policy π(n | N (t)) ← exp( sn/τ )  
+
+> PN tm=1 exp( sm/τ )
+
+8: Sample action nt ∼ π(· | N (t)) , execute, observe reward rt and next candidate set N (t+1) 
+
+9: Calculate likelihood loss as Llik ← − rt log π(nt | N (t)) 
+
+10: Calculate state values as 
+
+V (¯ st) ← 1
+
+N tN t
+
+X
+
+> n=1
+
+S(xtn; Θ) and V (¯ st+1 ) ← 1
+
+N t+1  
+
+> Nt+1
+
+X
+
+> n=1
+
+S(xt+1  
+
+> n
+
+; Θ) 
+
+11: Calculate value loss as Lval ← (yt − V (¯ st)) 2, where the TD target is given by yt ← rt + γV (¯ st+1 )
+
+12: Calculate regularization loss as R ← Ω( ϕ, ψ ) (e.g., l2 penalty) 
+
+13: Obtain total loss as L ← L lik + λ Lval + R
+
+14: Update parameters using the total loss as Θ ← Θ − η∇ΘL
+
+15: Project the parameters Θ to the identifiability set 
+
+16: end for Algorithm 2 Inference / Deployment (Scoring and Scheduling) 
+
+Require: Learned S(x; ˆΘ) = P 
+
+> k
+
+ϕk(xk) + P 
+
+> (k,l )∈P
+
+ψkl (xk, x l)
+
+1: Observe candidate set N (t) = {xtn}N t
+
+> n=1
+
+2: Compute scores sn ← S(xtn; ˆΘ) for all n ∈ N t
+
+3: Select item nt ← arg max n∈N t sn
+
+4: Execute action nt
+
+## B. Assumptions and Proofs of Theoretical Results 
+
+B.1. Assumptions 
+
+We summarize the standing assumptions used in the theoretical results. We only mention assumptions in proofs only if they are significant. (A1) Existence of global principle. There exists a (possibly unknown) S⋆ : [0 , 1] K → R that determines the expected reward of selecting an item with feature x, i.e., E[rt | xtn = x] = g(S⋆(x)) for a nondecreasing g, which is Lg -Lipschitz and bounded in [0 , 1] .(A2) Single-item selection, weak interaction At each step one item is selected. The (immediate) reward depends on the selected item’s feature through S⋆; unchosen items affect reward only via constraints/normalization (no direct multi-item payoff). 12 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+(A3) Sampling for learning/generalization For approximation and generalization results, we assume i.i.d. sampling of feature points from a stationary distribution P on [0 , 1] K .(A4) Regularity S⋆ is L-Lipschitz and its univariate (bivariate) components admit bounded second mixed derivatives; our bases are given by splines/lattices and sufficiently dense. 
+
+B.2. Proof of Theorem 3.1 (Identifiability) 
+
+Proof. Suppose S has two admissible decompositions ({ϕk}, {ψkl }) and ({ ˜ϕk}, { ˜ψkl }) satisfying the centering constraints. Let 
+
+∆( x) = 
+
+> K
+
+X
+
+> k=1
+
+ ϕk(xk) − ˜ϕk(xk) + X
+
+> (k,l )∈P
+
+ ψkl (xk, x l) − ˜ψkl (xk, x l),
+
+so that ∆( x) ≡ 0. We define δϕ k := ϕk − ˜ϕk and δψ kl := ψkl − ˜ψkl . For a function f on [0 , 1] K and an index set 
+
+I ⊆ [K] = {1, . . . , K }, define the marginal projection on the coordinates I as 
+
+(Π I f )( xI ) := 
+
+Z
+
+> [0 ,1] K−| I|
+
+f (x) dx[K]\I ,
+
+where xI = {xi : i ∈ I} and dx[K]\I denotes integration with respect to all coordinates except those in I. First, we apply the projection operator, Π{k}, to ∆:
+
+0 = (Π {k}∆)( xk) = δϕ k(xk) + X 
+
+> j̸=k
+
+Z 10
+
+δϕ j (xj ) dx j + X
+
+> (i,j )∈P
+
+(Π {k}δψ ij )( xk).
+
+The second term vanishes by the mean centering constraint in Equation (2). For each (i, j ) ∈ P , (Π {k}δψ ij ) vanishes by the row/column and global centering constraints in Equations (3)–(5). If i = k or j = k, the row/column centering constraints yield 0; if {i, j } ∩ { k} = ∅, both xi, x j are integrated out and the global centering constraint yields 0. Repeating this for all 
+
+k yields that, for all k, ϕk(xk) = ˜ϕk(xk) a.e. Then, ∆ becomes: 
+
+∆( x) = X
+
+> (k,l )∈P
+
+δψ kl (xk, x l).
+
+We fix (k, l ) ∈ P and apply Π{k,l } to ∆:
+
+0 = (Π {k,l }∆)( xk, x l) = δψ kl (xk, x l) + X
+
+> (i,j )∈P\{ (k,l )}
+
+(Π {k,l }δψ ij )( xk, x l).
+
+For (i, j )̸ = ( k, l ), (Π {k,l }δψ ij ) vanishes by: if exactly one of {i, j } lies in {k, l }, the remaining coordinate is integrated out and the row/column centering constraints yield 0; if {i, j } ∩ { k, l } = ∅, both xi, x j are integrated out and the global centering constraint yields 0. Therefore, δψ kl ≡ 0 a.e. for all (k, l ) ∈ P . Consequently, ϕk = ˜ϕk and ψkl = ˜ψkl a.e., proving uniqueness. 
+
+B.3. Proof of Theorem 3.2 (Approximation Error) 
+
+With Assumption A4, we can show the theorem by directly following standard spline approximation theory (Schumaker, 2007). For univariate components, cubic spline interpolation achieves ∥f − fh∥∞ = O(h2) for C2 smooth functions, where 
+
+h = 1 /R . For bivariate components, tensor-product splines achieve the same O(h2) rate under C2,2 smoothness. Combining these bounds across additive components yields the stated result. 
+
+B.4. Proof of Theorem 3.3 (Ranking Consistency & Greedy regret) 
+
+Proof. By the assumptions, |S⋆(x) − ˆS(x)| ≤ ϵ for all x. Then, for any items xi, xj , we have 
+
+ˆS(xi) − ˆS(xj ) ≥ S⋆(xi) − ϵ − (S⋆(xj ) + ϵ) = ( S⋆(xi) − S⋆(xj )) − 2ϵ. 
+
+Therefore, if S⋆(xi) − S⋆(xj ) > 2ϵ, then ˆS(xi) > ˆS(xj ), which proves the consistency of the ranking. Additionally, we have 
+
+S⋆(ˆ x) ≥ ˆS(ˆ x) − ϵ ≥ ˆS(x⋆) − ϵ ≥ S⋆(x⋆) − 2ϵ, 
+
+where the second inequality comes from the definition of ˆx. Thus, the regret S⋆(x⋆) − S⋆(ˆ x) is at most 2ϵ.13 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+B.5. Proof of Theorem 3.4 (Principle invariance) 
+
+Proof. Define the hypothesis class S = {S : X → R | S additive with centering }. Let the population risk be RP (S) = 
+
+E(X,Y )∼P
+
+ℓ(S(X), Y ). For each x ∈ X and scalar z ∈ R, define the conditional risk 
+
+Lx(z) := E[ℓ(z, Y )|X = x].
+
+By strict convexity of ℓ(·, y ), Lx(z) admits a unique minimizer z⋆(x). For any marginal P (X), the population risk decomposes as 
+
+RP (S) = EX∼P
+
+LX (S(X)) ,
+
+which is minimized pointwise at S⋆(x) = z⋆(x) for each x, independently of P (X). Therefore, if two systems A and B
+
+share the same conditional law Y |X, they share the same minimizer S⋆, i.e., the optimal scheduling principle is invariant across systems A and B. Identifiability constraints ensure uniqueness of the decomposition into {ϕk, ψ kl }.
+
+## C. Additional Results for Synthetic Experiments 
+
+This appendix provides additional visualizations that support the synthetic experiment reported in Section 5.1. The figures illustrate how accurately the proposed FSP framework recovers the underlying global scheduling principle by comparing the learned components with the ground-truth ones. True Estimated 0.0 0.5 1.0
+
+> x1
+> −10
+> φ1
+
+(a) ϕ10.0 0.5 1.0 
+
+> x2
+> −0.05 0.00 0.05
+> φ2
+
+(b) ϕ10.0 0.5 1.0 
+
+> x3
+> 0.00.5
+> φ3
+
+(c) ϕ10.0 0.5 1.0 
+
+> x4
+> −0.10.0
+> φ4
+
+(d) ϕ1
+
+Figure 4. The visual comparison of the univariate component functions of ˆS with the true principle S⋆.
+
+Figure 4 visualizes the learned univariate component functions ˆϕk together with the corresponding ground-truth components 
+
+ϕ⋆k for all feature dimensions. The close overlap between the estimated and true curves across the entire feature domain indicates that the proposed method accurately recovers the marginal effects of individual features, validating the effectiveness of the factorized representation and the imposed identifiability constraints. True Estimated 0.0 0.5 1.0
+
+> x1
+> −0.10.00.1
+> ψ12  slice
+
+(a) ψ12 with x2 = 0 .25 0.0 0.5 1.0 
+
+> x1
+> −0.10.00.1
+> ψ12  slice
+
+(b) ψ12 with x2 = 0 .50 0.0 0.5 1.0 
+
+> x1
+> −0.10.00.1
+> ψ12  slice
+
+(c) ψ12 with x2 = 0 .75 
+
+Figure 5. The one-dimensional visual comparison of the pairwise component function of ˆS with the true principle S⋆.
+
+Figure 5 presents one-dimensional slices of the learned pairwise interaction component function ˆψ12 at several fixed values of the second feature. These slices are compared against the corresponding ground-truth interactions and demonstrate that the learned interaction function closely matches the true structure across different conditioning values, capturing the non-additive dependence between features. Figure 6 shows a two-dimensional surface visualization of the learned pairwise interaction component ˆψ12 alongside the ground-truth surface ψ⋆
+
+> 12
+
+, as well as their absolute difference. The surface plots confirm that the learned interaction accurately 14 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 0.0 0.5 1.0 
+
+> x10.00.51.0
+> x2
+> −0.20.00.2
+> ψ?
+> 12
+
+(a) ψ⋆    
+
+> 12 0.00.51.0
+> x10.00.51.0
+> x2
+> −0.20.00.2ˆψ12
+
+(b) ˆψ12 0.00 0.25 0.50 0.75 1.00  
+
+> x1
+> 0.00.20.40.60.81.0
+> x2
+> 0.01 0.02 0.03 0.04
+
+(c) |ψ⋆ 
+
+> 12
+
+− ˆψ12 |
+
+Figure 6. The two-dimensional visual comparison of the component functions of ˆS with the true principle S⋆.
+
+reproduces the global shape and magnitude of the true interaction, while the error visualization indicates uniformly small discrepancies over the feature space. Overall, these visualizations provide qualitative evidence that the proposed FSP framework can reliably recover both univariate and pairwise components of the global scheduling principle. Together with the quantitative results in Section 5.1, they demonstrate that the learned scheduling principles are interpretable and faithfully capture the underlying structure of the synthetic environment. 
+
+## D. Details of Realistic Scheduling Environments 
+
+This appendix provides the detailed specifications for realistic scheduling tasks, including ones used in the realistic scheduling experiments in Section 5.2. These tasks are based on the standard scheduling formulation introduced in Section 2.2, while incorporating stochastic features, constraints, and competing economic objectives. Therefore, the scheduling principles of these tasks are not trivial. 
+
+D.1. Wireless User Scheduling 
+
+At each time step t, the wireless user scheduling environment presents a candidate set of N users, where each user is characterized by a feature vector xtn ∈ [0 , 1] 4:
+
+xtn =  htn, τ tn, q tn, ξ tn
+
+,
+
+where htn represents the normalized channel quality (e.g., capacity), τ tn denotes the age of information (AoI) representing the time elapsed since the last successful service, qtn is the normalized buffer occupancy (queue length), and ξtn is an uninformative random noise feature. At each step, the scheduler selects an action at ∈ { 1, . . . , N } to grant exclusive access to the wireless channel. The transmission capacity for the selected user is determined by a non-linear interaction between the channel quality htat (scaled by η) and the available data in the buffer qtat . The realized throughput T t is limited by the available data in the buffer: 
+
+T t = min  η · htat , q tat
+
+.
+
+The system dynamics evolve as follows. For the selected user n = at, the AoI is reset to zero, while for unselected users, it increases linearly: 
+
+τ t+1  
+
+> n
+
+=
+
+(
+
+0, n = at,
+
+min {τ tn + ∆ τ, 1}, n̸ = at,
+
+where ∆τ is a fixed increment with noise. Buffer occupancy is updated by incorporating stochastic packet arrivals λtn and subtracting the transmitted data: 
+
+qt+1  
+
+> n
+
+= min  max {qtn + λtn − 1(n = at)T t, 0}, 1,
+
+where 1(·) is an indicator function. To simulate realistic bursty traffic, the arrival process λtn follows a Gamma distribution, 
+
+λtn ∼ Gamma( k, θ ), truncated to preserve the normalized range. Any arrival exceeding the buffer capacity is recorded as an 15 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+overflow. The immediate reward rt aggregates throughput and system-wide penalties: 
+
+rt = ωT t − λov 
+
+> N
+
+X
+
+> n=1
+
+max {qtn + ¯λ − 1, 0} − λdelay ¯τt+1 ,
+
+where ω is the throughput weight, λov is the overflow penalty coefficient, and λdelay scales the delay penalty. The overflow penalty is a non-linear function based on a constant mean arrival rate ¯λ. The delay penalty is defined as the arithmetic mean of the AoI across all users after the reset of the scheduled user’s delay: 
+
+¯τt+1 = 1
+
+N
+
+> N
+
+X
+
+> n=1
+
+τ tn − 1
+
+N τ tat .
+
+This environment presents a significant challenge to the scheduling agent due to the non-additive and non-linear nature of the penalties. In particular, it is characterized by strong global coupling and pronounced non-linearity, arising from the throughput constraint T t = min( ηh tat , q tat ) and the system-wide AoI penalty. These effects are further amplified by the high variance induced by bursty Gamma-distributed traffic, resulting in a value function that is highly sensitive to the joint system state, where the relative priority of a user can vary substantially with the states of others. Consequently, this environment requires the agent to learn a prioritization principle that balances spectral efficiency with long-term system stability. The dependence of the penalties on aggregate system states makes this task a representative testbed in which the optimal scheduling policy deviates markedly from simple additive assumptions. 
+
+D.2. Inventory Replenishment 
+
+At each time step t, the inventory replenishment environment presents a candidate set {xtn}Nn=1 , where each item feature 
+
+xtn ∈ [0 , 1] 4 follows the same convention as in the main text. Specifically, the feature vector is defined as 
+
+xtn =  Itn, μ tn, m tn, ξ tn
+
+,
+
+where Itn denotes the normalized inventory level, μtn the demand intensity, mtn the unit margin, and ξtn is an intentionally uninformative random feature. The random feature ξtn is included to examine whether the learned scheduling principle assigns negligible marginal effects to irrelevant dimensions. In a system, the demand intensity and unit margin of each item are based on fixed values, but time-varying with Gaussian noise of ϵtμ,n ∼ N (0 , σ 2
+
+> μ
+
+) and ϵtm,n ∼ N (0 , σ 2
+
+> m
+
+), respectively. The agent selects an action at ∈ { 1, . . . , N } indicating the item to prioritize for replenishment. The environment enforces a single-item replenishment constraint. Given the selected action at, replenishment quantities are defined as 
+
+qtn =
+
+(
+
+Q, n = at,
+
+0.5 Q, n̸ = at,
+
+where Q > 0 is a fixed replenishment amount. The post-replenishment inventory is updated as 
+
+˜Itn = min {Itn + qtn, 1},
+
+and any excess beyond capacity is recorded as overflow. After replenishment, stochastic demand is realized independently for each item. The demand for item n is sampled according to 
+
+Dtn ∼ Binomial( Kd, μ tn)/K d,
+
+where Kd controls the granularity of demand realization. The sales and next-step inventory are computed as 
+
+Stn = min { ˜Itn, D tn}, It+1  
+
+> n
+
+= ˜Itn − Stn,
+
+and the stock-out is defined as max {Dtn − ˜Itn, 0}. In particular, the unit margin mn affects the reward through the price term pn = cn + mn, so that items with higher margins yield larger revenue. The immediate reward rt aggregates multiple economic components: 16 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+rt = wrev 
+
+> N
+
+X
+
+> n=1
+
+pnStn −word 
+
+> N
+
+X
+
+> n=1
+
+cnqtn −whold 
+
+> N
+
+X
+
+> n=1
+
+hnIt+1  
+
+> n
+
+−wso 
+
+> N
+
+X
+
+> n=1
+
+sn max {Dtn − ˜Itn, 0}− wov λ
+
+> N
+
+X
+
+> n=1
+
+max {Itn +qtn −1, 0},
+
+where pn, cn, hn, and sn denote the price, unit cost, holding cost, and stock-out penalty of item n, respectively. The scalar 
+
+λ controls the overflow penalty. This reward structure induces partially conflicting incentives and does not reduce to an additive function of the selected item’s features. This environment presents non-additive characteristics due to the unselected items influence the reward indirectly through shared replenishment constraints, inventory carry-over, and overflow penalties. Nevertheless, it exhibits a quasi-additive structure with relatively localized dynamics because unselected items still receive partial replenishment ( 0.5Q) that serves as a buffer against state deterioration. The inherent additive reward structure allows the scheduling agent to learn a more consistent prioritization logic based on individual item features rather than complex global interdependencies. This predictable structure enables DQN to maintain a reasonable level of transferability within a fixed N , as the relative value of replenishing an item remains stable across different permutations. 
+
+D.3. Warehouse Clearance 
+
+In addition to the two realistic tasks in Section 5.2, we introduce a warehouse clearance environment. This environment demonstrates that a lack of transferability in learned prioritization rules can directly lead to severe performance degradation, manifested as frequent overflow events and large reward failures. At each time step t, the warehouse clearance environment consists of N items represented by feature vectors {xtn}Nn=1 ,where xtn ∈ [0 , 1] 4 and 
+
+xtn =  Itn, ρ tn, m tn, ξ tn
+
+.
+
+Here, Itn denotes the inventory level of item n, ρtn is the inventory inflow rate, mtn is the unit margin, and ξtn is an intentionally uninformative random feature independently resampled at every time step. Each item is associated with fixed base inflow rate and base margin, which are perturbed by Gaussian noise at each time step, ϵtρ,n ∼ N (0 , σ 2
+
+> ρ
+
+) and ϵtm,n ∼ N (0 , σ 2
+
+> m
+
+),respectively. These base values differ across items and induce persistent heterogeneity in inventory accumulation and profitability. At each time step, the agent selects a single item at ∈ { 1, . . . , N } to clear. Only the selected item generates sales, with realized sales quantity 
+
+Stat = min {Itat , C },
+
+where C denotes a global sales capacity. The immediate revenue is given by 
+
+Rt = α m tat Stat ,
+
+with α being a fixed scaling factor. Inventory evolves deterministically according to 
+
+It+1  
+
+> n
+
+= min max Itn + ρtn − I{n = at}Stat , 0 , 1 ,
+
+where inventories are strictly constrained by capacity. The reward at time t is defined as 
+
+rt = Rt −
+
+> N
+
+X
+
+> n=1
+
+hnIt+1  
+
+> n
+
+−
+
+> N
+
+X
+
+> n=1
+
+λ I{It+1  
+
+> n
+
+≥ τ },
+
+where the final term imposes a large overflow penalty when an item’s inventory exceeds a threshold τ close to capacity. Although this problem appears similar to inventory replenishment at first, its failure mode is fundamentally different. DQN tightly couples action values tightly to item-level features, implicitly assuming that the relative desirability of an item remains stable across system configurations. However, in the presence of severe overflow penalties, this assumption breaks down. Then, items that are not selected accumulate inventory deterministically and can suddenly incur large negative rewards once capacity thresholds are exceeded. Consequently, policies learned by DQN overfit to system-specific overflow patterns rather than learning transferable prioritization rules. When the number of items or their ordering changes, the learned value function fails to anticipate which items are likely to trigger overflow. This leads to frequent capacity violations and sharply degraded performance. This strong coupling between item features and global overflow dynamics makes generalization particularly fragile in such environments. 17 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+D.4. Experimental Settings 
+
+We summarize the experimental settings used for the realistic scheduling experiments, including common configurations shared across tasks as well as task-specific system parameters. 
+
+Common Settings For the proposed FSP framework, the scheduling principle is parameterized using additive item-level components and pairwise interaction terms. The model is trained using stochastic gradient descent with a fixed learning rate. The Whittle-index baseline uses an item-wise index policy estimated from the training system. The NAM baseline replaces the Q-network in DQN with a neural additive model. For DQN-based baselines, a standard DQN algorithm is used to approximate the action-value function, taking the concatenated item features as input. A2C, PPO, TRPO, and QR-DQN use the same concatenated item-feature input as DQN and are implemented using Stable-Baselines and its contributed extensions. Unless otherwise specified, all policies are trained with N = 10 items and evaluated under both in-distribution and out-of-distribution settings. 
+
+Table 4. Hyperparameter summary for FSP and baseline methods. FSP WHITTLE -INDEX POLICY 
+
+PARAMETER VALUE PARAMETER VALUE 
+
+LEARNING RATE (η) 0.005 STATE DISCRETIZATION 4 × 4 × 4
+
+BASIS TYPE B-SPLINE FUNCTIONS DISCOUNT FACTOR 0.99 1-D BASIS DIMENSION 30 DIRICHLET PRIOR 0.3 2-D BASIS DIMENSION 15 VALUE -ITERATION THRESHOLD 10 −3
+
+TRADE -OFF HYPERPARAMETER (λ) 0.1 SUBSIDY -SEARCH THRESHOLD 5 × 10 −2
+
+L2 REGULARIZATION 0.0001 NAM DQN PARAMETER VALUE PARAMETER VALUE 
+
+Q-NETWORK TYPE FEATURE -ADDITIVE Q-N ETWORK TYPE MLP ADDITIVE BLOCK DEPTH 1 Q-N ETWORK ARCHITECTURE (128,128) UNITS 
+
+LEARNING RATE 0.001 LEARNING RATE 0.001 DISCOUNT FACTOR 0.99 DISCOUNT FACTOR 0.99 BATCH SIZE 256 BATCH SIZE 256 REPLAY BUFFER 20,000 REPLAY BUFFER 100,000 A2C PPO PARAMETER VALUE PARAMETER VALUE 
+
+ACTOR -CRITIC NETWORK TYPE MLP ACTOR -CRITIC NETWORK TYPE MLP ACTOR -CRITIC ARCHITECTURE (128,128) UNITS ACTOR -CRITIC ARCHITECTURE (128,128) UNITS 
+
+LEARNING RATE 0.001 LEARNING RATE 0.001 DISCOUNT FACTOR 0.99 DISCOUNT FACTOR 0.99 BATCH SIZE 64 TRPO QR-DQN PARAMETER VALUE PARAMETER VALUE 
+
+ACTOR -CRITIC NETWORK TYPE MLP Q-N ETWORK TYPE QUANTILE MLP ACTOR -CRITIC ARCHITECTURE (128,128) UNITS Q-N ETWORK ARCHITECTURE (128,128) UNITS 
+
+LEARNING RATE 0.001 LEARNING RATE 0.001 DISCOUNT FACTOR 0.99 DISCOUNT FACTOR 0.99 TARGET KL 0.01 BATCH SIZE 32 REPLAY BUFFER 1,000,000 
+
+Wireless User Scheduling System Parameters The wireless scheduling environment is governed by a set of parameters that control traffic dynamics and performance trade-offs. Specifically, the mean arrival rate and the shape parameter determine the stochastic characteristics of user traffic arrivals. The capacity scaling parameter controls the effective service rate, while 18 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+a throughput weight balances the contribution of achieved throughput to the reward. Additional penalty coefficients are introduced to penalize queue overflow and excessive delay, respectively, thereby encouraging stable operation under stochastic arrivals. Together, these parameters define the relative importance of efficiency and delay-related objectives in the wireless scheduling task. 
+
+Table 5. System parameters for wireless user scheduling. PARAMETER VALUE 
+
+MEAN ARRIVAL RATE (λn ) 0.045 SHAPE PARAMETER FOR ARRIVAL (k) 2.0 CAPACITY SCALE (η) 0.6 THROUGHPUT WEIGHT (ω) 1.0 OVERFLOW PENALTY COEFFICIENT (λov ) 2.0 DELAY PENALTY COEFFICIENT (λdelay ) 1.0 
+
+Inventory Replenishment System Parameters The inventory replenishment environment is governed by a set of parame-ters that control replenishment dynamics, demand uncertainty, and economic trade-offs. Specifically, the replenishment quantity determines the amount of inventory injected into the system at each decision step, while the demand granularity parameter controls the resolution of stochastic demand realizations. The demand and margin drift parameters introduce temporal variability in item characteristics, capturing non-stationary demand and pricing conditions. The ranges of unit cost, holding cost, and stock-out penalty define the item-specific economic factors that shape the trade-off between inventory availability and operational cost. An overflow penalty coefficient discourages excessive inventory accumulation beyond capacity. Finally, a set of reward weights balances revenue, ordering cost, holding cost, stock-out penalties, and overflow penalties. This defines the relative importance of competing economic objectives in the inventory replenishment task. 
+
+Table 6. System parameters for inventory replenishment. PARAMETER VALUE 
+
+REPLENISHMENT QUANTITY (Q) 0.5 DEMAND GRANULARITY (Kd ) 50 MEAN DEMAND DRIFT STD . ( σμ ) 0.02 MARGIN DRIFT STD . ( σm ) 0.003 UNIT COST RANGE (cn ) [0 .02 , 0.5] 
+
+HOLDING COST RANGE (hn ) [0 .01 , 0.10] 
+
+STOCK -OUT PENALTY RANGE (sn ) [0 .05 , 0.30] 
+
+OVERFLOW PENALTY COEFFICIENT (λ) 1.0 REWARD WEIGHTS {wrev , w ord , w hold , w so , w ov } {2.0, 1.4, 3.0, 5.0, 3.5 }
+
+Warehouse Clearance System Parameters The warehouse clearance environment is governed by a set of parameters that control global sales capacity, inventory inflow dynamics, and cost–revenue trade-offs. Specifically, the global sales capacity determines the total amount of inventory that can be cleared at each time step and scales linearly with the number of items, reflecting system-level resource constraints. Stochastic drift parameters for inflow rates and margins introduce temporal variability in inventory accumulation and economic value. A revenue scaling factor controls the contribution of realized sales to the overall reward, while a holding cost penalizes prolonged inventory accumulation. An overflow threshold defines the inventory level beyond which excessive stock is incurred, and an associated overflow penalty coefficient discourages persistent congestion. Together, these parameters define the balance between aggressive clearance for immediate revenue and conservative inventory management to avoid overflow penalties in the warehouse clearance task. 
+
+## E. Additional Results for Realistic Experiments 
+
+This appendix provides additional, detailed results for the realistic scheduling tasks, which support the realistic experiment in Section 5.2. In the performance results, the training system of size N is denoted by N ID , indicating which training system is used for training each policy. The FSP policy is trained only once by using the training system with N = 10 ,and therefore, there is only FSP(10 ID ). In contrast, the DQN policies are individually trained for each value of N due to a 19 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+Table 7. System parameters for warehouse clearance. PARAMETER VALUE 
+
+GLOBAL SALES CAPACITY (C) 0.45 + 0 .01 · N
+
+INFLOW RATE DRIFT STD . ( σρ ) 0.01 MARGIN DRIFT STD . ( σm ) 0.01 REVENUE SCALING FACTOR (α) 5.0 HOLDING COST (h) 0.1 OVERFLOW THRESHOLD (τ ) 1.0 OVERFLOW PENALTY COEFFICIENT (λ) 5.0 
+
+lack of transferability. Thus, there are four DQN policies trained at different values of N , and each DQN policy cannot be applied to a system size different from the value of N for which it was trained. In addition, to eliminate the disturbance from the uninformative random feature, we consider the DQN policy that excludes the random feature and uses only the three task-relevant state variables, which is denoted by DQN(w/o noise). The expanded comparison with Whittle, NAM, A2C, PPO, TRPO, and QR-DQN is summarized in the main text in Table 3. The appendix tables below focus on the detailed FSP–DQN ID/OOD breakdown from the original transfer analysis, including the DQN variant without the uninformative feature. 
+
+E.1. Wireless User Scheduling 
+
+Table 8. In-distribution rewards and out-of-distribution average rewards of the wireless user scheduling task under varying N with different system populations. (For each N , evaluation is conducted across 100 system instances.) 
+
+N FSP( 10 ID ) DQN( 5ID ) DQN( 10 ID ) DQN( 15 ID ) DQN( 20 ID ) DQN( 10 ID , W/O NOISE )
+
+5ID 0.116 0.127 - - - -
+
+10 ID 0.109 - 0.112 - - 0.122 
+
+15 ID -0.266 - - -0.297 - -
+
+20 ID -0.762 - - - -0.855 -5 0.085 ± 0.001 -0.073 ± 0.002 - - - -10 0.103 ± 0.001 - -1.313 ± 0.003 - - -1.046 ± 0.001 15 -0.285 ± 0.002 - - -1.965 ± 0.002 - -20 -0.781 ± 0.001 - - - -2.609 ± 0.001 -
+
+Table 8 reports additional results for the wireless user scheduling task, providing a detailed comparison across different training system sizes and system populations. The upper block reports in-distribution (ID) rewards, where each DQN policy is evaluated on the training system with N on which it is trained. The FSP policy is evaluated on the training systems with all values of N . The lower block reports out-of-distribution (OOD) evaluations under varying N . Note that each DQN policy is applicable only to the specific system size for which it is trained. From the ID results, we observe that the DQN policies are not poorly trained: each DQN achieves strong performance on its corresponding training system. The FSP policy trained on the 10 ID system also achieves ID performance comparable to that of the DQN policies across different N ’s, indicating that it does not sacrifice performance on the training system in exchange for transferability. In contrast, the OOD results reveal a clear difference in generalization behavior. While the performance of DQN policies deteriorates substantially when evaluated on unseen system sizes or populations, the FSP policy maintains stable performance across all values of N . As a result, the FSP policy consistently outperforms the corresponding DQN policies in OOD settings, with the performance gap increasing as the system size grows. We further provide the results of the DQN policy trained without the random noise feature. Although this variant achieves comparable ID performance to the standard DQN, it exhibits the same failure to generalize in OOD evaluations. This confirms that the lack of transferability in DQN is not due to noisy input features, but rather reflects a structural limitation of the policy representation. 20 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+Overall, these additional results reinforce the main finding that the scheduling principle learned by FSP is robust to changes in both system size and user population, whereas standard DQN policies remain tightly coupled to their training configurations. Figures 7 and 8 provide the complete visualization of the learned additive and pairwise interaction components of the FSP policy for the wireless user scheduling task. The learned components exhibit structured patterns across the feature domain, implying that the FSP framework captures coherent prioritization rules. 0.0 0.5 1.0                  
+
+> h(Channel)
+> −0.20.00.2
+> φ1
+> (a) ϕ10.00.51.0
+> τ(Age (AoI))
+> −0.02 0.00 0.02
+> φ2(b) ϕ20.00.51.0
+> q(Buffer (Queue))
+> −0.20.0
+> φ3(c) ϕ30.00.51.0
+> ξ(Noise)
+> −0.20.00.2
+> φ4(d) ϕ4
+> Figure 7. One-dimensional component functions of the FSP policy in the wireless user scheduling task.
+
+Figure 7 summarizes the one-dimensional additive components associated with individual features. The components corresponding to informative system variables show clear and interpretable trends. As expected from the reward structure, in Figure 7a, ϕ1(h) increases strongly and monotonically with the channel condition. In Figure 7b, ϕ2(τ ), that corresponds to the age-of-information, increases, reflecting gradual changes in scheduling priority, but its effect is relatively small. Similarly, in Figure 7c, ϕ3(q) increases smoothly with the buffer state, but its trend is not completely monotonic as in ϕ1(h).In contrast, the component associated with the intentionally uninformative noise feature, ϕ4(ξ), in Figure 7d remains nearly flat, confirming that the learned principle effectively suppresses irrelevant information. 0.00.51.0h 0.00.51.0     
+
+> τ
+> −0.05 0.00
+> ˆψ12
+> (a) ψ12 0.00.51.0h0.00.51.0
+> q
+> −0.10.00.1
+> ˆψ13 (b) ψ23
+> Figure 8. Two-dimensional pairwise interaction components of the FSP policy in the wireless user scheduling task.
+
+Figure 8 visualizes the learned two-dimensional pairwise interaction components, which capture joint effects beyond purely additive contributions. The interaction surfaces are structured across the feature space, indicating consistent modulation of priorities based on combined feature states. In Figure 8a, while no sharply separated patterns are observed, the interaction reveals that users with large age-of-information and good channel conditions tend to receive higher priority. Figure 8b exhibits a clearer structure. Users with sufficiently occupied buffers and good channel conditions are assigned high priority, whereas users with poor channel conditions receive low priority even when their buffers are full. Moreover, when the buffer is nearly empty, the priority remains low, regardless of the channel condition, indicating that the policy avoids allocating resources to users with little backlog. Especially, the priority is significantly lower with good channel conditions. This behavior is consistent with the one-dimensional channel component in Figure 7a, where good channel quality already contributes positively through ϕ1(h), and the interaction term further modulates this effect based on the buffer state. Taken together, these visualizations provide a complete view of the learned scheduling principle. By jointly examining the one-dimensional additive components and the two-dimensional interaction terms, we can understand prioritization behaviors in the scheduling principle that cannot be captured by either component alone. This decomposition highlights how the FSP framework combines simple, interpretable effects into a coherent policy that captures more complex decision logic while maintaining stability and interpretability across the entire feature domain. 21 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+E.2. Inventory Replenishment 
+
+Table 9 reports additional results for the inventory replenishment task, comparing the ID and OOD performance across different system sizes and system populations. The upper block reports ID rewards, where each DQN policy is evaluated on the training system with N on which it is trained. The lower block reports OOD evaluations under varying N . Each DQN policy is applicable only to the specific system size for which it is trained.                                                                                     
+
+> Table 9. In-distribution rewards and out-of-distribution average rewards of the inventory replenishment task under varying Nwith different system populations. (For each N, evaluation is conducted across 100 system instances.)
+> NFSP( 10 ID )DQN( 5ID )DQN( 10 ID )DQN( 15 ID )DQN( 20 ID )DQN( 10 ID ,W/O NOISE )
+> 5ID -0.232 -0.255 ----
+> 10 ID -0.353 --0.355 ---0.363
+> 15 ID -0.649 ---0.670 --
+> 20 ID -0.769 ----0.751 -5-0.206 ±0.011 -0.228 ±0.012 ----10 -0.412 ±0.008 --0.429 ±0.008 ---0.420 ±0.008 15 -0.712 ±0.008 ---0.727 ±0.008 --20 -0.726 ±0.008 ----0.722 ±0.008 -
+
+From the ID results, both FSP and DQN policies achieve comparable performance on their respective training systems. This indicates that all policies are sufficiently trained for the inventory replenishment task. The FSP policy trained on the 10 ID 
+
+system performs similarly to the DQN policies trained on their corresponding system sizes, regardless of the value of N .This shows the transferability of the FSP policy. Unlike the wireless user scheduling task, the OOD results for inventory replenishment exhibit a different generalization pattern. For a fixed system size N , both FSP and DQN policies maintain similar performance when evaluated on different system populations. This suggests that the task admits a degree of transferability across population variations. This behavior is consistent with the quasi-additive structure of the inventory replenishment problem, where item-level decisions are weakly coupled. Across different values of N , the FSP policy maintains stable performance despite being trained only on the 10 ID 
+
+system. In contrast, DQN policies generalize reasonably well across system populations for a fixed N . However, they remain tied to their respective training system sizes and cannot be transferred across different values of N .We also present the DQN variant trained without the noise feature. Its performance is comparable to that of the standard DQN in both ID and OOD evaluations. This confirms that the observed generalization behavior is driven by the underlying task structure. These results contrast sharply with those of the wireless user scheduling task. Although both FSP and DQN can generalize across system populations with a fixed system size in inventory replenishment, only FSP exhibits robustness to changes in the system size N , which highlights the benefit of learning a reusable scheduling principle. Figures 9 and 10 provide the complete visualization of the learned additive and pairwise interaction components of the FSP policy for the inventory replenishment task. The learned components exhibit structured and economically meaningful patterns across the feature domain, indicating that the FSP framework captures coherent replenishment priorities aligned with the underlying cost and reward structure. 0.0 0.5 1.0                  
+
+> I(Level)
+> −0.50.00.5
+> φ1
+> (a) ϕ10.00.51.0
+> μ(Demand)
+> −0.50.00.5
+> φ2(b) ϕ20.00.51.0
+> m(Margin)
+> −0.25 0.00 0.25
+> φ3(c) ϕ30.00.51.0
+> ξ(Noise)
+> −101
+> φ4(d) ϕ4
+> Figure 9. One-dimensional component functions of the FSP policy in the inventory replenishment environment.
+
+Figure 9 summarizes the one-dimensional additive components associated with individual state variables. The relative 22 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 
+
+scale of the components suggests that demand-related information plays the dominant role in the learned scheduling principle, followed by inventory level and unit margin. Specifically, in Figure 9a, the inventory-level component ϕ1 exhibits an increasing-then-decreasing trend, indicating that items with low inventory are prioritized for replenishment, while items with excessive inventory are systematically deprioritized. The demand-related component ϕ2 in Figure 9b increases monotonically, reflecting a clear preference for items with higher expected demand. Similarly, the margin-related component 
+
+ϕ3 in Figure 9b shows a positive correlation, indicating that higher-margin items receive higher priority when other factors are comparable. In contrast, Figure 9c shows that the component associated with the intentionally uninformative random feature, ϕ4, does not display a clear monotonic structure, confirming that the learned principle assigns negligible importance to irrelevant state dimensions. 0.00.51.0I 0.00.51.0       
+
+> μ
+> −0.50
+> −0.25 0.00 0.25
+> ψ1,2
+> (a) ψ12 0.00.51.0
+> μ0.00.51.0
+> m
+> −0.20.00.2
+> ψ2,3(b) ψ23
+> Figure 10. Learned two-dimensional interaction components ψij in the inventory replenishment environment, visualized as surfaces over the corresponding state dimensions.
+
+Figure 10 visualizes the learned two-dimensional pairwise interaction components, which capture non-additive effects between state variables. The interaction surfaces exhibit smooth and structured patterns across the feature space, indicating consistent modulation of priorities based on joint state configurations. In Figure 10a, the interaction between inventory level and demand reveals that demand sensitivity is amplified when inventory is scarce, leading to strong prioritization of high-demand items to avoid stockouts. Conversely, when inventory is abundant and demand is low, the interaction becomes negative, discouraging further replenishment due to holding and overflow costs. Figure 10b shows that the importance of demand is further modulated by unit margin: high-demand items receive increasing priority as margin grows, while a mild positive interaction in low-demand, low-margin regions reflects a tendency to clear inventory to mitigate future holding risks. Taken together, these visualizations offer an integrated view of the learned replenishment strategy. Considering the one-dimensional components alongside the pairwise interaction terms reveals how the policy jointly accounts for demand intensity, inventory dynamics, and revenue potential in its decision-making. This structured decomposition demonstrates that the FSP framework constructs a consistent and interpretable policy by combining simple effects in a way that captures richer economic trade-offs, while remaining stable across different systems. 
+
+E.3. Warehouse Clearance 
+
+Table 10 reports additional transfer results for the warehouse clearance task under varying system sizes and system populations. The upper block of the table reports the ID rewards, where each policy is evaluated on the system size on which it is trained, while the lower block reports OOD evaluations across different values of N . As in previous experiments, each DQN policy is applicable only to the specific system size for which it is trained. From the ID results, we see that both FSP and DQN policies achieve strong performance on their respective training systems. The DQN policies are not undertrained and slightly outperform the FSP policy. The FSP policy trained on the 10 ID 
+
+system achieves competitive ID performance relative to the DQN policies. This confirms that it does not highly sacrifice ID optimality. However, the OOD results reveal a drastic difference in generalization behavior. When evaluated on unseen item populations, the performance of DQN policies deteriorates dramatically, often resulting in extremely large negative rewards. This degradation is particularly severe due to overflow penalties, which amplify the consequences of poor prioritization decisions when the policy fails to adapt to changes in feature distributions. In contrast, the FSP policy maintains stable and consistently positive performance across all values of N , despite being trained only on the 10 ID system. As a result, the FSP policy significantly outperforms the corresponding DQN policies in all OOD settings, demonstrating robust transferability across system sizes and populations. 23 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions                                                                                     
+
+> Table 10. In-distribution rewards and out-of-distribution average rewards of the warehouse clearance task under varying Nwith different system populations. (For each N, evaluation is conducted across 100 system instances.)
+> NFSP( 10 ID )DQN( 5ID )DQN( 10 ID )DQN( 15 ID )DQN( 20 ID )DQN( 10 ID ,W/O NOISE )
+> 5ID 0.736 0.772 ----
+> 10 ID 0.823 -0.883 --0.881
+> 15 ID 0.739 --0.808 --
+> 20 ID 0.723 ---0.766 -50.630 ±0.021 -10.913 ±1.374 ----10 0.738 ±0.019 --35.238 ±1.931 ---38.247 ±2.461 15 0.712 ±0.014 ---16.747 ±2.807 --20 0.649 ±0.023 ----9.063 ±1.913 -
+
+As in the previous environments, we provide a DQN variant trained without the noise feature. While its ID performance remains comparable to that of the standard DQN, it exhibits the same catastrophic performance degradation in OOD evaluations. This confirms that the failure of DQN to generalize in this task is not caused by noisy input features, but rather reflects a structural limitation in handling overflow-sensitive dynamics. At first glance, this task seems similar to the inventory replenishment task, but these additional results reinforce the findings observed in the wireless user scheduling task. When the task involves strong nonlinear penalties and tight coupling between system size and decision quality, transferable scheduling principles learned by the FSP framework provide substantial robustness advantages over standard DQN policies. Figures 11 and 12 provide the complete visualization of the learned additive and pairwise interaction components of the FSP policy for the warehouse clearance task. 0.0 0.5 1.0                  
+
+> I(Inventory Level)
+> −0.25 0.00
+> φ1
+> (a) ϕ10.00.51.0
+> μ(Inflow Rate)
+> −0.10.00.1
+> φ2(b) ϕ20.00.51.0
+> m(Margin)
+> −0.20.00.2
+> φ3(c) ϕ30.00.51.0
+> ξ(Noise)
+> −0.10.00.1
+> φ4(d) ϕ4
+> Figure 11. One-dimensional component functions of the FSP policy in the warehouse clearance environment.
+
+Figure 11 summarizes the one-dimensional additive components associated with individual state variables. From Figure 11a, we can see that the inventory-level component ϕ1(I) increases for small to moderate inventory levels and then slightly decreases as the inventory approaches the overflow threshold. This non-monotonic shape indicates the non-purely additive effect of the inventory level and the presence of interaction effects. Figure 11b corresponds to the inflow rate. The inflow rate component ϕ2(μ) has a small magnitude and lacks a clear monotonic trend. This suggests that inflow information plays a limited independent role. This behavior implies that the current inventory level provides a more immediate and dominant signal of overflow risk compared with the predictive role of inflow at the decision time. In contrast, the margin-related component ϕ3(m) shown in Figure 11c increases smoothly with margin, reflecting a consistent preference for higher-margin items when other state variables are comparable. Finally, in Figure 11d, the component associated with the intentionally uninformative noise feature, ϕ4(ξ), remains nearly flat, confirming that the learned principle suppresses irrelevant information. Figure 12 visualizes the learned two-dimensional pairwise interaction components that capture joint effects beyond purely additive contributions. The interaction surfaces are structured across the feature space, indicating systematic modulation of priorities based on combined state configurations. Figures 12a and 12c show that interactions involving the inflow rate have weak structure, which is consistent with the limited role of inflow observed in the one-dimensional components. In contrast, the interaction between inventory level and margin, shown in Figure 12b, exhibits an interpretable pattern that complements the non-monotonic behavior of the inventory-level component ϕ1(I). For moderate inventory levels, items with higher margins are given significantly higher priority, whereas items with low margins are deprioritized. While the one-dimensional 24 Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions 0.00.51.0I 0.00.51.0
+
+> μ
+> −0.10
+> −0.05 0.00 0.05 0.10
+> ˆψ12
+
+(a) ψ12 0.00.51.0I 0.00.51.0 
+
+> m
+> −0.20.00.2
+> ˆψ13
+
+(b) ψ13 0.00.51.0  
+
+> μ0.00.51.0
+> m
+> −0.10
+> −0.05 0.00 0.05 0.10
+> ˆψ23
+
+(c) ψ23 
+
+Figure 12. Learned two-dimensional interaction components ψij in the warehouse clearance environment, visualized as surfaces over the corresponding state dimensions. 
+
+component ϕ1(I) alone appears to have a higher priority around moderate inventory levels, the interaction reveals that this preference is conditional on margin. When inventory levels are low, even high-margin items are assigned low priorities. This implies that the policy avoids allocating clearance capacity to items that do not generate sufficient revenue due to low inventory levels. Together with the shape of ϕ1(I), this interaction indicates that the influence of inventory levels is not purely additive, but is selectively amplified or suppressed depending on margin. These visualizations provide an integrated view of the learned clearance strategy. Examining the one-dimensional additive components together with the pairwise interaction terms clarifies how the policy coordinates inventory pressure and revenue signals in its prioritization decisions. This decomposition illustrates that the FSP framework constructs a coherent and interpretable policy by combining simple effects to represent more complex decision logic, while maintaining transferability. 25

@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-23 ~ 2026-10-22</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-22</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 62 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 34 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>41</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>21</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>22</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>12</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-22 16:22:55 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-22 22:20:10 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>本期完成 62 篇文献筛选，精读 41 篇、速读 21 篇。 最值得看的是两篇满分精读：Thinker-WM 的共享多模态世界模型，以及 Physical AI 综述。 普通读者可先读这两篇建立框架，再按兴趣跟进电动汽车充电与电网、家庭能量管理等速读应用。</p>
+<p>今天筛读34篇文献（精读22篇、速读12篇），重点集中在Physical AI、世界模型与具身智能方向。</p>
+<p>最值得看的是10分的《Physical AI: A Survey of Models, Learning, Systems, and Open Challenges》，它系统梳理了模型、学习、系统与开放挑战的全景；其次是9分的《Enhancing Latent World Models with Associative Memory》，它把联想记忆引入潜在世界模型，思路清晰。</p>
+<p>普通读者建议先通读Physical AI综述建立框架，再精读联想记忆世界模型这篇，最后用JRDB-AVR和SkillWeaver两篇速读补充真实环境评测与机器人数据生成的落地视角。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +80,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">41 篇</strong>
+    <strong class="dpr-home-dashboard-count">22 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Thinker-WM: A Unified World Model with Shared Multimodal Representations for Embodied Intelligence">Thinker-WM: A Unified World Model with Shared Multimodal Representations for Embodied Intelligence</span></li><li><span class="dpr-home-dashboard-paper-title" title="Physical AI: A Survey of Models, Learning, Systems, and Open Challenges">Physical AI: A Survey of Models, Learning, Systems, and Open Challenges</span></li><li><span class="dpr-home-dashboard-paper-title" title="LAW: Unifying Language, Action, and World Modeling for Agentic Physical Intelligence">LAW: Unifying Language, Action, and World Modeling for Agentic Physical Intelligence</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Physical AI: A Survey of Models, Learning, Systems, and Open Challenges">Physical AI: A Survey of Models, Learning, Systems, and Open Challenges</span></li><li><span class="dpr-home-dashboard-paper-title" title="Enhancing Latent World Models with Associative Memory">Enhancing Latent World Models with Associative Memory</span></li><li><span class="dpr-home-dashboard-paper-title" title="Reflect After Failure: Brain-Inspired Self-Evolving Agents for Embodied Spatial Intelligence">Reflect After Failure: Brain-Inspired Self-Evolving Agents for Embodied Spatial Intelligence</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>35</strong></span><span class="dpr-home-dashboard-tag">ev-forecast <strong>6</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>22</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -91,12 +93,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">21 篇</strong>
+    <strong class="dpr-home-dashboard-count">12 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Models of Electric Vehicle Charging Demands in Distribution Grid Operation: A Review">Models of Electric Vehicle Charging Demands in Distribution Grid Operation: A Review</span></li><li><span class="dpr-home-dashboard-paper-title" title="Distributionally Robust Chance-Constrained Reinforcement Learning for Home Energy Management under Electric Vehicle Uncertainty">Distributionally Robust Chance-Constrained Reinforcement Learning for Home Energy Management under Electric Vehicle Uncertainty</span></li><li><span class="dpr-home-dashboard-paper-title" title="Optimizing Airport Electric Ground Support Fleets with Digital-Twin-Guided Predictive Control">Optimizing Airport Electric Ground Support Fleets with Digital-Twin-Guided Predictive Control</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="JRDB-AVR: An Active Visual Reasoning Benchmark for Embodied Agents in Real-World Environments">JRDB-AVR: An Active Visual Reasoning Benchmark for Embodied Agents in Real-World Environments</span></li><li><span class="dpr-home-dashboard-paper-title" title="SkillWeaver: Agentic Exploration over Neural Interaction Skills for Scalable Robot Data Generation">SkillWeaver: Agentic Exploration over Neural Interaction Skills for Scalable Robot Data Generation</span></li><li><span class="dpr-home-dashboard-paper-title" title="Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions">Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>11</strong></span><span class="dpr-home-dashboard-tag">ev-forecast <strong>10</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>12</strong></span></div>
 </section>
 </div>
 

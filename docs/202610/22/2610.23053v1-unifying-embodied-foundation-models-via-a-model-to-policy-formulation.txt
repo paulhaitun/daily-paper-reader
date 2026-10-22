@@ -1,0 +1,584 @@
+Title: Unifying Embodied Foundation Models via a Model-to-Policy Formulation
+
+URL Source: https://arxiv.org/pdf/2610.23053v1
+
+Published Time: Mon, 19 Oct 2026 00:49:54 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# Unifying Embodied Foundation Models via a Model-to-Policy Formulation 
+
+Xinyi Hong, Mingyang Ren ∗
+
+Department of Statistics, School of Mathematical Sciences Shanghai Jiao Tong University 
+
+xinyi.hong@sjtu.edu.cn , mingyangren@sjtu.edu.cn 
+
+## Abstract 
+
+Vision-language-action (VLA) models and world-action models (WAMs) have emerged as promising approaches to robot learning and control. These models integrate multimodal perception and action generation, but differ in their architec-tures, output representations, and learning objectives. In this paper, we present a unified, architecture-agnostic probabilistic formulation for embodied foundation models based on stochastic kernels. Our formulation has two key components: (i) we characterize embodied foundation models through conditional output distribu-tions and action-realization kernels, which together induce task-conditioned robot policies; and (ii) we connect pretraining and post-training to policy deployment, accommodating model-specific pretraining objectives and offline or online post-training strategies. We instantiate the formulation for OpenVLA and DreamZero, covering autoregressive action-token prediction and joint video-action generation. 
+
+## 1 Introduction 
+
+Robot learning is moving from task-specific controllers toward embodied AI systems that learn reusable perception-to-action policies across tasks and embodiments [O’Neill et al., 2024, Team et al., 2024b]. At its current stage, embodied AI largely adapts the broader foundation-model development pipeline to physical interaction [Driess et al., 2023]. This pipeline combines a shared architectural core with three stages: pre-training, post-training, and deployment. The shared architectural core is typically based on the Transformer family, with modality-specific encoders, tokenizers, or output heads added (if needed) [Vaswani et al., 2017, Brown et al., 2020, Team et al., 2024a, Xu et al., 2025, Team, 2026]. First, pre-training learns general representations from large-scale corpora and multimodal collections through model-specific objectives [Brown et al., 2020, Team et al., 2024a, Team, 2026]. Specifically for LLMs, the resulting next-token loss follows predictable power-law relations in model size, data, and compute (similarly rigorous scaling laws are less established for other foundation models) [Kaplan et al., 2020, Hoffmann et al., 2022, Yang et al., 2025]. Second, post-training adapts the pretrained model to follow instructions, align with human or verifiable preferences, and improve downstream task performance [Wei et al., 2021, Ouyang et al., 2022]. Common approaches include supervised fine-tuning (SFT) and preference optimization (e.g., DPO and KTO) [Ouyang et al., 2022, Rafailov et al., 2023, Ethayarajh et al., 2024]. Other routes use reinforcement learning (e.g., RLHF and RLVR, often implemented with PPO or GRPO) or on-policy distillation (OPD) [Ouyang et al., 2022, Schulman et al., 2017, Shao et al., 2024, Guo et al., 2025, Agarwal et al., 2024]. Finally, deployment turns the trained model into a reusable inference and reasoning core. The above foundation-model pipeline has shown broad effectiveness across scales and modalities, underpinning recent language and reasoning models (e.g., GPT-5.6 and DeepSeek-V4), multimodal or omnimodal models such as MiniMax M3 and Qwen3.5-Omni, and generative 
+
+> ∗Corresponding author Preprint. arXiv:2610.23053v1 [cs.RO] 16 Oct 2026
+
+models including FLUX.2 [Achiam et al., 2023, Xu et al., 2026, Team, 2026]. The resulting models can also serve as reasoning and perception cores for agents [Hong et al., 2026a]. Such agents support tool use, coding, digital-environment interaction, and multi-agent coordination [Yao et al., 2022, Schick et al., 2023, Yang et al., 2024, Wu et al., 2023]. Can the success of large foundation models be carried into the physical world? The above non-embodied foundation models generally learn a mapping fθ : X → Y from input data to predictions or generated content [Hong et al., 2026b]. However, for robot learning, embodied foundation models aim to induce a task-conditioned policy πθ : T × C → P (A) that maps the available interaction history and task condition to a probability distribution over robot actions. Fitting a fixed data distribution is insufficient, since a policy must also perform well on the trajectories induced by its own actions [Kaelbling et al., 1998, Ross et al., 2011, Brohan et al., 2023]. Vision-language-action (VLA) models pursue this policy-learning objective by combining visual observations and language instructions to generate robot actions. The Robotics Transformer (RT) series develops this approach from RT-1’s discretized action prediction to RT-2’s transfer of internet-scale visual-semantic knowledge through autoregressive action-token prediction [Brohan et al., 2022, 2023]. OpenVLA likewise adapts a pretrained vision-language backbone with an action-token cross-entropy objective, while π0 couples such a backbone to a flow-matching action expert that generates continuous action chunks [Kim et al., 2024, Black et al., 2024]. Scaling their robot pre-training is constrained by the difficulty of collecting real robot trajectories across diverse tasks, environments, and embodiments [O’Neill et al., 2024, Black et al., 2024]. Video pre-training offers a complementary route to learning motion and scene dynamics from internet-scale data without robot action labels, reducing reliance on embodiment-specific trajectories for acquiring these priors [Assran et al., 2025, Ye et al., 2026]. For control, the value of this pre-training lies in acquiring transferable regularities of physical interaction that support action, rather than visual realism alone [Assran et al., 2025]. Such priors support control through predictive world models, as in UniPi, which uses inverse dynamics to extract robot actions from generated video plans [Ha and Schmidhuber, 2018, Du et al., 2023]. World-action models (WAMs) couple these visual predictions with action generation under language conditioning, as in DreamZero, which adapts a pretrained video diffusion backbone to jointly generate future video and robot actions [Ye et al., 2026]. Conditioned on visual history and proprioception, DreamZero uses flow matching within chunks and autoregressive generation across chunks [Ye et al., 2026]. Real robot trajectories ground these pretrained representations in embodiment-specific commands and physical transitions, supporting transfer across tasks, environments, and embodiments [O’Neill et al., 2024, Intelligence et al., 2025]. Adapting these representations to downstream control can also change the model’s outputs, as π0.5
+
+adds a continuous action expert during post-training after discrete-token pre-training [Intelligence et al., 2025]. The resulting outputs must then be converted into executable actions through decoding and action selection or scheduling [Kim et al., 2024, Black et al., 2024, Ye et al., 2026]. These actions change the observations conditioning subsequent predictions, so the deployed policy depends on both the learned output distribution and its realization in closed-loop interaction. A common description must therefore connect these two components with the objectives and data used in pre-training and post-training. Motivated by this connection, we develop an architecture-agnostic probabilistic formulation based on stochastic kernels. To the best of our knowledge, this is the first formulation that explicitly connects model output distributions and action realization with pre-training, post-training, and closed-loop robot interaction for both VLAs and WAMs. We instantiate it for OpenVLA and DreamZero. 
+
+## 2 Task-Conditioned Robot Interaction Setting 
+
+We consider a robot interaction setting in which a robot observes its environment and takes actions to complete a given task. Let T denote the number of action steps, indexed by t ∈ { 0, . . . , T − 1}, with 
+
+ot ∈ O denoting the observation available at step t and at ∈ A the action selected at that step, where 
+
+O is the observation space and A is the action space. Specifically, given a task condition c ∈ C and an initial observation o0, the robot selects at based on the available trajectory τ≤t = ( o0, a 0, . . . , o t) ∈T , where C is the space of task conditions and T is the space of partial trajectories. The robot then receives ot+1 and repeats this process with the new observation for t = 0 , . . . , T − 1. After T action steps, the resulting complete trajectory is τ = ( o0, a 0, . . . , a T −1, o T ). Within this setting, we aim to model task-conditioned action selection through a policy πθ : T × C → P (A), where P(A) denotes the space of probability distributions over actions and θ denotes the learnable parameters. At each step t, given τ≤t and c, the robot samples its next action through at ∼ πθ (· | τ≤t, c ).23 Unified Formulation for Embodied Foundation Models 
+
+We present a unified, architecture-agnostic formulation of how an embodied foundation model induces 
+
+πθ (· | τ≤t, c ) through pre-training and post-training. Firstly, we denote the embodied foundation model by fθ : T ×C → P (Y), where Y is the output space and P(Y) denotes the space of probability measures on Y. Here, fθ incorporates the specified sampling, decoding, planning, and inference procedures, including asynchronous generation when applicable. At each step t, the output yt ∈ Y has conditional distribution yt | (τ≤t, c ) ∼ fθ (· | τ≤t, c ). That is, fθ (E | τ≤t, c ) = Pr θ (yt ∈ E | τ≤t, c )
+
+for every measurable set E ⊆ Y . To obtain at from yt, we define a measurable action-realization kernel qθ : Y × T × C → P (A) and sample at ∼ qθ (· | yt, τ ≤t, c ). The action-realization kernel qθ
+
+maps model outputs to executable actions, incorporating action selection and scheduling procedures when applicable. By specifying the output space Y and the corresponding kernel qθ, the unified formulation accommodates several representative embodied model architectures as follows. The expressions below hold for every measurable set B ⊆ A , where 1{·} denotes the indicator function: (i) Direct action outputs: Y = A, y = a, and qθ (B | y, τ ≤t, c ) = 1{a ∈ B} (e.g., RoboFlamingo [Li et al., 2024]). (ii) Joint video and action chunks: Y = IF × A H and y = ( I′, a′), where I is the image space and F, H ≥ 1 are the numbers of predicted frames and actions, respectively (e.g., DreamZero [Ye et al., 2026]). At step t, y denotes the available joint chunk, which may have been generated at an earlier step. The action-realization kernel qθ (B | y, τ ≤t, c ) specifies the conditional probability that the executable action selected from the available chunk belongs to B, incorporating action scheduling and smoothing when applicable. (iii) Action tokens with decoded actions: Y = V∗ × A , y = ( s, a ), and qθ (B | y, τ ≤t, c ) = 
+
+1{a ∈ B}, where V∗ is the set of finite token sequences over a vocabulary V, and a is obtained by decoding s through the procedure included in fθ (e.g., OpenVLA [Kim et al., 2024]). (iv) Action chunks [Zhao et al., 2023, Chi et al., 2025]: Y = AH , y = a, and qθ (B | y, τ ≤t, c ) = 
+
+1{a0 ∈ B}, where H ≥ 1 is a prediction horizon and a = ( a0, . . . , a H−1) is an action chunk with indices local to the chunk. This realization executes the first predicted action before replanning (e.g., GR00T N1 [Bjorck et al., 2025]). (v) Latent actions with decoded actions: Y = Z × A , y = ( z, a ), and qθ (B | y, τ ≤t, c ) = 
+
+1{a ∈ B}, where Z is a latent action space and a is obtained by decoding z through the procedure included in fθ (e.g., VQ-VLA [Wang et al., 2025]). (vi) Video plans with extracted actions: Y = OH × A , y = ( o′, a ), and qθ (B | y, τ ≤t, c ) = 
+
+1{a ∈ B}, where H ≥ 1 is a prediction horizon, o′ = ( o′
+
+> 1
+
+, . . . , o ′ 
+
+> H
+
+) is a video plan with 
+
+o′ 
+
+> j
+
+∈ O , and a is obtained from this plan through the action-extraction procedure included in fθ [Du et al., 2023] (e.g., LVP [Chen et al., 2025]). 
+
+Pre-training. We consider offline pre-training as follows. Given a pre-training dataset Dpre =
+
+{zpre  
+
+> i
+
+}Npre  
+
+> i=1
+
+, we write the corresponding empirical pre-training loss as 
+
+bLpre (θ) = 1
+
+Npre 
+
+> Npre
+
+X
+
+> i=1
+
+ℓpre (θ, z pre  
+
+> i
+
+), (1) where ℓpre (θ, z ) denotes the per-example loss specified by the chosen pre-training method, and z
+
+denotes a training example. We estimate θ by optimizing bLpre (θ) and set θpre ← θ.
+
+Post-training. To adapt fθpre and qθpre for robot action selection, let Doff = {zoff  
+
+> i
+
+}Noff  
+
+> i=1
+
+denote a fixed offline dataset and D(k)on = {zon ,(k) 
+
+> i
+
+}N (k)on  
+
+> i=1
+
+denote online experience available at iteration k.Online experience is collected through interaction with real or simulated environments using current or previously used policies and may be accumulated or refreshed across iterations [Ross et al., 2011, Ball et al., 2023]. We have the following empirical loss: 
+
+bL(k)post (θ) = 1 − αk
+
+Noff 
+
+> Noff
+
+X
+
+> i=1
+
+ℓ(k)off (θ, z off  
+
+> i
+
+) + αk
+
+N (k)on  
+
+> N(k)on
+
+X
+
+> i=1
+
+ℓ(k)on (θ, z on ,(k) 
+
+> i
+
+), (2) 3where ℓ(k)off and ℓ(k)on are the corresponding per-example losses specified by the chosen post-training method and αk ∈ [0 , 1] controls their relative weighting. Specifically, αk = 0 uses only offline data, 
+
+αk = 1 uses only online data, and αk ∈ (0 , 1) combines both. These losses update the learnable parameters of fθ and, where applicable, qθ , which together determine the induced policy πθ . Starting from θ(0) = θpre , we optimize bL(k)post iteratively and obtain θpost = θ(K) after K iterations. 
+
+Deployment. Combining outputs from fθpost with the action-realization kernel qθpost gives the deployed policy. Depending on the specific implementation, action realization may be deterministic or stochastic, as described below for any measurable action set B ⊆ A :(i) Deterministic action realization: qθpost concentrates on a single action given y, τ≤t, and 
+
+c, so qθpost (B | y, τ ≤t, c ) ∈ { 0, 1}. Conditional on τ≤t and c, the events at ∈ B and 
+
+qθpost (B | yt, τ ≤t, c ) = 1 agree almost surely. Consequently, 
+
+πθpost (B | τ≤t, c ) := Pr 
+
+> θpost
+
+(at ∈ B | τ≤t, c )= Pr 
+
+> θpost
+
+ qθpost (B | yt, τ ≤t, c ) = 1 | τ≤t, c 
+
+=
+
+Z
+
+> Y
+
+1{qθpost (B | y, τ ≤t, c ) = 1 }fθpost (d y | τ≤t, c ).
+
+(3) (ii) Stochastic action realization: qθpost need not concentrate on a single action given y, τ≤t,and c. Conditioning on yt and applying the law of total expectation gives 
+
+πθpost (B | τ≤t, c ) := Pr 
+
+> θpost
+
+(at ∈ B | τ≤t, c )= Eθpost 
+
+qθpost (B | yt, τ ≤t, c ) | τ≤t, c 
+
+=
+
+Z
+
+> Y
+
+qθpost (B | y, τ ≤t, c )fθpost (d y | τ≤t, c ).
+
+(4) Although Eq. 4 generalizes Eq. 3 mathematically, we explicitly separate them to highlight the practical distinction between deterministic decoding and stochastic sampling. In either case, sampling yt ∼ fθpost (· | τ≤t, c ), then sampling at ∼ qθpost (· | yt, τ ≤t, c ) and executing it implements πθpost .
+
+## 4 Vision-Language-Action (VLA) Model 
+
+Model Architecture. We specialize the unified formulation to the OpenVLA architecture [Kim et al., 2024]. Specifically, we represent the model as fθ : O × C → P (Y), where O is the image observation space, C is the language instruction space, Y = V∗ × A is the output space, V∗ denotes the set of finite token sequences over the vocabulary V, A ⊆ R7 is the robot action space, and P(Y)
+
+denotes the space of probability distributions over Y. Unlike the general formulation, OpenVLA conditions only on the current image ot and language instruction c, so fθ (· | τ≤t, c ) = fθ (· | ot, c ).Let θ = ( θD, θ S, θ P, θ L) denote the parameters of DINOv2 [Oquab et al., 2023], SigLIP [Zhai et al., 2023], the MLP projector, and the language model, respectively. First, at step t, given an input image ot ∈ O , the visual encoders DINOv2 θD : O → R256 ×1024 and 
+
+SigLIP θS : O → R256 ×1152 extract features for 256 spatially aligned patches, with their respective 
+
+224 × 224 image preprocessing included in these encoders. Then, we horizontally concatenate their outputs as [DINOv2 θD (ot), SigLIP θS (ot)] ∈ R256 ×2176 . The concatenated outputs are then fed into an MLP projector MLP θP : R256 ×2176 → R256 ×4096 , yielding the visual token embeddings 
+
+Himg  
+
+> t
+
+= MLP θP ([DINOv2 θD (ot), SigLIP θS (ot)]) ∈ R256 ×4096 .Second, given a language instruction c ∈ C , the tokenizer Tok : C → V ∗ applies the fixed instruction-prompt format and tokenizer, producing Tok( c) = ( t1, . . . , t m) ∈ V m, where m is the prompt length and ti is the i-th token, with t1 being the beginning-of-sequence token. These tokens are then mapped into the language-model embedding space, yielding the language token embeddings Hlang  
+
+> t
+
+= Embed θL (Tok( c)) ∈ Rm×4096 , where Embed θL denotes the tokenwise em-bedding operation. We then combine the visual and language token embeddings by inserting the 4Algorithm 1 Embodied Foundation Models: End-to-End Learning and Deployment 
+
+Input: Model fθ, action-realization kernel qθ, initial parameters θ, pre-training data Dpre ,offline data Doff , initial online experience D(0) on , losses ℓpre , {ℓ(k)off , ℓ (k)on }K−1 
+
+> k=0
+
+, mixing weights 
+
+{αk}K−1 
+
+> k=0
+
+, post-training iterations K, environment access, task condition c, initial observation 
+
+o0, deployment horizon T
+
+Output: Parameters θpost and trajectory τ
+
+Pre-training phase  
+
+> 1:
+
+Optimize θ by minimizing Eq. (1)  
+
+> 2:
+
+Set θpre ← θ
+
+Post-training phase  
+
+> 3:
+
+Initialize θ(0) ← θpre  
+
+> 4:
+
+for k = 0 , . . . , K − 1 do  
+
+> 5:
+
+if αk > 0 then  
+
+> 6:
+
+Collect or refresh D(k)on through interaction under πθ(k) 
+
+> 7:
+
+end if  
+
+> 8:
+
+Obtain θ(k+1) by optimizing Eq. (2) from θ(k) 
+
+> 9:
+
+end for  
+
+> 10:
+
+Set θpost ← θ(K)
+
+Deployment phase  
+
+> 11:
+
+Initialize τ≤0 ← (o0) 
+
+> 12:
+
+for t = 0 , . . . , T − 1 do  
+
+> 13:
+
+Sample yt ∼ fθpost (· | τ≤t, c ) 
+
+> 14:
+
+Sample at ∼ qθpost (· | yt, τ ≤t, c ) 
+
+> 15:
+
+Execute at and receive ot+1  
+
+> 16:
+
+Update τ≤t+1 ← (τ≤t, a t, o t+1 ) 
+
+> 17:
+
+end for  
+
+> 18:
+
+return θpost and τ ← τ≤T
+
+visual embeddings immediately after the beginning-of-sequence token, yielding the multimodal em-bedding sequence Ht = Concat rows (Hlang  
+
+> t
+
+[1 , :] , H img  
+
+> t
+
+, H lang  
+
+> t
+
+[2 : m, :]) ∈ R(m+256) ×4096 , where 
+
+Concat rows concatenates its arguments along the row dimension, Hlang  
+
+> t
+
+[1 , :] is treated as a sin-gle row, and Hlang  
+
+> t
+
+[2 : m, :] denotes the remaining rows. The resulting multimodal embedding sequence Ht is then fed into Llama 2 7B [Touvron et al., 2023] for autoregressive action-token prediction. Specifically, let Llama θL : R(m+256) ×4096 × V ∗ → P (V) denote its next-token predictor, including the embedding of preceding action tokens, where P(V) denotes the set of probability distributions over V. For an action-token sequence s = ( s1, . . . , s 7) ∈ V 7, the model defines 
+
+pθ (s | ot, c ) = Q7 
+
+> j=1
+
+Llama θL (Ht, s <j )( sj ), where s<j = ( s1, . . . , s j−1) denotes the preceding ac-tion tokens and is empty for j = 1 . The resulting action-token sequence st = ( st, 1, . . . , s t, 7) ∈ V 7 is converted into a continuous action vector at = Detokenizer( st) ∈ A , where Detokenizer : V7 → A 
+
+denotes OpenVLA’s fixed action-token decoding and dataset-specific unnormalization procedure. Thus, the model output is yt = ( st, a t) ∈ Y . The resulting seven-dimensional vector at is the robot action command, which is then executed through the robot’s control interface. 
+
+Pre-training. We initialize θ from the pretrained Prismatic VLM [Karamcheti et al., 2024], which integrates DINOv2, SigLIP, and Llama 2 7B and is trained on vision-language data. We do not elaborate on this upstream VLM training. Instead, OpenVLA pre-training further optimizes θ using robot demonstration data from Open X-Embodiment [Kim et al., 2024]. Following the unified formulation, let Dpre = {zpre  
+
+> i
+
+}Npre  
+
+> i=1
+
+, where zpre  
+
+> i
+
+= ( oi, c i, a i) consists of an observation oi ∈ O ,a language instruction ci ∈ C , and a ground-truth robot action ai ∈ A , and Npre is the number of training examples. Each action ai is normalized and discretized using OpenVLA’s fixed action tokenizer to obtain the ground-truth action-token sequence si = ( si, 1, . . . , s i, 7) ∈ V 7. Given the multimodal embedding sequence Hi constructed from (oi, c i) as described above, the per-example 5pre-training cross-entropy loss is defined as 
+
+ℓpre (θ, z pre  
+
+> i
+
+) = − 17
+
+> 7
+
+X
+
+> j=1
+
+log Llama θL (Hi, s i,<j )( si,j ), (5) where si,<j = ( si, 1, . . . , s i,j −1) denotes the ground-truth preceding action tokens, with si,< 1 being empty. The loss uses teacher forcing to supervise the seven action tokens. Following Eq. (1), we minimize the empirical objective bLpre (θ) = 1
+
+> Npre
+
+PNpre  
+
+> i=1
+
+ℓpre (θ, z pre  
+
+> i
+
+) and denote the resulting pretrained VLA parameters by θpre .
+
+Post-training. Starting from the pretrained VLA parameters θ(0) = θpre , OpenVLA performs supervised fine-tuning (SFT) on downstream robot demonstrations Doff = {zoff  
+
+> i
+
+}Noff  
+
+> i=1
+
+(e.g., task-specific demonstrations for placing a carrot in a bowl, moving an instructed object onto a plate, and wiping a table, collected using the Franka-Tabletop and Franka-DROID robot setups) [Kim et al., 2024], where zoff  
+
+> i
+
+= ( oi, c i, a i) follows the same data format as in pre-training. SFT uses the same teacher-forced action-token cross-entropy loss as pre-training, but optimizes it on downstream demonstrations. Since only offline data are used, we set αk = 0 for all k, reducing Eq. (2) to 
+
+bL(k)post (θ) = 1
+
+> Noff
+
+PNoff  
+
+> i=1
+
+ℓ(k)off (θ, z off  
+
+> i
+
+), where ℓ(k)off has the same functional form as ℓpre . Optimizing this objective yields the post-trained parameters θpost = θ(K).
+
+Deployment. Following the deployment procedure in the unified algorithm, OpenVLA uses greedy decoding to generate action tokens. Specifically, at each step t, given the multimodal embedding sequence Ht constructed from (ot, c ), the j-th action token is selected as 
+
+st,j = arg max  
+
+> v∈V
+
+Llama θpost L
+
+(Ht, s t,<j )( v), j = 1 , . . . , 7, (6) where θpost L denotes the language-model parameters within θpost , and st,<j = ( st, 1, . . . , s t,j −1)
+
+denotes the previously generated action tokens, with st,< 1 being empty. The resulting sequence 
+
+st is detokenized into at = Detokenizer( st), yielding yt = ( st, a t). Since greedy decoding and action detokenization are deterministic, fθpost (· | ot, c ) assigns probability one to yt, and the action-realization kernel qθpost deterministically extracts at from yt.
+
+## 5 World Action Models (WAMs) 
+
+While conventional vision-language-action (VLA) models primarily learn to predict robot actions from visual and language inputs, world-action models (WAMs) additionally model future environment evolution by jointly predicting future observations and robot actions. We discuss DreamZero [Ye et al., 2026] in detail below. 
+
+Model Architecture. We specialize the unified formulation to DreamZero [Ye et al., 2026], repre-senting the model as fθ : T × C → P (Y), where T is the interaction history space, C is the language instruction space, and Y = IF × A H is the joint video-action output space. Here, I ⊆ Rh×w×3
+
+denotes the RGB image space, A ⊆ Rd denotes the robot action space, and F, H ≥ 1 are the numbers of predicted video frames and robot actions, respectively. At step t, the observation 
+
+ot = ( It, p t) ∈ O = I × S consists of an image It ∈ I and proprioceptive state pt ∈ S ⊆ Rds .DreamZero conditions on the available visual history I≤t = ( I0, . . . , I t), current proprioceptive state pt, and language instruction c ∈ C . The model builds upon Wan2.1-I2V-14B [Wan et al., 2025] and employs a joint video-action Diffusion Transformer (DiT) [Peebles and Xie, 2023]. Let 
+
+θ = ( θD, θ S, θ E, θ A) denote the parameters of the DiT backbone, state encoder, action encoder, and action decoder, respectively. • Encoding. First, DreamZero encodes the visual history, language instruction, and pro-prioceptive state into a conditioning representation. Let Ictx  
+
+> t
+
+denote the finite visual context retained from I≤t. The fixed video VAE encoder VAEEnc maps this context into video latents, while the fixed image encoder ImageEnc : I → R257 ×1280 extracts features from the current image It. The fixed text encoder TextEnc : C → Rm×4096 
+
+6processes the language instruction, where m ≤ 512 denotes the number of text to-kens. The state encoder StateEnc θS : S → R5120 embeds the proprioceptive state, in-cluding padding to 64 dimensions. These representations form the conditioning tuple 
+
+Ct = (VAEEnc( Ictx  
+
+> t
+
+), ImageEnc( It), TextEnc( c), StateEnc θS (pt)) . Separately, the ac-tion encoder ActionEnc θE : RH×32 × [0 , 1] → RH×5120 embeds the action variables and flow time for joint processing within the DiT. • Joint Video-Action DiT. Second, DreamZero jointly models future video and robot actions in a latent space. Let Z = R2×16 ×hv ×wv denote the video latent chunk space, where 
+
+hv = h/ 8 and wv = w/ 8, and define the joint latent space X = Z × RH×32 . Given future video frames I ∈ I F and corresponding robot actions a ∈ A H spanning the same time interval, the clean joint sample is x1 = (VAEEnc( I), Normalize( a)) ∈ X , where 
+
+Normalize : AH → RH×32 performs action normalization and padding. The video VAE includes the temporal processing required to represent each predicted chunk using two latent frames. With Gaussian noise x0 ∼ N (0 , I dim X ) and flow time s ∈ [0 , 1] , the intermediate joint state is xs = (1 − s)x0 + sx 1, where the joint space is identified with its vectorized Euclidean representation. The DiT predicts the corresponding velocity through 
+
+vθ (xs, s, C t) = DiT θ (xs, s, C t) ∈ X , (7) where DiT θ includes the action encoder, shared transformer backbone, and modality-specific input and output transformations. • Generation and Decoding. Third, DreamZero generates future video frames and robot actions through the learned joint velocity field. Starting from Gaussian noise, the conditional flow produces a generated joint latent bx1 = ( bz1, bb1) ∈ X . The video component is decoded through the fixed video VAE decoder VAEDec , while the action component is converted into executable robot actions through the fixed unnormalization operation Unnormalize : 
+
+RH×32 → A H . The resulting output is y = ( I′, a′) ∈ Y , where I′ = VAEDec( bz1) ∈ I F
+
+and a′ = Unnormalize( bb1) ∈ A H . Thus, DreamZero jointly generates predicted future observations and their corresponding robot actions. 
+
+Pre-training. DreamZero [Ye et al., 2026] is pre-trained on robot interaction trajectories from approximately 500 hours of AgiBot G1 teleoperation data and the DROID dataset for Franka, with separate models trained for the two embodiments. Following the unified formulation, let Dpre = {zpre  
+
+> i
+
+}Npre  
+
+> i=1
+
+, where zpre  
+
+> i
+
+= ( τ (i), c (i)) consists of an interaction trajectory τ (i) =(o(i)0 , a (i)0 , . . . , a (i)
+
+> Ti−1
+
+, o (i) 
+
+> Ti
+
+) and its corresponding language instruction c(i). Each trajectory is di-vided into M temporally aligned video-action chunks. For chunk j, the clean joint sample is x(j)1 = (VAEEnc( I(j)), Normalize( a(j))) ∈ X . Independently sampling Gaussian noise 
+
+x(j)0 ∼ N (0 , I dim X ) and flow time sj ∼ U (0 , 1) , we construct x(j) 
+
+> sj
+
+= (1 − sj )x(j)0 + sj x(j)1 ,with target velocity v(j) = x(j)1 − x(j)0 . DreamZero uses the same flow time for the video and action components within each chunk. During training, teacher forcing conditions each noisy chunk on the preceding clean chunks. Let eCi,j denote this teacher-forced conditioning representation, incorporating the preceding clean context, language instruction, and current proprioceptive state from 
+
+zpre  
+
+> i
+
+. The per-example joint flow-matching loss is defined as 
+
+ℓpre (θ, z pre  
+
+> i
+
+) = E{sj ,x (j)0 }Mj=1 
+
+ 1
+
+M
+
+> M
+
+X
+
+> j=1
+
+w(sj ) vθ (x(j) 
+
+> sj
+
+, s j , eCi,j ) − v(j) 22
+
+ , (8) where w(sj ) > 0 is a predefined flow-time weighting function. The loss jointly supervises video and action velocity prediction, allowing the shared DiT to learn environment dynamics and robot control. Following Eq. (1), we minimize the empirical objective bLpre (θ) = 1
+
+> Npre
+
+PNpre  
+
+> i=1
+
+ℓpre (θ, z pre  
+
+> i
+
+)
+
+and denote the resulting pretrained parameters by θpre . During optimization, the DiT backbone, state encoder, action encoder, and action decoder are updated, while the video VAE, image encoder, and text encoder remain frozen. 
+
+Post-training. DreamZero [Ye et al., 2026] adapts the pretrained WAM to downstream manipulation tasks through offline supervised fine-tuning (SFT). Starting from θ(0) = θpre , the model is fine-tuned 7separately on task-specific robot demonstrations, including shirt folding, fruit packing, and table bussing. For each task, let Doff = {zoff  
+
+> i
+
+}Noff  
+
+> i=1
+
+, where zoff  
+
+> i
+
+= ( τi, c i) follows the same data format as pre-training. SFT retains the joint flow-matching objective in Eq. (8), using the same noise interpolation, velocity supervision, and teacher forcing. Since only offline data are used, we set 
+
+αk = 0 in Eq. (2), yielding bL(k)post (θ) = 1
+
+> Noff
+
+PNoff  
+
+> i=1
+
+ℓ(k)off (θ, z off  
+
+> i
+
+), where ℓ(k)off has the same functional form as ℓpre . The DiT backbone, state encoder, action encoder, and action decoder are fine-tuned, while the video VAE, image encoder, and text encoder remain frozen. The model is optimized for 50,000 steps on each downstream task, producing task-specific post-trained parameters θpost = θ(K).
+
+Deployment. DreamZero [Ye et al., 2026] uses the post-trained parameters θpost to jointly generate future video frames and robot actions for closed-loop control. Given the available interaction history 
+
+τ≤t and language instruction c, the model constructs the conditioning representation Ct from the observed visual history, current proprioceptive state, and language instruction. To generate a new video-action chunk, DreamZero samples x0 ∼ N (0 , I dim X ) and numerically integrates the learned velocity field according to 
+
+dxs
+
+ds = vθpost (xs, s, C t), xs s=0 = x0, s ∈ [0 , 1] , (9) obtaining the generated joint latent bx1 = ( bz1, bb1). The video and action components are decoded as 
+
+I′ = VAEDec( bz1) and a′ = Unnormalize( bb1), yielding a new joint output y = ( I′, a′) ∈ Y . For real-time control, DreamZero executes action chunks asynchronously while generating subsequent chunks using updated observations. At control step t, let yt denote the available joint chunk selected for execution, which may have been generated at an earlier step. The deployed kernel fθpost (· | τ≤t, c )
+
+represents the conditional distribution of this available output, including asynchronous generation and scheduling. The action-realization kernel qθpost (· | yt, τ ≤t, c ) represents the selection of the executable action from the available chunk, including action smoothing when applied. Together, 
+
+fθpost and qθpost induce the deployed policy πθpost through Eq. (4). After executing at, the robot receives a new observation ot+1 = ( It+1 , p t+1 ) and updates the interaction history as τ≤t+1 =(τ≤t, a t, o t+1 ). The updated observations condition subsequent video-action generation, enabling closed-loop interaction. 
+
+## 6 Discussion 
+
+We present the first architecture-agnostic probabilistic formulation based on stochastic kernels that explicitly connects pre-training, post-training, and closed-loop robot interaction for embodied foundation models. By relating heterogeneous model outputs to task-conditioned robot policies, this formulation provides a common probabilistic language for understanding embodied models with different architectures, output representations, and learning objectives. More importantly, it clarifies how pre-training and post-training shape the policies deployed in closed-loop interaction. Future work may build upon this framework to investigate how different pre-training and post-training strategies affect policy-induced distribution shifts and generalization across tasks, environments, and embodiments. 8References 
+
+Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, Florencia Leoni Aleman, Diogo Almeida, Janko Altenschmidt, Sam Altman, Shyamal Anadkat, et al. Gpt-4 technical report. 
+
+arXiv preprint arXiv:2303.08774 , 2023. Rishabh Agarwal, Nino Vieillard, Yongchao Zhou, Piotr Stanczyk, Sabela Ramos Garea, Matthieu Geist, and Olivier Bachem. On-policy distillation of language models: Learning from self-generated mistakes. In International Conference on Learning Representations , volume 2024, pages 21246–21263, 2024. Mido Assran, Adrien Bardes, David Fan, Quentin Garrido, Russell Howes, Matthew Muckley, Ammar Rizvi, Claire Roberts, Koustuv Sinha, Artem Zholus, et al. V-jepa 2: Self-supervised video models enable understanding, prediction and planning. arXiv preprint arXiv:2506.09985 , 2025. Philip J Ball, Laura Smith, Ilya Kostrikov, and Sergey Levine. Efficient online reinforcement learning with offline data. In International Conference on Machine Learning , pages 1577–1594. PMLR, 2023. Johan Bjorck, Fernando Castañeda, Nikita Cherniadev, Xingye Da, Runyu Ding, Linxi Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, et al. Gr00t n1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734 , 2025. Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, et al. π0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164 , 2024. Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Joseph Dabis, Chelsea Finn, Keerthana Gopalakrishnan, Karol Hausman, Alex Herzog, Jasmine Hsu, et al. Rt-1: Robotics transformer for real-world control at scale. arXiv preprint arXiv:2212.06817 , 2022. Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, Danny Driess, Avinava Dubey, Chelsea Finn, et al. Rt-2: Vision-language-action models transfer web knowledge to robotic control. arXiv preprint arXiv:2307.15818 , 2023. Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems , 33:1877–1901, 2020. Boyuan Chen, Tianyuan Zhang, Haoran Geng, Caiyi Zhang, Peihao Li, Kiwhan Song, William T Free-man, Jitendra Malik, Pieter Abbeel, Russ Tedrake, et al. Large video planner enables generalizable robot control. arXiv preprint arXiv:2512.15840 , 2025. Cheng Chi, Zhenjia Xu, Siyuan Feng, Eric Cousineau, Yilun Du, Benjamin Burchfiel, Russ Tedrake, and Shuran Song. Diffusion policy: Visuomotor policy learning via action diffusion. The International Journal of Robotics Research , 44(10-11):1684–1704, 2025. Danny Driess, Fei Xia, Mehdi SM Sajjadi, Corey Lynch, Aakanksha Chowdhery, Brian Ichter, Ayzaan Wahid, Jonathan Tompson, Quan Vuong, Tianhe Yu, et al. Palm-e: An embodied multimodal language model. arXiv preprint arXiv:2303.03378 , 2023. Yilun Du, Sherry Yang, Bo Dai, Hanjun Dai, Ofir Nachum, Josh Tenenbaum, Dale Schuurmans, and Pieter Abbeel. Learning universal policies via text-guided video generation. Advances in neural information processing systems , 36:9156–9172, 2023. Kawin Ethayarajh, Winnie Xu, Niklas Muennighoff, Dan Jurafsky, and Douwe Kiela. Model alignment as prospect theoretic optimization. In Forty-first International Conference on Machine Learning , 2024. Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 , 2025. David Ha and Jürgen Schmidhuber. World models. arXiv preprint arXiv:1803.10122 , 2018. 9Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Ruther-ford, Diego de Las Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, Thomas Anthony Hennigan, Eric Noland, Katherine Millican, George van den Driessche, Bogdan Damoc, Aurelia Guy, Simon Osindero, Karen Simonyan, Erich Elsen, Oriol Vinyals, Jack W. Rae, and Laurent Sifre. Training Compute-Optimal Large Language Models. neural information processing systems ,pages 30016–30030, 2022. doi: 10.52202/068431-2176. Xinyi Hong, Pinjun Dong, Xinyang Yu, and Binyan Jiang. Tools are not islands: Set-level tool retrieval for llm agents via query-conditioned hyperedge prediction. arXiv preprint arXiv:2607.25718 ,2026a. Xinyi Hong, Shuntuo Xu, and Zhou Yu. Hyvint: Intensity-driven hypergraph generation with variational representations. arXiv preprint arXiv:2605.16836 , 2026b. Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, et al. π0.5: a vision-language-action model with open-world generalization. arXiv preprint arXiv:2504.16054 , 2025. Leslie Pack Kaelbling, Michael L Littman, and Anthony R Cassandra. Planning and acting in partially observable stochastic domains. Artificial intelligence , 101(1-2):99–134, 1998. Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. 
+
+arXiv preprint arXiv:2001.08361 , 2020. Siddharth Karamcheti, Suraj Nair, Ashwin Balakrishna, Percy Liang, Thomas Kollar, and Dorsa Sadigh. Prismatic vlms: Investigating the design space of visually-conditioned language models. 
+
+arXiv preprint arXiv:2402.07865 , 2024. Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, et al. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246 , 2024. Xinghang Li, Minghuan Liu, Hanbo Zhang, Cunjun Yu, Jie Xu, Hongtao Wu, Chilam Cheang, Ya Jing, Weinan Zhang, Huaping Liu, et al. Vision-language foundation models as effective robot imitators. In International Conference on Learning Representations , volume 2024, pages 26703–26721, 2024. Maxime Oquab, Timothée Darcet, Théo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez, Daniel Haziza, Francisco Massa, Alaaeldin El-Nouby, et al. Dinov2: Learning robust visual features without supervision. arXiv preprint arXiv:2304.07193 , 2023. Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, et al. Training language models to follow instructions with human feedback. Advances in neural information processing systems , 35:27730– 27744, 2022. Abby O’Neill, Abdul Rehman, Abhiram Maddukuri, Abhishek Gupta, Abhishek Padalkar, Abraham Lee, Acorn Pooley, Agrim Gupta, Ajay Mandlekar, Ajinkya Jain, et al. Open x-embodiment: Robotic learning datasets and rt-x models: Open x-embodiment collaboration 0. In 2024 IEEE International Conference on Robotics and Automation (ICRA) , pages 6892–6903. IEEE, 2024. William Peebles and Saining Xie. Scalable Diffusion Models with Transformers. 2023 IEEE/CVF International Conference on Computer Vision (ICCV) , pages 4172–4182, 2023. doi: 10.1109/ iccv51070.2023.00387. Rafael Rafailov, Archit Sharma, Eric Mitchell, Christopher D Manning, Stefano Ermon, and Chelsea Finn. Direct preference optimization: Your language model is secretly a reward model. Advances in neural information processing systems , 36:53728–53741, 2023. Stéphane Ross, Geoffrey Gordon, and Drew Bagnell. A reduction of imitation learning and structured prediction to no-regret online learning. In Proceedings of the fourteenth international conference on artificial intelligence and statistics , pages 627–635. JMLR Workshop and Conference Proceedings, 2011. 10 Timo Schick, Jane Dwivedi-Yu, Roberto Dessì, Roberta Raileanu, Maria Lomeli, Eric Hambro, Luke Zettlemoyer, Nicola Cancedda, and Thomas Scialom. Toolformer: Language models can teach themselves to use tools. Advances in neural information processing systems , 36:68539–68551, 2023. John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 , 2017. Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, YK Li, Yang Wu, et al. Deepseekmath: Pushing the limits of mathemat-ical reasoning in open language models. arXiv preprint arXiv:2402.03300 , 2024. Gemini Team, Petko Georgiev, Ving Ian Lei, Ryan Burnell, Libin Bai, Anmol Gulati, Garrett Tanzer, Damien Vincent, Zhufeng Pan, Shibo Wang, et al. Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context. arXiv preprint arXiv:2403.05530 , 2024a. Octo Model Team, Dibya Ghosh, Homer Walke, Karl Pertsch, Kevin Black, Oier Mees, Sudeep Dasari, Joey Hejna, Tobias Kreiman, Charles Xu, et al. Octo: An open-source generalist robot policy. arXiv preprint arXiv:2405.12213 , 2024b. Qwen Team. Qwen3. 5-omni technical report. arXiv preprint arXiv:2604.15804 , 2026. Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, et al. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288 , 2023. Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems , 30, 2017. Team Wan, Ang Wang, Baole Ai, Bin Wen, Chaojie Mao, Chen-Wei Xie, Di Chen, Feiwu Yu, Haiming Zhao, Jianxiao Yang, et al. Wan: Open and advanced large-scale video generative models. 
+
+arXiv preprint arXiv:2503.20314 , 2025. Yating Wang, Haoyi Zhu, Mingyu Liu, Jiange Yang, Hao-Shu Fang, and Tong He. Vq-vla: Improving vision-language-action models via scaling vector-quantized action tokenizers. In 2025 IEEE/CVF International Conference on Computer Vision (ICCV) , pages 11089–11099. IEEE, 2025. Jason Wei, Maarten Bosma, Vincent Y. Zhao, Kelvin Guu, Adams Wei Yu, Lester Brian, Nan Du, Andrew M. Dai, and Quoc Viet Le. Finetuned Language Models Are Zero-Shot Learners. arXiv (Cornell University) , 2021. doi: 10.48550/arxiv.2109.01652. Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu, Li Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, et al. Autogen: Enabling next-gen llm applications via multi-agent conversation. arXiv preprint arXiv:2308.08155 , 2023. Anyi Xu, Bangcai Lin, Bing Xue, Bingxuan Wang, Bingzheng Xu, Bochao Wu, Bowei Zhang, Chaofan Lin, Chen Dong, Chenchen Ling, et al. Deepseek-v4: Towards highly efficient million-token context intelligence. arXiv preprint arXiv:2606.19348 , 2026. Jin Xu, Zhifang Guo, Hangrui Hu, Yunfei Chu, Xiong Wang, Jinzheng He, Yuxuan Wang, Xian Shi, Ting He, Xinfa Zhu, et al. Qwen3-omni technical report. arXiv preprint arXiv:2509.17765 , 2025. An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, et al. Qwen3 technical report. arXiv preprint arXiv:2505.09388 ,2025. John Yang, Carlos Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao, Karthik Narasimhan, and Ofir Press. Swe-agent: Agent-computer interfaces enable automated software engineering. 
+
+Advances in Neural Information Processing Systems , 37:50528–50652, 2024. Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. React: Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629 ,2022. 11 Seonghyeon Ye, Yunhao Ge, Kaiyuan Zheng, Shenyuan Gao, Sihyun Yu, George Kurian, Suneel Indupuru, You Liang Tan, Chuning Zhu, Jiannan Xiang, et al. World action models are zero-shot policies. arXiv preprint arXiv:2602.15922 , 2026. Xiaohua Zhai, Basil Mustafa, Alexander Kolesnikov, and Lucas Beyer. Sigmoid loss for language image pre-training. In 2023 IEEE/CVF International Conference on Computer Vision (ICCV) ,pages 11941–11952. IEEE, 2023. Tony Z Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with low-cost hardware. arXiv preprint arXiv:2304.13705 , 2023. 12

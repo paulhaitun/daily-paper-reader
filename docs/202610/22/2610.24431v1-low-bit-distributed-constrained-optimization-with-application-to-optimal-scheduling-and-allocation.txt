@@ -1,0 +1,1258 @@
+Title: Low-Bit Distributed Constrained Optimization with Application to Optimal Scheduling and Allocation
+
+URL Source: https://arxiv.org/pdf/2610.24431v1
+
+Published Time: Tue, 20 Oct 2026 00:35:13 GMT
+
+Number of Pages: 38
+
+Markdown Content:
+# Graphical Abstract 
+
+Low-Bit Distributed Constrained Optimization with Application to Optimal Scheduling and Allocation 
+
+Mohammadreza Doostmohammadian, Sergio Pequito 1arXiv:2610.24431v1 [eess.SY] 17 Oct 2026 Highlights 
+
+Low-Bit Distributed Constrained Optimization with Application to Optimal Scheduling and Allocation 
+
+Mohammadreza Doostmohammadian, Sergio Pequito 
+
+• Defining formal mathematical optimization framework for distributed resource allocation over multi-agent systems 
+
+• Proposing a distributed setup for optimal convergence and analyzing its feasibility, convergence, and network connectivity 
+
+• Proposing an algorithm with low bit data exchange over the network to reduce the communication and networking traffic Low-Bit Distributed Constrained Optimization with Application to Optimal Scheduling and Allocation 
+
+Mohammadreza Doostmohammadian a, Sergio Pequito b
+
+> aMechatronics Group Faculty of Mechanical Engineering Semnan University Semnan Iran doost@semnan.ac.ir.
+> bDepartment of Electrical and Computer Engineering and Institute for Systems and Robotics Instituto Superior Tecnico University of Lisbon Portugal sergio.pequito@tecnico.ulisboa.pt.
+
+Abstract 
+
+This paper proposes a distributed resource allocation algorithm in which each agent communicates only the sign of its local cost gradient—a single bit per directed link per iteration. The algorithm is based on Laplacian-gradient dynamics and preserves the equality (demand) constraint at every iterate, guaranteeing anytime feasibility irrespective of termination time. We make three technical contributions. First, we provide a complete Lyapunov-based convergence analysis for the fixed-step-size regime: the iterates are shown to enter, in at most O(1 /ε 2)iterations, a neighborhood of the optimizer whose radius scales as O(τ ) in the decision variable and O(τ 2) in the cost residual, where τ is the step-size. Crucially, the step-size bound is a time-invariant network constant (depending only on the graph Laplacian spectrum and the cost curvature bounds), so no adaptive tuning is required. Second, we characterize the invariant set under B-connected, weight-balanced digraphs—strictly weaker than the all-time connectivity and doubly-stochastic weights assumed in most prior work—and show that any odd, sign-preserving nonlinearity (not only the signum) yields the same invariant-set and descent structure, with the single-bit protocol being the extreme communication-minimizing instance of a broader nonlinear class. Third, we address local box constraints via smooth penalty relaxation and quantify explicitly how the penalty weight interacts with the step-size bound and the optimality gap. Simulations on economic dispatch (1 000 generators) and CPU schedul-ing (500 servers) demonstrate that the single-bit protocol achieves 5–60 × 
+
+> Preprint submitted to Nonlinear Analysis: Hybrid Systems October 20, 2026
+
+reduction in total communication cost (bits × iterations to a target accu-racy) relative to multi-bit baselines, at the price of a tunable and explicitly bounded optimality gap. A diminishing step-size schedule is shown empiri-cally to eliminate this gap; its formal convergence analysis is identified as an open problem. 
+
+Keywords: Optimal resource allocation, parallel data processing, distributed learning, constrained convex scheduling, multi-agent networks 
+
+1. Introduction 
+
+Distributed sum-preserving optimization underpins resource allocation in CPU scheduling [1, 2], autonomous vehicle battery charge scheduling [3], cyber-physical energy systems [4, 5], economic dispatch [6, 7], and auto-matic generation control [8]. A common thread in the recent literature is the assumption of infinite-precision data exchange. For instance, projection-based methods [9], drift-plus-penalty algorithms [10], privacy-preserving gra-dient schemes [11], event-triggered accelerated algorithms [12], second-order disturbance-rejection methods [13, 14], and random coordinate descent for open systems [15]. Nonetheless, this demands high-bandwidth, low-latency links that may be unavailable in large-scale or unreliable networks. Low-bit communication has been studied for diffusion strategies [16] and consensus [17, 18], and sign-of-relative-state methods have been applied to unconstrained optimization [19, 20]. Quantized coordination for quadratic objectives appears in [1]. None of these works addresses constrained resource allocation under a single-bit regime. On the application side, distributed economic dispatch has received considerable attention [21, 22, 23, 24, 25, 26, 27, 28, 29]; all existing methods require multi-bit exchange and, with the exception of Laplacian-gradient (LG) schemes, typically rely on all-time network connectivity and doubly-stochastic weights. A related line of work addresses communication efficiency in federated learning through zeroth-order (ZO-FL) optimization. In [30], the authors propose FedZO, a derivative-free FL method that constructs stochastic gra-dient estimators from function evaluations, thereby enabling optimization when explicit gradient information is unavailable; an over-the-air computa-tion variant is further developed to reduce the communication burden in wireless FL. More recently, [31] proposes DeComFL, which exploits the de-composition of a ZO gradient estimator into a scalar gradient magnitude and 2a shared perturbation direction to reduce the per-round communication from 
+
+O(d) to O(1), independent of the dimension d of the optimization variable. This direction is pushed further in [32], where only the signs of the ZO gradi-ent scalars, together with the information needed to reconstruct the common perturbation directions, are communicated, yielding an extremely low com-munication footprint while retaining applicability to high-dimensional model parameters. Reducing the per-iteration communication payload is therefore a press-ing practical concern: lower bandwidth consumption enables deployment over resource-constrained or unreliable links, simplifies protocol design by replacing floating-point encoding/decoding with a single binary flag, and ac-celerates coordination in latency-sensitive applications such as real-time CPU scheduling and grid-integrated energy dispatch. Henceforth, this paper ad-dresses the following question: can distributed resource allocation be solved when each agent communicates only a single bit per iteration? We answer affirmatively by proposing a single-bit LG dynamics in which every agent broadcasts solely the sign of its local gradient (with a one-time multi-bit fea-sibility initialization). Specifically, we make the following main contributions relative to the state-of-the-art: 1. Single-bit communication. The proposed algorithm requires each agent to transmit only {+1 , −1} per link per iteration. This is specif-ically for scalar-valued resource variables as in many distributed re-source allocation formulations, e.g., economic dispatch, load balancing, bandwidth allocation, charging-rate allocation, and proportional shar-ing problems, where each agent contributes one scalar amount to satisfy a global demand constraint. This is, to the best of our knowledge, the first distributed resource allocation scheme with provable convergence under one-bit data exchange (with a one-time multi-bit feasibility ini-tialization), and it yields lower per-iteration computational cost than existing methods (verified empirically in Section 5). 2. Anytime feasibility. The equality constraint is preserved at every 
+
+iteration, not merely in the limit. This is a strict improvement over ADMM-based approaches [33, 34, 3], which achieve feasibility only asymptotically and therefore cannot guarantee constraint satisfaction upon early termination. 3. Weak connectivity and weight-balance. Convergence is estab-3lished under uniform connectivity of the time-varying directed graph, together with a weight-balance condition. Both requirements are strictly weaker than the all-time connectivity and doubly-stochastic weights as-sumed in [33, 34, 35, 36, 22, 21]. 4. General nonlinear analysis. The Lyapunov-based convergence proof applies to any odd, sign-preserving nonlinearity (i.e., not only the signum function), and accommodates non-quadratic objectives with smooth penalty terms for box-constraint handling. 
+
+Outline. Section 2 formulates the problem and collects auxiliary lemmas. The single-bit algorithm is presented in Section 3 with convergence analysis in Section 4. Simulations on economic dispatch and CPU scheduling appear in Section 5. Section 6 concludes. 
+
+Notation. 1n and 0n denote the n-vectors of ones and zeros. For f : R → R,
+
+∂xf := df dx . For F : Rn → R, ∇F is its gradient. We summarize the key notations in Table 1. 
+
+2. Problem Formulation 
+
+Consider a network of n agents indexed by V = {1, . . . , n }. Each agent i
+
+holds a local cost function fi : R → R and controls a scalar decision variable 
+
+xi ∈ R. We study the equality-constrained resource allocation problem 
+
+P1 : min  
+
+> x∈Rn
+
+F (x) := 
+
+> n
+
+X
+
+> i=1
+
+fi(xi), s.t. 
+
+> n
+
+X
+
+> i=1
+
+xi = b, (1) where x = ( x1, . . . , x n)⊤ and b ∈ R is the aggregate demand. In this work, as in many resource-allocation and scheduling problems, we consider scalar re-source variable to each agent. Two examples of the generated power of gener-ator in economic dispatch and the CPU allocation of server in the scheduling are provided for the simulations. 
+
+Assumption 1 (Cost regularity) . For every i ∈ V , the local cost fi is twice continuously differentiable and ν-strongly convex with μ-Lipschitz continuous gradient, i.e., there exist constants 0 < ν ≤ μ < ∞ such that 
+
+ν ≤ d2fi
+
+dx 2
+
+> i
+
+(xi) ≤ μ, ∀ xi ∈ R, ∀ i ∈ V . (2) Under Assumption 1, problem P1 is strongly convex over the affine feasible set and, therefore, admits a unique minimizer x∗ (cf. Lemmas 2–3 below). 4Table 1: Summary of the key notations in the paper. 
+
+Symbol Description 
+
+fi,F local and global objective 
+
+xi state variable of agent i
+
+x global state variable 
+
+n number of nodes/agents 
+
+b aggregate demand 
+
+ν,μ strong convexity and Lipschitz constant 
+
+x∗ global optimizer 
+
+mi,mi local box constraints 
+
+σ penalty weight term 
+
+f σi penalty function 
+
+W ,LG adjacency and Laplacian matrix 
+
+Lsym symmetric Laplacian matrix 
+
+λ2,λn smallest and largest nonzero eigenvalue of Lsym 
+
+Sb feasible set 
+
+k iteration time index 
+
+τ step size 
+
+ϕϕϕ sgn( ∇F )
+
+η(τ ) descent threshold 
+
+σL spectral norm of LG
+
+F optimality residual 
+
+ex residual error 
+
+ξ gradient error 
+
+Box constraints via penalty relaxation. In several applications (e.g., generator capacity limits in economic dispatch), the decision variables are additionally subject to local box constraints 
+
+mi ≤ xi ≤ mi, i ∈ V . (3) Rather than enforcing (3) explicitly, we incorporate the box constraints through a quadratic hinge penalty [37, 38]. Define 
+
+pi(xi) := [ mi − xi]2+ + [ xi − mi]2+, [z]+ := max {z, 0}, (4) and set f σi := fi + σp i.5Remark 1. The derivative p′
+
+> i
+
+(x) = −2[ mi − x]+ + 2[ x − mi]+ consists of two terms with disjoint supports and is therefore globally 2-Lipschitz. Hence 
+
+f σi is convex and continuously differentiable but, for this quadratic hinge, not 
+
+twice continuously differentiable at the bounds. The constant ν remains a valid global strong-convexity constant for f σi , and (f σi )′ is (μ + 2 σ)-Lipschitz, so a valid global condition-number bound is 
+
+κσ ≤ μ + 2 σν . (5) The above expression reveals that the condition number deteriorates as σ
+
+increases. Some literature also suggest logarithmic-barrier function defined as 1 
+
+> κ
+
+log  1 + exp( κu ) [39], and θ-logarithmic barriers [34]. 
+
+2.1. Network Model and Graph-Theoretic Preliminaries 
+
+The communication network at discrete time k ≥ 0 is modeled as a di-rected graph (digraph) G(k) = ( V, E(k)) with a fixed node set V = {1, . . . , n }
+
+and a time-varying edge set E(k) ⊆ V × V . A directed edge ( i, j ) ∈ E (k) indi-cates that node j can receive information from node i at time k, and carries a positive weight Wji (k) > 0; we set Wji (k) = 0 whenever ( i, j ) /∈ E (k). The matrix W (k) = [ Wij (k)] ∈ Rn×n 
+
+> ≥0
+
+is the (weighted) adjacency matrix of G(k). Self-loops are excluded, i.e., Wii (k) = 0 for all i.For each node i, denote by N + 
+
+> i
+
+(k) = {j ∈ V : ( j, i ) ∈ E (k)} its set of 
+
+in-neighbours (nodes from which i receives) and by N − 
+
+> i
+
+(k) = {j ∈ V : ( i, j ) ∈E(k)} its set of out-neighbours (nodes to which i sends). 
+
+Definition 1 (Weight-balanced digraph) . The digraph G(k) is weight-balanced 
+
+(WB) (or referred to just as balanced) if every node has equal weighted in-and out-degree, i.e., 
+
+X  
+
+> j∈N +
+> i(k)
+
+Wij (k) = X  
+
+> j∈N −
+> i(k)
+
+Wij (k), ∀ i ∈ V , (6) 
+
+or, equivalently, W (k)⊤1n = W (k)1n.
+
+Definition 2 (Strong connectivity) . A digraph G is strongly connected (SC) if, for every ordered pair (i, j ) ∈ V × V with i̸ = j, there exists a directed path from i to j.
+
+Assumption 2 (Network connectivity) . The following hold for all k ≥ 0:
+
+6(i) G(k) is weight-balanced. (ii) There exists a finite integer B ≥ 1 such that the union graph GB (k) :=  V, Sk+B−1 
+
+> ℓ=k
+
+E(ℓ) is strongly connected for every k ≥ 0 (i.e., the net-work is uniformly or B-connected ). 
+
+Remark 2. Assumption 2(i) requires only that W (k)⊤1n = W (k)1n, which is strictly weaker than the doubly-stochastic condition 1⊤ 
+
+> n
+
+W (k) = 1⊤ 
+
+> n
+
+, W (k)1n =
+
+1n assumed in [1, 3, 35]. In particular, weight balance is preserved under ar-bitrary positive rescaling of edge weights, whereas doubly-stochastic weights must be explicitly redesigned whenever the topology changes – a significant burden in time-varying or unreliable networks. 
+
+The Laplacian of G(k) is given by 
+
+LG (k) := D(k) − W (k), (7) where D(k) = diag  P    
+
+> j∈N −
+> i(k)
+
+Wij (k)ni=1 = diag  P    
+
+> j∈N +
+> i(k)
+
+Wij (k)ni=1 , un-der the WB condition. We further define the symmetric part Lsym (k) := 
+
+> 12
+
+ LG (k) + LG (k)⊤. Lastly, for any v ∈ Rn, its mean-centered version 
+
+v := v − 1⊤  
+
+> nv
+> n
+
+1n.
+
+Lemma 1 (Laplacian spectral properties [40]) . Let Assumption 2 hold and let y, z ∈ Rn satisfy yizi > 0 for all i ∈ V . Then, the following holds: 1. Lsym (k) is positive semi-definite with Lsym (k)1n = 0n, and the WB condition gives LG (k)1n = LG (k)⊤1n = 0n.2. (Mean-centering invariance) 
+
+z⊤LG (k) y = z⊤LG (k) y. (8) 
+
+3. (Spectral bounds) Let λ2(k) and λn(k) denote the smallest and largest nonzero eigenvalues of Lsym (k), respectively (the Fiedler value [41] and its upper counterpart). Then, we have 
+
+λ2(k) y⊤z ≤ z⊤LG (k) y ≤ λn(k) y⊤z. (9) 
+
+All three statements remain valid with LG (k) replaced by LGB (k) (the Lapla-cian of the union graph) and the corresponding eigenvalues λ2,B (k), λn,B (k).
+
+72.2. Convex Analysis Preliminaries 
+
+We collect several standard and known results on strongly convex resource allocation that underpin the convergence analysis in Section 4. Throughout, we denote the feasible set by 
+
+Sb := x ∈ Rn Pni=1 xi = b , (10) the optimality residual by F (x) := F (x) − F (x∗), and the error vector by 
+
+ex := x − x∗.
+
+Lemma 2 (KKT optimality [36, 42]) . Under Assumption 1, problem P1 has a unique minimizer x∗ ∈ S b characterized by equal marginal costs: 
+
+∂xi fi(x∗ 
+
+> i
+
+) = ∂xj fj (x∗ 
+
+> j
+
+), ∀ i, j ∈ V , (11) 
+
+or, equivalently, ∇F (x∗) ∈ span( 1n).
+
+Lemma 3 (Uniqueness on the feasible set [43]) . Under Assumption 1, for every b ∈ R the point x∗ furnished by Lemma 2 is the only element of Sb
+
+satisfying ∇F (x∗) ∈ span( 1n).
+
+Lemma 4 (Descent inequality [36, 42]) . Let Assumption 1 hold. For any 
+
+x1, x2 ∈ Rn with δx := x1 − x2,
+
+F (x1) ≥ F (x2) + ∇F (x2)⊤δx + ν
+
+2 ∥δx∥22. (12) 
+
+Similarly, the μ-smoothness upper bound gives 
+
+F (x1) ≤ F (x2) + ∇F (x2)⊤δx + μ
+
+2 ∥δx∥22. (13) 
+
+Remark 3. The original formulation states the bound (13) with constant 
+
+μ (Lipschitz smoothness), which provides an upper bound on the function change. This is the inequality used in the proof of Theorem 1 to establish sufficient descent. The complementary lower bound (12) with constant ν
+
+(strong convexity) is used to relate the optimality residual to the error norm in Lemma 5 below. 
+
+Lemma 5 (Gradient and error bounds [6, 40]) . Let Assumption 1 hold and define the centered gradient 
+
+ξ(x) := ∇F (x) − 1
+
+n
+
+ P ni=1 ∂xi fi(xi)1n. (14) 
+
+Then, for every x ∈ S b, we obtain the following: 
+
+8(i) (Residual–gradient equivalence) 12μ ∥ξ(x)∥22 ≤ F (x) ≤ 12ν ∥ξ(x)∥22. (15) 
+
+(ii) (Residual–error equivalence) 
+
+ν
+
+2 ∥ex∥22 ≤ F (x) ≤ μ
+
+2 ∥ex∥22. (16) 
+
+(iii) (Gradient–error equivalence) 
+
+∥ξ(x)∥2
+
+μ ≤ ∥ ex∥2 ≤ ∥ξ(x)∥2
+
+ν . (17) 
+
+3. The Single-Bit Allocation Algorithm 
+
+The key idea is to replace the full-precision gradient exchange in standard LG dynamics [6, 36, 44] with a single-bit transmission: each agent broadcasts only sgn( ∂xi fi) to its out-neighbours. Concretely, under the standard pro-tocol every agent sends a 64-bit floating-point value per link per iteration, yielding a network-wide payload of 64 |E (k)| bits per round. The proposed scheme reduces this to |E (k)| bits. Thus, a 64 × reduction that grows linearly with network size and link density; for instance, a network of n=1000 agents with average out-degree 10 saves approximately 640 kbits per iteration. We propose the following discrete-time dynamics to solve P1: each agent i
+
+updates its state as 
+
+xi(k + 1) = xi(k) − τ X 
+
+> j∈N −
+> i
+
+Wij 
+
+
+
+sgn( ∂xi fi(k)) − sgn( ∂xj fj (k)) 
+
+
+
+, (18) where ∂xi fi(k) denotes the derivative of fi evaluated at xi(k) and τ > 0 is a fixed step-size. In compact form, writing ϕϕϕ(k) := sgn( ∇F (k)) element-wise, we can rewrite (18) in the matricial form as 
+
+x(k + 1) = x(k) − τ L G (k) ϕϕϕ(k), (19) and when the graph is static we suppress the time argument and write LG .9Relation to existing nonlinear protocols. Signum-based distributed optimiza-tion and allocation protocols have appeared in [45, 46, 47], using the power mapping sgn v(x) = x∥x∥v−1 (v > 0) to achieve finite- or fixed-time conver-gence. Similarly, sign-preserving consensus dynamics resilient to impulsive noise are studied in [48, 49]. The distinguishing feature of (18) is that only a single bit (i.e., the sign {+1 , −1}) is transmitted per link, whereas the schemes in [45, 46, 47, 44, 6, 50] require multi-bit (or full-precision) exchange. 
+
+Structural properties. Two properties of (18) deserve emphasis before the formal analysis in Section 4. First, because the update has a Laplacian structure ( 1⊤ 
+
+> n
+
+LG = 0⊤ 
+
+> n
+
+under weight balance), the sum P 
+
+> i
+
+xi(k) is preserved at every iteration, guaranteeing anytime feasibility , which is an improvement over primal-dual and ADMM-based methods [34, 33, 27, 51, 52, 53] that achieve feasibility only asymptotically. Second, only the weight-balance con-dition (Assumption 2) is needed, not doubly-stochastic weights; this avoids costly weight re-design after link failures [54]. The complete procedure is listed in Algorithm 1. 
+
+Algorithm 1: Single-Bit Resource Allocation  
+
+> 1
+
+Input: W , N − 
+
+> i
+
+, N + 
+
+> i
+
+, τ , fi(·);  
+
+> 2
+
+Initialization: node i randomly sets mi ≤ xi(0) ≤ mi satisfying P 
+
+> i
+
+xi(0) = b and sgn( ∂xi fi(0)) ̸ = sgn( ∂xj fj (0)) for at least one 
+
+j ∈ N + 
+
+> i
+
+or j ∈ N − 
+
+> i
+
+(this is a one-time procedure). Set k = 0 ;  
+
+> 3
+
+while termination criteria NOT met do  
+
+> 4
+
+Each node i receives a single-bit packet from j ∈ N − 
+
+> i
+
+(either +1 or −1) and computes Eq. (18);  
+
+> 5
+
+if no packet from j ∈ N − 
+
+> i
+
+then  
+
+> 6
+
+sets Wij = 0 in Eq. (18)  
+
+> 7
+
+if sgn (∂xi fi(k)) = +1 then  
+
+> 8
+
+sends the bit +1 to nodes j ∈ N + 
+
+> i
+> 9
+
+else  
+
+> 10
+
+if sgn (∂xi fi(k)) = −1 then  
+
+> 11
+
+sends the bit −1 to nodes j ∈ N + 
+
+> i
+> 12
+
+Sets k ← k + 1;  
+
+> 13
+
+Return Final state x(k) and cost F (x(k)) 10 Initialization. Feasible initialization requires P 
+
+> i
+
+xi(0) = b together with sgn( ∂xi fi(0)) ̸ = sgn( ∂xj fj (0)) for at least one neighbour pair, ensuring xi(1) ̸ =
+
+xi(0) under (18). The simplest choice is xi(0) = b/n for all i; for hetero-geneous box constraints a spanning-tree message-passing routine [6, Algo-rithm 2] can be used. We note that this initialization phase itself requires multi-bit communication, but it is executed once before the iterative single-bit loop begins and its cost is paid off over the (potentially very large) number of subsequent iterations. 
+
+Remark 4. Relative to the existing literature, Algorithm 1 simultaneously provides three relaxations: (i) all-time connectivity is weakened to B-connecti-vity (Assumption 2(ii)), accommodating intermittent link failures; (ii) dou-bly-stochastic weights are replaced by the weaker weight-balance condition, eliminating the need for compensation algorithms upon topology changes [55]; and (iii) per-link communication is reduced from multi-bit to a single bit. These improvements hold concurrently, whereas existing methods [33, 34, 35, 36, 22, 21] require stronger assumptions in at least one of these dimensions. 
+
+Remark 5. In the proposed resource allocation technique in Algorithm 1, each active link transmits one sign bit per iteration; a packet loss corresponds to an inactive link (i.e., Wij (k) = 0 ). No zero-gradient value is inferred from a missing packet; and the switching-topology results cover this packet-loss interpretation. 
+
+4. Convergence Analysis 
+
+This section establishes the convergence properties of the single-bit dy-namics (18). The argument proceeds in four stages. First, we show that the feasible set Sb is positively invariant, so the equality constraint is preserved at every iterate (Lemma 6). Second, we characterize the invariant set I of the dynamics and prove that it consists precisely of those feasible points at which all gradient signs agree (Lemma 7). Third, using F (x) = F (x) − F (x∗) as a Lyapunov function, we show that F decreases monotonically whenever the gradient norm exceeds a τ -dependent threshold, establishing finite-time en-try into a neighborhood of I whose size scales as O(τ ) (Theorem 1). Fourth, we quantify the steady-state optimality gap and error bounds within this neighborhood. 11 Lemma 6 (All-time feasibility) . Let Assumption 2 hold and x(0) ∈ S b. Then 
+
+x(k) ∈ S b for every k ≥ 0 under the dynamics (18) . In particular, the set Sb
+
+is positively invariant. Proof. From the compact form (19), 
+
+1⊤ 
+
+> n
+
+x(k + 1) = 1⊤ 
+
+> n
+
+x(k) − τ 1⊤ 
+
+> n
+
+LG (k) sgn  ∇F (k). (20) Under the weight-balance condition (Assumption 2(i)), Lemma 1 gives 1⊤ 
+
+> n
+
+LG (k) = 
+
+0⊤ 
+
+> n
+
+, so the second term vanishes. Induction on k yields 1⊤ 
+
+> n
+
+x(k) = 1⊤ 
+
+> n
+
+x(0) = b
+
+for all k ≥ 0. An immediate and practically important consequence is anytime feasi-bility : the equality constraint P 
+
+> i
+
+xi(k) = b holds at every iteration, not merely in the limit. This is a structural improvement over ADMM-based and primal–dual methods [33, 27, 34], which recover feasibility only asymp-totically and therefore cannot guarantee constraint satisfaction upon early termination. Next, we characterize the invariant set of (18). A point x ∈ S b is called 
+
+invariant (or stationary) if x(k) = x implies x(k + 1) = x for all k ≥ 0. 
+
+Lemma 7 (Invariant set) . Let Assumptions 1–2 hold and let x(0) ∈ S b satisfy the initialization conditions of Algorithm 1. Then the invariant set of (18) 
+
+is 
+
+I = x ∈ S b sgn  ∇F (x) ∈ span( 1n) , (21) 
+
+where sgn is applied element-wise. In particular, the optimizer x∗ satisfies 
+
+x∗ ∈ I .Proof. Let ψψψ(x) := sgn( ∇F (x)) ∈ {− 1, 0, +1 }n.Sufficiency. Take any x ∈ S b such that ψψψ(x) ∈ span( 1n). Then ψψψ(x) = c 1n
+
+for some c ∈ {− 1, 0, +1 }. Using the Laplacian form (19) and LG (k)1n = 0n
+
+(Lemma 1), we obtain x(k + 1) = x(k) − τ L G (k) c1n = x(k) for all k, so x is invariant. Necessity. Assume, for contradiction, that x ∈ S b is invariant under (18) but ψψψ := ψψψ(x) /∈ span( 1n). Invariance means x(k) = x for all k, hence 
+
+ψψψ(x(k)) = ψψψ for all k. Define the minimum sign value and its index set 
+
+ψmin := min  
+
+> i∈V
+
+ψi, M := {i ∈ V : ψi = ψmin }.
+
+12 Because ψψψ / ∈ span( 1n), the set M is a nonempty proper subset of V.Fix any time k ≥ 0 and consider the union graph over a B-window, 
+
+GB (k) =  V, ∪k+B−1 
+
+> ℓ=k
+
+E(ℓ), which is strongly connected by Assumption 2(ii). Pick any node r ∈ V \ M and any node q ∈ M . Since GB (k) is strongly connected, there exists a directed path from r to q in GB (k). Along that path, let ( p, ¯q) be the first edge that enters M, i.e., p / ∈ M and ¯ q ∈ M .Then ( p, ¯q) ∈ Sk+B−1 
+
+> ℓ=k
+
+E(ℓ), so there exists k∗ ∈ { k, . . . , k + B − 1} such that (p, ¯q) ∈ E (k∗). At time k∗, node ¯ q updates according to (18), i.e., 
+
+x¯q(k∗ + 1) − x¯q(k∗) = −τ X  
+
+> j∈N −
+> ¯q(k∗)
+
+W¯qj (k∗)  ψ¯q − ψj
+
+.
+
+For every in-neighbor j ∈ N − 
+
+> ¯q
+
+(k∗) we have ψj ≥ ψmin = ψ¯q, hence ( ψ¯q −ψj ) ≤
+
+0 and therefore each summand satisfies −τ W ¯qj (k∗) ( ψ¯q − ψj ) ≥ 0. Moreover, since p / ∈ M we have ψp > ψ ¯q, so ( ψ¯q − ψp) < 0 and with W¯qp (k∗) > 0the corresponding summand is strictly positive. Because all summands are non-negative and at least one is strictly positive, 
+
+x¯q(k∗ + 1) − x¯q(k∗) > 0,
+
+which contradicts invariance ( x¯q(k∗ + 1) = x¯q(k∗)). Therefore, no invariant 
+
+x ∈ S b can satisfy ψψψ(x) /∈ span( 1n). Lastly, notice that by Lemma 2, ∇F (x∗) ∈ span( 1n), hence ψψψ(x∗) ∈
+
+span( 1n) and, thus, x∗ ∈ I .
+
+Remark 6 (Role of uniform connectivity) . The necessity argument crucially relies on the B-connectivity of the union graph. At any single time instant k,the instantaneous graph G(k) may be disconnected, and the kernel of LG (k)
+
+may contain vectors outside span( 1n); in such cases LG (k) ψψψ = 0n does not imply ψψψ ∈ span( 1n). The B-window argument in Step 2 circumvents this: it shows that within every window of B consecutive steps, the union graph is strongly connected and exposes at least one disagreement edge, which pro-duces a non-zero displacement and rules out invariance. In other words, the invariant-set characterization (21) holds for the dynamics (18) driven by the time-varying sequence {G (k)}k≥0, provided the union over every B-window is strongly connected. 
+
+Remark 7 (Generality of the sign nonlinearity) . Both the feasibility result (Lemma 6) and the invariant-set characterization (Lemma 7) hold if sgn (·) is 
+
+13 replaced by any odd, sign-preserving mapping φ : R → R satisfying u φ (u) > 0
+
+for u̸ = 0 and φ(0) = 0 . The Laplacian annihilation property 1⊤ 
+
+> n
+
+LG = 0⊤
+
+> n
+
+depends only on the weight-balance structure, not on the specific form of 
+
+φ, and the disagreement argument in Step 2 of Lemma 7 requires only that 
+
+φ(a)̸ = φ(b) whenever sgn (a)̸ = sgn (b). The signum function is the extreme one-bit instance of this class. 
+
+Having established feasibility and the invariant set, we proceed to the Lyapunov-based analysis of descent and neighborhood convergence. We first record a minor extension of the spectral bound in Lemma 1 that accommo-dates zero-gradient components, then state and prove the main convergence result. 
+
+Lemma 8 (Extension of Lemma 1(3) to non-strict sign alignment) . The spectral bounds in Lemma 1(3) continue to hold if the hypothesis is relaxed to yizi ≥ 0 for all i ∈ V (with y̸ = 0n and z̸ = 0n). Proof. For any δ > 0, define yδ := y + δ z. Then yδi zi = yizi + δz 2 
+
+> i
+
+> 0for every i with zi̸ = 0, and yδi zi = 0 only if zi = 0 (in which case both sides of the spectral bound vanish for that component). Since z̸ = 0n, there exists i with zi̸ = 0, so the strict hypothesis of Lemma 1(3) holds for ( yδ, z)restricted to the nonzero-z components. Applying Lemma 1(3) and taking 
+
+δ → 0+, the bound follows by continuity of both sides in y.
+
+Theorem 1 (Convergence to a τ -dependent neighborhood under fixed step– size) . Let Assumptions 1–2 hold with a static , strongly connected, weight-balanced graph G and Laplacian LG . Let x(0) ∈ S b satisfy the initialization conditions of Algorithm 1, and define 
+
+ϕϕϕ(k) := sgn  ∇F (x(k))  ∈ {− 1, 0, +1 }n (element-wise) .
+
+Let Lsym := 12 (LG + L⊤G ), let λ2 > 0 be the smallest nonzero eigenvalue of 
+
+Lsym , and let σL := ∥LG ∥2 denote the spectral norm (largest singular value) of LG . For any fixed τ > 0, define the descent threshold 
+
+η(τ ) := μ n 2 σ2
+
+> L
+
+2 λ2
+
+τ. (22) 
+
+Then, the following hold: 
+
+14 (i) (Monotone descent outside the threshold region) For every k such that 
+
+ϕϕϕ(k) /∈ span( 1n) and ∥∇ F (x(k)) ∥1 ≥ η(τ ), the optimality residual 
+
+F (k) := F (x(k)) − F (x∗) satisfies 
+
+F (k + 1) ≤ F (k).
+
+Moreover, for any ε > 0, if ∥∇ F (x(k)) ∥1 ≥ η(τ ) + ε, then 
+
+F (k + 1) ≤ F (k) − λ2 τn ε. (23) (ii) (Finite excursion bound) Fix any ε > 0. Then either x(k) reaches the invariant set I = {x ∈ S b : ϕϕϕ(x) ∈ span( 1n)} at some finite time, or else the total number of iterations k at which ∥∇ F (x(k)) ∥1 ≥ η(τ ) + ε
+
+is at most 
+
+Kε := 
+
+ln F (0) 
+
+λ2 τ ε 
+
+m
+
+. (24) 
+
+In particular, the iterates enter the set x ∈ S b : ∥∇ F (x)∥1 < η (τ )+ ε
+
+for the first time no later than iteration Kε.
+
+(iii) (Neighborhood bounds when inside the threshold region) At any itera-tion k satisfying ∥∇ F (x(k)) ∥1 ≤ η(τ )+ ε, the centered gradient ξ(x(k)) 
+
+from (14) satisfies 
+
+∥ξ(x(k)) ∥2 ≤
+
+
+
+1 + 1√n
+
+ η(τ ) + ε,
+
+and therefore, by Lemma 5(i)–(iii), 
+
+F (k) ≤ (1 + 1 /√n)2
+
+2ν
+
+ η(τ ) + ε2,
+
+and ∥x(k) − x∗∥2 ≤ 1 + 1 /√nν
+
+ η(τ ) + ε. (25) 
+
+Proof. Define the one-step displacement δx := x(k + 1) − x(k) = −τ L G ϕϕϕ(k)from (19). Step 1: Smoothness bound. By μ-smoothness (Lemma 4, Eq. (13)), 
+
+F (k + 1) − F (k) ≤ ∇ F (k)⊤δx + μ 
+
+> 2
+
+∥δx∥22 = −τ ∇F (k)⊤LG ϕϕϕ(k) + μ 
+
+> 2
+
+τ 2 ϕϕϕ(k)⊤L⊤G LG ϕϕϕ(k).
+
+(26) 15 Step 2: Lower bound on the descent term. Write ¯ g(k) := 1
+
+> n
+
+Pni=1 ∂xi fi(k) for the scalar gradient mean and ¯ϕ(k) := 1
+
+> n
+
+Pni=1 ϕi(k) for the scalar sign mean. Since the graph is weight-balanced, we have LG 1n = 0n and 1⊤ 
+
+> n
+
+LG = 0⊤ 
+
+> n
+
+,which gives the mean-centering identity (Lemma 1(2)): 
+
+∇F (k)⊤LG ϕϕϕ(k) = ∇F (k)⊤
+
+LG ϕϕϕ(k), (27) where v := v − 1 
+
+> n
+
+(1⊤ 
+
+> n
+
+v)1n denotes the mean-centered version of any vector v.We apply Lemma 1(3) with y = ϕϕϕ(k) and z = ∇F (k); the lemma mean-centers these vectors internally and yields the spectral bound ∇F (k)⊤
+
+LG ϕϕϕ(k) ≥
+
+λ2 ϕϕϕ(k)⊤∇F (k). The sign hypothesis yizi = ϕi(k) · ∂xi fi(k) = |∂xi fi(k)| ≥ 0holds for every i, with strict inequality on all components where ∂xi fi(k)̸ = 0. On components where ∂xi fi(k) = 0 we have yi = zi = 0, so the strict hy-pothesis yizi > 0 of Lemma 1(3) may fail; Lemma 8 extends the bound to this non-strict case. We obtain 
+
+∇F (k)⊤
+
+LG ϕϕϕ(k) ≥ λ2 ϕϕϕ(k)⊤∇F (k). (28) Define the effective descent coefficient 
+
+γ(k) := ϕϕϕ(k)⊤∇F (k) = ∇F (k)⊤ϕϕϕ(k) − n ¯g(k) ¯ϕ(k) (29) = ∥∇ F (k)∥1 − n ¯g(k) ¯ϕ(k), (30) where the second equality expands the mean-centering and the third uses 
+
+∇F (k)⊤ϕϕϕ(k) = P 
+
+> i
+
+|∂xi fi(k)| = ∥∇ F (k)∥1.We bound γ(k) from below. Since |¯g(k)| = 1 
+
+> n
+
+| P 
+
+> i
+
+∂xi fi(k)| ≤ 1 
+
+> n
+
+∥∇ F (k)∥1
+
+and | ¯ϕ(k)| ≤ 1, it readily follows that 
+
+γ(k) ≥ ∥∇ F (k)∥1
+
+ 1 − | ¯ϕ(k)|. (31) If ϕϕϕ(k) ∈ {− 1, 0, +1 }n and ϕϕϕ(k) /∈ span( 1n), at least one component of ϕϕϕ(k)differs from the others. The maximum of | ¯ϕ(k)| subject to this constraint is achieved when n − 1 entries are equal and one differs (e.g., (+1 , . . . , +1 , 0)), giving | ¯ϕ(k)| ≤ 1 − 1 
+
+> n
+
+. Therefore, we obtain 
+
+γ(k) ≥ 1
+
+n ∥∇ F (k)∥1. (32) Combining (27), (28), and (32), we have 
+
+∇F (k)⊤LG ϕϕϕ(k) ≥ λ2
+
+n ∥∇ F (k)∥1. (33) 16 Step 3: Upper bound on the quadratic term. Since LG 1n = 0n, we have LG ϕϕϕ(k) = 
+
+LG ϕϕϕ(k) and ∥ϕϕϕ(k)∥22 ≤ ∥ ϕϕϕ(k)∥22 ≤ n. Therefore, we get 
+
+ϕϕϕ(k)⊤L⊤G LG ϕϕϕ(k) = ∥LG ϕϕϕ(k)∥22 ≤ σ2 
+
+> L
+
+∥ϕϕϕ(k)∥22 ≤ n σ 2
+
+> L
+
+. (34) Step 4: Descent outside the threshold (proof of part (i)). Substituting (33) and (34) into (26), we have 
+
+F (k + 1) − F (k) ≤ − λ2 τn ∥∇ F (k)∥1 + μ
+
+2 n σ 2 
+
+> L
+
+τ 2. (35) The right-hand side is non-positive whenever ∥∇ F (k)∥1 ≥ η(τ ) with η(τ ) as in (22), since 
+
+λ2 τn η(τ ) = λ2 τn · μ n 2 σ2
+
+> L
+
+2 λ2
+
+τ = μ
+
+2 n σ 2 
+
+> L
+
+τ 2.
+
+This proves F (k + 1) ≤ F (k). If instead ∥∇ F (k)∥1 ≥ η(τ ) + ε, then (35) gives 
+
+F (k + 1) − F (k) ≤ − λ2 τn
+
+ η(τ ) + ε + μ
+
+2 n σ 2 
+
+> L
+
+τ 2 = −λ2 τn ε, 
+
+establishing (23). This completes the proof of part (i). Step 5: Finite excursion bound (proof of part (ii)). We prove both the first-entry time and the total excursion count. 
+
+First-entry time. Let k∗ denote the first iteration at which either x(k∗) ∈I or ∥∇ F (x(k∗)) ∥1 < η (τ ) + ε. At every iteration k < k ∗, neither condition holds, so ϕϕϕ(k) /∈ span( 1n) and ∥∇ F (x(k)) ∥1 ≥ η(τ ) + ε. By part (i), the drop bound (23) applies at each such k, and since all pre-entry iterations are consecutive descent steps, the bound telescopes: 
+
+F (k∗) ≤ F (0) − k∗ · λ2 τn ε. 
+
+Combined with F (k∗) ≥ 0, this gives k∗ ≤ n F (0)   
+
+> λ2τ ε
+
+.
+
+Total excursion count. Define Kε := {k ≥ 0 : ∥∇ F (x(k)) ∥1 ≥ η(τ ) + 
+
+ε and x(k) /∈ I} . At every k ∈ K ε, the drop bound (23) gives F (k) − F (k +1) ≥ λ2 τn ε. For any T > 0, 
+
+F (0) − F (T ) ≥ X
+
+> k∈K ε
+> k<T
+
+ F (k) − F (k + 1)  ≥ |K ε ∩ { 0, . . . , T −1}| · λ2 τn ε, 
+
+17 where the first inequality holds because every term in the sum is a positive contribution to the total decrease of F from 0 to T (increases at non-excursion steps are absorbed into F (T ) ≥ 0 on the left-hand side). Letting T → ∞ 
+
+and using F (T ) ≥ 0 yields |K ε| ≤ n F (0)   
+
+> λ2τ ε
+
+, giving (24). This proves part (ii). Step 6: Neighborhood bounds (proof of part (iii)). At any iteration with 
+
+∥∇ F (x(k)) ∥1 ≤ η(τ ) + ε, 
+
+we can write ξ(k) = ∇F (k) − ¯g(k) 1n with scalar mean ¯ g(k) = 1 
+
+> n
+
+1⊤ 
+
+> n
+
+∇F (k). Thus, we obtain 
+
+∥ξ(k)∥2 ≤ ∥∇ F (k)∥2 + √n |¯g(k)| ≤ ∥∇ F (k)∥1 + 1
+
+√n ∥∇ F (k)∥1
+
+=
+
+
+
+1 + 1
+
+√n
+
+
+
+∥∇ F (k)∥1 ≤
+
+
+
+1 + 1
+
+√n
+
+ η(τ ) + ε,
+
+where we used ∥v∥2 ≤ ∥ v∥1, and |¯g(k)| ≤ 1 
+
+> n
+
+∥∇ F (k)∥1 with √n · 1 
+
+> n
+
+= 1√n .Applying Lemma 5(i) and (iii) yields (25), completing the proof of part (iii). Simply speaking, the following overview of Theorem 1 summarizes the main convergence results: 
+
+• Part (i): As long as the agents’ gradient signs still disagree with each other by a non-negligible amount, the Laplacian sign-update is guaran-teed to decrease the optimality residual F (k) by at least a fixed amount per iteration. Intuitively, whenever two connected agents disagree in gradient sign, at least one of them move toward the common optimum, and the network’s spectral gap λ2 converts this local disagreement into global progress. 
+
+• Part (ii): Because F (k) ≥ 0 and each “outside-the-threshold” step removes a fixed amount of residual, this phase cannot last forever: it ends within Kε = O(1 /ε 2) iterations, at which point the iterates have necessarily entered a small neighborhood of the invariant/optimal set. 
+
+• Part (iii): Once inside the threshold region, the sign information is too coarse to certify further descent which results in the chattering regime, and the iterations stay within an explicit, fixed-size ball around x∗, of radius O(τ ), with the cost gap as O(τ 2). 18 Remark 8 (Interpretation and the role of τ ). Theorem 1 clarifies the trade-off between step-size, convergence speed, and accuracy. The threshold η(τ ) = 
+
+O(τ ) defines a τ -dependent neighborhood: outside this neighborhood the algo-rithm makes guaranteed progress; inside it, the coarse single-bit information is insufficient to ensure descent and the iterates may oscillate (the so-called chattering phenomena). The resulting optimality gap scales as F = O(τ 2)
+
+and ∥ex∥2 = O(τ ).This yields a formal ε-convergence guarantee: for any pre-scribed accuracy ε > 0, choosing τ = O(ε) ensures the iterates reach a neigh-borhood with ∥x(k) − x∗∥2 = O(ε) in finite time, at the cost of slower conver-gence ( Kε = O(1 /ε 2) iterations). This scaling is a fundamental limitation of fixed-step sign-based dynamics, not an artifact of the analysis. 
+
+Remark 9 (Extension to B-connected time-varying graphs) . When the graph is time-varying with Assumption 2(ii), the single-step displacement δx(ℓ) = 
+
+−τ L G (ℓ)ϕϕϕ(ℓ) depends on both the instantaneous graph and the current sign vector. Over a B-window, the cumulative displacement x(k+B) − x(k) = 
+
+−τ Pk+B−1 
+
+> ℓ=k
+
+LG (ℓ)ϕϕϕ(ℓ) generally differs from −τ L GB (k)ϕϕϕ(k) because ϕϕϕ(ℓ) may change within the window. However, the change in ϕϕϕ(ℓ) over the window is controlled: each step modifies x by at most O(τ ) per component (see (40) ), and changing any sign 
+
+ϕi requires the corresponding gradient ∂xi fi to cross zero, which by strong convexity requires a state displacement bounded below by the local gradient margin. For τ sufficiently small (a sufficient condition depending on ν, B,the edge weights, and the local gradient margins), the sign vector ϕϕϕ(ℓ) remains constant over each B-window, and the analysis of Theorem 1 applies with 
+
+λ2, σ L replaced by the corresponding quantities λ2,B , σ L,B of the union-graph Laplacian. 
+
+Remark 10 (Generality beyond the signum nonlinearity) . The proof relies on two properties of ϕϕϕ = sgn (∇F ): (i) sign preservation ((∇F )i ϕi ≥ 0), ensuring the edge-sum in the descent term is non-negative; and (ii) uniform boundedness (∥ϕϕϕ∥∞ ≤ 1), controlling the quadratic term. Any odd mapping 
+
+φ : R → R with u φ (u) > 0 for u̸ = 0 and |φ(u)| ≤ C shares these prop-erties, with the threshold scaling as O(C2τ ). The signum function ( C = 1 )minimizes communication to a single bit; power mappings and saturation functions are other members of this class that require multi-bit exchange but may yield tighter neighborhoods. 
+
+The descent bound in Theorem 1 controls the optimality residual F (k). 19 We now translate this into a per-step bound on the error vector ex(k) := 
+
+x(k) − x∗.
+
+Lemma 9 (Error ratio bound outside the threshold region) . Under the conditions of Theorem 1, at every iteration k for which ϕϕϕ(k) /∈ span( 1n),
+
+∥∇ F (x(k)) ∥1 ≥ η(τ ), and F (k) > 0 (equivalently x(k)̸ = x∗), the error 
+
+ex(k) := x(k) − x∗ satisfies 
+
+∥ex(k + 1) ∥22
+
+∥ex(k)∥22
+
+≤ μνF (k + 1) 
+
+F (k) ≤ μν
+
+
+
+1 − 1
+
+F (k)
+
+hλ2 τn ∥∇ F (x(k)) ∥1 − μ
+
+2 n σ 2 
+
+> L
+
+τ 2
+
+i 
+
+,
+
+(36) 
+
+where the bracketed term is non-negative under the threshold condition ∥∇ F (x(k)) ∥1 ≥
+
+η(τ ).Proof. By the residual–error equivalence for ν-strongly convex and μ-smooth functions (Lemma 5(ii)), we have 
+
+ν
+
+2 ∥ex(k + 1) ∥22 ≤ F (k + 1) , F (k) ≤ μ
+
+2 ∥ex(k)∥22. (37) Since F (k) > 0 by assumption, dividing the first inequality by the second yields 
+
+∥ex(k + 1) ∥22
+
+∥ex(k)∥22
+
+≤ μνF (k + 1) 
+
+F (k) . (38) From the combined bound (35) in the proof of Theorem 1, 
+
+F (k + 1) − F (k) ≤ − λ2 τn ∥∇ F (x(k)) ∥1 + μ
+
+2 n σ 2 
+
+> L
+
+τ 2,
+
+and dividing by F (k) > 0 gives 
+
+F (k + 1) 
+
+F (k) ≤ 1 − 1
+
+F (k)
+
+hλ2 τn ∥∇ F (x(k)) ∥1 − μ
+
+2 n σ 2 
+
+> L
+
+τ 2
+
+i
+
+. (39) When ∥∇ F (x(k)) ∥1 ≥ η(τ ), the bracketed term is non-negative (cf. Step 4 of Theorem 1), hence F (k+1) /F (k) ≤ 1. Substituting (39) into (38) yields (36). 20 Remark 11 (Interpretation of the error ratio bound) . The bound (36) sep-arates the effect of conditioning (through μ/ν ) from the residual decay ratio 
+
+F (k + 1) /F (k) ≤ 1 ensured by Theorem 1(i) outside the threshold region. Note that (36) does not imply error contraction in general, because μ/ν ≥
+
+1. A sufficient condition for strict contraction at iteration k is 
+
+F (k + 1) 
+
+F (k) < νμ,
+
+in which case ∥ex(k + 1) ∥2 < ∥ex(k)∥2. This holds automatically for quadratic costs (where μ = ν), and more generally when ∥∇ F (x(k)) ∥1 is sufficiently above η(τ ) so that the residual decrease in Theorem 1(i) is large relative to 
+
+F (k).For ill-conditioned problems ( μ/ν ≫ 1), the bound allows the error norm to temporarily increase even while F (k) decreases. This is a standard phe-nomenon in strongly convex optimization and is not specific to the single-bit algorithm. 4.1. Chattering behavior and steady-state optimality gap 
+
+Theorem 1 establishes that, under a fixed step-size τ , the iterates enter a neighborhood of the invariant set I defined by the threshold η(τ ) = O(τ ). Inside this neighborhood, the signum nonlinearity prevents the dynamics from settling at the exact optimizer x∗: the discrete sign vector ϕϕϕ(k) ∈{− 1, 0, +1 }n cannot encode the vanishing gradient differences needed to steer 
+
+x(k) toward x∗, causing the iterates to oscillate – a phenomenon known as chattering . We now characterize the per-step oscillation amplitude and discuss its implications for the steady-state optimality gap. 
+
+Per-step displacement bound. From the dynamics (18), the displacement of any single component satisfies 
+
+|xi(k+1) − xi(k)| = τ X  
+
+> j∈N −
+> i(k)
+
+Wij (k) ϕi(k) − ϕj (k) ≤ 2τ X  
+
+> j∈N −
+> i(k)
+
+Wij (k),
+
+(40) since |ϕi − ϕj | ≤ 2. Aggregating over all nodes, we have 
+
+∥x(k+1) − x(k)∥1 ≤ 2τ W, where W := 
+
+> n
+
+X
+
+> i=1
+
+X 
+
+> j∈N −
+> i
+
+Wij (41) 21 is the total weighted out-degree of the network (equal to 1⊤ 
+
+> n
+
+D 1n for a static graph). Since ∥v∥2 ≤ ∥ v∥1 for any v ∈ Rn, the bound also holds in the 
+
+ℓ2-norm. The increment bound (41) implies that in the chattering regime the iter-ates cannot move faster than O(τ ) per step: any oscillations induced by sign switches have per-step amplitude at most 2 τ W. Note, however, that (41) bounds only the step-to-step displacement , not the distance ∥x(k) − x∗∥2
+
+to the optimizer. The rigorous bound on the latter is provided by Theo-rem 1(iii). 
+
+Two-cycle diameter bound. If the iterates enter an eventual two-cycle (i.e., 
+
+x(k+2) = x(k) for all k ≥ k0), then (41) directly bounds the cycle diameter: 
+
+Lemma 10 (Two-cycle diameter) . If the dynamics (18) admits an eventual two-cycle {xa, xb} with x(k) = xa, x(k+1) = xb, x(k+2) = xa, then ∥xa −
+
+xb∥2 ≤ 2τ W, and each point of the cycle lies within distance τ W of the cycle midpoint 12 (xa + xb).Proof. The bound ∥xa − xb∥2 = ∥x(k+1) − x(k)∥2 ≤ 2τ W follows directly from (41). The midpoint claim follows by the triangle inequality: ∥xa − 
+
+> 12
+
+(xa + xb)∥2 = 12 ∥xa − xb∥2 ≤ τ W.Note that Lemma 10 bounds the diameter of the limit cycle, not the dis-tance from the cycle to x∗. The latter requires the Lyapunov-based analysis and is provided by Theorem 1(iii). 
+
+Steady-state optimality gap. Combining these observations, the rigorous steady-state bounds are those of Theorem 1(iii): for any ε > 0, once the iterates satisfy ∥∇ F (x(k)) ∥1 ≤ η(τ ) + ε, we have 
+
+∥x(k) − x∗∥2 ≤ 1 + 1 /√nν
+
+ η(τ ) + ε, F (k) ≤ (1 + 1 /√n)2
+
+2ν
+
+ η(τ ) + ε2.
+
+(42) Since η(τ ) = O(τ ), both bounds vanish as τ → 0, confirming that the opti-mality gap can be made arbitrarily small by reducing the step-size. 
+
+Remark 12 (Trade-off between convergence speed and accuracy) . The step-size τ governs a fundamental trade-off: larger τ yields faster descent outside the threshold region (the per-step drop in (23) scales as O(τ )) but a wider 
+
+22 optimality gap ( η(τ ) = O(τ )); smaller τ yields a tighter gap at the cost of slower convergence. Quantitatively, for a prescribed accuracy ε > 0, choosing 
+
+τ = O(λ2ε/ (μn 2σ2
+
+> L
+
+)) ensures the gap (42) is O(ε), and the first-entry time from Theorem 1(ii) becomes Kε = O(μ2n3σ2
+
+> L
+
+F (0) /(λ22ε2)) iterations. Hence, 
+
+τ should be selected according to the desired accuracy rather than treated as an arbitrary parameter, i.e., not any arbitrary large τ is permissible given the prescribed accuracy ε on threshold η(τ ).
+
+Next we examine how penalty terms affect the descent threshold and, consequently, the steady state optimality residual and residual error. Con-sidering the quadratic penalty case, since μσ = μ + 2 σ, we have 
+
+η(τ, σ ) = (μ + 2 σ)n2σ2
+
+> L
+
+2λ2
+
+τ. (43) Consequently, the steady-state neighborhood bounds from Theorem 1(iii) become 
+
+∥x(k) − x∗∥2 ≤ 1 + 1 /√nνσ
+
+(η(τ, σ ) + ϵ) , (44) and 
+
+F (k) ≤ (1 + 1 /√n)2
+
+2νσ
+
+(η(τ, σ ) + ϵ)2 . (45) These bounds explicitly quantify how increasing σ:1. Widens the steady-state neighborhood linearly in σ through μσ in η(τ, σ ); 2. May require a smaller step-size τ to maintain the same accuracy, as the threshold scales with σ.The effect of σ on chattering should be distinguished from its effect on con-ditioning. Our convergence analysis shows that, for a fixed admissible step size, the steady-state decision error induced by the one-bit sign operation is of order O(τ ), while the corresponding cost residual is of order O(τ 2). Hence, increasing σ does not by itself change the fundamental O(τ ) scaling of the quantization-induced steady-state neighborhood. Instead, it changes the allowable range of τ through μσ. In practice, we recommend choosing σ
+
+as the smallest value that achieves acceptable constraint violation, balancing accuracy versus convergence speed. 23 Because only the sign of the gradient is transmitted, the algorithm does not retain the gradient magnitude needed to make the update vanish con-tinuously as x(k) → x∗. Consequently, for a fixed nonzero τ , a nonzero steady-state neighborhood is expected (which is denoted by threshold η(τ )). Our theorem does not claim exact convergence for fixed τ ; rather, it quanti-fies this neighborhood and proves that it shrinks to the optimizer as τ → 0. 
+
+Diminishing step-sizes. The chattering limitation is inherent to fixed-τ sign-based dynamics but can be mitigated by a diminishing step-size schedule. Replacing the fixed τ by τ (k) = a/k for some a > 0, the per-step displace-ment (41) decays as O(1 /k ), so the oscillation amplitude vanishes over time. Since P 
+
+> k
+
+τ (k) = ∞ and P 
+
+> k
+
+τ (k)2 < ∞ (the Robbins–Monro conditions), one expects the iterates to converge to x∗ asymptotically. However, the disconti-nuity of the signum map requires care: standard stochastic-approximation or subgradient convergence results (cf. [38]) do not apply directly to sign-based dynamics without additional regularity assumptions (e.g., excluding persis-tent sign switches at the boundary ∂xi fi = 0). A formal convergence rate analysis under diminishing step-sizes is an interesting direction for future work; the simulations in Section 5 confirm that diminishing τ yields lower residuals than a fixed step-size (see Fig. 1). 
+
+5. Simulations 
+
+We verify Algorithm 1 on three test-beds of increasing scale. Every ex-periment is run in MATLAB R2023b on a laptop with an Intel Core i5 at 3.30 GHz, 8 GB RAM, and 512 GB SSD. Throughout, we report the opti-mality residual F (k) := F (x(k)) − F (x∗), which Theorem 1 guarantees to decrease monotonically outside the invariant set I.
+
+5.1. Step-Size Scenarios and Comparison with the Literature Setup. We consider n = 8 agents over a sparse time-varying network com-posed of four directed subgraphs G1, . . . , G4, none of which is individually connected. Graphs G1, G2 form a directed cycle with unit edge weights; G3, G4
+
+together form a 3-hop digraph with edge weights equal to 2. The network switches cyclically every 10 iterations, so the union over any window of B =40 consecutive steps is weight-balanced and strongly connected, satisfying As-sumption 2. The cost functions follow [35]: fi(xi) = αi
+
+ (xi −βi)4 +( xi −βi)2
+
+with αi ∈ [0 , 2], βi ∈ [0 , 5] drawn uniformly at random, and the demand con-straint is P 
+
+> i
+
+xi = b = 20. 24 Table 2: Comparison on the n=8 time-varying network over 10000 iterations ( τ =0 .0001). 
+
+Algorithm Run time Optimization Initialization Single-bit (Alg. 1) 0.0661 s 0.0614 s 0.0047 s Log-quantized [40] 0.1981 s 0.1934 s 0.0047 s Linear [35] 0.0640 s 0.0593 s 0.0047 s 
+
+Fixed step-size comparison. We set τ = 0 .0001 and compare Algorithm 1 against two baselines: the linear (full-gradient) method of [35] and the log-quantized method of [40]. Figure 1 (top) plots F (k) versus iteration k. The single-bit algorithm converges to a neighborhood of x∗ whose size is con-sistent with the bound in Theorem 1(iii), while the two multi-bit methods converge to the exact optimum. This confirms the theoretical trade-off: the residual floor is the price of reducing communication from 64 (or ⌈log 2⌉)bits per link to a single bit. The comutational cost is compared in Table 2. For fair comparison, the running time is reported over the same number of 
+
+kmax =10000 iterations for all three algorithms. 
+
+Communication cost comparison. The proposed method consists of two com-munication phases. First, a one-time initialization routine is used to con-struct a feasible starting point. This routine may require multi-bit message passing over a spanning tree. This initialization cost is incurred only once. Second, during the iterative phase, each iteration of the linear method [35] transmits 64 bits per link; the log-quantized method [40] uses 5 bits (quanti-zation level δ = 1); Algorithm 1 uses 1 bit. Despite requiring more iterations, the single-bit algorithm reaches the target with fewer total bits than the log-quantized and the linear method. 
+
+Diminishing step-size. Figure 1 (bottom) compares fixed τ = 0.01 with the diminishing schedule τ (k) = 0 .05 /k . The diminishing schedule satis-fies the Robbins–Monro conditions ( P 
+
+> k
+
+τ (k) = ∞, P 
+
+> k
+
+τ (k)2 < ∞) and drives the residual below the fixed-τ floor, illustrating that convergence closer to x∗ is attainable at the expense of a slower rate. The bound in Theo-rem 1(iii) applies at each k with the instantaneous τ (k): the shrinking gap 
+
+F = O(τ (k)2) = O(1 /k 2) explains the monotonically decreasing residual envelope. 25 0 2000 4000 6000 8000 10000 10 0              
+
+> 10 1
+> 10 2
+> 10 3
+> This work Linear Log quant 020 40 60 80 100 400 1000 4000 Figure 1: (Left) Optimality residual F(k) for the single-bit algorithm versus the linear method [35] and log-quantized method [40]. The single-bit residual floor is consistent with Theorem 1(iii). (Right) Fixed step-size τ= 0 .01 versus diminishing τ(k) = 0 .05 /k ; the diminishing schedule drives the residual below the fixed-τfloor.
+
+5.2. Application to Energy Management and Comparison with the Literature Setup. We consider n = 1000 power generators connected over a weight-balanced Erd˝ os–R´ enyi digraph with average out-degree 10. The quadratic cost model is fi(xi) = aix2 
+
+> i
+
++cixi with ai ∈ { 0.03 , 0.035 , 0.04 }, ci ∈ { 2, 2.5, 3, 4},following [21, 27]. The aggregate demand is b = 60 000 MW. Local generation limits m = 20 MW and m ∈ { 70 , 80 , 90 } MW (depending on generator type) are enforced via the quadratic penalty f σi (xi) = fi(xi)+ h2(xi−m)+ h2(m−xi)with σ = 50; under this choice the penalized strong-convexity constant is 
+
+νσ = 2 min i ai = 0 .06 and the smoothness constant is μσ = 2 max i ai + 2 σ =100 .08, so Assumption 1 holds with these modified constants and all bounds in Theorem 1 apply accordingly. 
+
+Residual and feasibility. Figure 2 (left) plots F (k) for Algorithm 1 ( τ = 0 .1) alongside five multi-bit baselines: the linear method [36], the accelerated (heavy-ball) method [50], saturated dynamics [43], and the finite-time [26] and fixed-time [46] nonlinear schemes. Algorithm 1 converges to a neighbor-hood consistent with the O(τ 2) residual bound in Eq. (42), while all multi-bit methods reach machine precision. Figure 2 (right) shows the individual power states xi(k) and their average 
+
+> 1
+> n
+
+P 
+
+> i
+
+xi(k) = b/n . The average remains constant at every iteration, verifying the anytime feasibility guarantee of Lemma 6. 26 Table 3: Economic dispatch ( n=1000, τ =0 .1, kmax =1000 iterations). 
+
+Algorithm Run time Optimization Initialization Single-bit (Alg. 1) 11.26 s 10.67 s 0.59 s Linear [36] 11.07 s 10.48 s 0.59 s Accelerated [50] 11.41 s 10.82 s 0.59 s Finite-time [26] 24.96 s 24.37 s 0.59 s Fixed-time [46] 38.39 s 37.80 s 0.59 s Saturated [43] 11.58 s 10.99 s 0.59 s 
+
+Communication and computation cost. Table 3 reports wall-clock run times and the per-link bit-rate. For fair comparison, the running time is reported over the same number of kmax =1000 iterations for all algorithms. Because every baseline transmits 64 bits per link per iteration while Algorithm 1 transmits 1, the single-bit method incurs the lowest total bit-rate despite re-quiring more iterations to reach comparable residual levels. Its per-iteration computational cost is also among the smallest, since the signum evaluation replaces floating-point multiplications. 
+
+Remark 13. The penalty weight σ = 50 introduces a trade-off: increasing 
+
+σ tightens the box-constraint approximation but raises μσ and, through the descent threshold η(τ ) in Theorem 1, may require a smaller τ . In this ex-periment the resulting neighborhood satisfies the generation limits to within 
+
+±0.3 MW, which is well within operational tolerance. 5.3. Application to CPU Scheduling and Comparison with the Literature Setup. A network of n = 500 servers is arranged in a cyclic (weight-balanced, strongly connected) digraph. Each server i has cost function [1, 40]: 
+
+fi(xi) = 12πmax 
+
+> i
+
+(xi − ρi)2 (46) where xi, ρ i respectively denote the allocated CPU workload and positive demand at node (server) i and Pni=1 xi = ρ with ρ denoting the overall CPU demands. The parameter πmax  
+
+> i
+
+is defined as πmax  
+
+> i
+
+:= ciTh, where ci is the sum of all clock rate frequencies of all processing cores of node/server i given in cycles/second and Th is the CPU allocation time period. For this simulation we set πmax  
+
+> i
+
+= 80, ρi ∈ [10 30], and ρ = 10000. The local box constraints on 27 0 200 400 600 800 1000 10 -5      
+
+> 10 0
+> single linear accel lin finite fixed saturated
+> 900 920 940 960 980 1000 0.06 0.07 0.08
+
+Figure 2: (Left) Optimality residual for the EDP: Algorithm 1 versus five multi-bit base-lines. (Right) Power states xi(k) at all generators and their average 1
+
+> n
+
+P 
+
+> i
+
+xi(k) = b/n ,confirming anytime feasibility (Lemma 6). Table 4: CPU scheduling ( n=500, τ =1, kmax =10 000). Comparison of the computational complexity for the cost given by (46). 
+
+Algorithm Run time Initialization Optimization Single-bit (Alg. 1) 5.81 s 0.21 s 5.60 s Log-quant. [40] 21.58 s 0.21 s 21.37 s Uniform-quant. [1] 8.86 s 0.21 s 8.65 s the allocated CPUs are mi = 0 ≤ xi ≤ 0.75 πmax  
+
+> i
+
+= Mi, which are addressed via logarithmic penalty functions with κ = 2. The network of servers is considered as a simple cyclic graph. In Algorithm 1 we set τ = 1. 
+
+Results. Figure 3 (left) compares Algorithm 1 with the log-quantized [40] and uniformly-quantized [1] schedulers (quantization level δ = 1 /32 in both cases). The single-bit method converges to a slightly wider neighborhood, consistent with Theorem 1(iii), but at substantially lower communication cost: 1 bit versus 5 bits (log) or 6 bits (uniform) per link. Figure 3 (right) confirms anytime feasibility (Lemma 6): the total allo-cated workload P 
+
+> i
+
+xi(k) = ρ is preserved at every iteration. 
+
+Remark 14. The proposed single-bit algorithm for CPU scheduling advances the existing literature in two respects: (i) it converges under single-bit data exchange, in contrast to the multi-bit transfer required by [40, 1], significantly reducing the communication load on the network; and (ii) its per-iteration 
+
+28 2000 4000 6000 8000 10000 10 0         
+
+> 10 1
+> single bit uni quant log quant
+> 9000 9200 9400 9600 9800 10000 5.3 5.4 Figure 3: (Left) Optimality residual for CPU scheduling: Algorithm 1 versus log-quantized [40] and uniformly-quantized [1] methods. (Right) Allocated workloads xi(k)at all servers and their average, confirming anytime feasibility (Lemma 6).
+
+run time is the lowest among all tested methods (Table 4), implying reduced computational load on the servers. Summary of empirical findings. Across all three experiments the simula-tions corroborate the main theoretical predictions: (i) anytime feasibility (Lemma 6) holds exactly at every iteration; (ii) the optimality residual en-ters and remains within the O(τ 2) neighborhood predicted by Theorem 1(iii); and (iii) diminishing step-sizes drive the residual below the fixed-τ floor. 
+
+Remark 15. Note that the optimization variables in our framework should not necessarily be interpreted as instantaneous actuator commands. In a practical implementation, the optimization layer would normally provide set-points or references to a lower-level controller that accounts for actuator dy-namics and other physical constraints. Consequently, the bounded oscillations observed in the optimization iterates do not automatically imply that physi-cal actuators must switch at the same frequency or with the same amplitude. However, in applications where the optimization output is closely applied to physical devices, for example in economic dispatch, rapid variations of gener-ator setpoints could lead to undesirable interactions with generator governor dynamics if the optimization update rate is comparable to the actuator band-width. Similarly, in CPU scheduling, rapid oscillations in the requested CPU frequency could result in excessive dynamic voltage/frequency transitions or undesirable power fluctuations. These effects are implementation-dependent 
+
+29 and are therefore not captured by the present optimization model. To mitigate such effects in practical cases, the optimization layer can operate at a slower rate than the low-level actuator controller, or the computed setpoints can be passed through an actuator-aware tracking/rate-limiting setup. 
+
+6. Conclusions and Future Work 
+
+We have presented a single-bit distributed resource allocation algorithm based on Laplacian-gradient dynamics, in which each agent broadcasts only the sign of its local cost gradient. The Laplacian structure on weight-balanced digraphs preserves the demand constraint at every iterate, enabling anytime termination – unlike ADMM or primal-dual methods that achieve feasibility only asymptotically. Under a fixed step-size and uniform connectivity of the union graph, the iterates enter a neighborhood of the optimizer in finite time, with the opti-mality gap scaling linearly in the step-size (decision variable) and quadrati-cally (cost residual). A formal ε-convergence guarantee follows directly: any prescribed accuracy is attained by choosing a proportionally small step-size. The analysis relies only on sign-preservation and uniform boundedness, so the single-bit protocol is the communication-minimizing instance of a broader class of odd nonlinearities sharing the same Lyapunov structure. Several limitations remain open. The feasible initialization may require a one-time multi-bit spanning-tree routine, partially offsetting the single-bit savings in short-horizon settings. The penalty-function treatment of box con-straints provides only approximate satisfaction, with the constraint tightness, step-size, and penalty weight coupled in a trade-off that deserves sharper characterization. Finally, while diminishing step-sizes eliminate the resid-ual gap empirically, a formal convergence rate analysis is complicated by the discontinuity of the signum at zero and remains an important direction for fu-ture work, alongside noise resilience, connections to the compressed-gradient literature, and extensions to non-balanced digraphs and multi-dimensional decisions. Moreover, communication delays and asynchronous packet arrivals are not analyzed in the present work and constitute an interesting direction for future research. The underlying approach can be extended to the vector case. Specifically, suppose that ( xi ∈ Rd). The sign operation can be applied entry-wise, i.e., the transmitted message consists of the signs of the d coordinates. With this modification, the key properties used in our analysis continue to hold. In 30 particular, feasibility is preserved, the KKT characterization remains valid, and the convergence argument extends to the vector setting. The only change in the convergence bound is in the graph-dependent constant, which acquires the corresponding dimension-dependent factor (of order d) due to the norm conversion between the coordinate-wise and vector representations. This extension is an important direction for future research. 
+
+References 
+
+[1] A. I. Rikos, A. Grammenos, E. Kalyvianaki, C. N. Hadjicostis, T. Char-alambous, K. H. Johansson, Optimal CPU scheduling in data centers via a finite-time distributed quantized coordination mechanism, in: IEEE 60th Conference on Decision and Control, 2021. [2] M. Doostmohammadian, Z. R. Gabidullina, H. R. Rabiee, Machine learning and CPU (central processing unit) scheduling co-optimization over a network of computing centres, Engineering Applications of Arti-ficial Intelligence 163 (2026) 113018. [3] A. Falsone, I. Notarnicola, G. Notarstefano, M. Prandini, Tracking-admm for distributed constraint-coupled optimization, Automatica 117 (2020) 108962. [4] G. Chen, Z. Zhao, Distributed algorithms for resource allocation in cyber-physical energy systems with uniform/nonuniform communication delays, Journal of the Franklin Institute 357 (7) (2020) 4363–4391. [5] X. Guan, K. Ma, Y. Feng, B. Yang, P. Zhao, X. Nie, Y. Li, Port cyber-physical energy systems: Advances, challenges, and future directions, Cyber-Physical Energy Systems. [6] A. Cherukuri, J. Cortes, Distributed generator coordination for initial-ization and anytime optimization in economic dispatch, IEEE Trans. on Control of Network Systems 2 (3) (2015) 226–237. [7] K. Ma, X. Liu, G. Li, S. Hu, J. Yang, X. Guan, Resource allocation for smart grid communication based on a multi-swarm artificial bee colony algorithm with cooperative learning, Engineering Applications of Arti-ficial Intelligence 81 (2019) 29–36. 31 [8] M. Doostmohammadian, H. R. Rabiee, Distributed automatic genera-tion control subject to ramp-rate-limits: Anytime feasibility and uniform network-connectivity, Digital Signal Processing (2025) 105576. [9] M. Sun, S. Zou, Y. Guo, X. Nian, Projection-based distributed economic dispatch algorithm considering communication delays under switching topologies, International Journal of Electrical Power & Energy Systems 152 (2023) 109266. [10] D. Wang, D. Zhu, Z. Ou, J. Lu, A distributed buffering drift-plus-penalty algorithm for coupling constrained optimization, IEEE Control Systems Letters. [11] W. An, D. Ding, H. Dong, B. Shen, L. Sun, Privacy-preserving dis-tributed optimization for economic dispatch over balanced directed net-works, IEEE Transactions on Information Forensics and Security. [12] B. Luo, Q. L¨ u, X. Liao, ET-PDA: An event-triggered parameter dis-tributed accelerated algorithm for economic dispatch problems, Journal of the Franklin Institute 361 (2) (2024) 899–915. [13] X. Shi, Z. Meng, S. Dong, X. Wang, Distributed resource allocation algo-rithm for second-order multi-agent systems with external disturbances, International Journal of Control 96 (2023) 2181–2189. [14] X. Shi, Y. Su, C. Mu, C. Sun, Nonsmooth distributed resource allocation over second-order nonlinear multiagent systems, IEEE Systems Journal 18 (1) (2024) 644–655. [15] C. Monnoyer de Galland, R. Vizuete, J. M. Hendrickx, E. Panteley, P. Frasca, Random coordinate descent for resource allocation in open multiagent systems, IEEE Transactions on Automatic Control 69 (11) (2024) 7600–7613. [16] M. O. Sayin, S. S. Kozat, Single bit and reduced dimension diffusion strategies over distributed networks, IEEE Signal Processing Letters 20 (10) (2013) 976–979. [17] M. Doostmohammadian, Single-bit consensus with finite-time conver-gence: Theory and applications, IEEE Transactions on Aerospace and Electronic Systems 56 (4) (2020) 3332–3338. 32 [18] H. Sayyaadi, M. Doostmohammadian, Finite-time consensus in directed switching network topologies and time-delayed communications, Scien-tia Iranica 18 (1) (2011) 75–85. [19] J. Zhang, K. You, T. Ba¸ sar, Distributed discrete-time optimization in multiagent networks using only sign of relative state, IEEE Transactions on Automatic Control 64 (6) (2018) 2352–2367. [20] X. Cao, T. Ba¸ sar, Decentralized online convex optimization based on signs of relative states, Automatica 129 (2021) 109676. [21] S. Kar, G. Hug, J. Mohammadi, J. M. F. Moura, Distributed state es-timation and energy management in smart grids: A consensus + inno-vations approach, IEEE Journal of Selected Topics in Signal Processing 8 (6) (2014) 1022–1038. [22] Z. Zhou, G. Guo, R. Zhang, A fixed-time convergent distributed algo-rithm for time-varying optimal resource allocation problem, IEEE Trans-actions on Signal and Information Processing over Networks. [23] T. Ding, S. Zhu, C. Chen, J. Xu, X. Guan, Differentially private dis-tributed resource allocation via deviation tracking, IEEE Transactions on Signal and Information Processing over Networks 7 (2021) 222–235. [24] R. Wang, Y. Liu, Q. Ling, Byzantine-resilient resource allocation over decentralized networks, IEEE Transactions on Signal Processing 70 (2022) 4711–4726. [25] M. Alizadeh, X. Li, Z. Wang, A. Scaglione, R. Melton, Demand-side management in the smart grid: Information processing for the power switch, IEEE Signal Processing Magazine 29 (5) (2012) 55–67. [26] G. Chen, J. Ren, E. N. Feng, Distributed finite-time economic dispatch of a network of energy resources, IEEE Transactions on Smart Grid 8 (2) (2016) 822–832. [27] S. Kar, G. Hug, Distributed robust economic dispatch in power sys-tems: A consensus+ innovations approach, in: IEEE Power and Energy Society General Meeting, 2012, pp. 1–8. 33 [28] V. Casagrande, I. Prodan, S. Spurgeon, F. Boem, Resilient microgrid energy management algorithm based on distributed optimization, IEEE Systems Journal 17 (2) (2023) 2791–2802. [29] M. Sarafraz, M. Tavazoei, Uncertain multiagent systems with dis-tributed constrained optimization missions and event-triggered commu-nications: Application to resource allocation, IEEE Systems Journal 17 (1) (2022) 270–281. [30] W. Fang, Z. Yu, Y. Jiang, Y. Shi, C. N. Jones, Y. Zhou, Communication-efficient stochastic zeroth-order optimization for federated learning, IEEE Transactions on Signal Processing 70 (2022) 5058–5073. [31] Z. Li, B. Ying, Z. Liu, C. Dong, H. Yang, Achieving dimension-free communication in federated learning via zeroth-order optimization, in: International Conference on Learning Representations, Vol. 2025, 2025, pp. 23769–23803. [32] Z. Li, B. Ying, D. Liang, Z. Liu, R. Li, H. Yang, Achieving ex-tremely low communication overhead in federated learning via zeroth-order SignSGD, in: 59th Asilomar Conference on Signals, Systems, and Computers, IEEE, 2025, pp. 619–623. [33] A. D. Dominguez-Garcia, S. T. Cady, C. N. Hadjicostis, Decentralized optimal dispatch of distributed energy resources, in: 51st IEEE Confer-ence on Decision and Control (CDC), 2012, pp. 3688–3693. [34] C. Li, X. Yu, T. Huang, X. He, Distributed optimal consensus over resource allocation network and its application to dynamical economic dispatch, IEEE Transactions on Neural Networks and Learning Systems 29 (6) (2017) 2407–2418. [35] T. T. Doan, A. Olshevsky, Distributed resource allocation on dynamic networks in quadratic time, Systems & Control Letters 99 (2017) 57–63. [36] L. Xiao, S. Boyd, Optimal scaling of a gradient method for distributed resource allocation, Journal of Optimization Theory and Applications 129 (3) (2006) 469–488. [37] D. Bertsekas, A. Nedic, A. Ozdaglar, Convex Analysis and Optimization, Athena Scientific, Belmont, MA, 2003. 34 [38] Y. Nesterov, Introductory lectures on convex programming, volume I: Basic course, Lecture notes 3 (4) (1998) 5. [39] M. Doostmohammadian, A. Aghasi, T. Charalambous, U. A. Khan, Dis-tributed support-vector-machine over dynamic balanced directed net-works, IEEE Control Systems Letters 6 (2021) 758 – 763. [40] M. Doostmohammadian, A. Aghasi, A. I. Rikos, A. Grammenos, E. Ka-lyvianaki, C. N. Hadjicostis, K. H. Johansson, T. Charalambous, Dis-tributed anytime-feasible resource allocation subject to heterogeneous time-varying delays, IEEE Open Journal of Control Systems (2022) 255– 267. [41] C. W. Wu, Algebraic connectivity of directed graphs, Linear and multi-linear algebra 53 (3) (2005) 203–223. [42] S. Boyd, L. Vandenberghe, Convex Optimization, Cambridge University Press, New York, NY, USA, 2004. [43] M. Doostmohammadian, A. Aghasi, M. Vrakopoulou, T. Charalam-bous, 1st-order dynamics on nonlinear agents for resource allocation over uniformly-connected networks, in: IEEE Conference on Control Theory and Applications, IEEE, 2022, pp. 1184–1189. [44] B. Gharesifard, J. Cort´ es, Distributed continuous-time convex optimiza-tion on weight-balanced digraphs, IEEE Transactions on Automatic Control 59 (3) (2013) 781–786. [45] S. E. Parsegov, A. E. Polyakov, P. S. Shcherbakov, Fixed-time consen-sus algorithm for multi-agent systems with integrator dynamics, IFAC Proceedings Volumes 46 (27) (2013) 110–115. [46] M. Doostmohammadian, A. Aghasi, Accelerated distributed allocation, IEEE Signal Processing Letters 31 (2024) 651–655. [47] S. Chen, H. Jiang, Z. Yu, F. Zhao, Distributed optimization of single-integrator systems with prescribed-time convergence, IEEE Systems Journal 17 (2) (2023) 3235–3245. [48] J. Wei, A. R. F. Everts, M. K. Camlibel, A. J. van der Schaft, Consensus dynamics with arbitrary sign-preserving nonlinearities, Automatica 83 (2017) 226–233. 35 [49] S. Stankovi´ c, M. Beko, M. Stankovi´ c, Nonlinear robustified stochastic consensus seeking, Systems. & Control Letters 139 (2020) 104667. [50] E. Ghadimi, M. Johansson, I. Shames, Accelerated gradient methods for networked optimization, in: IEEE American Control Conference, 2011, pp. 1668–1673. [51] B. Turan, C. Uribe, H. Wai, M. Alizadeh, Resilient primal–dual opti-mization algorithms for distributed resource allocation, IEEE Trans. on Control of Network Systems 8 (1) (2020) 282–294. [52] Y. Nesterov, V. Shikhman, Dual subgradient method with averaging for optimal resource allocation, European Journal of Operational Research 270 (3) (2018) 907–916. [53] D. Feijer, F. Paganini, Stability of primal–dual gradient dynamics and applications to network optimization, Automatica 46 (12) (2010) 1974– 1981. [54] M. Doostmohammadian, S. Pequito, Distributed allocation and resource scheduling algorithms resilient to link failure, European Journal of Con-trol (2025) 101405. [55] N. Vaidya, C. N. Hadjicostis, A. Dom´ ınguez-Garc´ ıa, Robust average consensus over packet dropping links: Analysis via coefficients of ergod-icity, in: 51st IEEE Conference on Decision and Control (CDC), IEEE, 2012, pp. 2761–2766. 36

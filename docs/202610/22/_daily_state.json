@@ -1,0 +1,553 @@
+{
+  "date": "20261022",
+  "date_label": "",
+  "generated_at": "2026-10-22 22:20:10 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.21171v1",
+      "route": "202610/22/2610.21171v1-physical-ai-a-survey-of-models-learning-systems-and-open-challenges",
+      "title": "Physical AI: A Survey of Models, Learning, Systems, and Open Challenges",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 10.0,
+      "evidence": "综述物理AI智能体的感知推理与行动",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.19683v1",
+      "route": "202610/22/2610.19683v1-enhancing-latent-world-models-with-associative-memory",
+      "title": "Enhancing Latent World Models with Associative Memory",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向长时程具身规划的记忆增强潜在世界模型",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.20312v1",
+      "route": "202610/22/2610.20312v1-reflect-after-failure-brain-inspired-self-evolving-agents-for-embodied-spatial-intelligence",
+      "title": "Reflect After Failure: Brain-Inspired Self-Evolving Agents for Embodied Spatial Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "在空间任务中失败后反思的类脑自进化具身智能体",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.20442v1",
+      "route": "202610/22/2610.20442v1-towards-agentic-robots-model-data-environment-and-harness",
+      "title": "Towards Agentic Robots: Model, Data, Environment, and Harness",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "对在真实环境中推理、规划并行动的智能体机器人的统一综述",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.21882v1",
+      "route": "202610/22/2610.21882v1-anvil-scaling-embodied-spatial-intelligence-through-knowledge-recirculation",
+      "title": "Anvil: Scaling Embodied Spatial Intelligence through Knowledge Recirculation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向具身空间智能的统一数据生成、训练与评测框架",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.22471v2",
+      "route": "202610/22/2610.22471v2-has-gpt-6-astra-achieved-embodied-intelligence",
+      "title": "Has GPT-6-Astra Achieved Embodied Intelligence?",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "机器人操作与导航中的具身智能大规模评测",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.23018v1",
+      "route": "202610/22/2610.23018v1-vla-fabric-learning-interaction-for-composable-multi-arm-vla-agents",
+      "title": "VLA-Fabric: Learning Interaction for Composable Multi-Arm VLA Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "多臂视觉语言动作具身智能体协同感知与动作",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.23053v1",
+      "route": "202610/22/2610.23053v1-unifying-embodied-foundation-models-via-a-model-to-policy-formulation",
+      "title": "Unifying Embodied Foundation Models via a Model-to-Policy Formulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "具身基础模型与机器人策略的统一概率形式化",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.23334v1",
+      "route": "202610/22/2610.23334v1-law-unifying-language-action-and-world-modeling-for-agentic-physical-intelligence",
+      "title": "LAW: Unifying Language, Action, and World Modeling for Agentic Physical Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "闭环视觉语言与世界-动作模型，统一语言推理、动作生成与世界建模以支持规划",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.23396v1",
+      "route": "202610/22/2610.23396v1-awam-active-trajectory-conditioned-view-imagination-for-robust-robot-manipulation",
+      "title": "AWAM: Active Trajectory-Conditioned View Imagination for Robust Robot Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向具身预测与规划的主动世界-动作模型",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.25959v1",
+      "route": "202610/22/2610.25959v1-embodiedworld-200k-toward-embodied-world-agents-via-embodied-planning-dataset-and-interactive-world-models",
+      "title": "EmbodiedWorld-200K: Toward Embodied World Agents via Embodied-Planning Dataset and Interactive World Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向具身智能体的具身规划数据集与交互式世界模型",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.26564v1",
+      "route": "202610/22/2610.26564v1-prismwam-decoupling-state-representations-in-world-action-models",
+      "title": "PrismWAM: Decoupling State Representations in World Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "世界动作模型解耦物理状态与语义外观以支持具身任务",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.26854v2",
+      "route": "202610/22/2610.26854v2-physical-words-a-vocabulary-for-structuring-latent-reasoning-in-robot-manipulation",
+      "title": "Physical Words: A Vocabulary for Structuring Latent Reasoning in Robot Manipulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于物理动作词表的先推理后执行机器人操作模型",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.27040v1",
+      "route": "202610/22/2610.27040v1-ace-brain-06-scaling-spatial-grounding-for-physical-foundation-models",
+      "title": "ACE-Brain-0.6: Scaling Spatial Grounding for Physical Foundation Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "扩展空间定位作为具身操作模型的感知基础",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.27045v1",
+      "route": "202610/22/2610.27045v1-physical-ai-concepts-techniques-and-challenges",
+      "title": "Physical AI: Concepts, Techniques, and Challenges",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "感知、建模并作用于物理世界的物理人工智能系统",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.27613v1",
+      "route": "202610/22/2610.27613v1-embodied-task-agents-can-perform-fine-manipulation-through-tactile-in-context-learning",
+      "title": "Embodied Task Agents Can Perform Fine Manipulation through Tactile In-Context Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "具身任务智能体借助触觉经验完成精细操作",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.28613v1",
+      "route": "202610/22/2610.28613v1-physical-canvas-a-vision-tactile-world-model-for-robot-policy-evaluation-and-learning",
+      "title": "Physical Canvas: A Vision Tactile World Model For Robot Policy Evaluation And Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "动作条件视觉-触觉世界模型，作为机器人策略评估与学习的交互模拟器",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.28626v1",
+      "route": "202610/22/2610.28626v1-uniwalm-unified-world-action-language-model-for-embodied-robot-control",
+      "title": "UniWALM: Unified World Action Language Model for Embodied Robot Control",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "统一的世界-动作-语言模型，在共享表示中支持具身预测与控制",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.29702v1",
+      "route": "202610/22/2610.29702v1-causground-causal-interaction-grounding-for-adaptive-embodied-planning",
+      "title": "CausGround: Causal Interaction Grounding for Adaptive Embodied Planning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向物理环境中自适应具身规划的因果交互接地",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.30043v1",
+      "route": "202610/22/2610.30043v1-tarsphere-a-robot-oriented-full-stack-framework-for-long-horizon-embodied-agents-in-evolving-physical-and-social-environments",
+      "title": "TARSphere: A Robot-Oriented Full-Stack Framework for Long-Horizon Embodied Agents in Evolving Physical and Social Environments",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向物理环境中长时程具身智能体的机器人全栈框架",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.30108v1",
+      "route": "202610/22/2610.30108v1-multimodal-embodied-agents-a-unified-capability-centric-perspective-from-computer-use-to-robot-use",
+      "title": "Multimodal Embodied Agents: A Unified Capability-centric Perspective from Computer-Use to Robot-Use",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "多模态具身智能体感知规划与行动的统一框架",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.30136v1",
+      "route": "202610/22/2610.30136v1-agentic-world-action-models",
+      "title": "Agentic World Action Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "联合预测视频与动作的智能体世界动作模型以支撑具身规划",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2609.35032v1",
+      "route": "202610/22/2609.35032v1-jrdb-avr-an-active-visual-reasoning-benchmark-for-embodied-agents-in-real-world-environments",
+      "title": "JRDB-AVR: An Active Visual Reasoning Benchmark for Embodied Agents in Real-World Environments",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "真实环境中具身智能体主动视觉推理与证据获取的基准",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2609.36171v1",
+      "route": "202610/22/2609.36171v1-skillweaver-agentic-exploration-over-neural-interaction-skills-for-scalable-robot-data-generation",
+      "title": "SkillWeaver: Agentic Exploration over Neural Interaction Skills for Scalable Robot Data Generation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "基于神经交互技能的机器人数据生成智能体探索",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2609.36578v1",
+      "route": "202610/22/2609.36578v1-factorized-scheduling-principle-learning-interpretable-and-transferable-policies-via-structured-additive-functions",
+      "title": "Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过结构化加性函数学习可解释的优先级调度策略",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2609.39349v1",
+      "route": "202610/22/2609.39349v1-multidimensional-resource-scheduling-with-small-demands",
+      "title": "Multidimensional Resource Scheduling with Small Demands",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "小需求下的多维资源调度",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.21484v1",
+      "route": "202610/22/2610.21484v1-context-matters-social-spatial-and-semantic-coordination-with-an-embodied-agent-in-immersive-analytics",
+      "title": "Context Matters! Social, Spatial, and Semantic Coordination with an Embodied Agent in Immersive Analytics",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "具身智能体感知并响应空间、社交与语义情境",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.24431v1",
+      "route": "202610/22/2610.24431v1-low-bit-distributed-constrained-optimization-with-application-to-optimal-scheduling-and-allocation",
+      "title": "Low-Bit Distributed Constrained Optimization with Application to Optimal Scheduling and Allocation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向最优调度与资源分配的分布式约束优化",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.24549v1",
+      "route": "202610/22/2610.24549v1-carvs-a-congestion-aware-algorithm-for-online-multi-agent-pickup-and-delivery-in-human-collaborative-warehouses",
+      "title": "CARVS: A Congestion-Aware Algorithm for Online Multi-Agent Pickup-and-Delivery in Human-Collaborative Warehouses",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "机器人仓库系统中的在线多智能体取送调度",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.24617v1",
+      "route": "202610/22/2610.24617v1-task-offloading-and-resource-allocation-for-deterministic-service-provisioning-in-the-iot-edge-cloud-continuum",
+      "title": "Task Offloading and Resource Allocation for Deterministic Service Provisioning in the IoT-Edge-Cloud Continuum",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "跨连续体的任务卸载与计算资源联合分配",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.19642v1",
+      "route": "202610/22/2610.19642v1-model-what-matters-decision-guided-selective-world-modeling-for-language-agents",
+      "title": "Model What Matters: Decision-Guided Selective World Modeling for Language Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "支撑智能体决策的世界建模",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.22683v1",
+      "route": "202610/22/2610.22683v1-dynamic-auction-mechanisms-in-a-closed-credit-economy-sequential-slot-reallocation-in-air-traffic-management",
+      "title": "Dynamic Auction Mechanisms in a Closed-Credit Economy: Sequential Slot Reallocation in Air Traffic Management",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "基于封闭信用升价拍卖的不可分时隙序贯资源再分配",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.22972v1",
+      "route": "202610/22/2610.22972v1-converter-aware-coordination-of-computing-flexibility-in-behind-the-meter-data-centers",
+      "title": "Converter-Aware Coordination of Computing Flexibility in Behind-the-Meter Data Centers",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "数据中心工作负载调度与功率约束",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    },
+    {
+      "paper_id": "2610.23532v1",
+      "route": "202610/22/2610.23532v1-exploiting-the-flexibility-of-llm-inference-for-frequency-regulation-service",
+      "title": "Exploiting the Flexibility of LLM Inference for Frequency Regulation Service",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "计算集群中的推理请求调度与token级资源分配",
+      "first_seen_at": "2026-10-22 22:20:10 UTC",
+      "updated_at": "2026-10-22 22:20:10 UTC"
+    }
+  ]
+}

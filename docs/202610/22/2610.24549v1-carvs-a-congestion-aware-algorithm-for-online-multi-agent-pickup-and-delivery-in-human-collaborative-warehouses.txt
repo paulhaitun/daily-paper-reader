@@ -1,0 +1,419 @@
+Title: CARVS: A Congestion-Aware Algorithm for Online Multi-Agent Pickup-and-Delivery in Human-Collaborative Warehouses
+
+URL Source: https://arxiv.org/pdf/2610.24549v1
+
+Published Time: Tue, 20 Oct 2026 00:52:52 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# CARVS: A Congestion-Aware Algorithm for Online Multi-Agent Pickup-and-Delivery in Human-Collaborative Warehouses 
+
+# Chaoran Li 
+
+Shanghai Jiao Tong University Department of Computer Science and Engineering Shanghai, China seraphli@sjtu.edu.cn 
+
+# Zeyuan Zhao 
+
+Shanghai Jiao Tong University Department of Computer Science and Engineering Shanghai, China 
+
+# Shao Zhang 
+
+Shanghai Artificial Intelligence Laboratory Shanghai, China 
+
+## Abstract 
+
+Intelligent warehouse systems have transformed logistics by inte-grating robots with minimal infrastructure changes, boosting effi-ciency and optimizing workflows compared to traditional human-only operations. However, human-robot collaboration introduces new challenges, particularly due to human uncertainty, which leads to dynamic interactions and unpredictable behavior. To address these complexities, this paper presents the Multi-Agent Pickup-and-Delivery with Human Collaboration (MAPDwHC) problem, an extension of the Multi-Agent Pickup-and-Delivery (MAPD) problem that incorporates human unpredictability. This problem adds key constraints, such as dynamic obstacles caused by robots temporarily blocking paths when interacting with humans, and the need for real-time responsiveness . We formalize the MAPDwHC problem with additional constraints and properties. Based on this problem setting, we propose the CARVS algorithm, which improves task assignment and path planning by integrating task swapping, validation checks, and random initialization. CARVS reduces congestion, enhances adaptability to human-robot interactions, and ensures real-time responsiveness. Simulation results show that CARVS significantly reduces timeouts of path planning in large-scale scenarios where traditional MAPD algorithms fail, improving both efficiency and scalability. 
+
+## CCS Concepts 
+
+• Computing methodologies → Multi-agent planning ; Multi-agent systems .
+
+## Keywords 
+
+Multi-agent systems, pickup and delivery, human-robot collabora-tion, path finding, warehouse automation, task assignment 
+
+ACM Reference Format: 
+
+Chaoran Li, Zeyuan Zhao, and Shao Zhang. 2026. CARVS: A Congestion-Aware Algorithm for Online Multi-Agent Pickup-and-Delivery in Human-Collaborative Warehouses. In The Eighth International Conference on Dis-tributed Artificial Intelligence (DAI ’26), November 29–December 2, 2026, Hong Kong, China. ACM, New York, NY, USA, 13 pages. 
+
+## 1 Introduction 
+
+The rise of automation in logistics, particularly in warehouse man-agement, has driven the development of advanced multi-agent systems [7, 30]. These systems are crucial for enhancing efficiency 
+
+> DAI ’26, Hong Kong, China bPicking goods Real-time Avoidance 1
+
+a 
+
+> Packing goods
+> Picking Zone Packing Zone
+> 1cd1Non-uniform distribution 2354eMulti-goal Online Tasks
+> Assign 12345
+
+Figure 1: An illustration of the online MAPDwHC problem, showing key features: (a, c) Robots must stay stationary dur-ing human interaction, creating dynamic obstacles . (b) Robots must avoid humans and obstacles, necessitating algorithms with real-time responsiveness . (d) Items are unevenly dis-tributed. (e) Robots can carry multiple items. 
+
+and managing the complexity of automated warehouses [3]. In par-ticular, Multi-Agent Path Finding (MAPF) [27] plays a key role in co-ordinating robot movements to prevent conflicts and optimize path efficiency [19]. While significant progress has been made in MAPF research [10, 26], the integration of task assignment within this framework remains underexplored. To address this, Multi-Agent Pickup and Delivery (MAPD) algorithms [18] were developed, com-bining task assignment and pathfinding to enhance system adapt-ability and throughput. Since MAPF is NP-hard [19] and MAPD generalizes MAPF, MAPD is also NP-hard, complicating system-wide optimization. To reduce computational complexity, traditional approaches often separate task assignment from path planning [1]. While A*-based algorithms [4, 5] optimize task assignment by minimizing travel time, they frequently overlook warehouse congestion, agent status, and environmental constraints, resulting in poor real-time adaptability and delayed responses to dynamic changes. Despite these advancements, MAPD assumes an environment free of human workers, limiting its real-world applicability. Mod-ern intelligent warehouse systems [4] have transformed logistics by integrating Autonomous Mobile Robots (AMRs) [17] without requiring major infrastructure changes. Full warehouse automation requires standardized shelving and uniform packaging, which is prohibitively expensive for most existing facilities. While AMRs handle routine transport tasks, human workers perform critical arXiv:2610.24549v1 [cs.MA] 17 Oct 2026 DAI ’26, November 29–December 2, 2026, Hong Kong, China Li et al. 
+
+operations such as picking and packing, which require dexterity to handle items of varying sizes. During these operations, robots must remain stationary while interacting with humans, temporarily forming dynamic obstacles (see Figure 1). Warehouse aisles are typically narrow to maximize storage capacity, so a stationary agent during interaction can block paths for other agents, rendering some MAPF instances unsolvable. Unlike robots, humans do not strictly follow predefined schedules, resulting in unpredictable behavior that affects task allocation and path planning. Consequently, algo-rithms need real-time responsiveness to respond dynamically to these changing conditions. These constraints significantly heighten the problem’s challenge and necessitate adaptive algorithms capa-ble of reacting to real-time changes. Existing MAPD algorithms are insufficient for addressing these challenges, as they assume static environments without human involvement. Adding human collaboration imposes time-coupled constraints that break standard MAPD solvers, reducing task com-pletion to less than 10% of each solver’s own peak in some scenarios (see Section 5). Traditional MAPD algorithms [15, 18] fail to ac-count for human movement and dynamic constraints. Addressing these limitations requires a novel approach that integrates real-time adaptability with congestion-aware planning to ensure effective coordination between AMRs and human workers. To bridge this gap, we formalize the Multi-Agent Pickup-and-Delivery with Human Collaboration (MAPDwHC) problem, incor-porating additional constraints such as dynamic obstacles and 
+
+real-time adaptability . We introduce CARVS (Congestion-Aware 
+
+Random-initialization, Validation, and Swapping), a new algorithm designed to enhance task assignment and path planning in human-robot collaborative environments. CARVS extends a baseline greedy assignment with three key improvements: random initialization, validation checks, and task swapping. These enhancements mit-igate congestion, adapt to human unpredictability, and improve real-time responsiveness. Our theoretical analysis establishes the solvability of MAPDwHC, and extensive simulations demonstrate that CARVS significantly outperforms existing methods in terms of completed tasks. This work advances the field of multi-agent sys-tems and paves the way for optimizing human-robot collaboration in real-world logistics applications. Our contributions are as follows: 
+
+• We formalize the MAPDwHC problem and demonstrate that incorporating human collaboration heightens its computa-tional difficulty relative to the traditional MAPD problem. 
+
+• We introduce CARVS , an algorithm that integrates random initialization, validation checks, and task swapping to mit-igate congestion, adapt to human-robot interactions, and maintain real-time responsiveness. 
+
+• Through extensive simulations, we show that CARVS outper-forms existing methods in terms of completed tasks, under-scoring its practical potential in human-robot collaborative warehouse systems. 
+
+## 2 Related Works 2.1 Multi-Agent Path Finding 
+
+In Multi-Agent Pathfinding (MAPF), algorithms are broadly clas-sified into optimal and suboptimal categories. Optimal algorithms like CBS [24] and MA-CBS [25] aim to minimize the total cost but are computationally expensive, making them impractical for real-time applications with many agents. As a result, suboptimal algorithms have become the focus of MAPF research, prioritizing runtime efficiency over strict optimality. Suboptimal algorithms are typically divided into complete and in-complete methods. Incomplete approaches, such as Rolling-Horizon Collision Resolution (RHCR) [14], simplify planning by resolving conflicts within limited timeframes but can suffer from deadlocks in constrained environments due to their non-exhaustive search. On the other hand, complete suboptimal algorithms like LaCAM [21] and LaCAM* [22] use dual-level search techniques that guarantee finding a feasible solution or proving its non-existence, though they can result in significant computational delays, particularly in complex scenarios like those encountered in MAPDwHC. Recent studies [2, 9] have applied multi-agent reinforcement learning (MARL) [28] to MAPF problems, but these methods of-ten struggle to meet the runtime requirements necessary for real-time human-robot collaboration in the MAPDwHC problem. While MARL can improve adaptability and decision-making, it still faces challenges in balancing computational demands with the need for real-time solutions. 
+
+## 2.2 Task Assignment 
+
+Task assignment is often overlooked in traditional Multi-Agent Pathfinding (MAPF), resulting in inefficiencies as agents may be assigned suboptimal tasks that are difficult to coordinate. To address this, several studies have integrated task assignment with path planning. Nguyen et al. [20] propose a generalized Combined Target Assignment and Path Finding (TAPF) model using Answer Set Programming, which handles scenarios with unequal numbers of agents and tasks, and incorporates complex requirements such as deadlines. Honig et al. [6] introduce Conflict-Based Search with Optimal Task Assignment (CBS-TA), integrating task assignment directly into pathfinding to optimize both simultaneously. However, these integrated approaches often struggle with scalability in large or complex environments. Okumura et al. [23] address the unlabeled variant of MAPF, where any agent may be sent to any target. Their algorithm TSWAP swaps targets between agents and uses a cached distance table to keep the planning cost of each time step low even at large agent counts. All targets are given at the start rather than arriving over time. While MAPD addresses dynamic environments with real-time task arrivals, TAPF is typically designed for static settings. Ma et al. [18] extend the Lifelong MAPF framework to Multi-Agent Pickup and Delivery (MAPD), proposing algorithms like Token Passing (TP) and Token Passing with Task Swaps (TPTS) to improve flexibility and efficiency. Building on this, Liu et al. [15] develop MAPD strategies by framing task allocation as a Travel-ing Salesman Problem for each agent, while integrating deadlock avoidance mechanisms. In a recent work, Xu et al. [29] introduce algorithms for the Multi-Goal Multi-Agent Pickup and Delivery (MG-MAPD) prob-lem, extending MAPD to handle tasks with multiple goal locations. While their algorithms, LNS-PBS and LNS-wPBS, show significant CARVS: A Congestion-Aware Algorithm for Online MAPD in Human-Collaborative Warehouses DAI ’26, November 29–December 2, 2026, Hong Kong, China 
+
+scalability and efficiency improvements, particularly in large-scale settings, they focus primarily on offline environments and assume that tasks are known in advance. In contrast, our work deals with real-time task arrivals and dynamic human-robot collaboration, which introduces additional complexities and requires more adap-tive solutions. Despite these advancements, challenges remain in managing dynamically increasing tasks and ensuring scalability in complex environments. For instance, Chen et al. [1] present a unified ap-proach combining task assignment and MAPF but may encounter efficiency issues in larger-scale settings. Additionally, Krnjaic et al. [8] apply Multi-Agent Reinforcement Learning to similar problems, though their methods do not address potential collisions, limiting their applicability in real-world scenarios. Lodigiani et al. [16] study a related problem, MAPD with delays (MAPD-d), where agents may experience unexpected delays during execution. They propose 𝑘 -TP and 𝑝 -TP, two Token Passing variants offering deterministic and probabilistic robustness guarantees respectively, where 𝑘 bounds the delay an agent may absorb without triggering a replan. Their approach trades efficiency for robustness but does not support real-time replanning upon state changes. 
+
+## 3 Online MAPD with Human Collaboration 3.1 Problem Definition 
+
+We consider the environment as an undirected graph 𝐺 = (𝑉 , 𝐸 ).At each discrete time step 𝑡 ∈ { 0, 1, . . . ,𝑇 }, an agent 𝑎 𝑖 ∈ 𝐴 located at vertex 𝑣 ∈ 𝑉 may either remain at 𝑣 or traverse an incident edge 
+
+(𝑣, 𝑢 ) ∈ 𝐸 to reach an adjacent vertex 𝑢 . One time step corresponds to a wall-clock duration of 𝜂 seconds in real time. We are given a set of tasks T = {𝜏 1, . . . , 𝜏 𝑛 }. Task 𝜏 𝑗 = (𝑠 𝑗 , 𝑟 𝑗 ),where 𝑟 𝑗 is the release time, becomes available once the current time satisfies 𝑡 > 𝑟 𝑗 . Completion requires (i) an agent to travel to the pickup vertex 𝑠 𝑗 ∈ 𝑉 𝑃 ⊆ 𝑉 , collect the package with human assistance, and then (ii) bring the package to some delivery vertex in 𝑉 𝐷 ⊆ 𝑉 . All tasks share a common set of packing stations 𝑉 𝐷 ;upon pickup, an agent delivers to any available station, typically the nearest one. Each agent can carry up to K packages simultaneously. We denote by 𝑐 𝑖 the number of packages currently held by agent 𝑎 𝑖 .Let P and Q be the disjoint sets of human pickers and packers, respectively, with P ∩ Q = ∅, |P | > 0, and |Q| > 0. Pickers travel to vertices in 𝑉 𝑃 to load packages onto agents, whereas packers wait at vertices in 𝑉 𝐷 to unload arriving packages. An interaction begins when an agent arrives at a pickup or delivery vertex. The agent becomes stationary immediately and waits until the human worker arrives and completes the operation. During an interaction the agent must remain stationary. Let 𝜎 (𝑎 𝑖 , 𝑡 ) ∈ { 0, 1} be a binary indicator that is 1 iff agent 𝑎 𝑖 is interacting with a human at time 
+
+𝑡 . If an interaction begins at time step 𝑡 𝑠 (i.e. 𝜎 (𝑎 𝑖 , 𝑡 𝑠 ) = 1), it ends at 𝑡 𝑒 = min {𝑡 > 𝑡 𝑠 | 𝜎 (𝑎 𝑖 , 𝑡 ) = 0}. The interaction duration is 
+
+𝛿 = 𝑡 𝑒 − 𝑡 𝑠 , which varies from one interaction to the next, with expected value E[𝛿 ].A path for agent 𝑎 𝑖 is a sequence of vertices 𝑝 𝑖 = (𝑣 1, 𝑣 2, . . . , 𝑣 𝑘 )
+
+specifying its location at every time step. A collision at time 𝑡 occurs either when two agents occupy the same vertex (vertex collision 
+
+⟨𝑎 𝑖 , 𝑎 𝑗 , 𝑣, 𝑡 ⟩) or traverse the same edge in opposite directions (edge collision ⟨𝑎 𝑖 , 𝑎 𝑗 , 𝑒, 𝑡 ⟩). Only agent-to-agent collisions are taken into account; human workers are not regarded as blocking. A solution is the set of paths 𝑃 = {𝑝 1, . . . , 𝑝 𝑚 } for all agents and is feasible when no collisions occur. If, at a given time step, the planner fails to find a feasible continuation, all agents remain stationary for that step, whereas human workers proceed with their tasks. Let 𝜙 (𝜏, 𝑎 𝑖 , 𝑡 ) ∈ { 0, 1, 2, 3} denote the status of task 𝜏 with respect to agent 𝑎 𝑖 at time 𝑡 , where 0 means unassigned, 1 assigned, 2 picked up, and 3 delivered. At time 𝑡 , the tasks eligible for assignment form the set T𝑡 = {𝜏 ∈ T | 𝑡 > 𝑟 and ∀𝑎 𝑖 ∈ 𝐴 : 𝜙 (𝜏, 𝑎 𝑖 , 𝑡 ) = 0}. Each task can be assigned to at most one agent at any given moment. Conversely, each agent can hold at most K tasks at a time. An instance of online MAPDwHC problem is the tuple 
+
+⟨𝐺, 𝐴, T , P, Q, K, 𝜎 (𝑎 𝑖 , 𝑡 ), 𝜂,𝑇 ⟩.
+
+Its objective is to maximize the number of tasks completed within the horizon 𝑇 , quantified as 
+
+eT = {𝜏 𝑗 ∈ T | ∃ 𝑎 𝑖 ∈ 𝐴, ∃𝑡 ≤ 𝑇 : 𝜙 (𝜏 𝑗 , 𝑎 𝑖 , 𝑡 ) = 3} .
+
+## 3.2 Human Interaction and Collaboration 
+
+We provide an illustration of the MAPDwHC problem in Figure 1. The main difference between the MAPDwHC problem and the clas-sical MAPD problem is that agents in MAPDwHC rely on human workers to complete pickup and delivery operations. Consequently, while a planner computes paths, the environment keeps evolving: human workers continue to move and may arrive at pickup or delivery vertices, forcing the agent to wait at that vertex. Since equipping every worker with positioning hardware adds significant cost, most warehouses do not track human positions in real time. Accordingly, the algorithm observes human–agent interactions only through the binary signal 𝜎 (𝑎 𝑖 , 𝑡 ). Interaction du-rations 𝛿 are stochastic and depend on human-worker efficiency, so their end times are unknown in advance. Whenever an interaction is active, the agent cannot move and thus becomes a dynamic obstacle .Property 1 (Dynamic Obstacle). Consider an agent 𝑎 𝑖 occupy-ing vertex 𝑣 𝑎 𝑖  
+
+> 𝑡
+
+at time 𝑡 , its position at the next time step is 
+
+𝑣 𝑎 𝑖  
+
+> 𝑡 +1
+
+=
+
+(
+
+𝑣 𝑎 𝑖  
+
+> 𝑡
+
+, if 𝜎 (𝑎 𝑖 , 𝑡 ) = 1,𝑣, otherwise ,
+
+where 𝑣 ∈ 𝑉 is its planned next vertex whenever no interaction blocks movement. 
+
+To keep other agents collision-free, the planner can temporarily remove any interacting agent 𝑎 𝑖 and its occupied vertex from con-sideration, yielding the reduced agent set 𝐴 ′ = 𝐴 \ { 𝑎 𝑖 } and graph 
+
+𝐺 ′ = (𝑉 \ { 𝑣 𝑎 𝑖  
+
+> 𝑡
+
+}, 𝐸 ′).Another key aspect of MAPDwHC is that the interaction time 𝛿 is not fixed. Because human workers do not follow fixed schedules, the start and duration of each interaction are stochastic; consequently, whenever an agent starts or finishes interacting with a human worker, or whenever the available task set T𝑡 changes at time step 𝑡 ,the solution must be updated, requiring a replan for all agents. If the algorithm fails to produce a feasible solution within the 𝜂 -second window before the next time step, human workers continue their activities, but the agents cannot move; we say the algorithm skips DAI ’26, November 29–December 2, 2026, Hong Kong, China Li et al. 
+
+that time step. Hence the planner must be real-time responsive 
+
+to changes in the environment. Property 2 (Real-Time Responsiveness). The algorithm has a time budget of 𝜂 seconds at every time step to compute a feasible solution. Failing to do so leaves all agents stationary during the next step, i.e., 𝑣 𝑎 𝑖  
+
+> 𝑡 +1
+
+= 𝑣 𝑎 𝑖  
+
+> 𝑡
+
+.
+
+Time steps discretize wall-clock time into intervals of 𝜂 seconds at which the system synchronizes plans to the agents, so 𝜂 is the minimum response time of the system to external changes. An early solution is applied at the next step, and a late one is skipped while the planner keeps working on the same instance until a change in the environment triggers a replan. While one could attempt to identify a safe subset of agents that can still move when the planner times out, this requires solving additional MAPF instances over exponentially many agent subsets, since the solver provides no information about which agents caused the failure. The all-stop policy therefore offers a simple, safe fallback with no additional computation. 
+
+## 3.3 Well-formed MAPDwHC Instance 
+
+We first define the solvability of an online MAPDwHC instance as follows. Definition 1 (Solvable MAPDwHC Instance). An instance of online MAPDwHC is solvable if there exists a complete algorithm that, at every time step 𝑡 , yields a feasible solution 𝑃 satisfying Property 1. As the time budget 𝜂 → ∞ and the time step horizon 𝑇 → ∞ , the algorithm eventually completes all tasks in the task set T .
+
+We now outline several key properties to ensure the solvability of a MAPDwHC instance, and then define a well-formed MAPDwHC instance and prove it solvable. Property 3 (Map Connectivity). Let 𝜔 (𝐺, 𝑣, 𝑢 ) denote the (fi-nite) set of paths from vertex 𝑣 ∈ 𝑉 to vertex 𝑢 ∈ 𝑉 𝑃 ∪ 𝑉 𝐷 . The map is connected if 
+
+∀ 𝑣 ∈ 𝑉 , ∀𝑢 ∈ 𝑉 𝑃 ∪ 𝑉 𝐷 : 𝜔 (𝐺, 𝑣, 𝑢 ) ≥ 1.
+
+Property 4 (Finite Interaction). For any human-robot inter-action, the interaction must be completed within a finite time frame, which is denoted as 𝛿 < ∞.
+
+Property 5 (Sufficient Junctions). For the graph 𝐺 = (𝑉 , 𝐸 ),define the set of junction vertices as 
+
+𝑉 𝐹 =  𝑣 ∈ 𝑉 | 𝑣 ∉ 𝑉 𝑃 ∪ 𝑉 𝐷 , deg (𝑣 ) ≥ 3 .
+
+The graph must satisfy |𝑉 𝐹 | ≥ | 𝐴 |.
+
+Definition 2 (Well-formed MAPDwHC Instance). A well-formed MAPDwHC instance is an online MAPDwHC instance that satisfies Properties 1, 3, 4 and 5. 
+
+Note that Property 2 (Real-Time Responsiveness) is excluded from the well-formedness definition because it does not affect solv-ability: even if the algorithm exceeds the time budget 𝜂 , keeping all agents at their current positions is always a feasible solution for that time step. Well-formedness concerns structural solvability, not real-time performance. To transform the current task allocation into a solvable MAPF instance, the allocation algorithm must satisfy the following as-sumption: Assumption 1 (Uniqe Assignment). At every time step, no two agents are assigned the same vertex as their goal. 
+
+Note that multiple tasks in T may share the same pickup vertex, but at most one of them can be assigned at any given time step. Theorem 1. With the task assignment that satisfies Assumption 1, any well-formed MAPDwHC instance is solvable by a complete MAPF algorithm. 
+
+Proof. At each time step 𝑡 , since the number of available agents is |𝐴 |, we select a subset T ′ ⊆ T 𝑡 of at most |𝐴 | tasks, each assigned to a distinct agent satisfying Assumption 1. When |T 𝑡 | > |𝐴 |, the remaining tasks wait for subsequent time steps. This assignment yields a valid MAPF instance. If all agents are free to move (i.e. 
+
+Í𝑎 𝑖 ∈𝐴 𝜎 (𝑎 𝑖 , 𝑡 ) = 0), Properties 3 and 5 guarantee that any complete MAPF algorithm can solve this instance. When some agents are blocked (i.e. Í𝑎 𝑖 ∈𝐴 𝜎 (𝑎 𝑖 , 𝑡 ) > 0), as described in Property 1, we can create the reduced agent set 𝐴 ′ = 𝐴 \ { 𝑎 𝑖 } and graph 𝐺 ′ =
+
+(𝑉 \ { 𝑣 𝑎 𝑖  
+
+> 𝑡
+
+}, 𝐸 ′). If this removal break Properties 3 or 5 and create a deadlock, Property 4 ensures that Properties 3 or 5 will be restored after finite time steps. Once the deadlock is resolved and all agents are again free to move, the MAPF instance becomes solvable. Hence, every well-formed MAPDwHC instance is solvable. A detailed proof is provided in Appendix B. □
+
+## 3.4 Relation to MAPD 
+
+Theorem 2. A well-formed MAPDwHC instance can be converted into a sequence of MAPD instances over time. 
+
+Proof. If there is no interaction at time step 𝑡 , it reduces directly to a valid MAPD instance with the task set T𝑡 , the graph 𝐺 and the agents 𝐴 . During an interaction, if an agent 𝑎 𝑖 becomes stationary at vertex 𝑣 𝑎 𝑖  
+
+> 𝑡
+
+, we obtain a MAPD instance with the reduced agent set 𝐴 ′ = 𝐴 \ { 𝑎 𝑖 } and the reduced graph 𝐺 ′ = (𝑉 \ { 𝑣 𝑎 𝑖  
+
+> 𝑡
+
+}, 𝐸 ′). The instance remains solvable as long as Properties 3 and 5 hold. □
+
+We leverage Theorem 2 to adapt MAPD algorithms for evalua-tion within MAPDwHC scenarios and enable comparisons with the proposed algorithms. However, during human-robot interactions, preserving previous task assignments may render MAPD instances unsolvable on the reduced graph 𝐺 ′. For example, removing an occupied vertex may split 𝐺 ′ into disconnected components, caus-ing tasks that span multiple components to become infeasible to complete. Proving unreachability often requires more computation than finding a feasible plan; for instance, A*-based algorithms [5] may need to explore the entire search space before concluding that no path exists. MAPD algorithms typically do not account for this. Our approach explicitly incorporates it and delivers an improved solution. CARVS: A Congestion-Aware Algorithm for Online MAPD in Human-Collaborative Warehouses DAI ’26, November 29–December 2, 2026, Hong Kong, China 
+
+## 4 Method 4.1 Greedy Assignment 
+
+Since both MAPD and MAPF are NP-hard [19], finding optimal so-lutions within reasonable time is challenging. We simplify the prob-lem by separating it into two levels: task assignment and pathfind-ing. At the high level, tasks are assigned to agents, and at the low level, existing MAPF algorithms solve the pathfinding problem. A straightforward yet suboptimal approach to solve the task assignment in MAPDwHC is the First-Come, First-Served (FCFS) strategy, where tasks are processed strictly in arrival order. While simple to implement, FCFS often causes unnecessary back-and-forth travel. A more effective alternative is the Greedy Assignment (GA) algorithm. Let 𝑎 𝑖 .𝑔 denote the current goal vertex of agent 𝑎 𝑖 ,and let ℎ(· , ·) be a heuristic function that estimates the travel cost be-tween two vertices (e.g., Manhattan distance). For each unassigned agent 𝑎 𝑖 , if its current load 𝑐 𝑖 < K, GA selects the nearest available task as its goal, i.e., 𝑎 𝑖 .𝑔 ← min 𝑠 𝑖 ∈ T 𝑡 ℎ(𝑎 𝑖 .𝑣, 𝑠 𝑖 ), where 𝑎 𝑖 .𝑣 is the agent’s current vertex; if 𝑐 𝑖 = K (capacity full), the agent is directed to the nearest delivery point, i.e., 𝑎 𝑖 .𝑔 ← min 𝑑 𝑖 ∈𝑉 𝐷 ℎ(𝑎 𝑖 .𝑣, 𝑑 𝑖 ). To respect Property 1, any agent currently interacting with a human has its position removed from the graph. The resulting set of start-goal pairs is then passed to a complete MAPF algorithm to compute collision-free paths. Note that FCFS is a special case of GA where the heuristic ℎ assigns tasks in arrival order. Theorem 3. A well-formed MAPDwHC instance can be solved by the greedy assignment algorithm in combination with any complete MAPF algorithm, together with a heuristic function ℎ that ensures no agents have overlapping goals. 
+
+Proof. We can design a heuristic function ℎ that selects a goal based primarily on the Manhattan distance, while ensuring that no agents have overlapping goals. Given Property 3, the selected goals form a MAPF instance that can be solved by any complete MAPF algorithm. Although Property 3 may not always be satisfied when some agents are interacting with humans, Theorem 1 proves that the MAPF instance will become solvable within a finite number of time steps. By applying Theorem 1, we can conclude that Theorem 3 also holds. □
+
+Complete MAPF algorithms always return either a valid plan or a proof that no solution exists. On unsolvable instances, however, demonstrating unsolvability still forces the search to (eventually) explore the entire search space, so the runtime can grow prohibi-tively large—even when advanced pruning or ordering heuristics are used. 
+
+## 4.2 Solution Refinement 
+
+We propose CARVS (Congestion-Aware Random-initialization, 
+
+Validation, and Swapping), an approach that enhances a baseline greedy assignment with three key improvements, as outlined in Algorithm 1. CARVS is designed to optimize task allocation while keeping the underlying logic lightweight, thereby ensuring efficient performance in real-world deployments. The key refinement steps are highlighted in blue. The refinement algorithm is composed of two main parts, with the three improvements illustrated in Fig-ure 2. Together, these enhancements make CARVS more robust than purely greedy methods in large-scale warehouses. CARVS adopts a complete MAPF solver as its back-end. Lever-aging this completeness, CARVS is guaranteed to solve any well-formed MAPDwHC instance (a formal proof is given later). The method’s three enhancements are specifically crafted to prevent the excessive runtimes that complete MAPF solvers can incur when temporary blockages arise, enabling CARVS to pair seamlessly with any future, more advanced complete MAPF algorithm. Although the solvers used in this paper are centralized, any centralized or distributed MAPF solver that retains the completeness property could serve equally well as CARVS’s underlying planner. 
+
+4.2.1 Validate Assignment. The first part of the improvements fo-cuses on refining the current assignment. A key idea is task swap-ping, which is only allowed during pickup tasks before items are collected (i.e. 𝜙 (𝜏 𝑖 , 𝑎 𝑖 , 𝑡 ) = 𝜙 (𝜏 𝑗 , 𝑎 𝑗 , 𝑡 ) = 1). When two agents’ short-est paths intersect at each other’s current positions and both are heading to pickup points, the algorithm can swap their tasks. Since agents can not swap physical items with one another, delivery tasks will not be swapped between them. Another important idea is to validate whether an agent can reach its goal using a path planning algorithm 𝜔 (e.g. A*). If the agent cannot reach its goal, a waiting point 𝑤 𝑖 ∈ 𝑉 𝑊 will replace its real goal. The set of waiting points 
+
+𝑉 𝑊 is defined as the set of non-cut vertices that are not pickup or delivery locations: 
+
+𝑉 𝑊 =  𝑣 ∈ 𝑉 | 𝑣 ∉ 𝑉 𝑃 ∪ 𝑉 𝐷 , 𝐺 \ { 𝑣 } remains connected .
+
+The heuristic function ℎ in the algorithm can select a waiting point near the agent’s pickup or delivery point based on the Man-hattan distance, while ensuring that no agents have overlapping goals. When an agent’s goal is temporarily unreachable, redirect-ing it to a nearby waiting point alleviates congestion in key areas. Because every 𝑤 ∈ 𝑉 𝑊 is a non-cut vertex of 𝐺 , stationing a single agent at 𝑤 preserves graph connectivity. Using multiple waiting points simultaneously can still help alleviate congestion. However, graph partitions caused by human-robot interactions cannot be resolved by goal reassignment; Theorem 1 guarantees restoration of solvability once such interactions conclude. 
+
+4.2.2 Random Initialization. Random initialization modifies the initial assignment for a free agent by randomly assigning its first goal from the available tasks T𝑡 . This adjustment helps alleviate con-gestion, particularly in areas with uneven distributions of pickup points or high task density. Without this improvement, if a ro-bot consistently selects the nearest goal after unloading, it may end up handling only tasks near the drop-off zone, especially in regions where new tasks frequently appear. While the greedy as-signment performs well on open maps, it can lead to problems in environments with narrow passages. In such cases, corridors may be blocked for extended periods, increasing robot density in certain areas and causing congestion. By selecting the first goal randomly and then choosing the nearest goal for subsequent tasks, CARVS effectively disperses the robots across the map, reducing bottlenecks and ensuring smoother overall operation. DAI ’26, November 29–December 2, 2026, Hong Kong, China Li et al. 
+
+Algorithm 1 CARVS Algorithm                                                                                                                                                                                                                                                              
+
+> Require: Instance ⟨𝐺, 𝐴, T,P,Q,K, 𝜎 (𝑎 𝑖 , 𝑡 ), 𝜂,𝑇 ⟩, PF algorithm 𝜔 , MAPF algo-rithm Ω, Heuristic function ℎ
+> Ensure: Solution 𝑃
+> 1: // Greedy assignment
+> 2: for each 𝑎 𝑖 ∈𝐴 do
+> 3: if ∃𝑎 𝑖 .𝑔 then
+> 4: continue
+> 5: end if
+> 6: if 𝑐 𝑖 <Kthen
+> 7: if 𝑐 𝑖 =0then
+> 8: 𝑎 𝑖 .𝑔 ←rand 𝑠 𝑖 ∈T 𝑡 (𝑠 𝑖 )⊲random initialization 9: else
+> 10: 𝑎 𝑖 .𝑔 ←min 𝑠 𝑖 ∈T 𝑡 ℎ(𝑎 𝑖 .𝑣, 𝑠 𝑖 )
+> 11: end if
+> 12: end if
+> 13: if 𝑐 𝑖 =Kthen
+> 14: 𝑎 𝑖 .𝑔 ←min 𝑑 𝑖 ∈𝑉 𝐷 ℎ(𝑎 𝑖 .𝑣, 𝑑 𝑖 )
+> 15: end if
+> 16: end for
+> 17: Initialize set 𝑀 ; Duplicate 𝐺 as 𝐺 ′
+> 18: for each 𝑎 𝑖 ∈𝐴 do
+> 19: if 𝑎 𝑖 .𝑔 then
+> 20: continue
+> 21: end if
+> 22: if 𝜎 (𝑎 𝑖 , 𝑡 )=1then
+> 23: remove 𝑎 𝑖 .𝑣 from 𝐺 ′
+> 24: end if
+> 25: end for
+> 26: // Swap goals
+> 27: for each 𝑎 𝑖 , 𝑎 𝑗 ∈𝐴 where 𝑖 ≠𝑗 do
+> 28: if 𝜙 (𝜏 𝑖 , 𝑎 𝑖 , 𝑡 )≠1or 𝜙 (𝜏 𝑗 , 𝑎 𝑗 , 𝑡 )≠1then
+> 29: continue
+> 30: end if
+> 31: 𝑝 𝑖𝑖 ←𝜔 (𝐺 ′, 𝑎 𝑖 .𝑣, 𝑎 𝑖 .𝑔 );𝑝 𝑗 𝑗 ←𝜔 (𝐺 ′, 𝑎 𝑗 .𝑣, 𝑎 𝑗 .𝑔 )
+> 32: if 𝑎 𝑖 .𝑣 ∉𝑝 𝑗 𝑗 or 𝑎 𝑗 .𝑣 ∉𝑝 𝑖𝑖 then
+> 33: continue
+> 34: end if
+> 35: 𝑝 𝑖 𝑗 ←𝜔 (𝐺 ′, 𝑎 𝑖 .𝑣, 𝑎 𝑗 .𝑔 );𝑝 𝑗𝑖 ←𝜔 (𝐺 ′, 𝑎 𝑗 .𝑣, 𝑎 𝑖 .𝑔 )
+> 36: if 𝑎 𝑖 .𝑣 ∉𝑝 𝑗𝑖 or 𝑎 𝑗 .𝑣 ∉𝑝 𝑖 𝑗 then
+> 37: swap 𝑎 𝑖 .𝑔 and 𝑎 𝑗 .𝑔 ⊲swap goals 38: end if
+> 39: end for
+> 40: // Plan path
+> 41: for each 𝑎 𝑖 ∈𝐴 do
+> 42: if 𝜎 (𝑎 𝑖 , 𝑡 )=1then
+> 43: continue
+> 44: end if
+> 45: if ∃𝑎 𝑖 .𝑔 and 𝜔 (𝐺 ′, 𝑎 𝑖 .𝑣, 𝑎 𝑖 .𝑔 )≠∅then
+> 46: 𝑀. add (⟨ 𝑎 𝑖 .𝑣, 𝑎 𝑖 .𝑔 ⟩)
+> 47: continue
+> 48: end if
+> 49: 𝑤 𝑖 ←min 𝑤 𝑖 ∈𝑉 𝑊 ℎ(𝑎 𝑖 , 𝑤 𝑖 )⊲find waiting point 50: 𝑀. add (⟨ 𝑎 𝑖 .𝑣, 𝑤 𝑖 ⟩)
+> 51: end for
+> 52: 𝑃 ←Ω(𝐺 ′, 𝑀 )
+> 53: return 𝑃
+
+Theorem 4. A well-formed MAPDwHC instance can be solved by CARVS in combination with any complete MAPF algorithm, with a heuristic function ℎ that ensures no agents have overlapping goals. 
+
+Proof. We can design a heuristic function ℎ that selects a goal based primarily on the Manhattan distance, ensuring that no agents have overlapping goals. Given Property 3, the selected goals form a MAPF instance that can be solved by any complete MAPF al-gorithm. Although Property 3 may not always be satisfied when some agents interact with humans, Theorem 1 guarantees that the MAPF instance will become solvable within a finite number of time steps. Therefore, a valid MAPF instance can be constructed from the current task assignment. Swapping goals does not invalidate the MAPF instance, and if no suitable waiting point is found, retaining the previous assignment is acceptable. By following Theorem 1, we can conclude that Theorem 4 holds. □
+
+## 5 Experiment 
+
+Following Theorem 2, we can compare CARVS against traditional MAPD algorithms. The experiments aim to demonstrate the effec-tiveness of CARVS combined with MAPF algorithms in solving the MAPDwHC problem, with a focus on potential real-world ap-plications. We use a simulation that aligns human activities with real-world scenarios for comparisons. The 𝜂 is set to 1 second. Fail-ing to produce a solution within this time limit results in a skipped time step, where all agents remain stationary until the next time step. Each time step, a robot moves 0.75 meters (one edge long), while humans, moving at 1.5 m/s, are set to twice the robot’s speed. In a real-world deployment the signal 𝜎 (𝑎 𝑖 , 𝑡 ) is triggered directly by the human worker. In the simulation, human workers are following an A* path and 𝜎 (𝑎 𝑖 , 𝑡 ) is generated from the predicted trajectory. In the simulation, the interaction duration follows a degenerate dis-tribution with Pr (𝛿 = 10 ) = 1, and hence E[𝛿 ] = 10 time steps (10 seconds). Performance is evaluated based on total tasks completed. We test several recent MAPF algorithms with CARVS, including EECBS [13], RHCR [14], CBSH2-RTC [12], LaCAM [21], LaCAM2 [22], and MAPF-LNS2 [11]. Not all MAPF algorithms perform well on complex maps with many agents, so we select LaCAM2 for its best performance. A detailed comparison of the MAPF algorithms is provided in Appendix C. Most of the MAPF algorithms are implemented in C++, and we have added a wrapper to make them compatible with our simulator and the MAPDwHC problem. The wrapper generates a map file and a MAPF instance for the algorithm. After the program completes, the wrapper reads and parses the output solution for the simulation. For the MAPD algorithms, we include results from TP/TPTS [15], MCA/RMCA [29], TSWAP [23], and MAPD-d [16]. We run MAPD-d as 𝑘 -TP with 𝑘 = 0, because our setting provides no reliable way to fix 𝑘 in advance and a larger 𝑘 degrades performance sharply. Appendix D explains this choice. These algorithms were adapted for our simulation environment, with detailed modifications provided in Appendix D. The simulator and task assignment algorithms were developed in Python and run on a server with an AMD EPYC 7H12 64-Core Processor and 128GB RAM. Each configuration was tested with 10 random seeds affecting agent positions, task allocation, and MAPF algorithms, with results averaged across all seeds. 
+
+## 5.1 CARVS Performance 
+
+For ablation study, we use CARVS-W to denote the CARVS vari-ant that includes only waiting point improvement and CARVS-S to denote the CARVS variant that includes only swapping tasks. CARVS-V is the CARVS variant that includes the Validate Assign-ment improvement but omits Random Initialization. Note that re-moving all enhancements from CARVS reduces it to the greedy algorithm (GA). Our evaluation spans four distinct map layouts, as depicted in Figure 4, with performance measured using total completed tasks eT . Each algorithm is tested over 20,000 time steps. CARVS: A Congestion-Aware Algorithm for Online MAPD in Human-Collaborative Warehouses DAI ’26, November 29–December 2, 2026, Hong Kong, China (c) (a) (b) 
+
+> go to waiting point
+> swap goal
+> random initialization
+
+Figure 2: A diagram illustrating optimization methods: the picking area is blue, the packing area green, and shelves are orange. Circles represent agents, diamonds represent humans, and squares represent goal points, with arrows indicating robot targets. (a) Goal swapping reduces delays from intersecting paths. (b) Stars mark wait points for blocked agents. (c) Greedy assignment leads to congestion near the packing area, mitigated by random initial goal assignment for idle agents. 20 40 60 80 100 
+
+> Number of Robots
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> Mean of Skip Count
+> CARVS CARVS-V CARVS-S CARVS-W GA FCFS TPTS (Liu et al. 2019) TP (Liu et al. 2019) MCA (Xu et al. 2022) RMCA (Xu et al. 2022) TSWAP (Okumura et al. 2022) MAPD-d (Lodigiani et al. 2023)
+
+Figure 3: Mean skip count on the warehouse_small map for 10 to 100 robots. A skip occurs when the planner fails to return a solution within the time limit. CARVS variants substantially reduce skips as the robot count grows. 
+
+Algorithm scalability is a critical factor in performance assess-ment. Figure 4 illustrates how task completion varies across differ-ent map layouts and agent counts. As map congestion increases, most algorithms exhibit a decline in completed tasks. However, CARVS demonstrates remarkable robustness, with its performance advantage becoming more pronounced as map difficulty and agent count increase. By contrast, TP/TPTS and MCA/RMCA degrade sharply even in the warehouse_tiny benchmark: once the agent count surpasses 60, their task-completion curves plunge, and at 100 agents they process no more than 10% of their own peak workload. In the larger warehouse settings their performance collapses further, completing virtually no tasks at all. While FCFS completes fewer tasks than GA and CARVS, it consistently outperforms TP/TPTS and MCA/RMCA on larger maps. TP and TPTS evaluate every agent-task pair; when an agent is free, they assign the task and generate a plan using prioritized planning. Unfortunately, prioritized planning can still fail on some MAPF instances. MCA and RMCA, in turn, build a separate task heap for each task, calling the path-planning routine in the process. Because the task set changes continuously, these heaps must be rebuilt at every timestep, which is time-consuming. That’s why both TP/TPTS and MCA/RMCA scale poorly. The two remaining MAPD baselines also perform poorly on com-plex maps, although only one is limited by planning cost. TSWAP rarely exceeds the time limit because each step uses a greedy move guided by cached distances and local conflict rules rather than a joint search. Its task completion increases on the three smaller layouts but remains nearly constant on the largest one. TSWAP resolves conflicts by swapping targets rather than rerouting agents. However, TSWAP is designed for unlabeled targets. MAPD distin-guishes pickup and drop-off targets. The adapter can only restore the intended assignment in a later planning attempt after a target swap overrides it. A delivery may therefore require multiple plan-ning attempts even though each attempt is fast. With 100 robots on warehouse_large , less than 2% of successful TSWAP paths for dropping robots ended at the assigned drop-off target. This explains the low efficiency of drop-off tasks. MAPD-d fails in the opposite way. Its replanning cost grows with the agent count until it exceeds the time budget at almost every step, and task completion drops to 2 at 100 agents. Although GA outperforms FCFS, it struggles on complex maps such as warehouse_small and warehouse_large . The non-uniform task distribution leads to agent crowding in certain areas, complicat-ing path planning. Additionally, long tunnels and dynamic obstacles further reduce GA’s efficiency. Due to the lack of full integration between high-level task assignment and low-level path planning, agents often remain idle when path planning fails, reducing effi-ciency. In contrast, CARVS-V and CARVS validate goal reachability beforehand, improving the chances of solving the MAPF subprob-lem in time. The validation improvements increase task completion by at least 2x on warehouse_large with 100 agents. CARVS further refines CARVS-V by mitigating agent conges-tion near drop-off zones. GA and CARVS-V tend to select pickup locations close to drop-off points, leading to bottlenecks. CARVS circumvents this issue by randomly selecting the first pickup loca-tions, ensuring a more even agent distribution. This enhancement increases task completion by at least 1.1x on warehouse_large 
+
+with 100 agents. Although the performance gap among CARVS variants appears modest in Figure 4, this is largely because the y-axis spans the full range needed to display all algorithms, compressing the differ-ences among variants that share a similar performance tier. More fundamentally, planning timeouts are a major bottleneck for search-based MAPDwHC solvers. When the MAPF solver exceeds the time budget 𝜂 , all agents stall for that step. Every CARVS variant in-corporates mechanisms that reduce such timeouts and avoids the DAI ’26, November 29–December 2, 2026, Hong Kong, China Li et al. 20 40 60 80 100 012345Task Completed ×10 4 warehouse_tiny             
+
+> 20 40 60 80 100
+> warehouse-10-20-10-2-1
+> 20 40 60 80 100
+> warehouse_small
+> 20 40 60 80 100
+> warehouse_large
+> Number of Agents
+> CARVS CARVS-V CARVS-S CARVS-W GA FCFS TPTS (Liu et al. 2019) TP (Liu et al. 2019) MCA (Xu et al. 2022) RMCA (Xu et al. 2022) TSWAP (Okumura et al. 2022) MAPD-d (Lodigiani et al. 2023)
+
+Figure 4: The performance metrics of various algorithms across multiple warehouse configurations, which show the mean number of completed tasks across 10 random seeds as a function of agent count, ranging from 10 to 100. CARVS scales effectively with the number of agents, outperforming other algorithms. 
+
+timeout-driven losses seen in several baselines. Because these mech-anisms are shared, the performance differences among the variants remain relatively small. Finally, Figure 3 illustrates the impact of different algorithms on skips as the number of agents increases on the warehouse_small 
+
+map. A skip occurs when an algorithm exceeds the time limit. Switching from GA to CARVS significantly reduces timeouts, by about 90.61% at the highest robot count, demonstrating CARVS’s improved efficiency in complex multi-agent scenarios, enhancing scalability and reliability. Although TSWAP also keeps its skip count low, its target-swapping mechanism is not suitable for MAPD tasks. Our largest experiments use 100 robots, far fewer than typical MAPF benchmarks, since the planner in MAPDwHC has only 𝜂 =
+
+1 s at every step while a MAPF solver usually gets a long limit for one instance, for example ten seconds in LaCAM* [22]. Under this budget the MAPD baselines already complete almost no tasks on the complex maps at 100 robots, while CARVS still does, so this setting is sufficient to show the difference. 
+
+## 5.2 Additional Experiment Settings 
+
+Apart from the choice of MAPF algorithms, the performance can vary based on three factors: map layout, task distribution, and the human-robot ratio. Below, we outline the settings for each factor. 
+
+5.2.1 Map Layout. The layout of the map significantly impacts algorithm performance. We scanned two real-world warehouse layouts, converted them into 2D grid maps, and formulated them as MAPF benchmarks [27]. These maps were used to evaluate algo-rithm performance. We estimate map complexity using five struc-tural metrics: total vertex count, obstacle density, number of tunnels (our term for narrow aisles), average tunnel length, and the propor-tion of vertices with degree ≥ 3. Table 1 reports these statistics on the maps we used in the experiments. The warehouse_tiny map originates from the TP/TPTS study, whereas warehouse_small and warehouse_large are abstractions of real-world warehouse layouts. The latter two feature longer tunnels and a higher obstacle density, making conflict resolution substantially harder. When an agent engages in human interaction inside a tunnel it blocks the entire aisle. Any robots within a tunnel must rely on nearby high-degree vertices (degree ≥ 3) to swap 
+
+Table 1: Metrics on Map Layout 
+
+Vert # Obst % Tun # Avg. L Deg-3 % warehouse_tiny 851 25.38 5 3 98.58 warehouse-10-20-10-2-1 10143 43.81 38 8.2 56.76 warehouse_small 4785 66.54 19 14.7 82.82 warehouse_large 8611 79.4 78 13.2 43.12 
+
+positions and resolve edge conflicts. Consequently, the difficulty of solving a MAPF instance on a map is largely governed by three layout characteristics: the number of tunnels, their average length, and the number of degree-3 (or higher) vertices. 
+
+5.2.2 Task Distribution. Temporal and spatial task distributions significantly impact algorithm performance. We collect real-world task sets from a warehouse management system, which records tasks of SKUs over time. The original task sets contain a limited number of tasks and can be easily solved by CARVS and its variants, so they cannot distinguish the performance of different algorithms. To enable a more comprehensive evaluation, we repeat each task from the original task sets 10 times to create larger task sets. Tasks are then continuously added to the task pool over time following the original distribution. The resulting spatial distribution is non-uniform, with certain areas having higher task densities than others. 
+
+5.2.3 Human-Robot Ratio. Human interaction increases the diffi-culty of the MAPDwHC problem, and algorithm performance can be affected by the ratio of humans to robots. In our simulation, humans avoid collisions with robots and follow A* paths to reach their targets. It is important to note that this behavior is confined to the simulation; in real-world applications, humans manually update their state changes in the system via a tablet. Unlike traditional MAPD scenarios, boosting processing capacity requires scaling both the robots and the human workforce. In our experiments, we fixed the number of human operators at 50, which nearly suffices for 100 robots. Too few human operators reduce picking efficiency and lengthen the robots’ idle periods, whereas too many operators increase their own waiting times. In practice, we aim to keep human operators fully engaged, which usually means employing fewer humans than robots. Because workforce size materially influences CARVS: A Congestion-Aware Algorithm for Online MAPD in Human-Collaborative Warehouses DAI ’26, November 29–December 2, 2026, Hong Kong, China 
+
+overall system performance, we hold the number of human oper-ators constant across all experiments to allow a fair comparison of competing algorithms. Human efficiency also impacts perfor-mance. Human collaboration heightens the problem’s difficulty relative to the traditional MAPD formulation, as discussed further in Appendix E. 
+
+## 6 Conclusion 
+
+This paper formalizes the Multi-Agent Pickup and Delivery with Hu-man Collaboration (MAPDwHC) problem, extending the traditional MAPD framework by integrating human agents and addressing the additional challenges introduced by human-robot interactions. Although a MAPDwHC instance reduces to a sequence of MAPD problems when no interaction occurs, our empirical results con-firm that MAPDwHC poses significantly greater computational challenges than MAPD in realistic warehouse settings. To tackle these challenges, we propose CARVS, an approach that optimizes task assignment and path planning while accounting for congestion, human-robot interactions, and real-time adaptability. We formally prove that CARVS can solve a well-formed MAPDwHC instance. Extensive simulations demonstrate that our methods out-perform existing approaches in terms of completed tasks, highlight-ing their potential for real-world applications. This work advances multi-agent systems research and lays the foundation for future op-timization of human-robot collaboration. Beyond reducing planning timeouts, our results show that congestion-aware task assignment is also important. Fast planning alone does not guarantee high task completion. CARVS deliberately avoids optimizing task assignment and path planning as one model. The joint search space of goal selection and collision-free paths is too large for the time budget of one step, and methods that couple the two, such as TP/TPTS and MCA/RMCA, break down on the complex maps. Keeping the two levels separate is what lets the system meet its real-time require-ment. Future work could focus on incorporating order distribution as a parameter into the task assignment algorithm to improve robot efficiency. Developing efficient partial-movement strategies when the planner times out is a promising direction for future work. 
+
+## Acknowledgments 
+
+The authors would like to thank the anonymous reviewers for their valuable comments and suggestions that helped improve the quality of this paper. 
+
+## References 
+
+[1] Zhe Chen, Javier Alonso-Mora, Xiaoshan Bai, Daniel D. Harabor, and Peter J. Stuckey. 2021. Integrated Task Assignment and Path Planning for Capacitated Multi-Agent Pickup and Delivery. IEEE Robotics and Automation Letters 6, 3 (July 2021), 5816–5823. doi:10.1109/LRA.2021.3074883 [2] Mehul Damani, Zhiyao Luo, Emerson Wenzel, and Guillaume Sartoretti. 2021. PRIMAL2: Pathfinding via Reinforcement and Imitation Multi-Agent Learning – Lifelong. doi:10.1109/LRA.2021.3062803 [3] Mark B. Duinkerken and Gabriel Lodewijks. 2015. Routing of AGVs on automated container terminals. In 2015 IEEE 19th International Conference on Computer Supported Cooperative Work in Design (CSCWD) . IEEE, Calabria, Italy, 401–406. doi:10.1109/CSCWD.2015.7230993 [4] Xin Gong, Tieniu Wang, Tingwen Huang, and Yukang Cui. 2023. Toward Safe and Efficient Human–Swarm Collaboration: A Hierarchical Multi-Agent Pickup and Delivery Framework. IEEE Transactions on Intelligent Vehicles 8, 2 (Feb. 2023), 1664–1675. doi:10.1109/TIV.2022.3172342 [5] Peter E. Hart, Nils J. Nilsson, and Bertram Raphael. 1968. A Formal Basis for the Heuristic Determination of Minimum Cost Paths. IEEE Transactions on Systems Science and Cybernetics 4, 2 (1968), 100–107. doi:10.1109/TSSC.1968.300136 [6] Wolfgang Hönig, Scott Kiesel, Andrew Tinka, Joseph W. Durham, and Nora Ayanian. 2018. Conflict-based search with optimal task assignment. In Proceedings of the 17th international conference on autonomous agents and MultiAgent systems (Aamas ’18) . International Foundation for Autonomous Agents and Multiagent Systems, Richland, SC, 757–765. [7] Ngai Meng Kou, Cheng Peng, Hang Ma, T. K. Satish Kumar, and Sven Koenig. 2020. Idle Time Optimization for Target Assignment and Path Finding in Sortation Centers. Proceedings of the AAAI Conference on Artificial Intelligence 34, 06 (April 2020), 9925–9932. doi:10.1609/aaai.v34i06.6547 [8] Aleksandar Krnjaic, Jonathan D. Thomas, Georgios Papoudakis, Lukas Schäfer, Peter Börsting, and Stefano V. Albrecht. 2022. Scalable Multi-Agent Reinforce-ment Learning for Warehouse Logistics with Robotic and Human Co-Workers. doi:10.48550/arXiv.2212.11498 [9] Tim Tsz-Kit Lau and Biswa Sengupta. 2022. The Multi-Agent Pickup and Delivery Problem: MAPF, MARL and Its Warehouse Applications. doi:10.48550/arXiv.2203. 07092 [10] Jiaoyang Li, Zhe Chen, Daniel Harabor, Peter J. Stuckey, and Sven Koenig. 2021. Anytime Multi-Agent Path Finding via Large Neighborhood Search. In Proceed-ings of the Thirtieth International Joint Conference on Artificial Intelligence, IJCAI-21 , Vol. 4. International Joint Conferences on Artificial Intelligence Organization, Montreal, Canada, 4127–4135. doi:10.24963/ijcai.2021/568 [11] Jiaoyang Li, Zhe Chen, Daniel Harabor, Peter J. Stuckey, and Sven Koenig. 2022. MAPF-LNS2: Fast Repairing for Multi-Agent Path Finding via Large Neighbor-hood Search. Proceedings of the AAAI Conference on Artificial Intelligence 36, 9 (June 2022), 10256–10265. doi:10.1609/aaai.v36i9.21266 [12] Jiaoyang Li, Daniel Harabor, Peter J. Stuckey, Hang Ma, Graeme Gange, and Sven Koenig. 2021. Pairwise symmetry reasoning for multi-agent path finding search. 
+
+Artificial Intelligence 301 (Dec. 2021), 103574. doi:10.1016/j.artint.2021.103574 [13] Jiaoyang Li, Wheeler Ruml, and Sven Koenig. 2021. EECBS: A Bounded-Suboptimal Search for Multi-Agent Path Finding. doi:10.48550/arXiv.2010.01367 [14] Jiaoyang Li, Andrew Tinka, Scott Kiesel, Joseph W. Durham, T. K. Satish Ku-mar, and Sven Koenig. 2021. Lifelong Multi-Agent Path Finding in Large-Scale Warehouses. doi:10.48550/arXiv.2005.07371 [15] Minghua Liu, Hang Ma, Jiaoyang Li, and Sven Koenig. 2019. Task and path planning for multi-agent pickup and delivery. In Proceedings of the 18th Inter-national Conference on Autonomous Agents and MultiAgent Systems (AAMAS ’19) . International Foundation for Autonomous Agents and Multiagent Systems, Richland, SC, 1152–1160. [16] Giacomo Lodigiani, Nicola Basilico, and Francesco Amigoni. 2023. Robust Multi-Agent Pickup and Delivery with Delays. In 2023 European Conference on Mobile Robots (ECMR) (2023-09). IEEE, Coimbra, Portugal, 1–8. doi:10.1109/ECMR59166. 2023.10256381 [17] Anbalagan Loganathan and Nur Syazreen Ahmad. 2023. A systematic review on recent advances in autonomous mobile robot navigation. Engineering Science and Technology, an International Journal 40 (April 2023), 101343. doi:10.1016/j. jestch.2023.101343 [18] Hang Ma, Jiaoyang Li, T.K. Satish Kumar, and Sven Koenig. 2017. Lifelong multi-agent path finding for online pickup and delivery tasks. In Proceedings of the 16th conference on autonomous agents and MultiAgent systems (Aamas ’17) . International Foundation for Autonomous Agents and Multiagent Systems, Richland, SC, 837–845. [19] Hang Ma, Craig Tovey, Guni Sharon, T. K. Kumar, and Sven Koenig. 2016. Multi-Agent Path Finding with Payload Transfers and the Package-Exchange Robot-Routing Problem. Proceedings of the AAAI Conference on Artificial Intelligence 30, 1 (March 2016), 3166–3173. doi:10.1609/aaai.v30i1.10409 [20] Van Nguyen, Philipp Obermeier, Tran Cao Son, Torsten Schaub, and William Yeoh. 2017. Generalized target assignment and path finding using answer set programming. In Proceedings of the twenty-sixth international joint conference on artificial intelligence, IJCAI-17 . International Joint Conferences on Artificial Intelligence Organization, Melbourne, Australia, 1216–1223. doi:10.24963/ijcai. 2017/169 [21] Keisuke Okumura. 2022. LaCAM: Search-Based Algorithm for Quick Multi-Agent Pathfinding. doi:10.48550/arXiv.2211.13432 [22] Keisuke Okumura. 2023. Improving LaCAM for Scalable Eventually Optimal Multi-Agent Pathfinding. doi:10.48550/arXiv.2305.03632 [23] Keisuke Okumura and Xavier Défago. 2022. Solving Simultaneous Target As-signment and Path Planning Efficiently with Time-Independent Execution. In 
+
+Proceedings of the Thirty-Second International Conference on Automated Planning and Scheduling, ICAPS 2022, Singapore (virtual), June 13-24, 2022 , Akshat Kumar, Sylvie Thiébaux, Pradeep Varakantham, and William Yeoh (Eds.). AAAI Press, 270–278. doi:10.1609/icaps.v32i1.19810 [24] Guni Sharon, Roni Stern, Ariel Felner, and Nathan Sturtevant. 2012. Conflict-Based Search For Optimal Multi-Agent Path Finding. Proceedings of the AAAI Conference on Artificial Intelligence 26, 1 (2012), 563–569. doi:10.1609/aaai.v26i1. 8140 DAI ’26, November 29–December 2, 2026, Hong Kong, China Li et al. 
+
+[25] Guni Sharon, Roni Stern, Ariel Felner, and Nathan Sturtevant. 2012. Meta-Agent Conflict-Based Search For Optimal Multi-Agent Path Finding. Proceedings of the International Symposium on Combinatorial Search 3, 1 (2012), 97–104. doi:10. 1609/socs.v3i1.18244 [26] Bojie Shen, Zhe Chen, Muhammad Aamir Cheema, Daniel D. Harabor, and Peter J. Stuckey. 2023. Tracking Progress in Multi-Agent Path Finding. doi:10.48550/ arXiv.2305.08446 [27] Roni Stern, Nathan Sturtevant, Ariel Felner, Sven Koenig, Hang Ma, Thayne Walker, Jiaoyang Li, Dor Atzmon, Liron Cohen, T. K. Satish Kumar, Eli Boyarski, and Roman Bartak. 2019. Multi-Agent Pathfinding: Definitions, Variants, and Benchmarks. arXiv:1906.08291 [cs] (June 2019). http://arxiv.org/abs/1906.08291 [28] Xihuai Wang, Zheng Tian, Ziyu Wan, Ying Wen, Jun Wang, and Weinan Zhang. 2023. Order Matters: Agent-by-agent Policy Optimization. In The Eleventh Inter-national Conference on Learning Representations, ICLR 2023, Kigali, Rwanda, May 1-5, 2023 . OpenReview.net. https://openreview.net/forum?id=Q-neeWNVv1 [29] Qinghong Xu, Jiaoyang Li, Sven Koenig, and Hang Ma. 2022. Multi-goal multi-agent pickup and delivery. In 2022 IEEE/RSJ international conference on intelligent robots and systems (IROS) . IEEE, Kyoto, Japan, 9964–9971. doi:10.1109/IROS47612. 2022.9981785 [30] Zheng Zhang, Qing Guo, Juan Chen, and Peijiang Yuan. 2018. Collision-free route planning for multiple AGVs in an automated warehouse based on collision classification. IEEE access : practical innovations, open solutions 6 (2018), 26022– 26035. doi:10.1109/ACCESS.2018.2819199 CARVS: A Congestion-Aware Algorithm for Online MAPD in Human-Collaborative Warehouses DAI ’26, November 29–December 2, 2026, Hong Kong, China 
+
+Figure 5: The autonomous mobile robots operating in the warehouse transport plastic totes that serve as carriers for customer orders. Each robot can carry multiple SKUs at once. Because the robots are not equipped with grippers, human workers manually place items into the totes. The merchan-dise is stored on shelving units and exhibits considerable variation in size, shape, and packaging. 
+
+## A Real-world Demonstration 
+
+Our MAPDwHC formulation is inspired by modern e-commerce ful-fillment centers that stock thousands of stock-keeping units (SKUs). Because the shelving is non-standardized and items vary widely in size, shape, and packaging, current robotic grippers cannot manipu-late every product with high reliability. As a result, human workers perform the pick and pack operations, while fleets of mobile robots ferry plastic totes between storage aisles and packing stations. Each robot is equipped with on-board LiDAR, localizes itself using SLAM, and continuously transmits its position to a central planner. The robots reliably detect and avoid nearby humans, and workers can easily step through the gap between a robot and the shelving; hence collisions between humans and robots are negligible. Accordingly, our MAPDwHC model assumes that human-robot collisions do not occur. The photographs in Figures 5 and 6 highlight the practical con-straints shaping our design: narrow aisles, close human-robot inter-action, and limited payload capacity. Collectively, these challenges motivate the fast, reactive algorithms detailed in the main paper. 
+
+## B Extended Proof of Theorem 1 
+
+Proof. At any time step 𝑡 , we select a subset of at most |𝐴 |
+
+pending tasks and assign each one to a distinct idle agent ( 𝑐 𝑖 < K). When the number of pending tasks exceeds |𝐴 |, the remaining tasks are deferred to subsequent time steps. Treating every agent’s current vertex as its start and the corresponding pickup or delivery vertex as its goal yields a valid MAPF instance. When no human-robot interaction is occurring, all robots are free to move. Property 3 guarantees that every goal is reachable from any vertex, and Property 5 lets us swap agents via the buffer 
+
+Figure 6: Coordination in narrow aisles. During the picking phase, the tote-carrying robot in the foreground remains stationary, allowing the human picker to quickly place items into its bins. Two autonomous robots in the background de-tect this stationary robot and navigate around it while main-taining a safe clearance. Accordingly, the tote-carrying robot is treated as a static obstacle in our MAPDwHC formulation during human-robot interaction. 
+
+vertices in 𝑉 𝐹 whenever a path is blocked. Together, these properties ensure that a complete MAPF solver can always find a collision-free plan. If a human-robot interaction is underway, we remove the in-teracting robot’s occupied vertex from 𝐺 to obtain the reduced graph 𝐺 ′ = (𝑉 \ { 𝑣 𝑎 𝑖  
+
+> 𝑡
+
+}, 𝐸 ′). This deletion may temporarily violate Property 3 or Property 5, rendering the MAPF instance unsolv-able. However, Property 4 bounds the duration of every interaction, so the blocked vertex is released after finite time steps and then the connectivity is restored. All agents can simply wait until the interaction ends. Consequently, every task in T is eventually assigned to an agent, and the set of tasks selected at each iteration constitutes a solvable MAPF sub-problem. Every task is completed within finite time. Thus, any well-formed MAPDwHC instance is solvable. □DAI ’26, November 29–December 2, 2026, Hong Kong, China Li et al. 
+
+Table 2: MAPF Algorithms Performance by Number of Agents 
+
+Algorithm Agents Tasks Completed CBSH2RTC 40 25±70 60 080 0EECBS 40 4,938±4,310 60 775±820 80 101±215 LaCAM 40 3,166±630 60 1,355±865 80 360±300 LaCAM2 40 8,891±260 60 11,731±570 80 13,966±455 
+
+MAPFLNS2 40 9,060±260 60 10,927±430 80 12,150±280 RHCR 40 10,033±230 60 11,827±415 80 12,020±760 
+
+## C Comparison of MAPF Algorithms 
+
+Table 2 compares the performance of different MAPF algorithms on the warehouse_large map with varying agent counts, using the CARVS over 10,000 time steps. CBSH2RTC fails with 60 and 80 agents. The memory usage of CBSH2RTC will increase tremen-dously (e.g. 200GB for 60 agents), eventually terminated by the operating system. Both CBSH2RTC, EECBS and LaCAM struggle as agent numbers increase. LaCAM2 outperforms the others in com-pleted tasks, making it our preferred low-level MAPF algorithm. Although MAPFLNS2 and RHCR can successfully solve the prob-lem, their performance is slightly below that of LaCAM2 as the number of agents grows. All MAPF algorithms were run with their default parameters unless stated otherwise. Specifically, EECBS uses a suboptimality factor of 1.2, and RHCR is configured with a simulation time of 5, a simulation window of 1, and a planning window of 10. 
+
+## D Details of Compared Algorithms 
+
+We modified TP/TPTS and RMCA/MCA so that they operate under our MAPDwHC assumptions while preserving their original deci-sion logic. First, TP/TPTS now runs in an online manner: at every time step it returns a partial plan that ends when the first task of the current task sets finishes, rather than waiting until all tasks are completed. The simulator verifies this plan, manages the pick-up and drop-off states, and injects the drop-off vertices. Each drop-off task carries an agent-specific ID to prevent reassignment. RMCA/MCA constructs a heap of all tasks and agents at the start of the simulation before producing the paths. We trigger a global replan as soon as any agent reaches its goal. Drop-off locations are also pre-assigned to the corresponding agents and treated as exclusive goals. Whenever an agent engages in human interaction its current vertex is marked temporarily as an obstacle. Our simulation re-moves that agent from the active set and alters the graph supplied to the solver. Any change in task status or human-agent interaction immediately triggers a new round of task allocation and path plan-ning, ensuring that the planners face the same dynamic conditions as CARVS and the other algorithms. These adaptations allow TP, TPTS, RMCA, and MCA to be compared fairly with the proposed methods in realistic warehouse scenarios that involve human-robot collaboration. TSWAP was originally designed for simultaneous assignment to unlabeled targets. In our MAPD setting, any robot can be as-signed to a pickup target, but a robot carrying an item must reach its assigned drop-off target. To apply TSWAP in this setting, the wrapper supplies current pickup targets to picking robots and as-signed drop-off targets to dropping robots when constructing each planning instance. Each drop-off target carries the corresponding agent index, so the initial target allocation preserves the assignment. However, TSWAP handles conflicts by swapping targets and breaks deadlocks by rotating them. These operations change existing task assignments, so TSWAP cannot maintain a fixed assignment be-tween a robot and its target during execution. A dropping robot may therefore be redirected toward another drop-off target or a pickup target. The wrapper can only reapply the original assignment in a later planning attempt. Diagnostic results on warehouse_large with 100 robots show how these target exchanges affect task completion. Only 0.73% of successful paths for dropping robots ended at the assigned drop-off target. Instead, 44.94% ended at another robot’s drop-off target and 54.33% at a pickup target. Neither pathfinding failures nor solver execution errors were observed. Robots spent an average of 45.92% of their time in the drop-off phase. The median duration of a completed drop-off averaged 728 steps across runs. When the simulation ended, an average of 48.6 robots had not completed their drop-offs. These results show that fast planning and a low skip count do not guarantee efficient task completion. MAPD-d exposes a robustness parameter 𝑘 , which stands for the number of delay steps an agent must absorb without replanning. However, our setting provides no reliable value for it. Although the interaction time is set to 10 time steps in the simulations, the picker still needs time to walk to the picking point, and that walking time varies with the distance. So the delay an agent experiences is unknown in advance. We therefore report 𝑘 = 0 in the main results. We also ran 𝑘 = 10 for comparison. On warehouse_small 
+
+it completes 989 tasks at 20 agents against 3703 for 𝑘 = 0, and it completes no tasks at all beyond 40 agents. The reason is that 
+
+𝑘 -TP reserves a temporal window of ±𝑘 around every cell on an already planned path, so each agent contributes 2 𝑘 + 1 space-time reservations instead of one. A larger 𝑘 therefore inflates the set of moving obstacles the low-level search must avoid, which raises the planning time and makes the real-time budget harder to meet. 
+
+## E Human Efficiency 
+
+Figure 7 shows how human-efficiency settings affect the number of skips on warehouse_small as the number of robots increases from 10 to 100. With the reaction time fixed at 𝜂 = 1 s, reducing CARVS: A Congestion-Aware Algorithm for Online MAPD in Human-Collaborative Warehouses DAI ’26, November 29–December 2, 2026, Hong Kong, China 20 40 60 80 100 Number of Human Workers 1234Task Completed ×10 4
+
+> Agents = 100 Agents = 50
+
+Figure 8: Impact of human workforce size on CARVS per-formance on warehouse_small with 50 and 100 robots. After about 50 workers, each additional worker yields progres-sively smaller increases in the number of completed tasks. 20 40 60 80 100 Number of Robots 0500 1000 1500 2000 2500 3000 Mean of Skip Count 
+
+> Settings D0S100 D0S2 D0S20 D10S2 D5S2
+
+Figure 7: Impact of human-efficiency parameters on the per-formance of CARVS with LaCAM2 on warehouse_small for 10 to 100 robots. The reaction time 𝜂 is fixed at 1 second. Con-figuration D5S2 sets the interaction duration to 𝛿 = 5 time steps and assigns humans a speed twice that of the robots. Reducing the interaction duration substantially decreases the number of skips. 
+
+the interaction duration 𝛿 and increasing human walking speed both lower the skip count and thus boost overall performance. For example, configuration D5S2 imposes a 5-step interaction de-lay while letting humans move twice as fast as robots, whereas 
+
+D0S100 approximates the original MAPD problem setting by in-troducing virtually no delay and letting humans move far faster than the robots. As 𝛿 decreases the skip count falls sharply. In con-trast, changes in human walking speed have little effect, with the skip count remaining nearly unchanged between D0S2 and D0S100 .Comparing D10S2 , the configuration used in our experiments, with 
+
+D0S2 shows that MAPDwHC records about 1 .96 × more skips than MAPD, highlighting the extra difficulty introduced by human-robot interaction. Figure 8 shows how the number of tasks completed by CARVS on 
+
+warehouse_small varies as the human workforce increases from 10 to 100 workers, with either 50 or 100 robots. Task completion rises almost linearly up to about 50 workers, the configuration used in our experiments. Beyond that point, each additional worker provides progressively smaller gains. 
+
+## F Data and Ethics Statement 
+
+The warehouse layouts, task records, and facility photographs used in this work were obtained through an industrial collaboration. The study involves no human subjects and no personally identifiable information. The warehouse-management-system records consist solely of stock-keeping-unit (SKU) task events over time rather than data about individuals. Each SKU appears only as an index number that distinguishes one item from another, not as its real identifier. The task sets used in our experiments are aggregate temporal dis-tributions together with synthetically generated tasks derived from those distributions, not raw operational records. The photographs contain no people and no product information, because the product imagery in them has been pixelated. No personally identifiable information was collected, processed, or released as part of this work.

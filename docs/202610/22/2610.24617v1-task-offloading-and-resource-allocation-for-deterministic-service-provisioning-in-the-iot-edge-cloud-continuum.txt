@@ -1,0 +1,614 @@
+Title: 2610.24617v1.pdf
+
+URL Source: https://arxiv.org/pdf/2610.24617v1
+
+Published Time: Tue, 20 Oct 2026 00:50:10 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+1Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+THIS IS AN AUTHOR-CREATED POSTPRINT VERSION 
+
+# Task Offloading and Resource Allocation for Deterministic Service Provisioning in the IoT–Edge– Cloud Continuum 
+
+K. Aghababaiyan *, B. Coll-Perales *, and J. Gozalvez *
+
+> *
+
+Networked Systems Laboratory, Universidad Miguel Hernández de Elche, 03202 Elche, Spain 
+
+Abstract —Future networks will seamlessly integrate computing and communication resources within a unified ecosystem of IoT devices, edge nodes, and cloud servers, forming an IoT-edge-cloud continuum. Within such  an  ecosystem, tasks can be dynamically offloaded to leverage resources across the continuum and efficiently scale with demand. Task offloading has traditionally focused on minimizing task execution latency or energy consumption. In contrast, we propose adeterministic task offloading and resource allocation scheme for the joint management of communication and computing resources to support services with deterministic service-level requirements. The proposed scheme aims to maximize the number of tasks completed on time, rather than minimizing the latency of individual tasks. To do so, it exploits variable task latency requirements to distribute the workload across the continuum. It can also prioritize high-priority tasks under resource scarcity. Numerical evaluations demonstrate that a deterministic task offloading strategy scales more effectively and can better guarantee timely task completion by balancing resource utilization across the continuum. 
+
+Keywords —Continuum, edge-cloud, deterministic, task offloading, resource allocation, IoT. 
+
+I. INTRODUCTION 
+
+The Internet of Things (IoT) is driving transformative changes across various domains, including connected and automated mobility and smart manufacturing. 
+
+The work of K. Aghababaiyan is supported in part by the European Union under the 2024 MSCA Postdoctoral Fellowship program (project no. 101207598).  This work has been also partially funded by the European Commission Horizon Europe SNS JU 6G-SHINE (GA 101095738) project, and by MCIN/AEI/10.13039/501100011033 
+
+Connected  vehicles rely on their own sensors, communication systems, and processing units to exchange real-time data for safer and more efficient driving tasks  [1] . In the industrial IoT (IIoT) domain, collaborative robots (cobots) and autonomous guided vehicles dynamically interact with their environment for a more efficient execution of manufacturing and logistics tasks  [2] . Critical services require efficient data processing for timely decision-making, which can place significant processing demands on computing resources as the complexity and number of tasks grow and requires careful latency management to meet deadlines of time-sensitive operations. In this context, the IoT-edge-cloud continuum has emerged as a key enabler to address increasing computational and latency challenges. The IoT-edge-cloud continuum seamlessly integrates computing, connectivity, intelligence, and services within a unified ecosystem of IoT devices, edge nodes, and cloud servers, and offers the possibility to dynamically plan and offload task s’ 
+
+execution across resources distributed in the continuum 
+
+[3] . To this aim, it is necessary to jointly manage communication and computing resources across the continuum. 
+
+To date, a strong focus has been on joint management schemes that minimize the task execution time. However, in critical verticals such as connected and automated mobility and smart manufacturing, it is usually more important to satisfy stringent deterministic service constraints - particularly in terms of bounded deadline compliance  [4]  than minimizing latency. Failure to meet these constraints may result in unsafe situations, operational disruptions, or system instability. The capacity to meet these constraints is 
+
+(PID2020-115576RB-I00, PID2023-150308OB-I00), UMH 
+
+and Generalitat Valenciana (CIAICO/2024/167). 
+
+(Corresponding author: Keyvan Aghababaiyan). 
+
+Email address: {kaghababaiyan, bcoll, j.gozalvez}@umh.es 2Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+strongly conditioned by the resources available in the continuum, the context conditions, and the service requirements. Connected vehicles typically feature considerable onboard processing capabilities but operate in highly dynamic environments with fluctuating connectivity conditions and diverse service requirements. In addition, software-defined vehicles need to support functionalities updated and expanded over time with the same computing resources. Smart factories usually operate within (semi-) static and controlled network infrastructures but deploy a large variety of devices and require collaborative efforts between devices for manufacturing task execution. In this context, achieving the appropriate balance between local processing and task offloading is essential. While offloading to edge or cloud servers can expand available computing capacity, it may introduce additional latency. On the other hand, relying solely on local execution may be limited by the local processing capabilities. The key challenge lies in designing task offloading strategies that holistically manage resources across the continuum in a manner that prevents communication and computing bottlenecks, preserves balanced resource utilization, and guarantees deterministic service levels  [5] .
+
+Most existing latency-based task offloading schemes 
+
+[6] -[9]  focus on minimizing individual task latency, which risks overloading resources if too many tasks are assigned to the nodes that individually can minimize latency, causing the system to operate in a locally optimal but globally inefficient manner. This paper advances the state of the art with a deterministic task offloading and resource allocation strategy designed to satisfy deterministic service-level requirements while effectively scaling by balancing workloads across the continuum. The proposed scheme focuses on completing tasks within bounded deadlines rather than minimizing individual task latency. By exploiting the available task latency budget, it balances workload distribution across the IoT –edge –cloud continuum, which helps prevent computing and communication congestions in specific computing units and communication links. The scheme has the ability to prioritize the timely execution of critical tasks under resource scarcity. Its potential and adaptability to heterogeneous IoT operational settings are demonstrated in representative connected mobility and smart manufacturing scenarios characterized by different processing capabilities and diverse task requirements. Numerical evaluations show that the proposed deterministic strategy can scale better and successfully complete a higher number of tasks on time than state-of-the-art schemes focused on minimizing individual task latency thanks to a more balanced workload distribution across the continuum. 
+
+The remainder of this article is organized as follows. Section II reviews the state-of-the-art in task offloading and resource allocation. Section III describes the system model adopted for task offloading and resource allocation across the IoT-edge-cloud continuum. Section IV presents the proposed deterministic task offloading and resource allocation scheme. Section V outlines the simulation setup, evaluation parameters and scenarios as well as the benchmark schemes. Section VI analyzes the evaluation results, and Section VII summarizes the key findings. 
+
+II. STATE OF THE ART 
+
+A key aspect in managing the IoT-edge-cloud continuum is determining the optimal distribution of task processing across resources in the continuum. This should be done noting that not all IoT nodes are resource-constrained; for instance, devices such as Connected and Automated Vehicles (CAVs) often feature powerful local processors.  In  recent years, growing attention has been devoted to developing task offloading and resource allocation schemes across different computing nodes of the continuum - ranging from local-edge cooperation to cloud-based and fully integrated IoT-edge-cloud continuum - with the goal of minimizing latency and improving the efficiency of distributed computing. The work in  [10]  focuses on latency-aware task execution in mobile edge computing, where computation occurs locally or at nearby edge servers. It optimizes resource allocation and offloading decisions to reduce latency, though it remains confined to the edge and local IoT nodes. Studies  [6]  and  [7]  expand this model by employing the computing capacity of interconnected IoT nodes, specifically vehicles, as distributed resources. In  [6] ,parked and moving vehicles cooperate with an edge server to process offloaded tasks and minimize total priority-weighted processing latency through coordinated offloading among vehicles, and between vehicles and the edge. The study reported in  [7] 
+
+introduces greater flexibility by enabling vehicles to decide whether to execute tasks locally, offload them to a roadside unit, or share them directly with other vehicles. These studies emphasize the role of vehicles as mobile IoT devices that augment edge resources, contributing to latency reduction.  [8]  introduces an inverse offloading framework, where tasks are transferred from the edge back to vehicles. This scheme alleviates the computational burden on the edge server while maintaining low latency by effectively exploiting underused vehicular computing capacity.  [11]  focuses on cloud-centered task migration, and designs 3Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+strategies that move computation from onboard vehicle systems to cloud servers to support cooperative processing. The study examines how centralized execution and 5G connectivity can meet increasing computational demands while maintaining latency below the required deadline constraints.  [9]  and  [12] 
+
+advance the concept toward multi-layer collaboration, forming a full IoT –edge –cloud continuum with the goal of minimizing latency. In  [9] , computation is organized across the full continuum, distinguishing between latency-sensitive and non –time-sensitive tasks, with the objective of minimizing latency for latency-sensitive tasks.  [12]  integrates idle IoT and vehicular devices as intermediate computing nodes that cooperate with edge and cloud resources to minimize latency. Studies  [13] -[15]  focus on load balancing and spatial load distribution across resources in the continuum. In  [13]  and  [14] , the authors introduce schemes that identify overloaded edge nodes and reassign tasks or users to underutilized ones, thereby maintaining responsiveness and preventing congestion. 
+
+[15]  proposes a location-aware allocation scheme that redistributes computational tasks from congested regions to less utilized areas, improving overall system stability and latency consistency. 
+
+Collectively, these studies highlight the potential of the IoT –edge –cloud continuum, and the importance of task offloading schemes to effectively exploit the continuum. To date, contributions have mostly focused on minimizing individual task execution latency. However, this focus increases the risk of overloading certain computing units and communication resources, while many vertical services require deterministic service levels and not necessarily minimizing the latency of each task. This paper addresses this gap with a deterministic task offloading and resource allocation strategy that prioritizes the timely completion of tasks within predefined deadlines and a balanced distribution of workloads across the continuum for better scaling. An initial version of this work was presented in  [16] .This manuscript provides a robust extension to that past study by introducing a load distribution mechanism and a priority-based version of the proposed scheme. In addition, we conduct a thorough analysis on the impact of distinct operational environments —such as connected vehicular mobility and smart industrial manufacturing scenarios —demonstrating the performance, robustness, and adaptation of the proposed strategy under diverse network and device characteristics. 
+
+III. SYSTEM MODEL 
+
+We consider an IoT-edge-cloud continuum system composed of heterogeneous IoT devices connected to edge computing nodes and a cloud server through a wide-area wireless network. The system model is designed to capture a broad range of operational environments where tasks generated by IoT devices can be processed locally or offloaded to edge or cloud, subject to communication and computing constraints and task-specific latency requirements. To reflect the diversity of real-world deployments, the model encompasses two representative emerging IoT –edge –
+
+cloud continuum scenarios: connected mobility and smart manufacturing. These scenarios exhibit fundamentally different characteristics in terms of device heterogeneity, local processing capabilities, task generation patterns, and reliance on network-assisted computation. 
+
+The connected mobility scenario includes 𝐽 𝑣 1 low-power wearable devices (e.g. smartwatches), 𝐽 𝑣 2
+
+general-purpose mobile devices (e.g. smartphones), and 𝐽 𝑣 3 vehicles equipped with powerful onboard computing platforms where 𝐽 𝑣 =𝐽 𝑣 1 +𝐽 𝑣 2 +𝐽 𝑣 3 . Tasks are generated by these three types of devices with proportions 𝛼 𝑣 1 , 𝛼 𝑣 2 , 𝛼 𝑣 3 , where 𝛼 𝑣 1 + 𝛼 𝑣 2 + 𝛼 𝑣 3 = 1 .The smart manufacturing scenario considers a mix of 
+
+𝐽 𝐼 1 mobile IoT devices, 𝐽 𝐼 2 assembly robots, 𝐽 𝐼 3
+
+advanced factory robots, and 𝐽 𝐼 4 autonomous guided vehicles with more constrained local processing capabilities than vehicles in the connected mobility scenario. 𝐽 𝐼 = 𝐽 𝐼 1 + 𝐽 𝐼 2 +𝐽 𝐼 3 + 𝐽 𝐼 4 is the total number of IoT industrial devices. Tasks are generated by different types of devices with proportions 𝛼 𝐼 1 , 𝛼 𝐼 2 , 𝛼 𝐼 3 , 𝛼 𝐼 4 ,where 𝛼 𝐼 1 + 𝛼 𝐼 2 + 𝛼 𝐼 3 + 𝛼 𝐼 4 = 1 .
+
+Tasks 𝑓 𝑖 , 𝑖𝜖{1, … , 𝐼} generated by the devices in both scenarios can be represented by the tuple 
+
+{𝑐 𝑖 , 𝑠 𝑖 , 𝑠 ′𝑖 , 𝐺 𝑖 , 𝐷 𝑖 }. 𝑐 𝑖 is the task 𝑓 i’s computational 
+
+demand and 𝑠 𝑖 is its associated size. When a task is delegated to the edge units or cloud server, the processed result must be transmitted back to the original unit. The size of processed results of 𝑓 i is defined as 𝑠 ′𝑖 = 𝜌 ∙ 𝑠 𝑖 , where 𝜌 < 1 . 𝐺 𝑖 is 𝑓 i’s 
+
+generation time, and 𝐷 𝑖 its deadline by which all processing must be completed. If the task is offloaded to the edge or cloud, the deadline accounts for the time required to transmit the task to the designated processing unit, the processing time, and the time needed to send the processed result back. 
+
+Local IoT ( 𝑗𝜖𝐽 ; either 𝐽 𝑣 or 𝐽 𝐼 ), edge ( 𝑞𝜖𝑄 ) and cloud (C) computing units are modeled considering their processing power 𝜒 𝑚 and maximum processing capacity 𝛸 𝑚 over a time period T with Χ𝑚 = 𝜒 𝑚 . 𝑇 ,
+
+𝑚 𝜖 𝑀 ; 𝑀 = (𝐽, 𝑄, 𝐶) . The computing time for a task 𝑓 𝑖 
+
+processed by computing unit 𝑚 is: 4Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+THIS IS AN AUTHOR-CREATED POSTPRINT VERSION 
+
+𝑡 𝑝 𝑖 = 𝑐 𝑖 
+
+𝜒 𝑚 
+
+. (1) 
+
+We consider that the wireless link to connect the IoT devices to the wide-area network is based on aFrequency Division Duplexing (FDD)-based Orthogonal Frequency Division Multiple Access (OFDMA) radio access interface. The amount of information that can be transmitted by a resource block 
+
+𝜅 𝜖 𝛫 can be expressed as follows: 
+
+𝑅 𝜅 = 𝑇 𝑘 . 𝐵𝑊 𝜅 × log 2(1 + 𝛾 𝜅 )(1 − 𝑒 𝜅 ),  (2) 
+
+where 𝑇 𝑘 is the duration of the resource, 𝐵𝑊 𝜅 is the 
+
+resource’s bandwidth, 𝛾 𝜅 is the Signal-to-Interference-plus-Noise Ratio (SINR), and 𝑒 𝜅 is the bit error rate, which is a function of the modulation and coding scheme (MCS) used. 𝛫 is the total number of orthogonal resource blocks, which are divided into 
+
+𝛫 𝑈𝐿 and 𝛫 𝐷𝐿 resources for the uplink and downlink bands. We assign each communication resource 𝜅 an MCS determined by its SINR 𝛾 𝜅 . Channel fading is modeled with a Rayleigh distribution. Considering 𝛫 𝑖 𝑈𝐿 
+
+as the total number of resource blocks used in the uplink for the offloading of the tasks 𝑓 𝑖 , the uplink channel data capacity can be estimated as: 
+
+𝑅 𝑖 𝑈𝐿 = ∑ 𝑅 𝜅 𝜅𝜖𝛫 𝑖 𝑈𝐿 . (3) 
+
+Similarly, the downlink channel data capacity 𝑅 𝑖 𝐷𝐿 is computed as the sum of the capacities of the 𝛫 𝑖 𝐷𝐿 
+
+resource blocks allocated in the downlink. It should be noted that 𝑠 𝑖 ≤ 𝑅 𝑖 𝑈𝐿 and 𝑠′ 𝑖 ≤ 𝑅 𝑖 𝐷𝐿 must hold to ensure that the uplink and downlink communication links can successfully transfer the task 𝑓 𝑖 and its processing result, respectively. 
+
+If task 𝑓 𝑖 with size 𝑠 𝑖 needs to be offloaded, its uplink transmission time is computed as: 
+
+𝑡 𝑈𝐿 𝑖 = 𝑠 𝑖 
+
+𝑅 𝑖 𝑈𝐿 , (4) 
+
+and the downlink transmission time for the processed result of this task can be expressed as: 
+
+𝑡 𝐷𝐿 𝑖 = 𝑠′ 𝑖 
+
+𝑅 𝑖 𝐷𝐿 . (5) 
+
+When a task is offloaded to the edge or cloud, the time 
+
+𝑇 𝑖 necessary to execute a task 𝑓 𝑖 includes the processing time at the corresponding unit ( 𝑡 𝑝 𝑖 ), the time to upload the task from the IoT device to the computing unit (𝑡 𝑈𝐿 𝑖 ), and the time to download the processed result back to the IoT device ( 𝑡 𝐷𝐿 𝑖 ): 
+
+𝑇 𝑖 = 𝑡 𝑝 𝑖 + 𝑡 𝑈𝐿 𝑖 + 𝑡 𝐷𝐿 𝑖 . (6) 
+
+If the task is locally executed at the IoT device then 
+
+𝑇 𝑖 = 𝑡 𝑝 𝑖 . A task is satisfactorily served if the total execution time 𝑇 𝑖 is less than or equal to the task’s 
+
+deadline 𝐷 𝑖 .
+
+IV. DETERMINISTIC TASK OFFLOADING AND 
+
+RESOURCE ALLOCATION 
+
+This section presents the proposed Deterministic task offloading and resource allocation scheme, operating over the IoT –edge –cloud continuum system described in Section III. The proposed scheme manages the heterogenous communication and computing resources available across the continuum to satisfy tasks' bounded latency deadlines, rather than minimizing individual task execution time. To this aim, we define the penalty cost HD as 
+
+𝛨 𝐷 = ∑ Λ(𝜏 𝑖 ) , 
+
+> 𝑖𝜖𝐼
+
+(7) 
+
+and  Λ(𝜏 𝑖 ) is a penalty function defined as: 
+
+Λ(𝜏 𝑖 ) = { 0, 0 ≤ 𝜏 𝑖 ≤ 1, Π, 𝜏 𝑖 > 1, 
+
+(8) 
+
+with 𝜏 𝑖 = 𝑇 𝑖 
+
+> 𝐷 𝑖
+
+. This penalty function assigns a high cost 
+
+Π to tasks 𝑓 i , 𝑖𝜖{1, … , 𝐼} whose execution time 𝑇 𝑖 
+
+exceeds their deadline 𝐷 𝑖 , while tasks completed within their deadlines incur no penalty. 
+
+We initially formulate the task offloading and resource allocation problem as an optimization problem where the objective is minimizing the overall penalty cost 𝛨 𝐷 :
+
+𝑀𝑖𝑛 𝛨 𝐷  (9) 
+
+𝑠. 𝑡. 𝐶 1: 𝑎 𝑖,𝑗 𝜖{0, 1}, ∀𝑗𝜖𝐽, ∀𝑖𝜖𝐼, 
+
+𝐶 2: 𝑎 𝑖,𝑞 𝜖{0, 1}, ∀𝑞𝜖𝑄, ∀𝑖𝜖𝐼, 
+
+𝐶 3: 𝑎 𝑖,𝐶 𝜖{0, 1}, ∀𝑖𝜖𝐼, 
+
+𝐶 4 : ∑ 𝑎 𝑖,𝑗 𝑗𝜖𝐽 
+
++ ∑ 𝑎 𝑖,𝑞 𝑞𝜖𝑄 
+
++ 𝑎 𝑖,𝑐 
+
+≤ 1, ∀𝑖𝜖𝐼, 
+
+𝐶 5: ∑ 𝑐 𝑖 𝑎 𝑖,𝑚 𝑖𝜖𝐼 
+
+≤ 𝛸 𝑚 , ∀𝑚𝜖𝑀, 
+
+𝐶 6: 𝑏 𝑖,𝜅 𝑈𝐿 , 𝑏 𝑖,𝜅 𝐷𝐿 𝜖{0, 1}, ∀𝑖𝜖𝐼, ∀𝜅𝜖Κ, 
+
+𝐶 7 : ∑ 𝑏 𝑖,𝜅 𝑈𝐿 = 1 
+
+> 𝑖𝜖𝐼
+
+, ∀𝜅𝜖Κ 𝑈𝐿 ,
+
+𝐶 8: ∑ 𝑏 𝑖,𝜅 𝐷𝐿 = 1 
+
+> 𝑖𝜖𝐼
+
+, ∀𝜅𝜖Κ 𝐷𝐿 ,
+
+𝐶 9: 𝑠 𝑖 ≤ ∑ 𝑅 𝜅 , ∀𝑖𝜖I  
+
+> 𝜅𝜖𝛫 𝑖 𝑈𝐿
+
+,
+
+𝐶 10 : 𝑠′ 𝑖 ≤ ∑ 𝑅 𝜅 , ∀𝑖𝜖I, 
+
+> 𝜅𝜖𝛫 𝑖 𝐷𝐿
+
+𝐶 11 : 𝑏 𝑖,𝜅 𝑈𝐿 = 0, 𝑖𝑓 𝑡(𝜅) < 𝐺 𝑖 ,5Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+𝐶 12 : ∑ 𝑎 𝑖,𝑗 𝑗𝜖𝐽 + ∑ 𝑎 𝑖,𝑞 𝑞𝜖𝑄 + 𝑎 𝑖,𝑐 = 0, i𝑓 𝑡 < 𝐺 𝑖 +𝑡 𝑈𝐿 𝑖 ,
+
+𝐶 13 : 𝑏 𝑖,𝜅 𝐷𝐿 = 0, 𝑖𝑓 𝑡(𝜅) < 𝐺 𝑖 + 𝑡 𝑝 𝑖 + 𝑡 𝑈𝐿 𝑖 .
+
+Constraints  𝐶 1-𝐶 4 use binary variables 𝑎 𝑖,𝑗 , 𝑎 𝑖,𝑞 and 
+
+𝑎 𝑖,𝑐 to enforce that each task is allocated to a single computing unit, either in the IoT ( 𝐶 1), edge ( 𝐶 2), or cloud ( 𝐶 3) domain. Constraint 𝐶 5 ensures that the selected computing unit is not overloaded by the computation demand of the allocated task. Constraint 
+
+𝐶 6 defines the allocation of communication resources to tasks in the uplink and downlink directions. Binary variables 𝑏 𝑖,𝜅 𝑈𝐿 and 𝑏 𝑖,𝜅 𝐷𝐿 indicate whether communication resource 𝜅𝜖𝛫 is assigned to task 𝑓 𝑖 - for offloading to the edge or cloud - for transmitting the processed result back to the IoT device, respectively. In line with OFDMA operation, constraints 𝐶 7 and 𝐶 8 ensure that each communication resource block is allocated to at most one task. Constraints 𝐶 9 and 𝐶 10 guarantee that the aggregated capacity of the allocated communication resources is sufficient to transmit the task in the uplink and its processed result in the downlink, respectively. Constraints 𝐶 11 − 𝐶 13 
+
+enforce the  temporal  ordering of operations: uplink 
+
+transmission can only  occur  after task generation, task 
+
+processing after the uplink  transmission is completed ,
+
+and the downlink transmission  takes place after task 
+
+processing .
+
+We extend the initial formulation in  (7 ) to promote a balanced utilization of resources across the IoT-edge-cloud continuum. This extension is aimed at mitigating load concentration and resource bottlenecks under high traffic conditions, while preserving the Deterministic 
+
+operation of the scheme. In this case, the objective function is still minimizing the overall penalty cost, but this cost is now expressed as: 
+
+𝛨 𝐷𝐷 = ∑ Λ(𝜏 𝑖 )𝑖𝜖𝐼 +𝜆 1 ∑ 𝑁 𝑚 . |𝛽̅ − 𝛽 𝑚 |𝑚𝜖𝑀 + 𝜆 2 ∑ (1 − 𝜂 𝑚 )𝑚𝜖𝑀 ,
+
+(10) 
+
+where the first term corresponds to the penalty function 
+
+HD in  (7 ) and accounts for tasks whose execution exceeds their deadline. The second term in  (10) 
+
+promotes a more balanced utilization of computing resources across the continuum by penalizing deviations from the continuum’s average usage ratio. 
+
+𝑁 𝑚 denotes the set of tasks assigned to computing unit 
+
+𝑚 , and 𝛽 𝑚 represents the usage ratio of computing unit 
+
+𝑚 :
+
+𝛽 𝑚 = ∑ 𝑐 𝑖 𝑎 𝑖,𝑚 𝑖𝜖𝐼 
+
+Χ𝑚 
+
+, (11) 
+
+where 𝛽̅ is the average usage ratio across different computing units, which is computed as: 
+
+𝛽̅ = 1𝑀 ∑ 𝛽 𝑚 𝑚𝜖𝑀 
+
+. (12) 
+
+By weighting the deviation |𝛽̅ − 𝛽 𝑚 | with 𝑁 𝑚 , this second term in  (10)  places greater emphasis on load imbalance affecting computing units that serve a larger number of tasks. The second term in  (10)  discourages load imbalance and excessive task concentration in certain computing units. Finally, the third term in  (10) 
+
+penalizes low task satisfaction at each computing unit by weighting the fraction of tasks whose execution time 
+
+𝑇 𝑖 exceeds their deadline. This fraction is equal to 1 -
+
+𝜂 𝑚 , where 𝜂 𝑚 is defined as the task satisfaction ratio for computing unit 𝑚 . The satisfaction ratio is defined as the ratio of tasks completed within their deadlines. The third term is hence defined to encourage high per-unit satisfaction ratios and prevent the concentration of poorly served tasks on individual computing units. The second and third terms in  (10)  use 𝜆 1 and 𝜆 2 as weighting factors to control the importance of the terms. The objective function for the task offloading and resource allocation problem is then defined as: 
+
+𝑀𝑖𝑛 𝛨 𝐷𝐷  (13) 
+
+𝑠. 𝑡. 𝐶 1 − 𝐶 13 ,
+
+where 𝐶 1 − 𝐶 13  are the  constraints defined in  (9) .The objective function is further extended to incorporate task prioritization so that high-priority tasks can still be completed within their deadline under resource -constrained conditions. In this case, the penalty cost is defined as follows: 
+
+𝛨 𝑃𝐷𝐷 = ∑ Λ𝑃 (𝜏 𝑖 )𝑖𝜖𝐼 + 𝜆 1𝐻 ∑ 𝑁 𝑚 𝐻 . |𝛽̅ − 𝑚𝜖𝑀 
+
+𝛽 𝑚 | + 𝜆 2𝐻 ∑ (1 − 𝜂 𝑚 𝐻 )𝑚𝜖𝑀 ,
+
+(14) 
+
+where Λ𝑃 (𝜏 𝑖 ) is defined as: 
+
+Λ𝑃 (𝜏 𝑖 ) = { 0, 0 ≤ 𝜏 𝑖 ≤ 1, Π𝑃 𝑖 , 𝜏 𝑖 > 1, 
+
+(15) 
+
+where 𝑃 𝑖 𝜖{𝐿, 𝐻} denotes whether task 𝑓 𝑖 is of low (L) or high (H) priority. The penalty values satisfy 𝛱 𝐿 ≪𝛱 𝐻 , thereby enforcing a stronger penalty for deadline violations of high-priority tasks and biasing the optimization toward their timely completion under resource -constrained conditions. The second and third terms in  (14 ) extend  (10)  by focusing specifically on high-priority tasks. To this end, in  (14 ), 𝑁 𝑚 𝐻 denotes the number of high-priority tasks assigned to computing unit 𝑚 , while 𝜂 𝑚 𝐻 represents the satisfaction ratio of high-priority tasks at unit 𝑚 . By weighting the load imbalance with 𝑁 𝑚 𝐻 , the second term discourages concentration of high-priority tasks on individual computing units and promotes a balanced distribution of critical workloads across the IoT –edge –cloud continuum. The parameters 𝜆 1𝐻 , 𝜆 2𝐻 are weighting factors controlling the relative importance of load 6Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+balancing and maximizing the number of high-priority tasks completed by their deadlines per computing unit. 
+
+The final objective function for the joint task offloading and resource allocation problem is defined subject to constraints  𝐶 1 − 𝐶 13 in  (9 ) as: 
+
+𝑀𝑖𝑛 𝛨 𝑃𝐷𝐷  (16) 
+
+𝑠. 𝑡. 𝐶 1 − 𝐶 13 .
+
+The optimization problem in  (16)  is NP-hard, and we use the genetic algorithm in Algorithm I to obtain near-optimal solutions  [16] . The algorithm runs for  G =10 generations (line 1) with a population size of 1,000 individuals per generation. This configuration is sufficient because the large population size allows for broad exploration of the search space, leading to rapid convergence. By the tenth generation, the variation in the objective values stabilizes to less than 1%, indicating that further iterations would yield negligible improvements. Algorithm I initializes the population based on constraints 𝐶 1 − 𝐶 5 and 𝐶 12 (line 2). The objective functions are evaluated in lines 3 to 7. For each generation, 25% of the top-performing (elite) individuals are selected for crossover to form the next generation (lines 8 and 9). Additionally, in line 10, mutation is introduced in 20% of the population to enhance solution diversity and improve convergence toward a near-optimal solution  [18] .
+
+V. EVALUATION SCENARIO 
+
+We consider two representative IoT-edge-cloud scenarios from the connected mobility and smart manufacturing verticals to evaluate the ability of the task offloading schemes to adapt to heterogeneous operational environments. These scenarios exhibit fundamentally different characteristics in terms of device heterogeneity, local processing capabilities, and reliance on network-assisted computation. The connected mobility scenario includes 𝐽 𝑣 1 =4 smartwatches, 𝐽 𝑣 2 =4 smartphones, and 𝐽 𝑣 3 =2 vehicles, resulting in a total of 𝐽 𝑣 =10 IoT devices. Tasks are generated by these devices at proportions of 𝛼 𝑣 1 =0.1, 
+
+𝛼 𝑣 2 =0.5 and 𝛼 𝑣 3 =0.4, respectively. These values align with the standard distribution of tasks commonly observed across these specific device categories  [19] .The computational workload of each task is modeled as a uniformly distributed random variable whose range depends on the originating device type. Tasks generated by smart vehicles are more computationally demanding, ranging from 75 to 150 Mcycles. In contrast, tasks generated by smartwatches and smartphones range from 25 to 35 Mcycles and from 30 to 60 Mcycles, respectively, reflecting the less demanding applications they support  [20] . Following the specifications of commercial off-the-shelf products, the local processing capabilities are set to 400 MHz for smartwatches, 3 GHz for smartphones, and 12 GHz for vehicles, capturing the large disparity in onboard computing power across device types. 
+
+In the smart manufacturing scenario, we consider a medium-size industrial deployment  [21]  with 𝐽 𝐼 1 = 5 mobile IoT devices, 𝐽 𝐼 2 = 6 assembly robots, 𝐽 𝐼 3 = 6 advanced factory robots, and 𝐽 𝐼4 = 6 automated guided vehicles, for a total of 𝐽 𝐼 = 23 IoT devices. The four device types generate tasks with proportions of 
+
+𝛼 𝐼 1 =0.1, 𝛼 𝐼 2 =0.3, 𝛼 𝐼 3 =0.3, and 𝛼 𝐼 4 =0.3, respectively, reflecting the heavier workloads produced by robotic systems compared to simple sensing devices 
+
+[22] . Their workloads are modeled as uniformly distributed random variables with ranges depending on the device type and their processing needs ( [23] , [24] ): (25 –35) Mcycles for mobile IoT devices, (30 –100) Mcycles for assembly robots and advanced factory robots, and (60 –120) Mcycles for autonomous guided robots. Their local processing power is set to 400 MHz for mobile IoT devices, 1.2 GHz for assembly robots, 2 GHz for advanced factory robots, and 2.5 GHz for autonomous guided vehicles  [25] .
+
+In both scenarios, the infrastructure includes one edge computing node and one cloud server, with processing capacities of 70 GHz and 150 GHz, respectively  [26] .
+
+Algorithm I : Genetic algorithm 
+
+1. For gen = 1 to G do 
+
+2. Initialize population {𝑎 𝑖,𝑗 , 𝑎 𝑖,𝑞 , 𝑎 𝑖,c } satisfying 
+
+𝐶 1 − 𝐶 5, 𝐶 12 .
+
+3. For each individual: 
+
+4. Allocate 𝑏 𝑖,𝜅 𝑈𝐿 under 𝐶 7, 𝐶 9, 𝐶 11 ⟶
+
+compute 𝑡 𝑈𝐿 𝑖 .
+
+5. Calculate 𝑡 𝑝 𝑖 using  (1 ). 
+
+6. Allocate 𝑏 𝑖,𝜅 𝐷𝐿 under 𝐶 8, 𝐶 10 , 𝐶 13 ⟶
+
+compute 𝑡 𝐷𝐿 𝑖 .
+
+7. Evaluate objective functions of  (9) ,
+
+(13) , (16) .
+
+8. Select top 25% as elite. 
+
+9. Generate 75% via crossover (elite). 
+
+10. Mutate 20% of new individuals. 
+
+11. End For 
+
+12. Return best {𝑎 𝑖,𝑗 , 𝑎 𝑖,𝑞 , 𝑎 𝑖,c } across G generations 7Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+Different workload scenarios are analyzed with the number of parallel tasks ranging from 35 to 80 every 100 ms, and tasks generated uniformly over time. The task deadlines are uniformly distributed between 50-100 ms for the connected mobility scenario, and 50-90 ms for the smart manufacturing scenario  [27] .Representing typical payloads for sensing and control data  [20] , task sizes are uniformly distributed in the range of 1 –2 Mbits, and the size of processed results is set to 𝜌 =0.15 of the original task size. We consider two task priority classes. The penalty values Π𝑃 𝐻 and Π𝑃 𝐿 
+
+in  (15)  for high- and low-priority tasks are set to 100 and 1, respectively. The regularization factors in  (10) 
+
+and  (14 ) are 𝜆 1 = 𝜆 1𝐻 = 2 and 𝜆 2 = 𝜆 2𝐻 = 2, respectively. These values are chosen to give equal importance to satisfying latency deadlines in each computing unit and ensuring balanced workload distribution across the continuum. 
+
+The FDD-based OFDMA wide area network is configured with a 100 MHz bandwidth, 30 kHz subcarrier spacing (SCS) and a time slot duration of 0.5 ms, typically used in 5G NR environments representing aggregated FDD carriers. Diverse communication conditions are analyzed by varying the SINR between devices and the base station in the range of 15 – 30 dB. 
+
+VI. PERFORMANCE EVALUATION 
+
+This section compares the performance of the deterministic task offloading and resource allocation proposal against three benchmark schemes. With the first one ( Local ), all tasks generated by IoT devices are processed by the devices themselves. This scheme represents scenarios where task offloading is not feasible - e.g. when devices are not connected to the wide-area network - and local processing is the only option. The second scheme ( Offload ) offloads all tasks generated by the IoT devices for processing at edge nodes or cloud servers. This scheme represents scenarios where local computing resources are insufficient, and tasks must rely entirely on network-assisted processing. The third benchmark scheme (Minimum ) follows the principles of  [6] -[9]  and jointly manages communication and computing resources with the objective of minimizing the execution time 𝑇 𝑖 
+
+of individual tasks 𝑓 i. The objective function is defined as: 
+
+𝛨 𝑀 = ∑ 𝑇 𝑖 ,
+
+> 𝑖𝜖𝐼
+
+(17) 
+
+and we apply the same constraints 𝐶 1 − 𝐶 13 in eq. 
+
+(9) for a fair comparison with the Deterministic 
+
+problem. The optimization problem is then defined as follows, and we apply the same genetic algorithm for its resolution: 
+
+𝑀𝑖𝑛 𝛨 𝑀  (18) 
+
+𝑠. 𝑡. 𝐶 1 − 𝐶 13 .
+
+Figure 1  compares the satisfaction ratio achieved by the Deterministic and benchmark schemes under varying traffic loads and channel quality conditions in the connected mobility scenario. Unless otherwise stated, the Deterministic proposal is configured with the penalty value Π in  (8 ), assigned to tasks that are not completed by their deadlines equal to 100; this value is chosen to be higher than the maximum number of tasks to impose a sufficiently high penalty. The satisfaction ratio is defined as the ratio of tasks completed within their deadlines.  Figure 1  shows that the Deterministic 
+
+(a) Satisfaction ratio as a function of the number of tasks (SINR= 30 dB) 
+
+(b) Satisfaction ratio as a function of the SINR (number of tasks=50) 
+
+Figure 1. Satisfaction ratio in the connected mobility scenario. 8Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+proposal achieves the highest satisfaction ratio across all considered traffic loads and channel quality conditions. This confirms the effectiveness of explicitly targeting deadline satisfaction when allocating communication and computing resources.  Figure 1  also highlights the benefits of exploiting an integrated IoT-edge-cloud continuum with the Deterministic and 
+
+Minimum schemes compared to Local and Offload. The latter experience a pronounced degradation as the number of tasks increases, since they are restricted to using only IoT or edge/cloud computing resources, which can saturate earlier. The effective exploitation of computing resources across the IoT –edge –cloud continuum requires coordinated management of both computing and communication resources, as evidenced by the performance gap between the benchmarks and the Deterministic proposal depicted in  Figure 1  for both varying system loads and channel conditions. 
+
+Figure 1 (a) shows that the Deterministic proposal can support a larger number of tasks satisfactorily than schemes trying to minimize the execution time of individual tasks. For example, the Deterministic 
+
+proposal can achieve full task satisfaction for up to 60 tasks, whereas the Minimum scheme reaches complete satisfaction only up to 45 tasks. The impact of channel conditions reported in  Figure 1 (b) further highlights the 
+
+(a) Connected mobility  (b) Smart manufacturing 
+
+Figure 3. Task execution time distribution for different number of tasks in the connected mobility and smart manufacturing scenarios. 
+
+(a) Communication resources usage  (b) Computing resources usage 
+
+Figure 2. Resources usage ratio as a function of number of tasks for SINR= 30 dB in the connected mobility scenario. 9Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+benefits of the proposed Deterministic scheme. As the SINR decreases, schemes that rely heavily on offloading suffer from reduced data rates and increased communication congestion. In contrast, the 
+
+Deterministic proposal adapts its task allocation decisions by leveraging local processing when communication resources become constrained. For example, when SINR=15 dB, Minimum is offloading 53% of the tasks while the Deterministic proposal reduces this percentage to 40%. 
+
+The higher satisfaction ratios achieved with the 
+
+Deterministic scheme stem from its better management and more balanced workload and resource utilization across the continuum, which it achieves by flexibly exploiting task deadlines.  Figure 2  depicts the average ratio of occupied communication ( Figure 2 (a)) and computing ( Figure 2 (b)) resources out of the total resources available between the task arrival time and its deadline.  Figure 2 shows that the Deterministic 
+
+proposal balances communication and computing resources usage depending on the workload by spreading tasks more evenly across available resources. In low-load scenarios, the Minimum scheme utilizes fewer communication resources and prefers processing more tasks locally compared to the Deterministic 
+
+proposal. However, as the workload increases, the 
+
+Minimum scheme relies excessively on the edge/cloud processing to reduce task ’s execution time. This 
+
+(a) Offloading ratio as a function of the number of tasks (SINR= 30 dB) 
+
+(b) Offloading ratio as a function of the SINR (number of tasks=50) 
+
+Figure 4. Ratio of offloaded to non-offloaded tasks. 
+
+(a) Satisfaction ratio as a function of the number of tasks (SINR= 30 dB) 
+
+(b) Satisfaction ratio as a function of the SINR (number of tasks=50) 
+
+Figure 5. Satisfaction ratio in the smart manufacturing scenario. 10 Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+excessive offloading leads to bottlenecks in the communication links under high loads, resulting in a drop in the satisfaction ratio, as illustrated in  Figure 1 .
+
+Figure 3  illustrates the task execution time for the 
+
+Deterministic and Minimum schemes as a function of the traffic load for both the connected mobility ( Figure 3(a)) and smart manufacturing ( Figure 3 (b)) scenarios. The results are presented as box plots to capture both the median execution time and the variance experienced by the tasks. Specifically, the central mark indicates the median, while the bottom and top edges of the box represent the 25 th and 75 th percentiles, respectively. The whiskers extend to the minimum and maximum values to capture the variance of task execution times. Under low traffic conditions (e.g., 35 to 45 tasks), the benchmark Minimum scheme achieves lower median execution times than the proposed 
+
+Deterministic scheme. This behavior is expected, as the 
+
+Minimum scheme targets the minimization of individual task execution times, exploiting resources when they are available. However, as the number of tasks increases, the performance of the Minimum 
+
+scheme degrades. It leads to resource congestion, resulting not only in higher median execution times but also in an increased execution time variance, as indicated by the elongated upper whiskers in both scenarios at loads of 70 to 80 tasks. In contrast, the proposed Deterministic scheme demonstrates superior scalability. By explicitly managing resources to satisfy deadlines rather than minimizing individual execution times, the Deterministic scheme prevents severe congestion. Consequently, at high traffic loads, it maintains lower median execution times and a tighter variance compared to the Minimum scheme. 
+
+Figure 4  compares the operation of the Deterministic and Minimum task offloading and resource allocation schemes under the connected mobility and smart manufacturing scenarios. Both scenarios differ in the computing resources available locally at the IoT devices, which directly influences the balance between local processing and task offloading decisions.  Figure 4 depicts the ratio of offloaded to locally processed tasks as a function of the traffic load ( Figure 4 (a)) and channel conditions ( Figure 4 (b)). The results show that the Deterministic scheme dynamically adjusts its offloading decisions according to both the workload and available local computing capacity in each scenario. As the number of tasks increases or the SINR decreases, the Deterministic scheme balances the use of local and edge/cloud resources to prevent early resource saturation. In particular, it offloads a higher fraction of tasks to the edge-cloud in the smart manufacturing scenario than in the connected mobility one. This reflects the more constrained local processing capabilities in the smart manufacturing scenario. The difference in offloading ratios between the two scenarios reaches a maximum relative difference of 21% under the highest load condition (i.e. 80 tasks), where computing resources are more stressed. Under these conditions, the Deterministic scheme processes locally a larger proportion of tasks in the connected mobility scenario, leveraging its stronger onboard computing resources. This trend is also visible when analyzing how the offloading ratio evolves with increasing workload. The proportion of offloaded tasks decreases by only 11% in the smart manufacturing scenario while it decreases by more than 21% in the connected mobility scenario. The capacity of the 
+
+(a) Satisfaction ratio of high-priority tasks as a function of the number of tasks (SINR= 30 dB) 
+
+(b) Satisfaction ratio of high-priority tasks as a function of the SINR (number of tasks=50) 
+
+Figure 6. Satisfaction ratio of high-priority tasks in the connected mobility scenario. 11 Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+Deterministic scheme to dynamically adjust its allocation decisions results in high task satisfaction ratios for both the connected mobility ( Figure 1 ) and smart manufacturing ( Figure 5 ) scenarios. In contrast, the benchmark Minimum scheme does not explicitly account for differences in local computing capabilities across scenarios in its target to minimize the task execution latency. As a result, it shows largely unchanged offloading behavior despite variations in operating conditions, offloading a similar proportion of tasks in both scenarios ( Figure 4 ). However, since the two scenarios differ in their local processing resources, the Minimum scheme achieves a lower satisfaction ratio in the smart manufacturing scenario than in the connected mobility scenario. The Minimum scheme achieves a 100% satisfaction ratio in the connected mobility scenario for up to 45 tasks, while in the smart manufacturing scenario, it could not achieve 100% even with 35 tasks. 
+
+The previous analysis considers scenarios where all tasks have the same priority.  Figure 6  compares the satisfaction ratio of high-priority tasks as a function of the number of tasks (Figure 6(a)) and channel conditions ( Figure 6 (b)) in the connected mobility scenario with equally mixed high- and low-priority tasks. The figure shows that the Deterministic proposal can better guarantee deterministic service levels for high-priority tasks under constrained scenarios. In particular, it can satisfy the deadlines of all high-priority tasks, even when there is a high traffic load (i.e., 80 tasks in  Figure 6(a)) and constrained communication conditions (SINR=15 dB in  Figure 6(b)). On the other hand, trying to minimize the execution time of all tasks reduces the capacity to support deterministic service levels for high-priority tasks. For example, the Minimum scheme can only guarantee the execution of 45 high-priority tasks within their bounded deadlines under good communication conditions (SINR= 30 dB). This number reduces by more than 35% when the communication link degrades (SINR=15 dB). 
+
+VII. CONCLUSIONS 
+
+This study presents a Deterministic task offloading and resource allocation scheme for the joint management of communication and computing resources in the IoT –edge –cloud continuum. The proposed scheme prioritizes meeting task deadlines rather than minimizing individual task latency. By leveraging the heterogeneity of task latency requirements, it enables efficient workload distribution and supports a higher number of tasks within their deadlines. In contrast, schemes that aim to minimize the latency of each individual task may fail to efficiently exploit the resources of the IoT –edge –cloud continuum or may impose excessive loads on specific resources. The conducted evaluation demonstrates that a Deterministic scheme of task offloading, and resource allocation better adapts to variations in operating conditions, as well as to changes in resource availability and characteristics across the continuum. By dynamically adjusting the balance between local processing and offloading according to scenario-specific capabilities, the Deterministic scheme efficiently utilizes available resources across the continuum in diverse operational settings and can guarantee deterministic service levels for high-priority tasks, even under resource-constrained scenarios. 
+
+REFERENCES 
+
+[1]  B. Mao, et al., “AI -assisted edge caching for metaverse of connected and automated vehicles: 
+
+Proposal, challenges, and future perspectives,” 
+
+IEEE Vehicular Technology Magazine , vol. 18, no. 4, pp. 66 –74, 2023. 
+
+[2]  M. Serror, et al. , “Challenges and opportunities in securing the industrial internet of things,” IEEE Transactions on Industrial Informatics , vol. 17, no. 5, pp. 2985 –2996, 2021. 
+
+[3]  U. Mikko, et al. “European Vision for the 6G Network Ecosystem”, 6G-IA Vision Working 
+
+Group’ White Paper , Nov. 2024. 
+
+[4]  G. P. Sharma et al. , "Toward deterministic communications in 6G networks: state of the art, open challenges and the way forward," IEEE Access , vol. 11, pp. 106898 –106923, 2023. 
+
+[5]  P. Gkonis et al., “A survey on IoT -edge-cloud continuum systems: Status, challenges, use cases, 
+
+and open issues,” Future Internet , vol. 15, no. 12, p. 383, 2023. 
+
+[6]  W. Fan et al., “Joint task offloading and resource 
+
+allocation for multi-access edge computing 
+
+assisted by parked and moving vehicles,” IEEE Transactions on Vehicular Technology , vol. 71, no. 5, pp. 5314 –5330, 2022. 
+
+[7]  W. Fan et al., “Joint task offloading and resource 
+
+allocation for vehicular edge computing based on 
+
+V2I and V2V modes,” IEEE Transactions on Intelligent Transportation Systems , vol. 24, no. 4, pp. 4277 –4292, 2023. 
+
+[8]  W. Feng et al., “Latency minimization of reverse offloading in vehicular edge computing,” IEEE Transactions on Vehicular Technology , vol. 71, no. 5, pp. 5343 –5357, 2022. 
+
+[9]  J. Cai et al., “Multitask multi objective deep 
+
+reinforcement learning-based task offloading 12 Submitted to Future Generation Computer Systems Journal (Elsevier) 
+
+> THIS IS AN AUTHOR-CREATED POSTPRINT VERSION
+
+method for industrial Internet of Things,”  IEEE Internet of Things Journal , vol. 10, no. 2, pp. 1848 –
+
+1859, 2023. 
+
+[10]  M. Kim et al. , “Distributed task offloading and 
+
+resource allocation for latency minimization in 
+
+mobile edge computing networks,” IEEE Trans. Mobile Comput. , vol. 23, no. 12, pp. 15149 –15166, Dec. 2024. 
+
+[11]  E. Palacios-Morocho et al., “Performance 
+
+Evaluation of Onboard Processing Capability Reduction in Cooperative Vehicles Using 5G and 
+
+Artificial Intelligence,” Mobile Information Systems , no. 1, p. 9280848, 2024. 
+
+[12]  X. Zhang et al., “Joint communication and 
+
+computation resource allocation in fog-based 
+
+vehicular networks,” IEEE Internet of Things Journal , vol. 9, no. 15, pp. 13195 –13208, 2022. 
+
+[13]  L. T. Oliveira et al., “Enhancing modular 
+
+application placement in a hierarchical fog computing: A latency and communication cost-
+
+sensitive approach,” Computer Communications ,vol. 216, pp. 95 –111, 2024. 
+
+[14]  S. Kumar et al. , “A distributed load balancing 
+
+technique for multitenant edge servers with 
+
+bottleneck resources,” IEEE Trans. Rel. , vol. 73, no. 2, pp. 1147 –1159, Jun. 2024. 
+
+[15]  X. Xiao et al., “Novel workload -aware approach to mobile user reallocation in crowded 
+
+mobile edge computing environment,” IEEE Trans. Intell. Transp. Syst. , vol. 23, no. 7, pp. 8846 –8856, Jul. 2022. 
+
+[16]  K. Aghababaiyan et al., “Deterministic Task 
+
+Offloading and Resource Allocation in the IoT-Edge-Cloud Continuum,” in 2025 IEEE 101st Vehicular Technology Conference (VTC2025-Spring) , pp. 1 –6, 2025. 
+
+[17]  S.D. McLean, et al., “Configuring ADAS 
+
+platforms for automotive applications using 
+
+metaheuristics”, Front. Robot. AI, vol. 8 , Jan. 2022. 
+
+[18]  B. H. Arabi, "Solving NP-complete Problems Using Genetic Algorithms", in Proc. IEEE UKSim ,pp. 43-48, Cambridge, UK, 2016. 
+
+[19]  Cisco, U., "Cisco annual internet report (2018 –
+
+2023) white paper," Cisco: San Jose, CA, USA, vol. 10, no. 1, pp. 1-35, 2020. 
+
+[20]  X. Chen, L. Jiao, W. Li, and X. Fu, “Efficient 
+
+Multi-User Computation Offloading for Mobile-
+
+Edge Cloud Computing,” IEEE/ACM Trans. Netw. , vol. 24, no. 5, pp. 2795 –2808, Oct. 2016. 
+
+[21]  B. Chen, et al. , “Smart Factory of Industry 4.0: 
+
+Key Technologies, Application Case, and 
+
+Challenges,” IEEE Access , vol. 6, pp. 6505 –6519, 2018. 
+
+[22]  J. Li et al., "ODTRA-Based Task Offload Optimization for Industrial Internet of Things: Improving Efficiency and Performance with Digital Twins," IEEE Access , vol. 12, pp. 51796-51810, 2024. 
+
+[23]  Industrial Internet Consortium, "Industrial Internet Reference Architecture (IIRA)," v1.10, 2022, [Online]. 
+
+[24]  F. Zhang et al., “Secure data offloading and 
+
+resource allocation against hybrid intrusions for 
+
+IIoT: A fully decentralized framework,” IEEE Internet of Things Journal , vol. 12, no. 7, pp. 9218 –
+
+9237, Apr. 1, 2025. 
+
+[25]  Z. Kuang, et al., "SDN-Assisted Mobile Edge Computing for Collaborative Computation Offloading in Industrial Internet of Things," IEEE Internet of Things Journal , vol. 9, no. 14, pp. 12513-12526, July 2022. 
+
+[26]  Intel, "Case Study of Scaled-Up SKT 5G MEC Reference Architecture", White Paper , 2022. 
+
+[27]  Q. Li et al., “Cloud -edge collaboration for industrial internet of things: Scalable neurocomputing and rolling-horizon 
+
+optimization,” IEEE Internet of Things Journal ,vol. 12, pp. 19929 - 19943, June 2025.

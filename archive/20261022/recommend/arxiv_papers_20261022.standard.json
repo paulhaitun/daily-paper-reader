@@ -1,0 +1,1579 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-22T22:09:14.870895+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 68,
+    "deep_cap": 7,
+    "deep_selected": 22,
+    "quick_candidates": 64,
+    "quick_skim_target": 12,
+    "quick_selected": 12
+  },
+  "deep_dive": [
+    {
+      "id": "2610.21171v1",
+      "source": "arxiv",
+      "title": "Physical AI: A Survey of Models, Learning, Systems, and Open Challenges",
+      "abstract": "Physical AI aims to enable intelligent systems to perceive, reason, act, and learn through interaction with the physical world. Unlike purely digital intelligence, physical agents must operate under partial observability, uncertain dynamics, embodiment constraints, and real-time requirements, while their actions continuously reshape the environment and subsequent observations. Recent advances in foundation models and robot learning have expanded the capabilities of physical agents, yet achieving reliable autonomy requires more than improvements in individual models. This survey presents a comprehensive, system-level review of Physical AI, organized around the closed-loop process of physical interaction. We examine the foundations and recent developments in task representations and memory, predictive and action-generating models, data and learning methods, embodiment and control, computing systems, evaluation, and safety. Beyond reviewing individual advances, we investigate how these components interact and collectively shape the capabilities and limitations of Physical AI systems. Building on this integrated perspective, we identify fundamental challenges in generalization, resource-efficient learning and execution, reliable state tracking, safety, recovery, and continual adaptation. We argue that advancing Physical AI requires moving beyond isolated model performance toward integrated systems capable of robust, efficient, safe, and autonomous physical interaction under changing real-world conditions.",
+      "authors": [
+        "Bin Gao",
+        "Anuj Gautam",
+        "Aritra Bagchi",
+        "Yunkai Liang",
+        "Wentao Li",
+        "Ronghui Li",
+        "Zhi Zhou",
+        "Yancan Mao",
+        "Xiao Yan",
+        "Xin He",
+        "Qingyun Zou",
+        "Wenshuo Yue",
+        "Dan Chen",
+        "Zhanglu Yan",
+        "Fei Xu",
+        "Huize Li",
+        "Weijie Wang",
+        "Tao Ouyang",
+        "Tulika Mitra"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-10-15T03:27:58+00:00",
+      "link": "https://arxiv.org/pdf/2610.21171v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "survey of physical AI agents perceiving, reasoning and acting",
+      "llm_evidence_cn": "综述物理AI智能体的感知推理与行动",
+      "llm_evidence": "综述物理AI智能体的感知推理与行动",
+      "canonical_evidence": "综述物理AI智能体的感知推理与行动",
+      "llm_tldr_en": "Surveys Physical AI at system level, organizing models, learning and systems around the closed loop of physical interaction under partial observability and embodiment constraints.",
+      "llm_tldr_cn": "物理智能体必须在部分可观测、动力学不确定、具身约束与实时要求的条件下感知、推理与行动，仅靠单个模型改进难以实现可靠自主。本文以物理交互闭环为主线，对Physical AI的模型、学习与系统层面进行系统级综述，梳理基础方法与最新进展。综述同时指出开放挑战，为具身智能研究提供了统一的参考框架与问题清单。",
+      "llm_tldr": "物理智能体必须在部分可观测、动力学不确定、具身约束与实时要求的条件下感知、推理与行动，仅靠单个模型改进难以实现可靠自主。本文以物理交互闭环为主线，对Physical AI的模型、学习与系统层面进行系统级综述，梳理基础方法与最新进展。综述同时指出开放挑战，为具身智能研究提供了统一的参考框架与问题清单。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.19683v1",
+      "source": "arxiv",
+      "title": "Enhancing Latent World Models with Associative Memory",
+      "abstract": "World models trained via latent dynamics offer a scalable path for embodied planning, yet existing methods suffer from representational collapse, computational overhead, and limited long-horizon capability. We introduce a memory-enhanced latent world model that augments JEPA-style prediction with a content-addressable memory bank. Our approach learns high-level representations directly from observations, operating at multiple temporal scales within a shared latent space, and conditions predictions via adaptive layer normalization. To prevent collapse and ensure effective memory usage, we design two complementary losses that encourage slot diversity and balanced temporal utilization. Experiments on PushT, Tworoom, Reacher, and OGBCube demonstrate that our method achieves state-of-the-art performance with a lightweight architecture, outperforming conventional latent world models on long-horizon planning tasks.",
+      "authors": [
+        "Yuwei Sun",
+        "Siyu Zhu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CV"
+      ],
+      "published": "2026-10-14T07:08:02+00:00",
+      "link": "https://arxiv.org/pdf/2610.19683v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "memory-enhanced latent world model for long-horizon embodied planning",
+      "llm_evidence_cn": "面向长时程具身规划的记忆增强潜在世界模型",
+      "llm_evidence": "面向长时程具身规划的记忆增强潜在世界模型",
+      "canonical_evidence": "面向长时程具身规划的记忆增强潜在世界模型",
+      "llm_tldr_en": "The paper augments JEPA-style latent world models with a content-addressable memory bank and complementary losses, improving long-horizon embodied planning on PushT, Tworoom, Reacher and OGBCube.",
+      "llm_tldr_cn": "基于潜在动力学的世界模型是具身规划的可扩展路径，但存在表示坍缩、计算开销大与长时程能力弱等问题。作者提出带内容可寻址记忆库的记忆增强潜在世界模型，在多时间尺度共享潜在空间中学习表示并用自适应层归一化条件化预测。两类互补损失防止坍缩并平衡记忆使用。在PushT、Tworoom、Reacher与OGBCube上的实验表明方法性能提升。",
+      "llm_tldr": "基于潜在动力学的世界模型是具身规划的可扩展路径，但存在表示坍缩、计算开销大与长时程能力弱等问题。作者提出带内容可寻址记忆库的记忆增强潜在世界模型，在多时间尺度共享潜在空间中学习表示并用自适应层归一化条件化预测。两类互补损失防止坍缩并平衡记忆使用。在PushT、Tworoom、Reacher与OGBCube上的实验表明方法性能提升。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.20312v1",
+      "source": "arxiv",
+      "title": "Reflect After Failure: Brain-Inspired Self-Evolving Agents for Embodied Spatial Intelligence",
+      "abstract": "Vision-Language Models (VLMs) have made substantial progress in spatial reasoning, and self-evolving agents further extend these capabilities to embodied environments by learning from interactions. However, current self-evolution remains particularly challenging in embodied spatial tasks, complex and multi-step decisions from partial visual evidence making it difficult to determine why an execution fails. The failure may stem from misperception, insufficient exploration, or incorrect planning, yet execution feedback alone rarely reveals which component is responsible. As a result, simply accumulating interaction experience can reinforce ineffective strategies. To address this, we propose HiMeco, a brain-inspired self-evolving agent for embodied spatial intelligence, inspired by metacognitive monitoring and hippocampal memory consolidation. Through Hippocampal-Metacognitive Reflection, HiMeco diagnoses failures in perception-exploration-planning (PEP), then compares execution attempts to derive reusable strategies and guidance for avoiding recurring errors. It also abstracts interaction programs into parameterized skills, using evidence contracts and execution-based validation to determine their retention and reuse. These strategies and skills guide subsequent interactions, with memory updated only between rounds and model parameters kept frozen. HiMeco achieves state-of-the-art performance on ESI-Bench, and it also improves accuracy on EmbSpatial-Bench by 3.94 percentage points without evolution.",
+      "authors": [
+        "Xin Li",
+        "Xiaohuan Gu",
+        "Yifan Wang",
+        "Shaobin Ling",
+        "Tianli Shi",
+        "Jingao Xu",
+        "Zhimeng Yin",
+        "Dapeng Wu",
+        "Yun Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-14T14:59:04+00:00",
+      "link": "https://arxiv.org/pdf/2610.20312v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "brain-inspired self-evolving embodied agents that reflect on failure in spatial tasks",
+      "llm_evidence_cn": "在空间任务中失败后反思的类脑自进化具身智能体",
+      "llm_evidence": "在空间任务中失败后反思的类脑自进化具身智能体",
+      "canonical_evidence": "在空间任务中失败后反思的类脑自进化具身智能体",
+      "llm_tldr_en": "HiMeco is a brain-inspired self-evolving agent that attributes embodied spatial failures to misperception, exploration or planning, avoiding reinforcement of ineffective strategies from raw interaction feedback.",
+      "llm_tldr_cn": "视觉语言模型在空间推理上进步显著，但在具身空间任务中，仅凭执行反馈难以判断失败源于感知、探索还是规划，简单累积交互经验反而会强化无效策略。作者提出受脑启发的自进化智能体HiMeco，在执行失败后进行反思与归因，并据此调整策略与探索方式。方法提升了具身空间任务中的自进化效果，为具身智能体的可靠自我改进提供新机制。",
+      "llm_tldr": "视觉语言模型在空间推理上进步显著，但在具身空间任务中，仅凭执行反馈难以判断失败源于感知、探索还是规划，简单累积交互经验反而会强化无效策略。作者提出受脑启发的自进化智能体HiMeco，在执行失败后进行反思与归因，并据此调整策略与探索方式。方法提升了具身空间任务中的自进化效果，为具身智能体的可靠自我改进提供新机制。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied intelligence and physically grounded intelligent systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.20442v1",
+      "source": "arxiv",
+      "title": "Towards Agentic Robots: Model, Data, Environment, and Harness",
+      "abstract": "Foundation models are driving a paradigm shift in robotic intelligence, moving beyond low-level action prediction to goal-directed orchestration of data collection, model training, task planning, and real-world execution. We characterize this emerging paradigm as an agentic robots, in which agents reason over human instructions, interact with robotic environments, rectify execution errors autonomously, and dynamically adjust operational strategies. Although this field develops fast, current studies are not well connected. Researchers have no consistent view of how to combine different agentic functions into a complete robot system. This paper provides a unified overview of existing research on agentic robots. We first trace the development from robot policies to agentic systems, covering vision-language-action models, world models, and world-action models. We then clarify the definition and scope of agentic robots and organize existing research into seventeen categories across four functional domains: Model, Data, Environment, and Harness. Across these domains, we examine how agents shape model learning and robot decisions, collect and curate robot data, construct worlds, tasks, and tests for learning and evaluation, and organize capabilities for robot use. Finally, we discuss open challenges and outline directions for future research. Looking forward, we hope this work contributes to a clearer understanding of agentic robots and supports new approaches to making them more capable, reliable, and adaptive.",
+      "authors": [
+        "Chonghan Qin",
+        "Dongming Wu",
+        "Kaituo Feng",
+        "Jiaxu Wang",
+        "Xinlei Yu",
+        "Peiwen Sun",
+        "Yijia Fan",
+        "Xilin He",
+        "Bingao Chen",
+        "Weitong Lian",
+        "Ryan Ji",
+        "Wenqi Ren",
+        "Xiaobin Hu",
+        "Dahua Lin",
+        "Yu-Gang Jiang",
+        "Xiangyu Yue"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-14T16:32:22+00:00",
+      "link": "https://arxiv.org/pdf/2610.20442v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "unified overview of agentic robots that reason, plan and act in real environments",
+      "llm_evidence_cn": "对在真实环境中推理、规划并行动的智能体机器人的统一综述",
+      "llm_evidence": "对在真实环境中推理、规划并行动的智能体机器人的统一综述",
+      "canonical_evidence": "对在真实环境中推理、规划并行动的智能体机器人的统一综述",
+      "llm_tldr_en": "Foundation models shift robotic intelligence toward goal-directed orchestration of data, training, planning and execution; this survey unifies agentic robot research along model, data, environment and harness.",
+      "llm_tldr_cn": "基础模型推动机器人智能从底层动作预测转向目标驱动的数据采集、模型训练、任务规划与真实执行编排，但相关研究分散，缺乏对各智能体功能如何组合成完整机器人系统的统一认识。本文对智能体机器人研究进行系统综述，沿模型、数据、环境与执行框架四条线索梳理从机器人策略到具身智能体的演进。文章提出统一视角，说明感知、规划与执行如何协同，为构建可自主纠错的机器人系统提供路线图。",
+      "llm_tldr": "基础模型推动机器人智能从底层动作预测转向目标驱动的数据采集、模型训练、任务规划与真实执行编排，但相关研究分散，缺乏对各智能体功能如何组合成完整机器人系统的统一认识。本文对智能体机器人研究进行系统综述，沿模型、数据、环境与执行框架四条线索梳理从机器人策略到具身智能体的演进。文章提出统一视角，说明感知、规划与执行如何协同，为构建可自主纠错的机器人系统提供路线图。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.21882v1",
+      "source": "arxiv",
+      "title": "Anvil: Scaling Embodied Spatial Intelligence through Knowledge Recirculation",
+      "abstract": "Embodied spatial intelligence requires more than visual recognition: models must localize entities, reason about their relations, and express this knowledge in action-relevant forms. Yet joint training can conflate the knowledge needed at different stages because supervision is fragmented across incompatible geometric and semantic outputs. We introduce Anvil, a unified framework for data generation, training, and benchmarking for embodied spatial intelligence. (1) Anvil-Gen is a heterogeneous data flywheel that combines form-specific generation, cross-stage consistency verification, and failure-driven recollection across 11 Ground--Relation--Act forms. (2) Anvil-Ben provides scene-aligned supervision for learning diverse embodied spatial capabilities and scene-linked assessments that distinguish stage competence from error propagation. (3) Anvil-MOPD is a 9B student that consolidates heterogeneous spatial knowledge through distillation from specialist teachers. Semantic-first-fault routing targets teacher supervision to the student's earliest decisive failure, while stage normalization controls the loss scale across native outputs of different lengths. We construct 5.8M source-grounded records spanning 160K images, reserving 580K spatial records for held-out evaluation and using the remaining 5.22M records for training. On average across seven public benchmarks, Anvil-MOPD outperforms Qwen3.5-9B and RynnBrain-8B by 9.29 and 11.03 percentage points, respectively, while reaching 80.67% on VABench-Point. Controlled studies support targeted coverage, selective transfer, and feedback-guided repair as complementary framework components.",
+      "authors": [
+        "Weilin Ruan",
+        "Bohan Zhou",
+        "Jinghao Li",
+        "Yangkai Wei",
+        "Wenqian Li",
+        "Peiran Dong",
+        "Yingjie Xu",
+        "Leyi Wu",
+        "Haojian Huang",
+        "Binghui Xie",
+        "Han Yang",
+        "Kaiwen Zhou",
+        "Yinchuan Li",
+        "Ying-Cong Chen",
+        "James Cheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-10-15T13:47:08+00:00",
+      "link": "https://arxiv.org/pdf/2610.21882v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "unified data generation, training and benchmark framework for embodied spatial intelligence",
+      "llm_evidence_cn": "面向具身空间智能的统一数据生成、训练与评测框架",
+      "llm_evidence": "面向具身空间智能的统一数据生成、训练与评测框架",
+      "canonical_evidence": "面向具身空间智能的统一数据生成、训练与评测框架",
+      "llm_tldr_en": "Anvil unifies data generation, training and benchmarking for embodied spatial intelligence, using a heterogeneous data flywheel and scene-aligned supervision to repair fragmented cross-stage supervision.",
+      "llm_tldr_cn": "具身空间智能要求模型定位实体、推理关系并以可执行形式表达知识，但监督信号分散在互不兼容的几何与语义输出中，联合训练容易混淆各阶段所需知识。作者提出Anvil统一框架，包含异构数据飞轮Anvil-Gen与场景对齐监督基准Anvil-Ben，覆盖11种定位—关系—动作形式并做跨阶段一致性校验。该框架为具身空间能力的规模化训练与评测提供了系统化的数据与基准支撑。",
+      "llm_tldr": "具身空间智能要求模型定位实体、推理关系并以可执行形式表达知识，但监督信号分散在互不兼容的几何与语义输出中，联合训练容易混淆各阶段所需知识。作者提出Anvil统一框架，包含异构数据飞轮Anvil-Gen与场景对齐监督基准Anvil-Ben，覆盖11种定位—关系—动作形式并做跨阶段一致性校验。该框架为具身空间能力的规模化训练与评测提供了系统化的数据与基准支撑。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.22471v2",
+      "source": "arxiv",
+      "title": "Has GPT-6-Astra Achieved Embodied Intelligence?",
+      "abstract": "GPT-6-Astra demonstrates a level of competence in robotic manipulation and navigation that challenges the conventional paradigm of building specialized models for individual tasks and embodiments. In this report, we ask not only how capable GPT-6-Astra is, but what its capabilities imply for the field. First, we probe the limits of standalone GPT-6-Astra. We conduct a large-scale evaluation across 12 representative benchmarks spanning tabletop manipulation, humanoids, mobile platforms, and dexterous hands. Under a unified protocol that allows in-context learning (ICL) from training-set demonstrations and substantially increases the number of execution steps, GPT-6-Astra achieves unprecedented performance (Fig. 1). Future research may focus on improving 1) the generality of ICL 2) cost and execution time, 3) physical-state verification, 4) recovery from irreversible failures, and 5) long-horizon preservation of progress. Second, we study the agentic harness for embodied control. We identify that close-loop coordination between a high-level \"System 2\" reasoner (i.e., GPT-6-Astra) and a low-level \"System 1\" controller (e.g., π0.5) is costly but effective. Third, we examine GPT-6-Astra on real-world deployment. Our experiments on 8 robot configurations reveal substantial gaps: 1) robot demonstrations required for ICL are expensive to collect, and 2) it is implausible to trade longer execution for higher success rates with physical constraints. Fourth, we envision the next generation of embodied benchmarks. We develop a prototype that 1) derives tasks from real-world needs, 2) provides no in-domain demonstrations, and 3) judges agents on a world clock that keeps running while they deliberate. Taken together, our results suggest that GPT-6-Astra has largely crossed the threshold of embodied competence, but not yet that of practical embodied intelligence.",
+      "authors": [
+        "SenseNova",
+        "Joint Research Team",
+        "Zhongang Cai",
+        "Ziang Cao",
+        "Tailai Chen",
+        "Han Chong Chua",
+        "Linjun Dai",
+        "Hanming Deng",
+        "Hokin Deng",
+        "Haiwen Diao",
+        "Chenjing Ding",
+        "Weichen Fan",
+        "Xiao Fu",
+        "Zerui Gong",
+        "Chenyang Gu",
+        "Zexin He",
+        "Zhi Hou",
+        "Bo Li",
+        "Qinyue Li",
+        "Quanzhou Li",
+        "Xiaowan Li",
+        "Zhichao Liao",
+        "Dahua Lin",
+        "Zilong Lin",
+        "Bo Liu",
+        "Chunxiao Liu",
+        "Pengfei Liu",
+        "Tianqi Liu",
+        "Ziwei Liu",
+        "Chen Change Loy",
+        "Lewei Lu",
+        "Jiapeng Luo",
+        "Yuexiao Ma",
+        "Liang Pan",
+        "Xingang Pan",
+        "Oscar Qian",
+        "Ziyi Shang",
+        "Yuyao Shao",
+        "Dawei Su",
+        "Dacheng Tao",
+        "Qingyi Tao",
+        "Quan Wang",
+        "Ruisi Wang",
+        "Xiaogang Wang",
+        "Ziyi Wang",
+        "Beichen Wen",
+        "Donghao Wu",
+        "Jiaxu Wu",
+        "Silei Wu",
+        "Xiaoming Wu",
+        "Zhonghua Wu",
+        "Hongcan Xiao",
+        "Weiye Xu",
+        "Atsushi Yamashita",
+        "Lei Yang",
+        "Zhe Yang",
+        "Baiqiao Yin",
+        "Wanqi Yin",
+        "Hanfei Zhao",
+        "Tianbo Zhong",
+        "Long Zhuo",
+        "Jing Zuo"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV",
+        "cs.LG",
+        "cs.MM"
+      ],
+      "published": "2026-10-15T18:00:00+00:00",
+      "link": "https://arxiv.org/pdf/2610.22471v2",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "large-scale evaluation of embodied intelligence in robotic manipulation and navigation",
+      "llm_evidence_cn": "机器人操作与导航中的具身智能大规模评测",
+      "llm_evidence": "机器人操作与导航中的具身智能大规模评测",
+      "canonical_evidence": "机器人操作与导航中的具身智能大规模评测",
+      "llm_tldr_en": "A large-scale evaluation across 12 embodied benchmarks spanning manipulation, humanoids, and dexterous hands probes whether GPT-6-Astra achieves embodied intelligence and what it implies.",
+      "llm_tldr_cn": "通用大模型在机器人操作与导航上展现出挑战专用模型范式的能力，但其能力边界与对领域的影响尚不明确。本文在涵盖桌面操作、人形机器人、移动平台与灵巧手的12个代表性基准上，采用允许上下文学习并增加执行步数的统一协议进行大规模评测。结果显示该模型取得前所未有的性能，同时也暴露出泛化等方面的局限。该报告为通用模型能否实现具身智能及其研究方向提供了系统性评估。",
+      "llm_tldr": "通用大模型在机器人操作与导航上展现出挑战专用模型范式的能力，但其能力边界与对领域的影响尚不明确。本文在涵盖桌面操作、人形机器人、移动平台与灵巧手的12个代表性基准上，采用允许上下文学习并增加执行步数的统一协议进行大规模评测。结果显示该模型取得前所未有的性能，同时也暴露出泛化等方面的局限。该报告为通用模型能否实现具身智能及其研究方向提供了系统性评估。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied intelligence and physically grounded intelligent systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23018v1",
+      "source": "arxiv",
+      "title": "VLA-Fabric: Learning Interaction for Composable Multi-Arm VLA Agents",
+      "abstract": "Vision-language-action (VLA) models are rapidly expanding what individual robots can accomplish, yet many real-world manipulation settings require multiple arms to operate as a coordinated system. Existing approaches organize multi-arm coordination in different ways, including centralized joint policies, high-level task or role assignment, and locally executed policies that react to teammates. However, how complete action-producing VLAs should explicitly interact with one another during action generation remains largely unexplored. We introduce VLA-Fabric, which organizes one complete VLA per arm while preserving local perception and action ownership, and enables coordination through learned interaction across policy boundaries. We first systematically study where such interaction should occur, how peer information should be aggregated, and how the interaction should be learned, revealing complementary coordination functions spanning shared context, peer-specific latent information, and action-stage interaction. We then re-instantiate these functions in a structurally different VLA architecture, showing that the coordination principle is not tied to a particular tensor layout or backbone implementation. Finally, we compose teams of three and four arms and evaluate them in simulation and physical experiments. On all four physical tasks, Full interaction improves success over independently trained local policies by 16--40 percentage points. Together, these results suggest that explicit interaction among complete VLA policies offers a scalable path toward networked embodied intelligence.",
+      "authors": [
+        "Chenglong Zhang",
+        "Shuaijun Liu",
+        "Feiyang You",
+        "Shuyang Hao",
+        "Chengyu Wu",
+        "Ningxin Su"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-16T06:52:37+00:00",
+      "link": "https://arxiv.org/pdf/2610.23018v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-arm vision-language-action embodied agents coordinating perception and action",
+      "llm_evidence_cn": "多臂视觉语言动作具身智能体协同感知与动作",
+      "llm_evidence": "多臂视觉语言动作具身智能体协同感知与动作",
+      "canonical_evidence": "多臂视觉语言动作具身智能体协同感知与动作",
+      "llm_tldr_en": "Multi-arm manipulation needs coordinated robots. VLA-Fabric assigns one complete VLA per arm, preserves local perception and action ownership, and enables coordination through learned interaction across policy boundaries during action generation.",
+      "llm_tldr_cn": "单臂视觉语言动作模型难以应对需多臂协同的真实操作任务，现有集中式或分层协调方式未明确动作生成阶段的交互机制。作者为每条机械臂配置完整VLA并保留局部感知与动作所有权，通过跨策略边界的交互学习实现协调。系统化分析与实验表明，动作生成层面的显式交互能提升多臂协同操作表现。该工作为可组合具身智能体提供新的多臂协调范式，推动机器人在真实环境中的操作能力。",
+      "llm_tldr": "单臂视觉语言动作模型难以应对需多臂协同的真实操作任务，现有集中式或分层协调方式未明确动作生成阶段的交互机制。作者为每条机械臂配置完整VLA并保留局部感知与动作所有权，通过跨策略边界的交互学习实现协调。系统化分析与实验表明，动作生成层面的显式交互能提升多臂协同操作表现。该工作为可组合具身智能体提供新的多臂协调范式，推动机器人在真实环境中的操作能力。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23053v1",
+      "source": "arxiv",
+      "title": "Unifying Embodied Foundation Models via a Model-to-Policy Formulation",
+      "abstract": "Vision-language-action (VLA) models and world-action models (WAMs) have emerged as promising approaches to robot learning and control. These models integrate multimodal perception and action generation, but differ in their architectures, output representations, and learning objectives. In this paper, we present a unified, architecture-agnostic probabilistic formulation for embodied foundation models based on stochastic kernels. Our formulation has two key components: (i) we characterize embodied foundation models through conditional output distributions and action-realization kernels, which together induce task-conditioned robot policies; and (ii) we connect pretraining and post-training to policy deployment, accommodating model-specific pretraining objectives and offline or online post-training strategies. We instantiate the formulation for OpenVLA and DreamZero, covering autoregressive action-token prediction and joint video-action generation.",
+      "authors": [
+        "Xinyi Hong",
+        "Mingyang Ren"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-16T07:30:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.23053v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "unified probabilistic formulation for embodied foundation models and robot policies",
+      "llm_evidence_cn": "具身基础模型与机器人策略的统一概率形式化",
+      "llm_evidence": "具身基础模型与机器人策略的统一概率形式化",
+      "canonical_evidence": "具身基础模型与机器人策略的统一概率形式化",
+      "llm_tldr_en": "VLA and world-action models differ in architecture and objectives. The paper gives an architecture-agnostic stochastic-kernel formulation of embodied foundation models, linking conditional output distributions and action kernels to pretraining, post-training and policy deployment.",
+      "llm_tldr_cn": "视觉语言动作模型与世界动作模型架构与学习目标各异，缺乏统一的理论刻画。作者基于随机核提出与架构无关的概率框架，用条件输出分布与动作实现核刻画具身基础模型，并把预训练、后训练与策略部署联系起来。该形式化统一了VLA与WAM等模型，并说明不同预训练目标如何影响任务条件下的机器人策略。它为具身基础模型的设计与比较提供了通用理论语言。",
+      "llm_tldr": "视觉语言动作模型与世界动作模型架构与学习目标各异，缺乏统一的理论刻画。作者基于随机核提出与架构无关的概率框架，用条件输出分布与动作实现核刻画具身基础模型，并把预训练、后训练与策略部署联系起来。该形式化统一了VLA与WAM等模型，并说明不同预训练目标如何影响任务条件下的机器人策略。它为具身基础模型的设计与比较提供了通用理论语言。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find articles about embodied intelligence, embodied agents, and robot learning.",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23334v1",
+      "source": "arxiv",
+      "title": "LAW: Unifying Language, Action, and World Modeling for Agentic Physical Intelligence",
+      "abstract": "World-action models jointly predict actions and future world states, but long-horizon manipulation further requires language reasoning to plan subtask objectives, assess execution progress, and guide action selection. We present LAW, a closed-loop VLM--WAM framework that unifies language reasoning, action generation, and world modeling through semantic subtask progress. Within the LAW agent, a hybrid-expert vision-language model plans the remaining subtasks, estimates the values of and fuses actions proposed by a world-action model, and asynchronously assesses execution status to support continued execution and subtask transitions. Within the world-action model, Mixture-of-Transformer Experts integrates modality-specific and shared computation for joint video--action modeling. Dual-stream hierarchical visual memory maintains temporal context for both models, while subtask-local value learning aligns action evaluation with semantic objectives and preserves supervision from successful prefixes of failed trajectories. LAW achieves 94.21% average success across 50 RoboTwin tasks. Replacing the WAM backbone with OpenWAM-$alpha$ further raises the average success rate to 95.56%, establishing a new open-source state of the art on RoboTwin. Despite having only 2B parameters, our VLM also outperforms variants using Embodied-R1.5 and GPT-5.5 High. On three long-horizon real-robot tasks, LAW achieves 65% average success, compared with 28.33% for $pi_{0.5}$ and 25% for Fast-WAM.",
+      "authors": [
+        "Jiajun Cao",
+        "Kai Tang",
+        "Bohua Zhang",
+        "Zezhong Qian",
+        "Ying Li",
+        "Xiaozhu Ju",
+        "Xiaobao Wei",
+        "Jiaming Liu",
+        "Yang Ding",
+        "Sixiang Chen",
+        "Yiding Sun",
+        "Siyuan Qian",
+        "Tinghao Wang",
+        "Jixian Wu",
+        "Yichen Guo",
+        "Yi Zhang",
+        "Shilong Zou",
+        "Yong Dai",
+        "Jian Tang",
+        "Shanghang Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-16T11:39:21+00:00",
+      "link": "https://arxiv.org/pdf/2610.23334v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Closed-loop vision-language and world-action model unifying language reasoning, action generation and world modeling for planning",
+      "llm_evidence_cn": "闭环视觉语言与世界-动作模型，统一语言推理、动作生成与世界建模以支持规划",
+      "llm_evidence": "闭环视觉语言与世界-动作模型，统一语言推理、动作生成与世界建模以支持规划",
+      "canonical_evidence": "闭环视觉语言与世界-动作模型，统一语言推理、动作生成与世界建模以支持规划",
+      "llm_tldr_en": "LAW couples a hybrid-expert VLM planner with a world-action model via semantic subtask progress, unifying language reasoning, action generation and world modeling for long-horizon manipulation.",
+      "llm_tldr_cn": "世界-动作模型可同时预测动作与未来世界状态，但长时程操作仍需语言推理来规划子任务、评估进度并引导动作选择。本文提出LAW闭环框架，用混合专家视觉语言模型规划剩余子任务、估计并融合世界-动作模型给出的候选动作，并异步评估执行状态以支持子任务切换；世界-动作模型内部以混合Transformer专家整合模态专属与共享计算。该框架将语言推理、动作生成与世界建模贯通，提升了长时程具身操作的连贯性。",
+      "llm_tldr": "世界-动作模型可同时预测动作与未来世界状态，但长时程操作仍需语言推理来规划子任务、评估进度并引导动作选择。本文提出LAW闭环框架，用混合专家视觉语言模型规划剩余子任务、估计并融合世界-动作模型给出的候选动作，并异步评估执行状态以支持子任务切换；世界-动作模型内部以混合Transformer专家整合模态专属与共享计算。该框架将语言推理、动作生成与世界建模贯通，提升了长时程具身操作的连贯性。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23396v1",
+      "source": "arxiv",
+      "title": "AWAM: Active Trajectory-Conditioned View Imagination for Robust Robot Manipulation",
+      "abstract": "Rapid progress in embodied intelligence has enabled increasingly capable robots to follow language instructions and manipulate diverse objects. However, strong results in structured environments do not automatically transfer to open-world conditions, where clutter, occlusion, and changing viewpoints can obscure the spatial relationships required for action. To address this perceptual gap, a virtual active-perception paradigm is introduced. AWAM, an Active World-Action Model actively plans where to observe and imagines what will be seen along the planned trajectory before acting. Task-related virtual camera motion is predicted and used as a structured query into a geometry-conditioned world model, producing a reusable spatial prior for manipulation, which is later compressed into a fixed memory and fused with live observations through cross-attention for diffusion-based action prediction. AWAM achieves competitive success rates with 75.9% on LIBERO-Occ, 62.4% on LIBERO-Plus, 76.5% on RLBench-OG Occlusion1, and 94.4% in real-robot trials. These results support improved robustness to the evaluated occlusions and distribution shifts, addressing part of the gap between structured manipulation and less controlled environments.",
+      "authors": [
+        "Jiawei Geng",
+        "Zhenyang Liu",
+        "Yuzheng Wu",
+        "Yanwei Fu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-10-16T12:53:08+00:00",
+      "link": "https://arxiv.org/pdf/2610.23396v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "active world-action model for embodied prediction and planning",
+      "llm_evidence_cn": "面向具身预测与规划的主动世界-动作模型",
+      "llm_evidence": "面向具身预测与规划的主动世界-动作模型",
+      "canonical_evidence": "面向具身预测与规划的主动世界-动作模型",
+      "llm_tldr_en": "Introduces AWAM, an active world-action model that plans where to look and imagines views along the trajectory as a geometry-conditioned spatial prior, improving robot manipulation under clutter and occlusion.",
+      "llm_tldr_cn": "结构化环境中的机器人操作难以迁移到杂乱、遮挡与视角多变的开放世界，空间关系被遮蔽导致动作不可靠。作者提出AWAM主动世界-动作模型，在行动前先规划虚拟相机观测轨迹，并想象沿途视图，将其作为结构化查询送入几何条件世界模型，生成可复用的空间先验。该范式把主动感知与世界模型结合，为具身智能体的鲁棒操作提供了新路径。",
+      "llm_tldr": "结构化环境中的机器人操作难以迁移到杂乱、遮挡与视角多变的开放世界，空间关系被遮蔽导致动作不可靠。作者提出AWAM主动世界-动作模型，在行动前先规划虚拟相机观测轨迹，并想象沿途视图，将其作为结构化查询送入几何条件世界模型，生成可复用的空间先验。该范式把主动感知与世界模型结合，为具身智能体的鲁棒操作提供了新路径。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.25959v1",
+      "source": "arxiv",
+      "title": "EmbodiedWorld-200K: Toward Embodied World Agents via Embodied-Planning Dataset and Interactive World Models",
+      "abstract": "Building embodied agents that can perceive, reason, and act across diverse 3D worlds is a central research direction toward artificial general intelligence. Yet most existing work remains confined to specific tasks in a single scene and transfers poorly to new environments, leaving general embodied agents for open-world settings under-explored. We refer to such agents as Embodied World Agents (EWAs), whose defining property is the ability to understand diverse visual environments and execute general actions in open-world conditions. To advance EWA research, we study open-world embodied navigation-planning and release EmbodiedWorld-200K, a large-scale dataset of over 200K samples spanning diverse scenes. Each example is equipped with multi-level annotations, ranging from low-level camera-motion trajectories to high-level semantic instructions. The dataset also provides unified evaluation splits and task-specific metrics, supporting offline pretraining and fair evaluation of EWAs. Beyond offline supervision, a defining characteristic of an EWA is its interaction with the environment; training solely on offline data is therefore insufficient, especially for generalizing to scenes not covered in the training distribution. Building dedicated real interactive environments, however, is often prohibitively expensive. To address this, we propose a novel training scheme that employs a video world model as a low-cost environment proxy and performs interactive reinforcement-learning (RL) post-training of the EWA within it. Empirically, pretraining on EmbodiedWorld-200K substantially improves the open-world embodied planning ability of the EWA, and further RL post-training inside a world model yields clear gains on out-of-distribution scenes. The dataset, baseline checkpoints, and training and evaluation code are available at https://xiaokunfeng.github.io/EmbodiedWorld-200K/.",
+      "authors": [
+        "X. Feng",
+        "J. Tang",
+        "Z. Lin",
+        "L. Chen",
+        "S. Shao",
+        "Q. Lu",
+        "K. Huang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-19T07:52:01+00:00",
+      "link": "https://arxiv.org/pdf/2610.25959v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "embodied-planning dataset and interactive world models for embodied agents",
+      "llm_evidence_cn": "面向具身智能体的具身规划数据集与交互式世界模型",
+      "llm_evidence": "面向具身智能体的具身规划数据集与交互式世界模型",
+      "canonical_evidence": "面向具身智能体的具身规划数据集与交互式世界模型",
+      "llm_tldr_en": "Introduces EmbodiedWorld-200K, a 200K-sample open-world embodied navigation-planning dataset, plus interactive world models for embodied agents that perceive, plan and act across diverse 3D scenes.",
+      "llm_tldr_cn": "现有具身智能体多局限于单一场景的特定任务，难以迁移到开放世界。本文提出具身世界智能体概念，构建覆盖多样场景、超过二十万样本的EmbodiedWorld-200K开放世界具身导航规划数据集，并结合交互式世界模型支撑智能体的预测与规划。该工作提升了智能体在多样三维环境中的泛化感知与行动能力，为通用具身智能体研究提供了数据与建模范式。",
+      "llm_tldr": "现有具身智能体多局限于单一场景的特定任务，难以迁移到开放世界。本文提出具身世界智能体概念，构建覆盖多样场景、超过二十万样本的EmbodiedWorld-200K开放世界具身导航规划数据集，并结合交互式世界模型支撑智能体的预测与规划。该工作提升了智能体在多样三维环境中的泛化感知与行动能力，为通用具身智能体研究提供了数据与建模范式。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.26564v1",
+      "source": "arxiv",
+      "title": "PrismWAM: Decoupling State Representations in World Action Models",
+      "abstract": "World Action Models (WAMs) typically represent the world through latent embeddings from pretrained video models, which entangle heterogeneous aspects of the world, from how it looks (e.g., texture and color) to how it is physically configured (e.g., occupancy and pose). This raises an underexplored question: $\\textbf{what should constitute the state of a WAM?}$ We argue that the world state should separate how the world appears from how the world evolves under action: the former captures semantic context, while the latter is governed by physical state. To this end, we propose $\\textbf{PrismWAM}$, which decouples physics from semantics while jointly modeling state and action. PrismWAM factorizes an embodied task into a $\\mathrm{Semantic\\ Planning}\\rightarrow\\mathrm{Physical\\ Rollout}\\rightarrow\\mathrm{Executable\\ Action}$ pipeline: given only the initial RGB observation, semantic planning learns to predict the final goal image, while physical rollout predicts the fine-grained evolution toward this goal in depth space; executable actions are then generated from the depth rollout. Without any embodied action pretraining or additional data augmentation, PrismWAM achieves strong manipulation performance in both simulation and the real world. Notably, PrismWAM even surpasses a broad range of models with large-scale embodied action pretraining (e.g., OpenWAM-$α$). More broadly, we reframe World Action Models from modeling how the world looks to how it responds to action, paving the way for action-centric world models grounded in occupancy, flow, tactile sensing, proprioception, and beyond.",
+      "authors": [
+        "Tianyu Xin",
+        "Wanqi Zhong",
+        "Bowen Hu",
+        "Zhangchi Guo",
+        "Lijie Wang",
+        "Yiming Wang",
+        "Haoran Liao",
+        "Heyang Yu",
+        "Xiaoyu Tian",
+        "Zhiding Yu",
+        "Yiming Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-10-19T15:21:30+00:00",
+      "link": "https://arxiv.org/pdf/2610.26564v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "world action models decoupling physical state from semantic appearance for embodied tasks",
+      "llm_evidence_cn": "世界动作模型解耦物理状态与语义外观以支持具身任务",
+      "llm_evidence": "世界动作模型解耦物理状态与语义外观以支持具身任务",
+      "canonical_evidence": "世界动作模型解耦物理状态与语义外观以支持具身任务",
+      "llm_tldr_en": "Argues world action models should separate how the world appears from how it evolves under action, and proposes PrismWAM to decouple physics from semantics while jointly modeling state and action.",
+      "llm_tldr_cn": "针对世界动作模型以视频模型隐嵌入表示世界、将外观纹理与物理构型纠缠的问题，本文提出世界状态应分离世界的呈现方式与其在动作下的演化方式。作者据此设计PrismWAM，将物理与语义解耦并联合建模状态与动作，把具身任务分解为语义规划与物理状态演化两部分。该工作为具身世界模型的状态表示设计提供了新的分解范式。",
+      "llm_tldr": "针对世界动作模型以视频模型隐嵌入表示世界、将外观纹理与物理构型纠缠的问题，本文提出世界状态应分离世界的呈现方式与其在动作下的演化方式。作者据此设计PrismWAM，将物理与语义解耦并联合建模状态与动作，把具身任务分解为语义规划与物理状态演化两部分。该工作为具身世界模型的状态表示设计提供了新的分解范式。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.26854v2",
+      "source": "arxiv",
+      "title": "Physical Words: A Vocabulary for Structuring Latent Reasoning in Robot Manipulation",
+      "abstract": "Multimodal reasoning provides robotic foundation models with predictive context needed for reliable action generation. However, language-based reasoning captures task semantics but struggles to express fine-grained physical dynamics, while latent reasoning models future state evolution but offers limited structure for organizing these dynamics into reusable reasoning primitives. To bridge this gap, we introduce PhysWord, a reasoning-before-acting foundation model built on Physical Words, which use atomic action verbs as shared semantic anchors for continuous representations of physical dynamics. Specifically, PhysWord predicts upcoming atomic action words and directly aligns their contextual hidden states with latent targets derived from the corresponding future observations. Building on these primitives, we construct a temporally structured PhysWord space with visual and optional tactile variants of each action word. Autoregressively predicting Physical Words across future timesteps captures transitions between execution stages, providing structured multimodal context for action generation. PhysWord achieves state-of-the-art success rates of 90.3\\% on visuotactile UniVTAC and 99.6\\% on vision-based LIBERO-Long, and outperforms competing methods on real-world tasks using bimanual grippers and dexterous hands. Further evaluations demonstrate that our structured latent reasoning framework generalizes to unseen scenarios and enables long-horizon manipulation.",
+      "authors": [
+        "Jiaming Liu",
+        "Xinghao Zhu",
+        "Yiming Zhang",
+        "Shanghang Zhang",
+        "Yinxi Wang",
+        "Yichu Yang",
+        "Zhuoyang Liu",
+        "Dantong Niu",
+        "Soha Pouya",
+        "Juekun Li",
+        "Yan Chang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-19T17:59:54+00:00",
+      "link": "https://arxiv.org/pdf/2610.26854v2",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "reasoning-before-acting robot manipulation model built on physical action words",
+      "llm_evidence_cn": "基于物理动作词表的先推理后执行机器人操作模型",
+      "llm_evidence": "基于物理动作词表的先推理后执行机器人操作模型",
+      "canonical_evidence": "基于物理动作词表的先推理后执行机器人操作模型",
+      "llm_tldr_en": "Introduces PhysWord, a reasoning-before-acting robot foundation model that uses atomic action verbs as semantic anchors to align latent physical dynamics with structured, reusable reasoning for manipulation.",
+      "llm_tldr_cn": "机器人基础模型的多模态推理中，语言推理擅长表达任务语义却难以刻画细粒度物理动态，而潜空间推理虽能预测状态演化却缺乏可复用的结构。作者提出PhysWord，以原子动作动词作为共享语义锚点，将动作词的上下文隐状态与物理动态的潜在目标对齐，构建先推理后执行的基础模型。该设计把物理动态组织为可复用的推理原语，提升了操作任务中动作生成的可靠性，为具身智能的推理-行动一体化提供了新范式。",
+      "llm_tldr": "机器人基础模型的多模态推理中，语言推理擅长表达任务语义却难以刻画细粒度物理动态，而潜空间推理虽能预测状态演化却缺乏可复用的结构。作者提出PhysWord，以原子动作动词作为共享语义锚点，将动作词的上下文隐状态与物理动态的潜在目标对齐，构建先推理后执行的基础模型。该设计把物理动态组织为可复用的推理原语，提升了操作任务中动作生成的可靠性，为具身智能的推理-行动一体化提供了新范式。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.27040v1",
+      "source": "arxiv",
+      "title": "ACE-Brain-0.6: Scaling Spatial Grounding for Physical Foundation Models",
+      "abstract": "General-purpose multimodal models, including GPT-6 Astra and Claude Opus 5.5, demonstrate broad capabilities in embodied manipulation. Our analysis indicates that this generality is accompanied by strong spatial perception, as Astra can determine where to interact with task-relevant entities amid visual distractors. Because spatial perception connects high-level reasoning to the physical scene, we investigate scaling visual grounding to strengthen the perceptual foundation of general embodied operation. We develop a unified data pipeline that combines robot manipulation recordings with complementary visual data from diverse sources. After automatically annotating the robot recordings, the pipeline converts the collected data into verifiable grounding supervision. Fine-tuning Qwen3.5-9B on approximately 1.5 million samples produced by this pipeline yields ACE-Brain-0.6. The model outperforms GPT-6 Astra on four of seven public grounding benchmarks, with an overall average score of 75.41 compared with Astra's 73.68. Under a fixed Qwen3.5-9B fine-tuning setup, aggregate grounding performance improves steadily as successive data releases expand the training collection to cover a broader range of grounding scenarios. These results show that scaling verifiable grounding supervision from diverse sources can strengthen the spatial perception of an open 9B model for general embodied operation.",
+      "authors": [
+        "Yinhe Wang",
+        "Tao Tao",
+        "Zexin He",
+        "Shuang Luo",
+        "Wei Mao",
+        "Yao Mu",
+        "Feng Pan",
+        "Hanming Deng",
+        "Lewei Lu",
+        "Zhi Hou",
+        "Xingang Pan",
+        "Dahua Lin",
+        "Dacheng Tao",
+        "Xiaogang Wang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-19T17:32:28+00:00",
+      "link": "https://arxiv.org/pdf/2610.27040v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "scaling spatial grounding as perceptual foundation for embodied manipulation models",
+      "llm_evidence_cn": "扩展空间定位作为具身操作模型的感知基础",
+      "llm_evidence": "扩展空间定位作为具身操作模型的感知基础",
+      "canonical_evidence": "扩展空间定位作为具身操作模型的感知基础",
+      "llm_tldr_en": "ACE-Brain-0.6 scales visual grounding as the perceptual foundation of embodied operation, building a unified pipeline that merges robot manipulation recordings with diverse visual data into verifiable grounding supervision.",
+      "llm_tldr_cn": "通用多模态模型在具身操作中展现出广泛能力，其背后是较强的空间感知，但如何规模化强化这一感知基础仍不清楚。作者构建统一数据管线，将机器人操作记录与多源视觉数据结合并自动标注，转化为可验证的空间定位监督，用于训练物理基础模型ACE-Brain-0.6。结果显示扩展视觉定位能显著增强具身操作的感知基础，为通用具身智能体提供可复用的数据与训练范式。",
+      "llm_tldr": "通用多模态模型在具身操作中展现出广泛能力，其背后是较强的空间感知，但如何规模化强化这一感知基础仍不清楚。作者构建统一数据管线，将机器人操作记录与多源视觉数据结合并自动标注，转化为可验证的空间定位监督，用于训练物理基础模型ACE-Brain-0.6。结果显示扩展视觉定位能显著增强具身操作的感知基础，为通用具身智能体提供可复用的数据与训练范式。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.27045v1",
+      "source": "arxiv",
+      "title": "Physical AI: Concepts, Techniques, and Challenges",
+      "abstract": "In recent years, physical artificial intelligence (physical AI) has experienced rapid development, capturing significant attention in academia and industry. However, the field has yet to reach consensus on its definition, technical landscape, and core challenges. To address this gap, this monograph seeks to define physical AI, present its technical landscape, and examine each key technical subfield in depth. In doing so, it establishes a unified framework for Physical AI: artificial systems that perceive, model, and act upon the physical world through continuous feedback under real-world constraints. Further, this monograph distinguishes physical AI from conventional digital AI, embodied AI, cyber-physical systems, and digital twins. It develops the foundations of physical AI across physics, control, cognition, learning, and reasoning. It reviews key methodologies, including multimodal perception, physical data and simulation, world models, embodied foundation models, motor-control systems, multi-agent coordination, and hardware-software co-design. Furthermore, it examines applications spanning robotics, manufacturing, infrastructure, scientific experimentation, and autonomous services. Particular attention is given to sim-to-real transfer, reliability, real-time execution, evaluation, safety, governance, and long-term deployment. By connecting perception, prediction, decision-making, action, and adaptation in a closed loop, this monograph identifies the technical challenges and research directions required to advance from narrow automation toward more generalizable physical AI and, ultimately, physical artificial general intelligence (Physical AGI).",
+      "authors": [
+        "Weinan Zhang",
+        "Chunhua Shen",
+        "Tianfan Xue",
+        "Bin Zhao",
+        "Bingqi Jiang",
+        "Zihan Guo",
+        "Zicai Cui",
+        "Yang Li",
+        "Ming Zhou",
+        "Xinyuan Chen",
+        "Lihe Ding",
+        "Xiao Chen",
+        "Yujin Wang",
+        "Shi Guo",
+        "Junting Dong",
+        "Tao Lu",
+        "Xing Shen",
+        "Haoyu Guo",
+        "Yao Mu",
+        "Haiyong Yu",
+        "Haoxiang Ma",
+        "Fuxian Huang",
+        "Qiaojun Yu",
+        "Yunsong Zhou",
+        "Kailin Li",
+        "Zirui Wang",
+        "Yufei Xue",
+        "Weishuai Zeng",
+        "Tao Huang",
+        "Zhigang Wang",
+        "Junli Liu",
+        "Pengyuan Wu",
+        "Pingrui Zhang",
+        "Haotian Wang",
+        "Dongzhan Zhou",
+        "Jiafei Cao",
+        "Feng Yuan",
+        "Xinyi Ye",
+        "Quanli Xuan",
+        "Mulin Yu",
+        "Shangding Gu",
+        "Kaiwen Song",
+        "Dong Wang",
+        "Jiarui Li",
+        "Kehui Liu",
+        "Zhongjie Jia",
+        "Dongjiang Li",
+        "Jiacheng Bao",
+        "Haoran Yang",
+        "Zhaoqing Chen",
+        "Yiming Sun",
+        "Bowen Zhou"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-10-19T17:50:11+00:00",
+      "link": "https://arxiv.org/pdf/2610.27045v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "physical AI systems that perceive, model and act on the physical world",
+      "llm_evidence_cn": "感知、建模并作用于物理世界的物理人工智能系统",
+      "llm_evidence": "感知、建模并作用于物理世界的物理人工智能系统",
+      "canonical_evidence": "感知、建模并作用于物理世界的物理人工智能系统",
+      "llm_tldr_en": "This monograph defines physical AI as artificial systems that perceive, model and act on the physical world through continuous feedback, mapping its technical landscape and distinguishing it from embodied AI and digital twins.",
+      "llm_tldr_cn": "物理人工智能发展迅速，但学界对其定义、技术版图与核心挑战尚未形成共识。本文以专著形式将物理AI界定为在真实约束下通过连续反馈感知、建模并作用于物理世界的人工系统，并系统梳理其关键技术子领域与挑战。书中建立了统一框架，并厘清了物理AI与数字AI、具身AI、信息物理系统及数字孪生之间的区别。该工作为具身智能与物理世界智能系统的研究提供了系统的概念基础与技术路线图。",
+      "llm_tldr": "物理人工智能发展迅速，但学界对其定义、技术版图与核心挑战尚未形成共识。本文以专著形式将物理AI界定为在真实约束下通过连续反馈感知、建模并作用于物理世界的人工系统，并系统梳理其关键技术子领域与挑战。书中建立了统一框架，并厘清了物理AI与数字AI、具身AI、信息物理系统及数字孪生之间的区别。该工作为具身智能与物理世界智能系统的研究提供了系统的概念基础与技术路线图。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.27613v1",
+      "source": "arxiv",
+      "title": "Embodied Task Agents Can Perform Fine Manipulation through Tactile In-Context Learning",
+      "abstract": "Can embodied task agents use tactile experience to perform fine manipulation without task-specific model training? We investigate this capability through Tactile-ETA, a system that incorporates tactile experience into an embodied task agent through in-context learning. Successful expert demonstrations show how contact changes during manipulation. We pair each recorded robot movement with its camera views and bilateral tactile observations. We keep tactile observations at the start and end of each movement and add two neighboring time points when the tactile images change markedly in between. The agent combines these demonstrations with current vision, tactile observations, and proprioception to select actions through general-purpose robot tools, without updating model parameters. Across four simulated manipulation tasks, adding tactile observations to the same two expert demonstrations increases average success from 15.75% to 24.00%, with current sensing and execution interfaces held fixed. Further experiments show that performance depends on the sensory content and representation of demonstrations, while comparing agent models on Lift Bottle reveals substantial differences under the same system configuration. On the real-robot tasks, demonstrations with aligned visual and tactile observations increase the task success rate from 0% to 60%. These findings demonstrate the feasibility of using tactile experience in context for fine manipulation and suggest a path toward extending embodied task agents to additional sensory inputs.",
+      "authors": [
+        "Yubang Wang",
+        "Zezheng Huai",
+        "Yifei Zhang",
+        "Jinhao Wu",
+        "Yitong Chen",
+        "Haozhe Zhang",
+        "Sixian Li",
+        "Jingjing Gong",
+        "Zhenyang Lin",
+        "Ziyang Chen",
+        "Xipeng Qiu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-20T04:27:15+00:00",
+      "link": "https://arxiv.org/pdf/2610.27613v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "embodied task agents performing fine manipulation via tactile experience",
+      "llm_evidence_cn": "具身任务智能体借助触觉经验完成精细操作",
+      "llm_evidence": "具身任务智能体借助触觉经验完成精细操作",
+      "canonical_evidence": "具身任务智能体借助触觉经验完成精细操作",
+      "llm_tldr_en": "The paper asks whether embodied task agents can exploit tactile experience for fine manipulation without task-specific training. Tactile-ETA injects paired vision, bilateral tactile and proprioceptive demonstrations via in-context learning to select actions.",
+      "llm_tldr_cn": "具身智能体能否在不做任务特定训练的前提下利用触觉经验完成精细操作，是本文探究的问题。作者提出Tactile-ETA，通过上下文学习把专家演示中接触变化与相机视图、双侧触觉观测配对后注入具身任务智能体。智能体结合当前视觉、触觉与本体感知选择动作。该工作展示了触觉上下文学习在真实精细操作中的潜力。",
+      "llm_tldr": "具身智能体能否在不做任务特定训练的前提下利用触觉经验完成精细操作，是本文探究的问题。作者提出Tactile-ETA，通过上下文学习把专家演示中接触变化与相机视图、双侧触觉观测配对后注入具身任务智能体。智能体结合当前视觉、触觉与本体感知选择动作。该工作展示了触觉上下文学习在真实精细操作中的潜力。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.28613v1",
+      "source": "arxiv",
+      "title": "Physical Canvas: A Vision Tactile World Model For Robot Policy Evaluation And Learning",
+      "abstract": "Evaluating and post-training robot policies through physical interaction is costly and difficult to scale, motivating action-conditioned world models as interactive simulators. However, visually plausible predictions can misrepresent contact dynamics, providing unreliable feedback for policy evaluation and learning. We introduce PhysCanvas, a state-consistent visuo-tactile world model for contact-rich robot manipulation. PhysCanvas unifies multi-view RGB, tactile images, marker displacement, task state, and actions within a unified vision space. All modalities share a video VAE and pretrained generative backbone, allowing optical touch to reuse visual and temporal priors. Motion images derived through forward kinematics and camera projection provide spatially aligned action conditioning, while an initial RGB anchor and updated reference observations guide sequential generation. Our consistency-aware post-training uses the frozen Scene Reward Model, Modality Reward Model, and State Reward Model to supervise scene preservation, visual-tactile compatibility, and agreement with real task outcomes. The resulting world model supports closed-loop policy rollouts for evaluation and provides imagined interactions and rewards for GRPO policy updates. Across four real-world manipulation tasks, when policies are rolled out in the world model, State Reward Model supervision increases the arithmetic mean of task-wise Pearson correlations between world-model and real-world success rates from 0.602 to 0.885. Policy post-training in the reward-guided world model further increases $π_{0.5}$'s mean real-world success rate from a 59.1% SFT baseline to 70.8%. These results demonstrate the value of unified multimodal modeling and consistency-aware post-training for robot policy evaluation and learning. Project page: https://zebinx.github.io/PhysCanvas_HomePage/.",
+      "authors": [
+        "Zebin Xing",
+        "Yuhang Zheng",
+        "Yupeng Zheng",
+        "Yichen Zhang",
+        "Zichen Li",
+        "Shangqing Zhou",
+        "Yujie Zang",
+        "Yuchen Liu",
+        "Zhongpu Xia",
+        "Haoran Li",
+        "Qichao Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-20T17:54:03+00:00",
+      "link": "https://arxiv.org/pdf/2610.28613v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Action-conditioned visuo-tactile world model used as simulator for robot policy evaluation and learning",
+      "llm_evidence_cn": "动作条件视觉-触觉世界模型，作为机器人策略评估与学习的交互模拟器",
+      "llm_evidence": "动作条件视觉-触觉世界模型，作为机器人策略评估与学习的交互模拟器",
+      "canonical_evidence": "动作条件视觉-触觉世界模型，作为机器人策略评估与学习的交互模拟器",
+      "llm_tldr_en": "PhysCanvas is a state-consistent visuo-tactile world model for contact-rich manipulation that unifies RGB, tactile, motion and actions to give reliable feedback for policy learning.",
+      "llm_tldr_cn": "通过物理交互评估与后训练机器人策略成本高昂，动作条件世界模型因此被用作交互式模拟器，但视觉上合理的预测常错误刻画接触动力学。本文提出PhysCanvas，一种面向富接触操作的状态一致视觉-触觉世界模型，将多视角RGB、触觉图像、标记位移、任务状态与动作统一到同一视觉空间，共享视频VAE与预训练生成骨干。该模型能为策略评估与学习提供更可靠的接触反馈，提升世界模型作为具身模拟器的可用性。",
+      "llm_tldr": "通过物理交互评估与后训练机器人策略成本高昂，动作条件世界模型因此被用作交互式模拟器，但视觉上合理的预测常错误刻画接触动力学。本文提出PhysCanvas，一种面向富接触操作的状态一致视觉-触觉世界模型，将多视角RGB、触觉图像、标记位移、任务状态与动作统一到同一视觉空间，共享视频VAE与预训练生成骨干。该模型能为策略评估与学习提供更可靠的接触反馈，提升世界模型作为具身模拟器的可用性。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.28626v1",
+      "source": "arxiv",
+      "title": "UniWALM: Unified World Action Language Model for Embodied Robot Control",
+      "abstract": "Motivated by the human ability to integrate experience across language, perception, and action, we introduce UniWALM, a unified world-action-language model that learns video, action, and language in a single shared representation, where each modality is both a conditioning signal and a supervision target. We ask: can jointly generating language enrich this shared representation, improving manipulation and supporting memory-dependent behavior? Unlike prior approaches that attach a reasoning or vision-language model to a video-action backbone and run them as distinct stages, UniWALM unifies all three modalities inside a single mixture-of-transformers backbone whose per-modality diffusion heads co-denoise synchronously, decoding subtask and textual memory in the same pass as action with no separate planning stage; the generated language is re-consumed on the next step, closing a language-as-memory loop without an external planner or memory bank. To keep the action stream reliable under this richer objective, we further introduce Flow Matching with Correction (FMC), a training objective that teaches recovery from perturbed action trajectories at no inference-time cost. UniWALM consistently improves over same-backbone baselines (e.g., FastWAM) on compositional pick-and-place (MolmoSpaces) and across the memory-dependent subset of RMBench, where it reaches 34.5% without any pretrained language or reasoning model and exceeds Mem-0's keyframe-equipped setup (28.5%) using only a single anchor frame. On a real-world Find-the-Item task, generating textual memory lifts success from 11.1% to 61.1%, while state-of-the-art VLAs stay at or below chance (<=33.3%).",
+      "authors": [
+        "Rahul Sajnani",
+        "Diego Romeres",
+        "Mingyuan Zhang",
+        "Kai Gao",
+        "Carl Qi",
+        "Baichuan Huang",
+        "Srinath Sridhar",
+        "Dylan Randle",
+        "Lillian J. Ratliff",
+        "Jose Barreiros",
+        "Manikantan Nambi",
+        "Jeroen Vanbaar"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CV"
+      ],
+      "published": "2026-10-20T17:59:04+00:00",
+      "link": "https://arxiv.org/pdf/2610.28626v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Unified world-action-language model supporting embodied prediction and control in a shared representation",
+      "llm_evidence_cn": "统一的世界-动作-语言模型，在共享表示中支持具身预测与控制",
+      "llm_evidence": "统一的世界-动作-语言模型，在共享表示中支持具身预测与控制",
+      "canonical_evidence": "统一的世界-动作-语言模型，在共享表示中支持具身预测与控制",
+      "llm_tldr_en": "UniWALM unifies video, action and language in one mixture-of-transformers backbone with per-modality diffusion heads, improving manipulation and memory-dependent embodied robot control.",
+      "llm_tldr_cn": "现有方法通常将推理模型或视觉语言模型外挂于视频-动作骨干上分阶段运行，难以形成统一的世界与动作表示。本文提出UniWALM，将视频、动作与语言在同一共享表示中联合学习，每种模态既是条件信号也是监督目标，并在单一混合Transformer骨干中用各模态扩散头同步去噪。联合生成语言可丰富共享表示，从而提升操作任务表现并支持依赖记忆的行为，为具身机器人控制提供了统一的世界-动作-语言建模路径。",
+      "llm_tldr": "现有方法通常将推理模型或视觉语言模型外挂于视频-动作骨干上分阶段运行，难以形成统一的世界与动作表示。本文提出UniWALM，将视频、动作与语言在同一共享表示中联合学习，每种模态既是条件信号也是监督目标，并在单一混合Transformer骨干中用各模态扩散头同步去噪。联合生成语言可丰富共享表示，从而提升操作任务表现并支持依赖记忆的行为，为具身机器人控制提供了统一的世界-动作-语言建模路径。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.29702v1",
+      "source": "arxiv",
+      "title": "CausGround: Causal Interaction Grounding for Adaptive Embodied Planning",
+      "abstract": "Multimodal large language models (MLLMs) show promising reasoning capabilities, but reliable physical interaction requires planning that accounts for when actions are executable and how they change the world. These preconditions and effects are environment-dependent and often not captured by MLLMs, making adaptation challenging. Yet existing approaches either require costly environment-specific training or rely on unstructured interaction experience that is difficult to reuse. Therefore, we introduce CausGround, a non-parametric causal interaction grounding framework that distills interaction experience into reusable action-centered causal knowledge. CausGround identifies action preconditions and effects and organizes them in a factorized world-state representation capturing object attributes and inter-object relations. At planning time, task-relevant causal dependencies are grounded in current observations to support backward reasoning over preconditions and forward reasoning over effects for action selection and multi-step planning. We evaluate CausGround on simulated high-level planning, interaction reasoning, and real-world robot manipulation. On adapted VirtualHome and RoboCasa benchmarks, CausGround improves vision-based high-level planning across MLLM backbones, increasing average task success from 24.9% to 53.3% on VirtualHome and closed-loop planning success from 43.0% to 57.0% on RoboCasa. On SWITCH, average interaction reasoning accuracy increases from 25.8% to 31.9%, indicating improved action selection, recovery, and verification. Moreover, real-world experiments show that CausGround reasons backward from MLLM-interpreted goals to derive executable high-level action sequences for sequential manipulation. These results demonstrate that reusable action preconditions and effects support long-horizon embodied planning across diverse environments without parameter updates.",
+      "authors": [
+        "Yijun Shen",
+        "Diqi He",
+        "Jinbang Guo",
+        "Wanyue Zhang",
+        "Jiaming Mi",
+        "Huan Yang",
+        "Zhongyuan Wang",
+        "Zhiwei Yu",
+        "Kai Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-21T13:16:19+00:00",
+      "link": "https://arxiv.org/pdf/2610.29702v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "causal interaction grounding for adaptive embodied planning in physical environments",
+      "llm_evidence_cn": "面向物理环境中自适应具身规划的因果交互接地",
+      "llm_evidence": "面向物理环境中自适应具身规划的因果交互接地",
+      "canonical_evidence": "面向物理环境中自适应具身规划的因果交互接地",
+      "llm_tldr_en": "Introduces CausGround, a non-parametric framework that distills interaction experience into action-centered causal knowledge of preconditions and effects to support adaptive embodied planning.",
+      "llm_tldr_cn": "针对多模态大模型难以把握动作何时可执行及其如何改变世界、而环境特定训练昂贵且交互经验难以复用的问题，本文提出非参数化的因果交互接地框架CausGround。该方法从交互经验中识别动作前提与效果，并将其组织为可复用的因子化世界状态因果知识。该框架无需环境特定训练即可支持自适应的具身规划，为物理交互知识的复用提供了新途径。",
+      "llm_tldr": "针对多模态大模型难以把握动作何时可执行及其如何改变世界、而环境特定训练昂贵且交互经验难以复用的问题，本文提出非参数化的因果交互接地框架CausGround。该方法从交互经验中识别动作前提与效果，并将其组织为可复用的因子化世界状态因果知识。该框架无需环境特定训练即可支持自适应的具身规划，为物理交互知识的复用提供了新途径。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find articles about embodied artificial intelligence systems that perceive, reason, plan, and act in physical environments.",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.30043v1",
+      "source": "arxiv",
+      "title": "TARSphere: A Robot-Oriented Full-Stack Framework for Long-Horizon Embodied Agents in Evolving Physical and Social Environments",
+      "abstract": "Robots must act under physical and social constraints while adapting to changes in their environment and human needs. Existing embodied-agent systems often focus on specified goals or abstract execution into symbolic actions, limiting evaluation in an evolving world. We introduce TARSphere, a robot-oriented full-stack framework for physically and socially grounded long-horizon embodied agents. TARSphere-Infra runs robot policies in a physics simulator with embodied NPCs and constrained dialogue. An event-driven finite-state machine (FSM) uses completed actions and delivered information to update task states and evaluate outcomes. TARSphere-Harness, its embodied brain harness, lets a frozen multimodal large language model (MLLM) act through multi-level executable skills, using observations, hierarchical memory, and execution feedback to revise its decisions. On this foundation, agent-in-the-loop curation aligns task semantics, causal dependencies, and scene geometry to construct TARSphere-Bench: 360 episodes across 30 indoor scenes. Five paired conditions assess perceptual robustness, disruption adaptation, task update, human coordination, and intent understanding for navigate-and-report and fetch-and-deliver tasks. Our evaluation of 8 MLLMs shows that general-purpose models can outperform embodied models, while task updates and human interaction remain difficult. Frequent collisions and falls further motivate evaluating execution safety alongside task success, even with a shared action interface and decision budget.",
+      "authors": [
+        "Yicheng Xu",
+        "Zhikai Xu",
+        "Ziyuan Chen",
+        "Yuhang Dong",
+        "Tao Zhang",
+        "Zhucun Xue",
+        "Yong Liu",
+        "Jiangning Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-21T17:02:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.30043v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "robot-oriented full-stack framework for long-horizon embodied agents in physical environments",
+      "llm_evidence_cn": "面向物理环境中长时程具身智能体的机器人全栈框架",
+      "llm_evidence": "面向物理环境中长时程具身智能体的机器人全栈框架",
+      "canonical_evidence": "面向物理环境中长时程具身智能体的机器人全栈框架",
+      "llm_tldr_en": "Presents TARSphere, a full-stack framework with a physics simulator, embodied NPCs and a frozen multimodal model harness, to evaluate long-horizon embodied robot agents under evolving physical and social constraints.",
+      "llm_tldr_cn": "现有具身智能体系统多面向指定目标或将执行抽象为符号动作，难以在动态演化的物理与社会环境中评估。本文提出TARSphere机器人全栈框架，其基础设施在含具身NPC与受限对话的物理仿真器中运行机器人策略，并用事件驱动有限状态机更新任务状态。配套的具身大脑框架让冻结的多模态模型驱动机器人完成长时程任务，为物理与社会约束下的具身智能体研究提供了可评估平台。",
+      "llm_tldr": "现有具身智能体系统多面向指定目标或将执行抽象为符号动作，难以在动态演化的物理与社会环境中评估。本文提出TARSphere机器人全栈框架，其基础设施在含具身NPC与受限对话的物理仿真器中运行机器人策略，并用事件驱动有限状态机更新任务状态。配套的具身大脑框架让冻结的多模态模型驱动机器人完成长时程任务，为物理与社会约束下的具身智能体研究提供了可评估平台。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.30108v1",
+      "source": "arxiv",
+      "title": "Multimodal Embodied Agents: A Unified Capability-centric Perspective from Computer-Use to Robot-Use",
+      "abstract": "Multimodal agents (MMAs) sustain interaction through reasoning, memory, tools, and feedback, most visibly as computer-use agents, while robotic systems (RSs) couple sensing and actuation under physical dynamics. We define multimodal embodied agents (MMEAs) as goal-directed systems that couple multimodal task reasoning with physical action and revise decisions from the resulting feedback. This raises a central question: what changes when a multimodal agent moves from computer-use to robot-use? We introduce PAPAV, a unified capability-centric framework of five recurring functions: Perceive the current state, Anticipate action effects, Plan a feasible course, Act through an interface or body, and Verify the outcome. Defined by function rather than architecture, these capabilities let PAPAV identify what all three share and then compare MMEAs with MMAs and with RSs. Five physical constraints, from partial observability to unverifiable outcomes, leave fewer choices fixed in advance and less room to reverse errors. Across 64 benchmarks, explicit evaluation centers on Act; only 5 assess Anticipate and 3 assess Verify, leaving both largely hidden behind task success. These constraints also frame the open challenges we identify. PAPAV therefore provides a common basis for designing reliable physical agents and measuring progress across all five capabilities rather than task success alone.",
+      "authors": [
+        "Yanzhe Chen",
+        "Ziyi Yang",
+        "Jifeng Zhu",
+        "Qiming Huang",
+        "Ruihe An",
+        "Peiyao Xu",
+        "Hesen Yang",
+        "Runda Liu",
+        "Chang Gong",
+        "Zhijun Cao",
+        "Zechen Bai",
+        "Wenzheng Zeng",
+        "Yiqi Lin",
+        "Guoqiang Liang",
+        "Kevin Yuchen Ma",
+        "Kevin Qinghong Lin",
+        "Mike Zheng Shou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CV",
+        "cs.MA",
+        "cs.MM"
+      ],
+      "published": "2026-10-21T17:52:48+00:00",
+      "link": "https://arxiv.org/pdf/2610.30108v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "unified framework for multimodal embodied agents perceiving, planning and acting",
+      "llm_evidence_cn": "多模态具身智能体感知规划与行动的统一框架",
+      "llm_evidence": "多模态具身智能体感知规划与行动的统一框架",
+      "canonical_evidence": "多模态具身智能体感知规划与行动的统一框架",
+      "llm_tldr_en": "Defines multimodal embodied agents and proposes the PAPAV capability framework spanning perceive, anticipate, plan, act and verify, bridging computer-use and robot-use agents.",
+      "llm_tldr_cn": "多模态智能体多以计算机使用形式出现，而机器人系统需在物理动力学下耦合感知与执行，二者转换时能力需求如何变化尚不清楚。本文定义多模态具身智能体为将多模态任务推理与物理动作及反馈修正相结合的目标导向系统，并提出PAPAV五能力框架：感知状态、预测动作效果、规划可行路径、通过接口或身体执行、验证结果。该框架为具身智能体研究提供统一分析视角。",
+      "llm_tldr": "多模态智能体多以计算机使用形式出现，而机器人系统需在物理动力学下耦合感知与执行，二者转换时能力需求如何变化尚不清楚。本文定义多模态具身智能体为将多模态任务推理与物理动作及反馈修正相结合的目标导向系统，并提出PAPAV五能力框架：感知状态、预测动作效果、规划可行路径、通过接口或身体执行、验证结果。该框架为具身智能体研究提供统一分析视角。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find articles about embodied artificial intelligence systems that perceive, reason, plan, and act in physical environments.",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.30136v1",
+      "source": "arxiv",
+      "title": "Agentic World Action Models",
+      "abstract": "Recent world action models provide visual foresight and future prediction for robot manipulation, but lack explicit mechanisms for compositional skill reuse. Agentic robotics combines code-based planning and reasoning with reusable skills, but often lacks predictive grounding in physical dynamics. We introduce AW-0, an agentic world action model framework that integrates code-based planning with joint video and action prediction. We jointly model code, future video, and robot actions as three coupled generative streams within a unified mixture-of-transformers architecture. Within this architecture a code expert generates parameterized skill routines and control logic while video and action experts generate future visual states and low-level motor commands. Code serves two complementary roles: it structures multi-step prediction and control within the world model and represents skills as reusable programs for subsequent agentic execution. We further introduce an automated curation pipeline that labels robot and human video trajectories with aligned programs and consolidates recurring routines into reusable skill libraries. Evaluations on RoboTwin 2.0 and physical bimanual manipulation tasks show improved task performance over VLA and WAM baselines, alongside gains in language following, semantic reasoning and robustness, demonstrating that agentic code enables connection between planning, prediction and execution within WAMs.",
+      "authors": [
+        "Zhuoyang Liu",
+        "Dantong Niu",
+        "Botong Zhang",
+        "Boning Shao",
+        "Jing Wang",
+        "Ruijie Zheng",
+        "Yuvan Sharma",
+        "Runyu Lu",
+        "Jiaming Liu",
+        "Renrui Zhang",
+        "Roei Herzig",
+        "Yutong Bai",
+        "Ken Goldberg",
+        "Danfei Xu",
+        "Yuke Zhu",
+        "Guanzhi Wang",
+        "Linxi \"Jim\" Fan",
+        "Trevor Darrell"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-21T17:59:56+00:00",
+      "link": "https://arxiv.org/pdf/2610.30136v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic world action model jointly predicting video and actions for embodied planning",
+      "llm_evidence_cn": "联合预测视频与动作的智能体世界动作模型以支撑具身规划",
+      "llm_evidence": "联合预测视频与动作的智能体世界动作模型以支撑具身规划",
+      "canonical_evidence": "联合预测视频与动作的智能体世界动作模型以支撑具身规划",
+      "llm_tldr_en": "AW-0 couples code-based planning with joint video and action prediction in one mixture-of-transformers, giving world action models compositional skill reuse grounded in physical dynamics.",
+      "llm_tldr_cn": "现有世界动作模型能为机器人操作提供视觉预见与未来预测，却缺乏组合式技能复用机制；而代码规划的智能体机器人又缺少物理动力学层面的预测支撑。作者提出AW-0框架，在统一的混合Transformer架构中联合建模代码、未来视频与机器人动作三股生成流，由代码专家生成参数化技能程序与控制逻辑。该方法将预测性世界模型与可复用技能规划结合，为具身智能体的长程操作提供新范式。",
+      "llm_tldr": "现有世界动作模型能为机器人操作提供视觉预见与未来预测，却缺乏组合式技能复用机制；而代码规划的智能体机器人又缺少物理动力学层面的预测支撑。作者提出AW-0框架，在统一的混合Transformer架构中联合建模代码、未来视频与机器人动作三股生成流，由代码专家生成参数化技能程序与控制逻辑。该方法将预测性世界模型与可复用技能规划结合，为具身智能体的长程操作提供新范式。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.35032v1",
+      "source": "arxiv",
+      "title": "JRDB-AVR: An Active Visual Reasoning Benchmark for Embodied Agents in Real-World Environments",
+      "abstract": "In complex embodied visual reasoning scenarios, an agent often has only a limited field of view, and the evidence needed to answer a question may be distributed across time, viewpoint, and interacting objects. A model may therefore give a plausible answer without ever observing the relevant object, time, or view that supports it. Current visual reasoning benchmarks largely evaluate passive observations and final answers, overlooking settings that require active reasoning and evidence acquisition. We introduce JRDB-AVR, a benchmark derived from existing real-world JRDB robotics data through a structured question-generation engine that turns this gap into an explicit evaluation: an embodied agentic system receives a visual reasoning question, requests bounded observations by timestamp and viewing angle, and is evaluated on both the final answer and the grounded visual evidence supporting it. The benchmark contains diverse questions over multiple real-world environments involving temporal search, viewpoint selection, and human-oriented compositional reasoning. We also introduce JRDB-AVR-Agent, a reference active reasoning agentic method that maintains an explicit observation-grounded graph-based world model and answers through solving. Experiments reveal a substantial gap between answer accuracy and evidence accuracy in current baselines, showing that current VLMs can produce unsupported correct answers and that active evidence-aware evaluation is necessary for embodied visual reasoning. Code and benchmark are available at https://github.com/ControlNet/JRDB-AVR.",
+      "authors": [
+        "Zhixi Cai",
+        "Fucai Ke",
+        "Sukai Huang",
+        "Maria Garcia de la Banda",
+        "Peter J. Stuckey",
+        "Gholamreza Haffari",
+        "Hamid Rezatofighi"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-09-28T12:30:11+00:00",
+      "link": "https://arxiv.org/pdf/2609.35032v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "benchmark for active visual reasoning and evidence acquisition by embodied agents in real-world environments",
+      "llm_evidence_cn": "真实环境中具身智能体主动视觉推理与证据获取的基准",
+      "llm_evidence": "真实环境中具身智能体主动视觉推理与证据获取的基准",
+      "canonical_evidence": "真实环境中具身智能体主动视觉推理与证据获取的基准",
+      "llm_tldr_en": "Embodied visual reasoning agents often answer plausibly without observing supporting evidence. JRDB-AVR builds an active reasoning benchmark from real robot data, requiring agents to actively acquire evidence across time and viewpoints.",
+      "llm_tldr_cn": "具身视觉推理中智能体视野有限，支撑答案的证据分散在时间、视角与交互物体之间，模型可能在未观测到关键证据时给出貌似合理的回答。现有基准多评估被动观察与最终答案，忽视主动推理过程。本文基于真实JRDB机器人数据，通过结构化问题生成引擎构建JRDB-AVR基准，要求具身智能体主动获取证据再作答。该基准为评估真实环境中的主动感知与推理能力提供了更严格的测试手段。",
+      "llm_tldr": "具身视觉推理中智能体视野有限，支撑答案的证据分散在时间、视角与交互物体之间，模型可能在未观测到关键证据时给出貌似合理的回答。现有基准多评估被动观察与最终答案，忽视主动推理过程。本文基于真实JRDB机器人数据，通过结构化问题生成引擎构建JRDB-AVR基准，要求具身智能体主动获取证据再作答。该基准为评估真实环境中的主动感知与推理能力提供了更严格的测试手段。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+      "matched_requirement_id": "req-1",
+      "selection_source": "carryover_cache",
+      "paper_id": "2609.35032v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.21484v1",
+      "source": "arxiv",
+      "title": "Context Matters! Social, Spatial, and Semantic Coordination with an Embodied Agent in Immersive Analytics",
+      "abstract": "Embodied AI agents in Augmented Reality (AR) could enable more natural collaboration in immersive analytics by engaging users through spatial, conversational, and visual interaction. However, designing such agents requires careful attention to context. We propose a preliminary conceptual framework for context-aware design of embodied agents structured around three dimensions of spatial, social, and semantic. This framework is further categorised into embeddedness (how agents are situated in the contexts) and awareness (how agents perceive and respond to the contexts). To explore this, we present Cobot, an embodied AI agent designed as a design probe. Cobot supports context-sensitive interaction through features such as gaze cues, spatial sound, and task-aware behaviour. We reflect on its design and identify implications for future contextaware embodied agents.",
+      "authors": [
+        "Andrew Cunningham",
+        "Nicolas Barbotin",
+        "Adam Drogemuller",
+        "Jack Faser"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-10-15T08:24:30+00:00",
+      "link": "https://arxiv.org/pdf/2610.21484v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "embodied AI agent perceiving and responding to spatial, social and semantic context",
+      "llm_evidence_cn": "具身智能体感知并响应空间、社交与语义情境",
+      "llm_evidence": "具身智能体感知并响应空间、社交与语义情境",
+      "canonical_evidence": "具身智能体感知并响应空间、社交与语义情境",
+      "llm_tldr_en": "Embodied agents in AR can enable natural collaboration, but designing them requires attention to context. The authors propose a three-dimensional context framework and build Cobot, an embodied agent probe that reacts to spatial, social and semantic cues.",
+      "llm_tldr_cn": "增强现实中的具身智能体有望支撑更自然的沉浸式分析协作，但其设计需充分考虑情境。作者提出围绕空间、社交与语义三个维度的情境感知设计框架，并区分嵌入性与感知性两个层面。据此实现具身智能体Cobot作为设计探针，支持情境敏感的交互。研究为具身智能体的情境化设计提供了概念基础与实践参照。",
+      "llm_tldr": "增强现实中的具身智能体有望支撑更自然的沉浸式分析协作，但其设计需充分考虑情境。作者提出围绕空间、社交与语义三个维度的情境感知设计框架，并区分嵌入性与感知性两个层面。据此实现具身智能体Cobot作为设计探针，支持情境敏感的交互。研究为具身智能体的情境化设计提供了概念基础与实践参照。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.19642v1",
+      "source": "arxiv",
+      "title": "Model What Matters: Decision-Guided Selective World Modeling for Language Agents",
+      "abstract": "Reinforcement learning provides a direct mechanism for optimizing task objectives in large language model-driven agents, but task rewards are typically sparse trajectory-level signals that only evaluate task success, without directly supervising action-conditioned environment transitions, leaving the model with limited explicit understanding of action consequences and environment dynamics. Recent work introduces auxiliary supervision through policy and world modeling co-training, yet typically treats complete environmental observations uniformly as world modeling targets, overlooking the varying decision relevance of observation content. We propose DGS-WM (Decision-Guided Selective World Modeling), a decision-guided policy-world modeling co-training approach for language agents. DGS-WM employs a Decision-Guided Observation Selection component that filters observation units with decision value as world modeling targets based on their support for subsequent policy responses, and a Confidence-Adaptive Weighting component that adaptively adjusts supervision strength according to the model's prediction confidence on selected targets. Together, these components form a decision-aware auxiliary world modeling loss, jointly optimized with the RL loss on the same policy model. Across multiple benchmarks covering single-hop/multi-hop question answering and interactive web tasks, DGS-WM achieves consistent improvements under different model scales and RL algorithms, demonstrating more stable and effective performance compared to full-observation world modeling methods.",
+      "authors": [
+        "Maolin Ran",
+        "Minda Chen",
+        "Di Huang",
+        "Wei Xiong",
+        "Fei Huang",
+        "Weiwen Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-10-14T06:11:08+00:00",
+      "link": "https://arxiv.org/pdf/2610.19642v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "world modeling for agent decision making",
+      "llm_evidence_cn": "支撑智能体决策的世界建模",
+      "llm_evidence": "支撑智能体决策的世界建模",
+      "canonical_evidence": "支撑智能体决策的世界建模",
+      "llm_tldr_en": "Language-agent RL suffers sparse rewards and uniform world modeling; DGS-WM selectively models decision-relevant observations alongside policy co-training to improve action-consequence understanding.",
+      "llm_tldr_cn": "大语言模型智能体的强化学习奖励通常是稀疏的轨迹级信号，缺乏对动作条件环境转移的直接监督，而现有策略与世界模型协同训练对所有观测一视同仁，忽视了内容的决策相关性差异。本文提出决策引导的选择性世界建模方法DGS-WM，按决策相关性筛选世界建模目标并与策略协同训练。结果表明该方法能增强智能体对动作后果与环境动态的理解并提升任务表现。该工作为世界模型支撑的智能体预测与决策提供了新思路。",
+      "llm_tldr": "大语言模型智能体的强化学习奖励通常是稀疏的轨迹级信号，缺乏对动作条件环境转移的直接监督，而现有策略与世界模型协同训练对所有观测一视同仁，忽视了内容的决策相关性差异。本文提出决策引导的选择性世界建模方法DGS-WM，按决策相关性筛选世界建模目标并与策略协同训练。结果表明该方法能增强智能体对动作后果与环境动态的理解并提升任务表现。该工作为世界模型支撑的智能体预测与决策提供了新思路。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.36171v1",
+      "source": "arxiv",
+      "title": "SkillWeaver: Agentic Exploration over Neural Interaction Skills for Scalable Robot Data Generation",
+      "abstract": "Large-scale demonstrations have driven unprecedented progress in robot learning, yet collecting robot data through teleoperation is expensive and difficult to scale to diverse environments and long-horizon tasks. Simulation offers a scalable alternative, but existing data-generation pipelines often rely on open-loop controllers, scripted skill sequences, or task-specific programs. We introduce SkillWeaver, an agentic framework that autonomously generates robot experience by exploring over Neural Interaction Skills (NIS): reusable, parameterized, closed-loop policies that expose learned physical interaction capabilities to a reasoning agent. Given a task and a simulated environment, a VLM agent reasons about what to do next, invokes and parameterizes NIS to interact with the environment, observes their outcomes, and generates verification, reflection, and memory to guide subsequent exploration. We instantiate NIS as reinforcement-learned policies for closed-loop, contact-rich manipulation and organize exploration as verifier-guided tree search, enabling the agent to discover successful long-horizon behaviors without relying on predetermined execution pipelines. SkillWeaver scales autonomously to 39.1K demonstrations across 14.1K scenes, which we distill into visuomotor policies. Across simulation benchmarks and real-world manipulation, training on SkillWeaver-generated experience substantially improves generalization to novel objects, spatial configurations, tasks, and environments, and enables zero- and few-shot sim-to-sim and sim-to-real transfer. Our results suggest agentic exploration over neural interaction skills as a scalable alternative for robot data generation.",
+      "authors": [
+        "He Zhu",
+        "Lusen Zhao",
+        "Kwan Man Cheng",
+        "Su Li",
+        "Katerina Fragkiadaki"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-09-28T19:41:42+00:00",
+      "link": "https://arxiv.org/pdf/2609.36171v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Agentic exploration over neural interaction skills for robot data generation",
+      "llm_evidence_cn": "基于神经交互技能的机器人数据生成智能体探索",
+      "llm_evidence": "基于神经交互技能的机器人数据生成智能体探索",
+      "canonical_evidence": "基于神经交互技能的机器人数据生成智能体探索",
+      "llm_tldr_en": "Introduces SkillWeaver, an agentic framework that explores reusable neural interaction skills to autonomously generate scalable robot experience in simulation.",
+      "llm_tldr_cn": "针对机器人学习依赖大规模演示、而遥操作数据采集成本高且难以扩展到多样环境和长程任务的问题，论文提出SkillWeaver智能体框架。该方法在神经交互技能上自主探索，这些技能是可复用、参数化的闭环策略，由视觉语言模型智能体推理下一步并生成机器人经验。框架减少了对开环控制器、脚本化技能序列和任务专用程序的依赖。工作为可扩展机器人数据生成和具身智能体学习提供了自主探索方案。",
+      "llm_tldr": "针对机器人学习依赖大规模演示、而遥操作数据采集成本高且难以扩展到多样环境和长程任务的问题，论文提出SkillWeaver智能体框架。该方法在神经交互技能上自主探索，这些技能是可复用、参数化的闭环策略，由视觉语言模型智能体推理下一步并生成机器人经验。框架减少了对开环控制器、脚本化技能序列和任务专用程序的依赖。工作为可扩展机器人数据生成和具身智能体学习提供了自主探索方案。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+      "matched_requirement_id": "req-8",
+      "selection_source": "carryover_cache",
+      "paper_id": "2609.36171v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.24431v1",
+      "source": "arxiv",
+      "title": "Low-Bit Distributed Constrained Optimization with Application to Optimal Scheduling and Allocation",
+      "abstract": "This paper proposes a distributed resource allocation algorithm in which each agent communicates only the sign of its local cost gradient, a single bit per directed link per iteration. The algorithm is based on Laplacian-gradient dynamics and preserves the equality (demand) constraint at every iterate, guaranteeing anytime feasibility irrespective of termination time.   First, we provide a complete Lyapunov-based convergence analysis for the fixed-step-size regime: the iterates are shown to enter, in at most O(1/\\varepsilon^2) iterations, a neighborhood of the optimizer whose radius scales as O(τ) in the decision variable and O(τ^2) in the cost residual, where $τ$ is the step-size. Crucially, the step-size bound is a time-invariant network constant (depending only on the graph Laplacian spectrum and the cost curvature bounds), so no adaptive tuning is required.   Second, we characterize the invariant set under B-connected, weight-balanced digraphs, strictly weaker than the all-time connectivity and doubly-stochastic weights assumed in most prior work, and show that any odd, sign-preserving nonlinearity yields the same invariant-set and descent structure, with the single-bit protocol being the extreme communication-minimizing instance of a broader nonlinear class.   Third, we address local box constraints via smooth penalty relaxation and quantify explicitly how the penalty weight interacts with the step-size bound and the optimality gap.   Simulations on economic dispatch (1000 generators) and CPU scheduling (500 servers) demonstrate that the single-bit protocol achieves 5-60 times reduction in total communication cost relative to multi-bit baselines, at the price of a tunable and explicitly bounded optimality gap. A diminishing step-size schedule is shown empirically to eliminate this gap; its formal convergence analysis is identified as an open problem.",
+      "authors": [
+        "Mohammadreza Doostmohammadian",
+        "Sergio Pequito"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY",
+        "cs.DC",
+        "cs.MA",
+        "math.OC"
+      ],
+      "published": "2026-10-17T03:49:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.24431v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "distributed constrained optimization for optimal scheduling and resource allocation",
+      "llm_evidence_cn": "面向最优调度与资源分配的分布式约束优化",
+      "llm_evidence": "面向最优调度与资源分配的分布式约束优化",
+      "canonical_evidence": "面向最优调度与资源分配的分布式约束优化",
+      "llm_tldr_en": "A distributed resource allocation algorithm communicates only one bit per link per iteration using sign-based Laplacian-gradient dynamics, preserving the demand constraint at every iterate with Lyapunov convergence guarantees.",
+      "llm_tldr_cn": "分布式资源分配中通信开销大，且需在任意终止时刻保持需求约束可行。作者提出基于拉普拉斯梯度动力学的算法，每个有向链路每次迭代仅传输本地代价梯度的符号一位信息。Lyapunov分析证明固定步长下迭代在O(1/ε²)内进入最优解邻域，并保证每次迭代等式约束可行。该低通信分布式优化方法为调度与资源分配提供了高效且随时可行的求解工具。",
+      "llm_tldr": "分布式资源分配中通信开销大，且需在任意终止时刻保持需求约束可行。作者提出基于拉普拉斯梯度动力学的算法，每个有向链路每次迭代仅传输本地代价梯度的符号一位信息。Lyapunov分析证明固定步长下迭代在O(1/ε²)内进入最优解邻域，并保证每次迭代等式约束可行。该低通信分布式优化方法为调度与资源分配提供了高效且随时可行的求解工具。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.22683v1",
+      "source": "arxiv",
+      "title": "Dynamic Auction Mechanisms in a Closed-Credit Economy: Sequential Slot Reallocation in Air Traffic Management",
+      "abstract": "Indivisible resources allocated in advance may need to be reallocated when capacity reductions make existing assignments infeasible, yet monetary compensation is often impractical or undesirable. We develop a sequential resource reallocation scheme using reusable artificial credits, where agents hold pre-existing resource rights and have heterogeneous marginal valuations over time blocks. Capacity reductions produce fractional endowments, which our closed-credit scheme resolves into indivisible final allocations. We model agents' intertemporal preferences through a predicted-value-to-go function and characterize conditions ensuring that their optimal demand is non-increasing in price. We propose an ascending-auction mechanism that partitions agents into subgroups and uses the minimum subgroup market-clearing price as a common transaction price. We show that the mechanism preserves non-myopic individual rationality and weak nontrader neutrality. Moreover, we establish Pareto efficiency under optimal-demand clearing in the unified market and bound the expected gain from misreporting by the probability that an agent changes the common price. Simulations of airport slot reallocation demonstrate reductions in total modeled delay and cancellation costs relative to a ground-delay baseline.",
+      "authors": [
+        "Jihun Kim",
+        "Pan-Yang Su",
+        "Maria G. Mendoza",
+        "Victoria Marie Tuck",
+        "Chinmay Maheshwari",
+        "S. Shankar Sastry"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.MA"
+      ],
+      "published": "2026-10-15T21:53:05+00:00",
+      "link": "https://arxiv.org/pdf/2610.22683v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "sequential resource reallocation of indivisible time slots via closed-credit ascending auction",
+      "llm_evidence_cn": "基于封闭信用升价拍卖的不可分时隙序贯资源再分配",
+      "llm_evidence": "基于封闭信用升价拍卖的不可分时隙序贯资源再分配",
+      "canonical_evidence": "基于封闭信用升价拍卖的不可分时隙序贯资源再分配",
+      "llm_tldr_en": "The paper designs a closed-credit sequential reallocation auction for indivisible time-slot resources when capacity cuts make prior assignments infeasible, avoiding monetary compensation.",
+      "llm_tldr_cn": "预先分配的不可分资源在容量削减时需重新分配，而货币补偿往往不可行。作者提出基于可重复使用人工信用的序贯资源再分配机制，处理容量削减产生的分数配给并得到不可分最终分配。通过预测价值函数建模跨期偏好并给出需求随价格单调不增的条件，设计升价拍卖。研究为航空交通管理等场景的资源再分配提供了无货币补偿机制。",
+      "llm_tldr": "预先分配的不可分资源在容量削减时需重新分配，而货币补偿往往不可行。作者提出基于可重复使用人工信用的序贯资源再分配机制，处理容量削减产生的分数配给并得到不可分最终分配。通过预测价值函数建模跨期偏好并给出需求随价格单调不增的条件，设计升价拍卖。研究为航空交通管理等场景的资源再分配提供了无货币补偿机制。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find articles about scheduling algorithms, job scheduling, and resource allocation.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.36578v1",
+      "source": "arxiv",
+      "title": "Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions",
+      "abstract": "Scheduling problems arise from repeatedly selecting one item from a set of candidates based on their states. These problems often reduce to assigning priority scores and choosing the highest-ranked item. In this work, we propose a factorized scheduling principle (FSP) framework to learn interpretable and transferable scheduling rules. The FSP framework represents system states as condition distributions and decomposes a global scheduling principle into additive univariate and pairwise components with identifiability constraints. The scheduling principle enables the framework to maintain a simple priority-based structure during deployment. This principle is learned by using a policy-based objective combined with a temporal-difference signal defined on the condition distribution. Experiments on synthetic and realistic scheduling tasks demonstrate the FSP framework's strong performance, interpretability, and zero-shot generalization across different system scales.",
+      "authors": [
+        "Hong Je-Gal",
+        "Hyun-Suk Lee"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-29T02:55:27+00:00",
+      "link": "https://arxiv.org/pdf/2609.36578v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "learning interpretable priority-based scheduling policies via structured additive functions",
+      "llm_evidence_cn": "通过结构化加性函数学习可解释的优先级调度策略",
+      "llm_evidence": "通过结构化加性函数学习可解释的优先级调度策略",
+      "canonical_evidence": "通过结构化加性函数学习可解释的优先级调度策略",
+      "llm_tldr_en": "Scheduling reduces to scoring candidates by priority, but learned policies are often opaque. This paper proposes a factorized scheduling principle decomposing the global rule into additive univariate and pairwise components, yielding interpretable and transferable priority policies.",
+      "llm_tldr_cn": "许多调度问题可归结为按状态为候选对象打分并选出最高者，但学习得到的调度策略往往缺乏可解释性与可迁移性。本文提出因子化调度原理FSP框架，将系统状态表示为条件分布，并把全局调度规则分解为带可识别性约束的单变量与成对加性分量。该框架在部署时保持简单的优先级结构，并通过策略目标学习。结果表明该方法能获得可解释且可迁移的调度规则。",
+      "llm_tldr": "许多调度问题可归结为按状态为候选对象打分并选出最高者，但学习得到的调度策略往往缺乏可解释性与可迁移性。本文提出因子化调度原理FSP框架，将系统状态表示为条件分布，并把全局调度规则分解为带可识别性约束的单变量与成对加性分量。该框架在部署时保持简单的优先级结构，并通过策略目标学习。结果表明该方法能获得可解释且可迁移的调度规则。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "job scheduling algorithms and optimization methods",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2609.36578v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.24549v1",
+      "source": "arxiv",
+      "title": "CARVS: A Congestion-Aware Algorithm for Online Multi-Agent Pickup-and-Delivery in Human-Collaborative Warehouses",
+      "abstract": "Intelligent warehouse systems have transformed logistics by integrating robots with minimal infrastructure changes, boosting efficiency and optimizing workflows compared to traditional human-only operations. However, human-robot collaboration introduces new challenges, particularly due to human uncertainty, which leads to dynamic interactions and unpredictable behavior. To address these complexities, this paper presents the Multi-Agent Pickup-and-Delivery with Human Collaboration (MAPDwHC) problem, an extension of the Multi-Agent Pickup-and-Delivery (MAPD) problem that incorporates human unpredictability. This problem adds key constraints, such as dynamic obstacles caused by robots temporarily blocking paths when interacting with humans, and the need for real-time responsiveness. We formalize the MAPDwHC problem with additional constraints and properties. Based on this problem setting, we propose the CARVS algorithm, which improves task assignment and path planning by integrating task swapping, validation checks, and random initialization. CARVS reduces congestion, enhances adaptability to human-robot interactions, and ensures real-time responsiveness. Simulation results show that CARVS significantly reduces timeouts of path planning in large-scale scenarios where traditional MAPD algorithms fail, improving both efficiency and scalability.",
+      "authors": [
+        "Chaoran Li",
+        "Zeyuan Zhao",
+        "Shao Zhang"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA",
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-10-17T08:17:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.24549v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "online multi-agent pickup-and-delivery scheduling for robotic warehouse systems",
+      "llm_evidence_cn": "机器人仓库系统中的在线多智能体取送调度",
+      "llm_evidence": "机器人仓库系统中的在线多智能体取送调度",
+      "canonical_evidence": "机器人仓库系统中的在线多智能体取送调度",
+      "llm_tldr_en": "Human-robot collaboration in warehouses introduces unpredictable humans and dynamic obstacles. The authors formalize MAPDwHC and propose CARVS, a congestion-aware online algorithm for multi-agent pickup-and-delivery scheduling.",
+      "llm_tldr_cn": "智能仓库中的人机协作带来人类行为不确定、路径临时阻塞等新挑战，传统多智能体取送问题难以应对。本文提出带人类协作的多智能体取送问题MAPDwHC，并设计考虑拥堵的在线算法CARVS。算法在动态环境下为机器人分配取送任务并规划路径。研究提升了人机共存仓库中的机器人调度效率与鲁棒性。",
+      "llm_tldr": "智能仓库中的人机协作带来人类行为不确定、路径临时阻塞等新挑战，传统多智能体取送问题难以应对。本文提出带人类协作的多智能体取送问题MAPDwHC，并设计考虑拥堵的在线算法CARVS。算法在动态环境下为机器人分配取送任务并规划路径。研究提升了人机共存仓库中的机器人调度效率与鲁棒性。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.22972v1",
+      "source": "arxiv",
+      "title": "Converter-Aware Coordination of Computing Flexibility in Behind-the-Meter Data Centers",
+      "abstract": "Data centers are emerging as large electricity consumers whose demand can be reshaped through workload scheduling. However, computing flexibility in behind-the-meter facilities does not automatically translate into electrically realizable power flexibility. Ignoring converter and network operating limits may cause converter overloads, protection trips, and interruptions to power supply and computing services. This paper proposes a converter-aware intraday scheduling methodology. First, a task-level mixed-integer linear formulation preserves synchronous training configurations and completion requirements, while Minkowski-sum aggregation and Shapley--Folkman convexification yield a linear inference-pool representation without unit-level binary variables. The latter admits a conditional relative relaxation-gap bound that decreases inversely with pool size. Second, a four-node electrical model links computing demand, on-site injections, and grid exchange to converter and network limits through lifted voltage variables and second-order cone relaxation. Finally, a mixed-integer model coordinates workloads, photovoltaic generation, energy storage, and grid purchases. Case studies show that electrical limits reshape scheduling and renewable utilization, while on-site resources reduce grid dependence. Under the studied conditions, fixed training cannot support full inference service within voltage limits, whereas coordinated scheduling achieves negligible inference shortage and passes verification against the original alternating-current model. These findings demonstrate the role of computing--electrical coordination in realizing the operational value of workload flexibility.",
+      "authors": [
+        "Ruolan Cui",
+        "Ruizhang Yang",
+        "Chenxi Hu",
+        "Franxis Yunhe Hou"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-10-16T05:44:50+00:00",
+      "link": "https://arxiv.org/pdf/2610.22972v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "workload scheduling in data centers with power constraints",
+      "llm_evidence_cn": "数据中心工作负载调度与功率约束",
+      "llm_evidence": "数据中心工作负载调度与功率约束",
+      "canonical_evidence": "数据中心工作负载调度与功率约束",
+      "llm_tldr_en": "Data center workload scheduling can reshape power demand, but converter limits may cause overloads; a converter-aware intraday MILP with convexification yields electrically realizable flexibility.",
+      "llm_tldr_cn": "数据中心可通过工作负载调度重塑用电需求，但计算灵活性未必转化为可实现的电力灵活性，忽略变流器与网络限制会导致过载与供电中断。本文提出计及变流器的日内调度方法，用任务级混合整数线性模型保持同步训练配置，并借助Minkowski和聚合与Shapley-Folkman凸化得到线性推理池表示。结果表明该方法无需单元级建模即可刻画可行的功率调节范围，为数据中心参与电网调度提供了电气上可执行的协调框架。",
+      "llm_tldr": "数据中心可通过工作负载调度重塑用电需求，但计算灵活性未必转化为可实现的电力灵活性，忽略变流器与网络限制会导致过载与供电中断。本文提出计及变流器的日内调度方法，用任务级混合整数线性模型保持同步训练配置，并借助Minkowski和聚合与Shapley-Folkman凸化得到线性推理池表示。结果表明该方法无需单元级建模即可刻画可行的功率调节范围，为数据中心参与电网调度提供了电气上可执行的协调框架。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2609.39349v1",
+      "source": "arxiv",
+      "title": "Multidimensional Resource Scheduling with Small Demands",
+      "abstract": "We study multidimensional resource scheduling. Each job $i$ has a $d$-dimensional resource-demand vector $v_i$ and a processing time $s_i$. The scheduler assigns a start time to each job, subject to the constraint that, at every time, the total demand of the jobs being processed does not exceed $1$ in any resource dimension. The objective is to minimize the makespan.   We focus on the regime in which every individual resource demand is small. We ask whether the favorable \\emph{small-vector phenomenon} known for multidimensional vector packing, which corresponds to the special case of unit processing times, extends to jobs with heterogeneous processing times. The key difficulty is that arbitrary processing times create temporal interactions across multiple duration scales: a long job may overlap many shorter jobs, while feasibility must be maintained throughout every job's execution interval.   We prove that the small-vector phenomenon persists in this temporal setting. For any $0<ε<1/4$, after normalizing the maximum processing time to $1$, if every coordinate of every demand vector is at most $O(ε^2/\\log(d/ε))$, we give a randomized offline algorithm that produces a schedule with expected makespan at most $ (1+6ε)\\mathrm{OPT}+3$. Thus, sufficiently small resource demands admit asymptotically near-optimal schedules in arbitrary dimension, despite heterogeneous processing times.   We also obtain constant competitive ratios in the online setting. Let $T$ denote the ratio between the maximum and minimum processing times. If every coordinate is at most $O(1/(\\log d\\log T))$, we give a randomized $O(1)$-competitive algorithm, with a competitive ratio independent of both $d$ and $T$. We further derandomize our approach, obtaining a deterministic $O(1)$-competitive algorithm under a comparable smallness assumption.",
+      "authors": [
+        "Yossi Azar",
+        "Rathish Das",
+        "Hao Sun"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS"
+      ],
+      "published": "2026-09-30T09:11:11+00:00",
+      "link": "https://arxiv.org/pdf/2609.39349v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Multidimensional resource scheduling with small demands",
+      "llm_evidence_cn": "小需求下的多维资源调度",
+      "llm_evidence": "小需求下的多维资源调度",
+      "canonical_evidence": "小需求下的多维资源调度",
+      "llm_tldr_en": "Studies multidimensional resource scheduling where jobs have d-dimensional demands and processing times, focusing on the small-demand regime and whether the small-vector phenomenon extends.",
+      "llm_tldr_cn": "针对多维资源调度中作业同时具有d维资源需求和不同加工时间的问题，论文在任意时刻各维总需求不超过1的约束下最小化工期。研究聚焦每个资源需求都很小的情形，探讨向量装箱中已知的小向量现象能否推广到异构加工时间。关键难点在于任意加工时间会引入跨多个时长的时序交互，论文对此进行分析并给出理论进展。工作推进了多维资源调度在小需求与异构加工时间下的理解。",
+      "llm_tldr": "针对多维资源调度中作业同时具有d维资源需求和不同加工时间的问题，论文在任意时刻各维总需求不超过1的约束下最小化工期。研究聚焦每个资源需求都很小的情形，探讨向量装箱中已知的小向量现象能否推广到异构加工时间。关键难点在于任意加工时间会引入跨多个时长的时序交互，论文对此进行分析并给出理论进展。工作推进了多维资源调度在小需求与异构加工时间下的理解。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "carryover_cache",
+      "paper_id": "2609.39349v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.24617v1",
+      "source": "arxiv",
+      "title": "Task Offloading and Resource Allocation for Deterministic Service Provisioning in the IoT-Edge-Cloud Continuum",
+      "abstract": "Future networks will seamlessly integrate computing and communication resources within a unified ecosystem of IoT devices, edge nodes, and cloud servers, forming an IoT-edge-cloud continuum. Within such an ecosystem, tasks can be dynamically offloaded to leverage resources across the continuum and efficiently scale with demand. Task offloading has traditionally focused on minimizing task execution latency or energy consumption. In contrast, we propose a deterministic task offloading and resource allocation scheme for the joint management of communication and computing resources to support services with deterministic service-level requirements. The proposed scheme aims to maximize the number of tasks completed on time, rather than minimizing the latency of individual tasks. To do so, it exploits variable task latency requirements to distribute the workload across the continuum. It can also prioritize high-priority tasks under resource scarcity. Numerical evaluations demonstrate that a deterministic task offloading strategy scales more effectively and can better guarantee timely task completion by balancing resource utilization across the continuum.",
+      "authors": [
+        "K. Aghababaiyan",
+        "B. Coll-Perales",
+        "J. Gozalvez"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-10-17T10:44:50+00:00",
+      "link": "https://arxiv.org/pdf/2610.24617v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "joint task offloading and computing resource allocation across continuum",
+      "llm_evidence_cn": "跨连续体的任务卸载与计算资源联合分配",
+      "llm_evidence": "跨连续体的任务卸载与计算资源联合分配",
+      "canonical_evidence": "跨连续体的任务卸载与计算资源联合分配",
+      "llm_tldr_en": "Traditional task offloading only minimizes latency or energy, which cannot guarantee deterministic service levels. The paper proposes deterministic offloading and resource allocation that jointly manages communication and computing to maximize on-time task completion.",
+      "llm_tldr_cn": "传统任务卸载多聚焦时延或能耗最小化，难以满足确定性服务水平要求。本文面向物联网-边缘-云连续体，提出确定性的任务卸载与资源分配方案，联合管理通信与计算资源。方案以最大化按时完成的任务数为目标，为确定性服务级需求提供保障。该工作为异构连续体中的计算资源调度与确定性服务供给提供了联合优化思路。",
+      "llm_tldr": "传统任务卸载多聚焦时延或能耗最小化，难以满足确定性服务水平要求。本文面向物联网-边缘-云连续体，提出确定性的任务卸载与资源分配方案，联合管理通信与计算资源。方案以最大化按时完成的任务数为目标，为确定性服务级需求提供保障。该工作为异构连续体中的计算资源调度与确定性服务供给提供了联合优化思路。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.23532v1",
+      "source": "arxiv",
+      "title": "Exploiting the Flexibility of LLM Inference for Frequency Regulation Service",
+      "abstract": "While the widespread deployment of Large Language Models (LLMs) has significantly driven up power demands in computing clusters, the unique execution characteristics of LLM inference offer a novel opportunity to utilize these clusters as controllable loads. In this paper, we investigate the potential of LLM inference cluster to provide frequency regulation services through inference request scheduling. First, we model the problem as a hierarchical Markov decision process that includes request-to-replica dispatching and token-level resource allocation. Then, we introduce a reward redistribution network to address the temporal asynchrony between millisecond-level scheduling decisions and second-level frequency regulation signals. Furthermore, we develop an optimization framework based on a mean-field approximation to enable coordination among a large number of replicas under high request concurrency. Simulations using real-world data demonstrate that the proposed approach accurately tracks frequency regulation signals without compromising service-level objectives.",
+      "authors": [
+        "Yimeng Sun",
+        "Zhaohao Ding"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-10-16T14:29:33+00:00",
+      "link": "https://arxiv.org/pdf/2610.23532v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "inference request scheduling and token-level resource allocation in computing clusters",
+      "llm_evidence_cn": "计算集群中的推理请求调度与token级资源分配",
+      "llm_evidence": "计算集群中的推理请求调度与token级资源分配",
+      "canonical_evidence": "计算集群中的推理请求调度与token级资源分配",
+      "llm_tldr_en": "Models LLM inference request scheduling as a hierarchical Markov decision process with request dispatching and token-level allocation, adding reward redistribution to align with frequency regulation signals.",
+      "llm_tldr_cn": "针对大模型推理集群功耗高但执行特性可被用作可控负荷的机遇，本文研究通过推理请求调度为电网提供调频服务的潜力。作者将请求到副本的分派与token级资源分配建模为分层马尔可夫决策过程，并引入奖励重分配网络以缓解毫秒级调度决策与秒级调频信号之间的时间异步。该工作展示了计算集群作为灵活资源参与电力辅助服务的可行性。",
+      "llm_tldr": "针对大模型推理集群功耗高但执行特性可被用作可控负荷的机遇，本文研究通过推理请求调度为电网提供调频服务的潜力。作者将请求到副本的分派与token级资源分配建模为分层马尔可夫决策过程，并引入奖励重分配网络以缓解毫秒级调度决策与秒级调频信号之间的时间异步。该工作展示了计算集群作为灵活资源参与电力辅助服务的可行性。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

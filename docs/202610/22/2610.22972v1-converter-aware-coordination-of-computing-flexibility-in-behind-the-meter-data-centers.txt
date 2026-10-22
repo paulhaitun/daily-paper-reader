@@ -1,0 +1,1144 @@
+Title: Converter-Aware Coordination of Computing Flexibility in Behind-the-Meter Data Centers
+
+URL Source: https://arxiv.org/pdf/2610.22972v1
+
+Published Time: Mon, 19 Oct 2026 00:43:58 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> 1
+
+# Converter-Aware Coordination of Computing Flexibility in Behind-the-Meter Data Centers 
+
+Ruolan Cui, Student Member, IEEE, Ruizhang Yang, Member, IEEE, Chenxi Hu, Member, IEEE, 
+
+Francis Yunhe Hou, Fellow, IEEE 
+
+Abstract —Data centers are emerging as large electricity con-sumers whose demand can be reshaped through workload scheduling. However, computing flexibility in behind-the-meter facilities does not automatically translate into electrically realiz-able power flexibility. Ignoring converter and network operating limits may cause converter overloads, protection trips, and interruptions to power supply and computing services. This paper proposes a converter-aware intraday scheduling methodology. First, a task-level mixed-integer linear formulation preserves syn-chronous training configurations and completion requirements, while Minkowski-sum aggregation and Shapley–Folkman convex-ification yield a linear inference-pool representation without unit-level binary variables. The latter admits a conditional relative relaxation-gap bound that decreases inversely with pool size. Second, a four-node electrical model links computing demand, on-site injections, and grid exchange to converter and network limits through lifted voltage variables and second-order cone relaxation. Finally, a mixed-integer model coordinates workloads, photovoltaic generation, energy storage, and grid purchases. Case studies show that electrical limits reshape scheduling and renewable utilization, while on-site resources reduce grid dependence. Under the studied conditions, fixed training cannot support full inference service within voltage limits, whereas coordinated scheduling achieves negligible inference shortage and passes verification against the original alternating-current model. These findings demonstrate the role of computing–electrical coordination in realizing the operational value of workload flexibility. 
+
+Index Terms —Behind-the-meter data center, computing flex-ibility, converter-aware scheduling, electrical feasibility, SOCP relaxation. 
+
+I. I NTRODUCTION 
+
+# DATA centers (DCs) are emerging as large, computation-driven loads whose power demand can be reshaped through workload scheduling [1]–[3]. Unlike traditional loads, their power profiles depend on service-request arrivals, computing-resource allocation, and power-control strate-gies [2], [3]. This dependence creates an opportunity to coordinate computing services with power-system operation, but workload schedulability alone does not establish whether the corresponding power trajectory is electrically feasible. The form of computing flexibility differs across workload types [1], [3]. Training tasks exhibit strong intertemporal schedulability. Their power profiles can be adjusted through their start times, execution progress, and parallel scale [5]. Inference tasks have strict real-time requirements, but their power–throughput relationship can still be adjusted through resource-pool allocation and the proportions of different op-erating configurations [2], [3]. In addition, field experiments 
+
+Ruolan Cui, Ruizhang Yang, and Francis Yunhe Hou are with the Depart-ment of Electrical and Computer Engineering, The University of Hong Kong, Hong Kong. Chenxi Hu is with the Department of Computer Science, The Hang Seng University of Hong Kong, Hong Kong. 
+
+show that software workload orchestration can achieve sus-tained power reductions in graphics processing unit (GPU) clusters [3]. These features allow DCs to be treated as dis-patchable computing loads [6], [7], while requiring distinct representations of synchronous training decisions and weakly coupled inference allocation. This scheduling flexibility becomes particularly valuable in behind-the-meter (BTM) DCs, where site-level resources can be coordinated with computing loads. The BTM configuration highlighted by the North American Electric Reliability Corpo-ration (NERC) enables computing loads, on-site photovoltaic (PV) generation, energy storage (ES), and power-electronic interfaces to operate behind the point of common coupling (PCC) [4], [8]. These components jointly determine the site’s net power exchange, power balance, and electrical operat-ing state [8], [9]. Consequently, the electrical realization of computing flexibility depends on coordinated decisions across workloads, on-site resources, and power-electronic interfaces. Schedules that satisfy computing-service requirements and site energy balance may still violate internal voltage, branch-capacity, PCC exchange, or converter physical limits [9], [10]. Energy-only optimization therefore cannot by itself establish the electrically realizable value of computing flexibility. In the considered site, training and inference occupy separate computing pools but share electrical infrastructure. Moving training toward PV-rich periods must therefore be coordinated with concurrent inference demand and interface loading. Ad-dressing this gap requires both a workload representation that preserves the relevant scheduling choices and an electrical representation that connects these choices to site operation. The literature is reviewed from three related perspectives: (1) computing-load models, (2) converter-aware security con-straints, and (3) intraday scheduling. First, existing DC computing-load models mainly include fine-grained, facility-level, and data-driven models [2], [11]. Fine-grained models provide detailed task and device repre-sentations, but they introduce many discrete variables when embedded into large-scale scheduling [7], [12]. Facility-level models are low-dimensional and easy to optimize, but their coarse representations have difficulty describing computing-service constraints and task-scheduling decisions [13]. Data-driven models have strong prediction capability, but their physical interpretability and compatibility with optimization models are often limited [11], [14]. The remaining modeling need is to preserve the distinct scheduling structures of training and inference without carrying all unit-level discrete decisions into site-level optimization [2]. Second, research on the secure operation of microgrids and power-electronic interfaces mainly includes static security regions, optimal power flow, and converter physical con-arXiv:2610.22972v1 [eess.SY] 16 Oct 2026 2
+
+straints [9], [10]. Static security regions enable efficient secu-rity screening but are typically not integrated with computing-load scheduling [10], [15]. Optimal power-flow models pro-vide detailed physical descriptions but become computation-ally challenging when alternating-current (AC) power flow and power-electronic interfaces are considered [9], [16]. Converter physical constraints describe interface capabilities [17], but these capabilities must be linked to computing-task decisions when DC flexibility is scheduled. The issue for BTM DC operation is therefore not the availability of converter limits in isolation, but their integration with workload decisions and on-site energy coordination. Third, existing optimal scheduling studies for DCs mainly include task-time scheduling and grid-coordinated schedul-ing [3], [7]. The former adjusts power timing through task deferral, continuous execution, or interruption and restart [12], [18]. The latter enables DCs to participate in demand response, active distribution-network optimization, or ancillary-service markets as controllable loads [7], [12]. These studies demon-strate the operational flexibility of DCs. However, translating this flexibility into BTM operation requires joint consider-ation of heterogeneous workload structures, on-site energy resources, and converter and network limits. The remaining need is a tractable scheduling model that preserves training completion and period-wise inference-service requirements while accounting for the electrical conditions under which workload adjustments are used. The central question is therefore how computing-side schedulability can be converted into electrically feasible op-eration at a BTM DC. Two coupled modeling difficulties must be addressed: preserving task-level training choices with-out retaining all discrete inference-unit decisions, and em-bedding nonlinear electrical relationships into a multi-period mixed-integer problem. This paper addresses these difficulties through task-aware workload models and a converter-aware electrical representation. The main contributions are as fol-lows:  
+
+> •
+
+Task-aware linear representations preserve the different scheduling structures of training and inference. Syn-chronous training retains discrete configurations and con-tinuous within-segment throughput, whereas weakly cou-pled inference is represented by a resource-pool linear model through feasible-set aggregation and resource-pool convexification. The inference representation scales with the number of operating segments rather than computing units. Under the stated assumptions, its relative relaxation gap admits an O(1 /N ) upper bound, where N is the number of inference computing units.  
+
+> •
+
+Computing-load decisions are linked to site electrical operation through a four-node equivalent model. This representation couples computing power, on-site injec-tions, and PCC exchange with voltage, PCC and branch-capacity, and converter current and modulation limits. Building on existing converter formulations, the current and modulation limits are expressed in exact conic form, while lifted voltage products are relaxed through second-order cone programming (SOCP). The resulting represen-tation enables tractable electrical coordination within the intraday scheduling model.  
+
+> •
+
+An intraday model jointly schedules computing work-loads, PV, ES, and grid purchases under training-Section II High-fidelity linear computing model  
+
+> A. Computing -Unit Power Model A. Four -Node Electrical Model
+
+Section III Converter-aware 
+
+security constraints  
+
+> Theorem 1
+> Inference Aggregation
+> Relaxation -Gap Bound
+> B. Converter and Network
+> Operating Constraints
+> B. Training
+> Workloads
+> C. Inference Workloads
+> A. Objective :
+> Minimize Intraday
+> Operating Cost C. On -Site Energy Coordination
+> B. Computing -Load and
+> Security Constraints
+> SOCP -Relaxed Converter -Aware
+> Formulation
+
+Section  IV 
+
+Intraday  scheduling 
+
+of BTM DCs  
+
+> Fig. 1. Overview of the proposed methodology. Section II develops task-aware training and inference load models, Section III constructs the SOCP-relaxed converter-aware electrical constraint set, and Section IV coordinates computing workloads, on-site energy resources, and grid exchange.
+
+completion, inference-service, and SOCP-relaxed electri-cal constraints. Case studies examine changes in work-load and energy decisions under electrical limits. Separate diagnostics evaluate inference aggregation and electrical relaxation, and an ex-post check verifies the baseline commands against the original AC model. Fig. 1 summarizes the methodology. Sections II and III de-velop the computing-load and electrical models, respectively; Section IV combines them in intraday scheduling. Section V presents the case studies, and Section VI concludes. II. H IGH -F IDELITY LINEAR COMPUTING MODEL 
+
+This section develops task-aware linear power–throughput models. Here, fidelity refers to retaining discrete operating modes and workload service requirements under the stated assumptions. Strongly coupled training is represented at the task level, whereas weakly coupled inference is convexified at the resource-pool level. 
+
+A. Computing-Unit Power Model 
+
+Computing units in a DC include GPUs and application-specific integrated circuits. The power of a single comput-ing unit is affected by computing throughput and operating mode [19], [20]. Under a fixed operating mode, the computing-unit power can usually be approximated by a linear function of throughput. When the unit switches among idle, low-load, high-load, and power-capping states, its power–throughput relationship becomes piecewise linear and nonconvex [3], [7], [14]. The piecewise-linear power–throughput characteristics of computing unit i are represented as 
+
+pi =
+
+> S
+
+X
+
+> m=1
+
+(Amγi,m + Bmyi,m )
+
+> S
+
+X
+
+> m=1
+
+yi,m = 1 , yi,m ∈ { 0, 1}
+
+lmyi,m ≤ γi,m ≤ umyi,m , ∀mγi =
+
+> S
+
+X
+
+> m=1
+
+γi,m .
+
+(1) Here, i indexes computing units, and m = 1 , . . . , S indexes the S operating segments. For segment m, Am and Bm denote 3
+
+the slope and intercept of the power–throughput relationship, while lm and um denote its lower and upper throughput limits, respectively. The binary variable yi,m indicates whether unit i operates in segment m, and γi,m is the corresponding throughput. Finally, γi and pi denote the total throughput and power consumption of computing unit i, respectively. The coefficients and throughput limits are calibrated separately for training and inference; pool superscripts are omitted where the context is unambiguous. The computing workloads considered here comprise training and inference. Training loads emphasize synchronous paral-lelism and progress consistency within the same task [21]– [23]. Inference loads emphasize request decomposability and real-time response [3], [24], [25]. These differences determine the smallest schedulable unit, aggregation scale, and latency requirement. Therefore, task-aware linear representations are developed separately for training and inference loads. 
+
+B. Training Workloads 
+
+Training uses large datasets to iteratively update model parameters and weights. A single training job is usually allo-cated to multiple computing units for parallel execution. This process has strong synchronization coupling. Computing units assigned to the same training job must maintain consistent progress and operating states, and the task advances through gradient synchronization, parameter exchange, and communi-cation coordination. Therefore, the smallest schedulable unit for training workloads is a training-task cluster [22], [23]. Based on these features, a task-arrival-driven, task-level aggregation model is used for training loads [2], [26]. Let 
+
+T = {1, . . . , T } be the set of scheduling periods, where T is the number of periods, and let K be the set of training tasks. For task k ∈ K , ak, Dk, and dk denote its arrival-period index, permitted deadline offset in periods, and deadline-period index, respectively. The parameter Atr  
+
+> t
+
+is the number of training tasks arriving in period t, I(·) is the indicator function, and Tk is the schedulable window of task k:
+
+Atr  
+
+> t
+
+= X
+
+> k∈K
+
+I(ak = t),dk = min {ak + Dk, T },
+
+Tk = {t ∈ T | ak ≤ t ≤ dk}.
+
+(2) The window includes both endpoints and contains dk − ak + 1 
+
+periods. Within this window, each training task selects one configuration in each period from the candidate set Ck, where 
+
+c = 0 denotes the idle configuration. Each configuration specifies the number of computing units and the operating segment, while throughput remains adjustable within that segment. The binary variable zk,c,t equals one if task k uses configuration c in period t:
+
+X
+
+> c∈C k
+
+zk,c,t = 1 , zk,c,t ∈ { 0, 1}, ∀k ∈ K , t ∈ T k. (3) Let nc denote the number of computing units assigned under configuration c, and let Γk,c,t and Pk,c,t be its selected throughput and information technology (IT) power. The task-level quantities are 
+
+Γk,t = X
+
+> c∈C k
+
+Γk,c,t ,nk,t = X
+
+> c∈C k
+
+nczk,c,t ,Pk,t = X
+
+> c∈C k
+
+Pk,c,t .
+
+(4) These task-dependent variables are zero outside Tk. The idle configuration has n0 = Γ k, 0,t = Pk, 0,t = 0 .For each active configuration, let ηc be the parallel efficiency and m(c) the operating segment. The selected throughput satisfies 
+
+ηcnclm(c)zk,c,t ≤ Γk,c,t ≤ ηcncum(c)zk,c,t , c̸ = 0 . (5) The associated power is 
+
+Pk,c,t = Am(c)
+
+ηc
+
+Γk,c,t + ncBm(c)zk,c,t , c̸ = 0 . (6) Configuration selection is discrete, while throughput within the selected segment is continuous. Let Wk be the required workload of task k and ∆t be the duration of one scheduling period. Throughput is measured in tera floating-point operations per second (TFLOP/s), ∆t
+
+in hours, and Wk in TFLOP /s · h. The minimum work requirement for each task is enforced by 
+
+X
+
+> t∈T k
+
+Γk,t ∆t ≥ Wk, ∀k ∈ K . (7) Training completion under this requirement is evaluated in Section V-E. Let N tr  
+
+> t
+
+denote the number of training computing units available in period t. The resource-capacity constraint is 
+
+X
+
+> k∈K
+
+nk,t ≤ N tr  
+
+> t
+
+, ∀t ∈ T . (8) The task-level formulation represents feasible training schedules and their associated power consumption. It assumes preemptible and malleable training tasks and neglects check-pointing, restart, and configuration-switching overheads. When embedded into the intraday model, training configurations are selected jointly with inference allocation and on-site energy decisions. 
+
+C. Inference Workloads 
+
+Inference requests are latency-sensitive and are usually served within the current scheduling period [3], [25]. Un-like training tasks, inference requests are weakly coupled and asynchronous. Hence, computing units in the inference pool can be allocated independently at the aggregation level. This subsection builds a tractable aggregate power–throughput model for inference workloads. Consider an inference pool with N homogeneous computing units. The operating-mode set includes the deactivated, zero-power mode. Let Pi denote the feasible power–throughput set of unit i induced by (1). Each point (γi, p i) ∈ P i is an implementable operating point. Given the aggregate inference 4
+
+throughput requirement Γreq , the exact minimum pool power 
+
+PN is 
+
+PN = min 
+
+> {(γi,p i)}
+> N
+
+X
+
+> i=1
+
+pi
+
+s.t.
+
+> N
+
+X
+
+> i=1
+
+γi = Γ req ,
+
+(γi, p i) ∈ P i, i = 1 , . . . , N. 
+
+(9) Although (9) is compact, each set Pi still contains the discrete segment-selection variables in (1). Therefore, directly embed-ding (9) into system-level scheduling remains computationally expensive for large inference pools. Let XN denote the exact aggregate feasible set of the inference pool. It contains all aggregate profiles obtained by summing one feasible profile from each unit, 
+
+XN =
+
+> N
+
+M
+
+> i=1
+
+Pi, (10) where ⊕ denotes set addition. The unit set Pi is generally nonconvex because of discrete segment selection. For sums of bounded nonconvex sets, the number of terms requiring convexification is bounded by the dimension of the aggregate space rather than by N [27], [28]. Therefore, the binary segment selections are relaxed into continuous segment proportions. Let αm be the proportion of inference units assigned to segment m, Γm be their aggre-gate throughput, and P LP  
+
+> N
+
+be the minimum power obtained from the linear programming (LP) relaxation. The convexified aggregation model is 
+
+P LP  
+
+> N
+
+= min 
+
+> {αm,Γm}
+> S
+
+X
+
+> m=1
+
+(AmΓm + BmN α m)s.t.
+
+> S
+
+X
+
+> m=1
+
+Γm = Γ req ,lmN α m ≤ Γm ≤ umN α m, ∀m, 
+
+> S
+
+X
+
+> m=1
+
+αm = 1 , 0 ≤ αm ≤ 1, ∀m. 
+
+(11) Compared with (9), model (11) has a dimension proportional to the number of segments S, rather than the number of units 
+
+N . It can therefore be embedded into the intraday scheduling model without unit-level binary variables. For heterogeneous inference pools, the same aggregation is applied to each homogeneous hardware group. The relaxed aggregate region is obtained by summing the convexified envelopes of all groups. 
+
+1) Aggregation Relaxation-Gap Bound: The continuous aggregation model (11) is a relaxation of the microscopic model (9). Let 
+
+εrel = PN − P LP 
+
+> N
+
+PN
+
+(12) denote the relative relaxation gap. The following theorem gives a sufficient condition for a uniform bound at fixed aggregate throughput. 
+
+Theorem 1 (Inference Aggregation Relaxation-Gap Bound): Consider the microscopic model (9) and the ag-gregated model (11). Suppose that the homogeneous per-unit feasible set Pi is a fixed finite union of closed segments, its feasible throughput values fill an interval, and pmin ≤ pi ≤
+
+pmax with bounds independent of N . Let model (9) be feasible for 
+
+Γreq = N ρ, (13) where ρ is a fixed per-unit demand level. Then, with C0 =2( pmax − pmin ) independent of N ,
+
+0 ≤ PN − P LP  
+
+> N
+
+≤ C0. (14) If the exact optimal power satisfies PN ≥ N p for a positive lower bound p, independent of N , on average power per computing unit, then 
+
+εrel = PN − P LP 
+
+> N
+
+PN
+
+≤ CN , (15) where C is a constant independent of N .
+
+Proof: Since (11) is a relaxation of (9), 
+
+P LP  
+
+> N
+
+≤ PN . (16) Apply the convexification result in [27], [28] to the relaxed optimal point (Γ req , P LP  
+
+> N
+
+) in the two-dimensional throughput– power space. It admits a decomposition with at most two unit points in conv( Pi) rather than Pi. Since each unit’s feasible throughput values fill an interval, each exceptional point can be replaced by a feasible unit point with the same throughput. This preserves P 
+
+> i
+
+γi = Γ req exactly and increases total power by at most 2( pmax − pmin ). The resulting point is feasible for (9); hence, 
+
+0 ≤ PN − P LP  
+
+> N
+
+≤ C0. (17) Using PN ≥ N p gives 
+
+εrel = PN − P LP 
+
+> N
+
+PN
+
+≤ C0
+
+N p = CN , (18) where C = C0/p .The adjacent-segment curves used in the case study satisfy the interval-coverage condition. Theorem 1 characterizes the inference power-aggregation gap at fixed throughput, with the relative bound holding when average per-unit power remains positive. III. C ONVERTER -A WARE SECURITY CONSTRAINTS 
+
+This section links computing and energy decisions to four-node AC power flow, network operating limits, and converter capabilities. Here, security is characterized by the steady-state voltage, network-capacity, and converter operating lim-its. Lifted voltage variables and SOCP relaxation provide a tractable scheduling representation. Electrical quantities use a consistent per-unit system; MW/MVAr scheduling powers are normalized by Sbase .
+
+A. Four-Node Electrical Model 
+
+NERC illustrates the BTM configuration of emerging large loads, in which a load may be supplied partially or fully by co-located generation behind the grid interface [4]. Following this configuration, the considered BTM DC site comprises computing loads, on-site renewable generation, ES, power-electronic interfaces, and AC tie branches [8], [9]. To capture their main steady-state electrical coupling while retaining 5Grid Grid  IBR IBR 
+
+DC 0X1X2X0 0V V
+
+1 1V
+
+2 2V
+
+
+
+PCC 
+
+POB   
+
+> Node 1: PV &ES
+> injection terminal
+> Node 2: computing -
+> load terminal
+> Node 0:
+> External Grid
+> Fig. 2. Four-node equivalent electrical model of the behind-the-meter data center. Node 0 represents the external grid at the PCC, the POB is the zero-injection coupling bus indexed by b, node 1 is the grid-forming IBR terminal with scheduled active-power and voltage setpoints, and node 2 is the DC load-side terminal modeled as a bus with specified active and reactive power.
+
+computational tractability, the site is represented by the four-node equivalent model shown in Fig. 2. The electrical-node, physical-branch, and converter-interface sets are 
+
+N = {0, b, 1, 2},
+
+L = {(0 , b) , (1 , b) , (2 , b) },
+
+R = {1, 2}.
+
+(19) Each element of L denotes one physical branch in a reference orientation. The corresponding directed-arc set is 
+
+−→L = L ∪ { (b , 0) , (b , 1) , (b , 2) }.
+
+Node 0 represents the external grid at the PCC. The coupling bus labeled POB in Fig. 2 is indexed by b and has zero net injection. Its voltage is Vt∠θt, with Vt = Vb,t and θt = θb,t .The tie branches connecting nodes 0, 1, and 2 to this bus have reactances X0, X1, and X2, respectively. Node 1 represents the AC terminal of the grid-forming inverter-based resource (IBR) interface, whose active-power and voltage-magnitude setpoints are selected by the site scheduler [29]–[31]. Node 2 represents the AC terminal of the grid-following DC load-side interface and is modeled as a bus with specified active and reactive power. The tie branches use lossless series-admittance equivalents; shunt elements, non-unit tap ratios, and converter losses are neglected. The scheduling command in period t is 
+
+ut = P1,t ν1,t P2,t Q2,t 
+
+T . (20) Here, P1,t and ν1,t = V 21,t are the active-power and squared-voltage setpoints of the IBR interface, while P2,t and Q2,t 
+
+are the DC load-side injections. The IBR reactive power Q1,t 
+
+and the remaining bus voltages and angles are determined by the electrical operating state. Positive active and reactive powers denote injections into the on-site AC network, so DC consumption gives negative injections at node 2. The squared IBR voltage is optimized within its limits, and the voltage-magnitude command is recovered as V1,t = √ν1,t .Let ˙Va,t = Va,t ejθa,t denote the complex voltage at node 
+
+a, where θ0,t = 0 is the angle reference and V0 is fixed. The four-node network satisfies the standard nodal AC power-flow relations over L, with zero injection at coupling bus b. These network relations are represented using lifted voltage variables and branch-wise SOCP relaxation in Section III-C. 
+
+B. Converter and Network Operating Constraints 
+
+For a given scheduling command ut, the four-node AC model must satisfy the power-flow equations and the consid-ered equipment and network limits. These constraints describe the steady-state electrical operating conditions used in the scheduling model. Let V and V denote the lower and upper voltage-magnitude limits. The controllable on-site voltages must satisfy 
+
+V ≤ Va,t ≤ V , a ∈ { b, 1, 2}. (21) Let SPCC denote the PCC apparent-power limit. The grid exchange must satisfy 
+
+P PCC 
+
+> t
+
+QPCC  
+
+> t2
+
+≤ SPCC . (22) The implemented branch ratings are enforced at the grid and converter terminals, corresponding to the orientations in L. Let 
+
+Sab denote the rating. The branch-capacity constraints are 
+
+Pab,t 
+
+Qab,t 2
+
+≤ Sab , (a, b ) ∈ L . (23) Each converter interface must satisfy its current and mod-ulation capabilities [10]. Let Ir denote the converter current limit, Er the internal-voltage limit, and Xc 
+
+> r
+
+the converter phase reactor reactance. The internal phase-reactor reactance Xc 
+
+> r
+
+is distinct from the on-site tie reactance Xr shown in Fig. 2. The converter overcurrent and overmodulation limits are 
+
+P 2 
+
+> r,t
+
++ Q2 
+
+> r,t
+
+≤ V 2
+
+> r,t
+
+I2 
+
+> r
+
+,P 2 
+
+> r,t
+
++ Qr,t + V 2
+
+> r,t
+
+Xc
+
+> r
+
+!2
+
+≤ V 2
+
+> r,t
+
+E2
+
+> r
+
+(Xc 
+
+> r
+
+)2 , r ∈ R . (24) The first inequality limits the converter current. The second constrains the internal voltage required to produce the terminal voltage and commanded complex power within the modeled modulation capability [30], [31]. Branch-angle differences are also bounded by |θa,t −θb,t | ≤ 
+
+δ. The nodal AC relations and these operating limits define the electrical conditions to be embedded in scheduling. 
+
+C. SOCP-Relaxed Converter-Aware Formulation 
+
+To obtain a tractable electrical representation, this pa-per builds on the SOCP formulation for inverter-security-constrained optimal power flow developed in our group’s prior work [10]. The converter current and modulation limits are reformulated as second-order-cone constraints, while the nonconvex AC voltage products are represented using lifted variables and branch-wise second-order-cone relaxation [9], [10]. Define the lifted voltage variables as 
+
+Wab,t = ˙Va,t ˙V ∗
+
+> b,t
+
+, a, b ∈ N , (25) where (·)∗ denotes complex conjugation. Following [10], Hermitian symmetry and nonnegative diagonal elements are imposed by 
+
+Wba,t = W ∗
+
+> ab,t
+
+, Waa,t ∈ R+. (26) The nonconvex coupling among voltage products is then handled using a branch-wise second-order-cone relaxation. Let Sa,t = Pa,t + j Qa,t be the complex-power injection at node a, and let Yab be the (a, b ) element of the nodal admittance matrix. The lifted nodal power-flow equations are 
+
+Sa,t = X
+
+> b∈N
+
+Y ∗
+
+> ab
+
+Wab,t , a ∈ N . (27) 6
+
+The zero injection at coupling bus b is imposed by 
+
+Sb,t = 0 . (28) The interface injections are linked to the scheduling commands by 
+
+Sr,t = Pr,t + j Qr,t , r ∈ R . (29) The squared IBR voltage decision and fixed PCC voltage are represented by 
+
+W11 ,t = ν1,t , (30) and 
+
+W00 ,t = V 20 , (31) respectively. For each physical branch (a, b ) ∈ L, the nonconvex voltage-product equality |Wab,t |2 = Waa,t Wbb,t is replaced by 
+
+|Wab,t |2 ≤ Waa,t Wbb,t . Its second-order-cone representation is 
+
+2 Re( Wab,t )2 Im( Wab,t )
+
+Waa,t − Wbb,t 2
+
+≤ Waa,t + Wbb,t , (a, b ) ∈ L . (32) The branch-angle bounds are retained through the linear inequalities 
+
+Re( Wab,t ) ≥ 0,
+
+| Im( Wab,t )| ≤ tan( δ) Re( Wab,t ), (a, b ) ∈ L . (33) 
+
+1) Operating Limits and Scheduling Interface: The voltage-limit constraints become 
+
+V 2 ≤ Waa,t ≤ V 2, a ∈ { b, 1, 2}. (34) Because S0,t is the power injected by the external grid node into the site, the PCC exchange is 
+
+P PCC  
+
+> t
+
+= Re( S0,t ), QPCC  
+
+> t
+
+= Im( S0,t ). (35) The PCC apparent-power limit is therefore 
+
+P PCC 
+
+> t
+
+QPCC  
+
+> t2
+
+≤ SPCC . (36) Let yab denote the series admittance of branch (a, b ), which is distinct from the nodal-admittance entry Yab . The complex power from node a to node b is 
+
+Sab,t = ( Waa,t − Wab,t )y∗
+
+> ab
+
+, (a, b ) ∈ −→L . (37) The terminal-specific branch-capacity limits are 
+
+Re( Sab,t )Im( Sab,t ) 2
+
+≤ Sab , (a, b ) ∈ L . (38) Using Wrr,t = V 2
+
+> r,t
+
+, the converter overcurrent limit in (24) is exactly represented by 
+
+2Pr,t 
+
+2Qr,t 
+
+Wrr,t − I2 
+
+> r2
+
+≤ Wrr,t + I2 
+
+> r
+
+, r ∈ R . (39) The converter overmodulation limit is exactly represented by 
+
+2Pr,t 
+
+2
+
+
+
+Qr,t + Wrr,t 
+
+Xc
+
+> r
+
+
+
+Wrr,t − E2
+
+> r
+
+(Xc 
+
+> r
+
+)2 2
+
+≤ Wrr,t + E2
+
+> r
+
+(Xc 
+
+> r
+
+)2 , r ∈ R . (40) Only the branch voltage-product equalities are relaxed; the voltage, angle, terminal-capacity, current, and modulation lim-its retain their stated forms. Let St collect the nodal and branch complex-power variables. The SOCP-relaxed outer approximation of the converter-aware electrical feasible set is 
+
+bΩt = {ut |∃ St, W t, (26)–(40) } . (41) The scheduling model enforces 
+
+ut ∈ bΩt, ∀t ∈ T . (42) This set provides a tractable outer approximation for intra-day scheduling. The baseline scheduling commands are further checked against the original AC equations in Section V-E. IV. I NTRADAY SCHEDULING OF BTM DC S
+
+This section coordinates computing workloads, PV, ES, and grid purchases to minimize operating cost subject to workload-service requirements, site energy balance, ES dynamics, and the SOCP-relaxed electrical constraints. 
+
+A. Objective: Minimize Intraday Operating Cost 
+
+The decision variables coordinate workload execution, on-site resource use, and grid exchange [32]–[34]. Let P grid  
+
+> t
+
+denote grid-purchase power, P ch  
+
+> t
+
+and P dis  
+
+> t
+
+the ES charging and discharging powers, and Γsh  
+
+> t
+
+the unserved inference throughput in period t. The parameters λt, cES , and 
+
+cshed are the electricity price, ES cycling cost, and inference-shortage penalty, respectively. The intraday objective is 
+
+min X
+
+> t∈T
+
+
+
+λtP grid  
+
+> t
+
++ cES (P ch  
+
+> t
+
++ P dis  
+
+> t
+
+) + cshed Γsh 
+
+> t
+
+
+
+∆t. (43) Equation (43) represents the intraday variable operating costs of grid energy purchases, ES throughput, and unserved infer-ence. The combined IT-side demand of training and inference determines the AC-side DC load, linking workload decisions to grid purchases, ES operation, PV utilization, and electrical operating limits. 
+
+B. Computing-Load and Security Constraints 1) Training and Inference Scheduling: Training and infer-ence loads use independent resource pools. Training tasks follow Section II-B; inference loads follow the period-wise aggregation model in Section II-C. The two load types do not compete for computing units, but their active-power demands are combined on the AC side of the DC. Inference service is represented by aggregate throughput requirements within each scheduling period. Let N denote the number of inference units, M the set of their operating seg-ments, Γm,t the throughput assigned to segment m, Γreq  
+
+> t
+
+the required inference throughput, and Γsh  
+
+> t
+
+the unserved portion in period t: X
+
+> m∈M
+
+Γm,t + Γ sh  
+
+> t
+
+= Γ req  
+
+> t
+
+, ∀t ∈ T ,
+
+Γsh  
+
+> t
+
+≥ 0, ∀t ∈ T .
+
+(44) Let αm,t denote the proportion of inference units assigned to segment m in period t, and let P inf  
+
+> t
+
+denote the resulting 7
+
+inference IT power. The period-wise aggregation constraints are X
+
+> m∈M
+
+αm,t = 1 , ∀t ∈ T ,
+
+0 ≤ αm,t ≤ 1, ∀m ∈ M , t ∈ T ,lmN α m,t ≤ Γm,t ≤ umN α m,t , ∀m ∈ M , t ∈ T ,P inf  
+
+> t
+
+= X
+
+> m∈M
+
+(AmΓm,t + BmN α m,t ) , ∀t ∈ T .
+
+(45) The aggregate training IT power P tr  
+
+> t
+
+is 
+
+P tr  
+
+> t
+
+= X
+
+> k∈K
+
+Pk,t , ∀t ∈ T . (46) The total IT-side computing power P IT  
+
+> t
+
+is 
+
+P IT  
+
+> t
+
+= P tr  
+
+> t
+
++ P inf  
+
+> t
+
+, ∀t ∈ T . (47) Let P tr and P inf be the IT power budgets of the two pools. Their additional capacity limits are 
+
+0 ≤ P tr  
+
+> t
+
+≤ P tr , 0 ≤ P inf  
+
+> t
+
+≤ P inf , ∀t ∈ T . (48) 
+
+2) AC-Side Load and Electrical Constraints: Let P dc  
+
+> t
+
+be the AC-side DC load and P dc its capacity. A fixed cooling-equivalent power usage effectiveness (PUE) maps IT demand to site demand: 
+
+P dc  
+
+> t
+
+= PUE P IT  
+
+> t
+
+, 0 ≤ P dc  
+
+> t
+
+≤ P dc , ∀t ∈ T . (49) Based on the server–cooling energy relationship used in energy-aware virtual machine scheduling, this paper uses a site-level equivalent PUE to map IT power to AC-side load [11], [35]. The supply-air temperature is set to 25 ◦C,corresponding to an equivalent PUE of about 1.21 [35]. Let 
+
+COP( Tsup ) denote the cooling coefficient of performance (COP) at supply-air temperature Tsup . The equivalent PUE is 
+
+PUE = 1 + 1COP( Tsup ) . (50) Let P IBR  
+
+> t
+
+denote the active-power injection from the on-site IBR and Qdc  
+
+> t
+
+the DC reactive load. The site control vector in period t is 
+
+ut = P IBR  
+
+> t
+
+/S base ν1,t −P dc  
+
+> t
+
+/S base −Qdc  
+
+> t
+
+/S base 
+
+T .
+
+(51) Thus, P2,t = −P dc  
+
+> t
+
+/S base and Q2,t = −Qdc  
+
+> t
+
+/S base . The command in each scheduling period is constrained by the SOCP-relaxed region: 
+
+ut ∈ bΩt, ∀t ∈ T . (52) 
+
+C. On-Site Energy Coordination 
+
+The site is supplied by the external grid, PV, and ES [8], [36]. Let P pv  
+
+> t
+
+denote the utilized PV power. Under the lossless network and converter assumptions, the active power balance of the BTM DC site is 
+
+P grid  
+
+> t
+
++ P pv  
+
+> t
+
++ P dis  
+
+> t
+
+= P dc  
+
+> t
+
++ P ch  
+
+> t
+
+, ∀t ∈ T ,
+
+0 ≤ P grid  
+
+> t
+
+≤ P grid , ∀t ∈ T . (53) Here, P grid is the active-import limit; exports are prohibited. The per-unit PCC exchange is linked to grid purchases by 
+
+Sbase P PCC  
+
+> t
+
+= P grid  
+
+> t
+
+= P dc  
+
+> t
+
+− P IBR  
+
+> t
+
+, ∀t ∈ T . (54) The equivalent active injection of on-site IBR resources is 
+
+P IBR  
+
+> t
+
+= P pv  
+
+> t
+
++ P dis  
+
+> t
+
+− P ch  
+
+> t
+
+, ∀t ∈ T . (55) If the DC load-side reactive power is approximated using the fixed power factor pf dc , then 
+
+Qdc  
+
+> t
+
+= P dc  
+
+> t
+
+tan 
+
+
+
+arccos(pf dc )
+
+
+
+, ∀t ∈ T . (56) These relations couple workload demand and on-site injections to grid exchange. PV that cannot be consumed or stored is curtailed. 
+
+1) PV and ES Operation: Let ¯P pv  
+
+> t
+
+be the available PV power and P cur  
+
+> t
+
+the curtailed PV power. PV operation satisfies 
+
+0 ≤ P pv  
+
+> t
+
+≤ ¯P pv  
+
+> t
+
+, ∀t ∈ T ,P cur  
+
+> t
+
+= ¯P pv  
+
+> t
+
+− P pv  
+
+> t
+
+, P cur  
+
+> t
+
+≥ 0, ∀t ∈ T . (57) Let Et be the energy stored in the ES, ¯E the energy capacity, 
+
+ηch and ηdis the charging and discharging efficiencies, and s
+
+and s the lower and upper state-of-charge (SOC) limits. The ES energy recursion and SOC limits are [36], [37] 
+
+Et = Et−1 + ηch P ch  
+
+> t
+
+∆t − P dis  
+
+> t
+
+∆tηdis , ∀t ∈ T ,s ¯E ≤ Et ≤ s ¯E, ∀t ∈ T .
+
+(58) Let ¯P ch and ¯P dis denote the ES charging and discharging power limits. Charging and discharging are represented by continuous powers subject to a limit on their combined nor-malized utilization: 
+
+0 ≤ P ch  
+
+> t
+
+≤ ¯P ch , ∀t ∈ T ,
+
+0 ≤ P dis  
+
+> t
+
+≤ ¯P dis , ∀t ∈ T ,P ch 
+
+> t
+
+¯P ch + P dis 
+
+> t
+
+¯P dis ≤ 1, ∀t ∈ T .
+
+(59) Let s0 and sT denote the initial and terminal SOC values. To avoid excessive ES depletion at the end of the scheduling horizon, E0 = s0 ¯E, ET = sT ¯E. (60) V. C ASE STUDY 
+
+This section examines coordinated operation, electrical and resource ablations, capacity-mix sensitivity, and the two mod-eling approximations. 
+
+A. Case Parameters and Input Construction 
+
+The case uses a 24-h intraday scheduling horizon divided into 96 15-min periods. The electricity-price and PV-output profiles are based on data from the Electric Reliability Council of Texas for June 1, 2026 [38], [39]. The DC site capacity is 80 MW, the equivalent PUE is 1.21, and the power factor is 0.98. The computing hardware is the NVIDIA A100 Tensor Core GPU. The theoretical peak throughput of one GPU is 312 tera floating-point operations per second (TFLOP/s), and the achievable throughput is set to 52% of the theoretical 8
+
+peak [23], [40]. In the resource organization, one GPU node contains 8 GPUs, and one cluster contains 32 GPU nodes. Training tasks use clusters as the basic scheduling unit. The candidate parallel scales are {0, 1, 2, 4, 8, 16, 32, 64, 128, 256 }. Inference tasks use GPU nodes as the aggregation unit. Training-task samples come from the Alibaba GPU Cluster Dataset 2023, and the inference request curve comes from the BurstGPT workload trace for large language model serving [25], [26]. The training share χ allocates a fraction χ
+
+of the site IT power budget P dc /PUE to training, with the remaining fraction 1 − χ assigned to inference. The energy system includes 80 MW of installed PV capacity and 240 MWh of ES. The maximum charging and discharging powers of the ES are both 60 MW. The SOC range is 10%-90%, the initial and terminal SOC values are both 50%, and the round-trip efficiency is 85% [37]. The ES cycling cost is set to 5 U.S. dollars per megawatt-hour (USD/MWh). The inference-shortage penalty is 50 USD/( TFLOP /s · h). Operating costs are reported in thousands of U.S. dollars (kUSD), where 1 kUSD equals 10 3 USD. For electrical security, the node-voltage range is 0.95–1.05 per unit (p.u.), the interface current and modulation-voltage limits are 1.05 p.u. and 1.20 p.u., and the PCC apparent-power limit is 80 MVA [41], [42]. The electrical model uses an 80-MVA base, with X0 = 0.15 ,
+
+X1 = X2 = Xc1 = Xc2 = 0 .27 p.u., and δ = 35 ◦.The computations are performed on a 64-bit Windows workstation equipped with an Intel Core i5-10505 processor operating at 3.20 GHz and 16 GB of memory. All scenarios are solved in the same environment to ensure comparability. 
+
+B. Baseline Scheduling Results 
+
+The baseline uses χ = 0 .5, PV, ES, and the SOCP-relaxed electrical constraints. Six multi-period training tasks account for 99.23% of the training workload and provide most of its temporal flexibility. Fig. 3(a) shows that PV supplies the computing load and charges ES during PV-rich periods, reducing grid imports; grid purchases and ES discharge increase when PV output is insufficient. Panels (b) and (c) of Fig. 3 show ES shifting PV energy to deficit periods, with some curtailment under the site limits; no period has both charging and discharging above 10 −6 MW. Fig. 3(d) shows training shifting toward PV-rich periods, while inference follows service requests. Around 14:00–15:00, an inference spike coincides with reduced training power. This pattern illustrates coordination through shared electrical infrastructure despite separate computing-resource pools. 
+
+C. Ablation Analysis 
+
+The ablations use the baseline hardware and inputs, with the electrical, computing-service, or on-site resource settings changed as specified below. 
+
+1) Impact of Electrical Constraints: Table I compares the baseline with energy-only scheduling, which retains the site and pool power budgets, energy balance, grid-import limit, and no-export condition but omits the four-node electrical constraints. Including these constraints reduces the scheduled peak load from 75.4 to 44.0 MW and PV utilization from 100% to 87.9%, while increasing grid purchases and cost. The energy-only peak exceeds the 45.20 MW necessary voltage-based bound discussed below and is therefore not AC-feasible 0 5 10  15  20 0
+
+20 
+
+40 
+
+60 
+
+80 
+
+0 5 10  15  20 0
+
+10 
+
+20 
+
+30 
+
+40 
+
+0
+
+50 
+
+100 
+
+150 
+
+200 
+
+250 
+
+Hour(h) 
+
+0 5 10  15  20 0
+
+10 
+
+20 
+
+30 
+
+40 
+
+0 5 10  15  20 
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+Pdc 
+
+Pgrid 
+
+Ppv 
+
+PIBR 
+
+Pch 
+
+Pdis 
+
+Ebat 
+
+> Train
+> Infer
+> Total
+
+Pavail 
+
+Pcur 
+
+Pused 
+
+> MW MW
+
+Hour(h) 
+
+> MWh
+> MW
+
+Hour(h) 
+
+Hour(h) 
+
+> MW
+
+(a)  Site power and energy supply structure 
+
+(b)  ES energy state 
+
+(c)  PV utilization 
+
+(d)  Computing -load scheduling                       
+
+> PV-rich coordination window
+> PV utilization = 87.9%
+> Power balance :Pdc =Pgrid +PIBR
+> ES shifts PV energy
+> to deficit periods
+> Training shifted away
+> from PV -poor periods Inference spike :Training
+> power reduced
+> Pgrid = 0 ⇒
+> Pdc and PIBR overlap
+> Fig. 3. Baseline scheduling results under a 50%/50% training–inference site-power budget split, with PV, ES, and the SOCP-relaxed converter-aware constraints: (a) DC load, grid purchase, PV utilization, and net IBR injection; (b) ES charging and discharging powers on the left axis and stored energy on the right axis; (c) available, utilized, and curtailed PV power; and (d) training, inference, and total IT power. TABLE I EFFECTS OF THE SOCP-RELAXED CONVERTER -AWARE ELECTRICAL CONSTRAINTS ON OPERATING COST ,GRID ENERGY PURCHASE ,PEAK DC
+> LOAD ,AND PHOTOVOLTAIC UTILIZATION
+> Scenario Cost (kUSD) Grid Purchase (MWh) Peak DC Load (MW) PV Utilization (%)
+> Energy-only 4.2 88.8 75.4 100.0 Baseline 5.9 145.4 44.0 87.9
+> Note: Energy-only retains the site energy constraints but omits the SOCP-relaxed converter-aware electrical constraint set. Baseline includes this constraint set. All other settings are identical.
+
+under the case assumptions. In the ex-post AC states, the node-1 upper-voltage and node-2 lower-voltage limits are reached within 10 −4 p.u. in 36 and 34 periods, respectively, while maximum IBR modulation and current utilizations are 93.7% and 55.0%. These repeated voltage-boundary contacts highlight the importance of voltage feasibility in shaping the baseline schedule. 
+
+2) Role of Training Flexibility: The fixed-training bench-mark distributes each task uniformly over its window at the reference energy intensity, replacing task-level configuration decisions. Its 9.82–22.08 MW IT profile remains below the 9                                  
+
+> TABLE II EFFECTS OF PHOTOVOLTAIC GENERATION AND ENERGY STORAGE UNDER THE SAME COMPUTING -LOAD AND CONVERTER -AWARE ELECTRICAL SETTINGS
+> Scenario Cost (kUSD) Grid Purchase (MWh) PV Utilization (%)
+> Baseline 5.9 145.4 87.9 No PV 26.0 853.9 –No ES 11.2 324.7 63.0 DC only 28.5 835.1 –
+> Note: The baseline includes both PV and ES; the No PV scenario includes only ES; the No ES scenario includes only PV; and the DC only scenario includes neither PV nor ES. All other settings are unchanged.
+> TABLE III CAPACITY -MIX SCENARIOS WITH JOINTLY RESCALED RESOURCE POOLS AND WORKLOAD DEMANDS
+> Training Share Cost (kUSD) Grid Purchase (MWh) Inference Shortage (10 3TFLOP /s·h)
+> 30% 12865.9 174.2 257.2 40% 997.6 138.6 19.8 50% 5.9 145.4 060% 6.6 160.3 070% 8.0 197.7 0
+> Note: Training share is the fraction of the site power budget assigned to training, not a fixed-node-count fraction. Both pool sizes and demands are rescaled. Total cost includes shortage penalties; shortages below the displayed precision are rounded to zero.
+
+33.06 MW training-pool limit. Eliminating the zero-injection coupling bus gives a case-specific necessary site-load bound of 45.20 MW from the AC voltage limits and fixed load power factor. Even using a lower bound on full-service inference power from the convexified pool model, fixed training exceeds this limit in 26 periods, with a peak of 65.11 MW. If shortages are permitted, any AC-feasible fixed-training schedule must leave at least 5.92% of daily inference demand unserved. The bottleneck is therefore the shared electrical operating boundary rather than the training-pool power capacity. The coordi-nated baseline instead achieves negligible inference shortage and passes the original AC check. Thus, training flexibility mitigates a conflict between inference service and electrical feasibility, rather than merely shifting energy purchases. 
+
+3) Impact of On-Site Resources: Table II shows that remov-ing PV raises grid purchases from 145.4 to 853.9 MWh and cost from 5.9 to 26.0 kUSD, whereas removing ES lowers PV utilization from 87.9% to 63.0%. PV reduces dependence on grid energy, while ES increases the usable share of on-site gen-eration. Without PV, ES lowers cost from 28.5 to 26.0 kUSD but increases purchased energy from 835.1 to 853.9 MWh. Storage therefore provides an economic benefit through energy shifting even when total grid purchases increase. 
+
+D. Capacity-Mix Sensitivity 
+
+Table III compares training-share scenarios in which both resource pools and workload demands are rescaled. At 30% and 40%, inference-shortage penalties dominate cost. At 50%, 60%, and 70%, shortage is negligible at the reported precision, but higher training shares increase grid purchases and cost. The cost driver thus shifts from service shortfall to energy supply across these scenarios. Among these jointly rescaled scenarios, the 50% training share gives the lowest operating cost. 
+
+E. Aggregation Accuracy and AC-Feasibility Verification 
+
+The inference aggregation is evaluated against an integer node-count model. The maximum relative power gap decreases from approximately 4.9% at N = 10 to 0.451%, 0.0448%, and 0.00541% at N = 10 2, 10 3, and 10 4, respectively, approaching zero at 10 5. The diminishing relative gap supports aggregation for large inference pools and is consistent with the conditional bound in Theorem 1. The maximum absolute and normalized voltage-product residuals are 6.056 × 10 −2 and 6.08%, respectively, both on branch (1 , b) . The normalized residual measures relaxation slack relative to the product of the corresponding squared voltage magnitudes. An ex-post check fixes the scheduling commands and re-stores the original AC voltage-product equalities and operating limits. All 96 baseline periods pass, with a maximum equality residual of 9.36 × 10 −8 p.u. and no reported inequality violation. The check confirms that the baseline scheduling commands admit feasible operating points under the original AC model despite the nonzero lifted-voltage residuals. Under the lower-bound completion constraint (7), the base-line meets the training requirements with an aggregate over-completion of 0.0674%. A separately constructed schedule also meets the exact work requirement of every task while retaining baseline inference service and grid purchases; all 96 periods pass the original AC check. These results show that exact task completion is compatible with the electrical operating limits for the tested inputs. VI. C ONCLUSION 
+
+This paper develops an intraday scheduling methodology for BTM DCs around the distinction between computing-side schedulability and electrically realizable power flexibility. The central difficulty is to retain heterogeneous service require-ments and discrete workload choices while coordinating them with nonlinear converter and network operating conditions. The proposed model addresses this difficulty through differ-ent representations at the task, resource-pool, and electrical-network levels, rather than treating the DC as an unconstrained adjustable load. For synchronous training, task-level configuration decisions preserve parallel-scale choices, continuous within-segment throughput, and completion deadlines. For weakly coupled inference, feasible-set aggregation and resource-pool convexi-fication replace unit-level binary decisions with segment pro-portions. The resulting linear model scales with the number of operating segments and has a conditional O(1 /N ) relative relaxation-gap bound. On the electrical side, a four-node model connects computing demand and on-site injections to PCC exchange and equipment limits. Exact conic representations of converter current and modulation limits, combined with SOCP relaxation of voltage products, allow these relationships to be embedded in mixed-integer multi-period scheduling. The case studies show that electrical constraints reshape the cost-minimizing schedule and renewable utilization relative to energy-only optimization. PV and ES complement workload adjustment by supplying and shifting on-site energy. Under the case parameters, fixed training conflicts with full inference ser-vice within the AC voltage limits; any feasible fixed-training solution must therefore incur service loss. The coordinated baseline instead achieves negligible inference shortage and 10 
+
+passes the ex-post AC check despite nonzero SOCP residu-als. The observed voltage-limit activity explains why energy balance alone is insufficient to assess the use of computing flexibility. Overall, the methodology shows how workload timing, resource allocation, and on-site energy decisions must be coordinated with electrical limits to realize the operational value of computing flexibility. REFERENCES [1] North American Electric Reliability Corporation (NERC), “Assessment of gaps in existing practices, requirements, and reliability standards for emerging large loads,” Mar. 2026. [2] R. Vercellino et al. , “Measurement of generative AI workload power profiles for whole-facility data center infrastructure planning,” 
+
+arXiv :2604.07345, Apr. 2026, doi: 10.48550/arXiv.2604.07345. [3] P. Colangelo et al. , “AI data centres as grid-interactive assets,” Nature Energy , vol. 11, pp. 254–261, Feb. 2026, doi: 10.1038/s41560-025-01927-1. [4] North American Electric Reliability Corporation (NERC), “Characteris-tics and risks of emerging large loads,” Jul. 2025. [5] E. Choukse et al. , “Power stabilization for AI training datacenters,” 
+
+arXiv :2508.14318, 2025, doi: 10.48550/arXiv.2508.14318. [6] Electric Power Research Institute (EPRI), “DCFlex: Data Center Flexible Load Initiative,” Supplemental Project Notice, Rep. 3002031004, Sep. 2025. [Online]. Available: https://restservice.epri.com/publicdownload/ 000000003002031004/0/Product. [7] R. Cui, C. Hu, R. Yang, X. Cui, and F. Y. Hou, “Co-optimization of coincident peak management and ancillary services for flexible data centers,” IEEE Trans. Smart Grid , early access, 2026, doi: 10.1109/TSG.2026.3698492. [8] J. Li and W. Qi, “Toward optimal operation of Internet data center microgrid,” IEEE Trans. Smart Grid , vol. 9, no. 2, pp. 971–979, Mar. 2018, doi: 10.1109/TSG.2016.2572402. [9] D. Pullaguram, R. Madani, T. Altun, and A. Davoudi, “Optimal power flow in AC/DC microgrids with enhanced interlinking converter mod-eling,” IEEE J. Emerg. Sel. Topics Ind. Electron. , vol. 3, no. 3, pp. 527–537, Jul. 2022, doi: 10.1109/JESTIE.2022.3145747. [10] J. Hou, C. Hu, S. Lei, L. Liang, and Y. Hou, “Security region of inverter-interfaced power systems: Existence, expansion, and application,” Re-newable Sustainable Energy Rev. , vol. 192, p. 114222, Mar. 2024, doi: 10.1016/j.rser.2023.114222. [11] A. Radovanovic, B. Chen, S. Talukdar, B. Roy, A. Duarte, and M. Shah-bazi, “Power modeling for effective datacenter planning and compute management,” IEEE Trans. Smart Grid , vol. 13, no. 2, pp. 1611–1621, Mar. 2022. [12] C. Li, K. Zheng, H. Guo, C. Kang, and Q. Chen, “Computation-power coupled modeling for IDCs and collaborative optimization in ADNs,” 
+
+IEEE Trans. Smart Grid , vol. 15, no. 3, pp. 2762–2775, May 2024, doi: 10.1109/TSG.2023.3321376. [13] Y. Zhang, Y. Ge, S. Wang, W. Pan, Y. Feng, and P. Qiu, “Research on the optimal operation of a prosumer micro energy network centred on data centres,” IET Renewable Power Gener. , vol. 18, no. 16, pp. 3869–3889, 2024. [14] Y. Zhou, F. Wei, S. Li, Z. Wang, J. Liu, and D. Yu, “Data center load modeling through optimal energy consumption characteristics: A path to simultaneously enhance energy efficiency and demand re-sponse quality,” Applied Energy , vol. 393, p. 126095, Sep. 2025, doi: 10.1016/j.apenergy.2025.126095. [15] A. Abdollahi, G. Amato, L. P. Savastio, G. Maul` a, and E. E. De Tuglie, “Efficient static security assessment of microgrids through practical feasibility region definition,” in Proc. 2025 IEEE Kiel PowerTech , Kiel, Germany, Jun. 2025, pp. 1–6, doi: 10.1109/Pow-erTech59965.2025.11180607. [16] S. Bahrami, V. W. S. Wong, and J. Jatskevich, “Optimal power flow for AC-DC networks,” in Proc. 2014 IEEE Int. Conf. Smart Grid Commun. , Venice, Italy, Nov. 2014, pp. 49–54, doi: 10.1109/SmartGrid-Comm.2014.7007621. [17] N. Baeckeland, D. Chatterjee, M. Lu, B. Johnson, and G.-S. Seo, “Overcurrent limiting in grid-forming inverters: A comprehensive review and discussion,” IEEE Trans. Power Electron. , vol. 39, no. 11, pp. 14493–14517, Nov. 2024, doi: 10.1109/TPEL.2024.3430316. [18] J. Li, Z. Bao, and Z. Li, “Modeling demand response capability by Internet data centers processing batch computing jobs,” IEEE Trans. Smart Grid , vol. 6, no. 2, pp. 737–747, Mar. 2015, doi: 10.1109/TSG.2014.2363583. [19] L. A. Barroso and U. H¨ olzle, “The case for energy-proportional com-puting,” Computer , vol. 40, no. 12, pp. 33–37, Dec. 2007. [20] X. Fan, W.-D. Weber, and L. A. Barroso, “Power provisioning for a warehouse-sized computer,” SIGARCH Comput. Archit. News , vol. 35, no. 2, pp. 13–23, Jun. 2007. [21] J. Hu, W. Luo, A. Tolba, and J. Wang, “Traffic-aware load balancing based on deep reinforcement learning in cloud-based industrial data centers,” IEEE Trans. Ind. Informat. , vol. 21, no. 12, pp. 9229–9239, Dec. 2025, doi: 10.1109/TII.2025.3594051. [22] Q. Hu, P. Sun, S. Yan, Y. Wen, and T. Zhang, “Characterization and prediction of deep learning workloads in large-scale GPU datacenters,” in Proc. Int. Conf. High Perform. Comput., Netw., Storage Anal. , St. Louis, MO, USA, Nov. 2021, pp. 1–15. [23] D. Narayanan et al. , “Efficient large-scale language model train-ing on GPU clusters using Megatron-LM,” in Proc. Int. Conf. High Perform. Comput., Netw., Storage Anal. , 2021, pp. 1–15, doi: 10.1145/3458817.3476209. [24] J. Hu, J. Lu, J. M. Guerrero, and J. Cao, “Robust spatiotemporal optimal scheduling for distributed data centers with multiple uncertainties,” IEEE Trans. Sustain. Comput. , vol. 11, no. 2, pp. 173–186, Mar. 2026, doi: 10.1109/TSUSC.2026.3665882. [25] Y. Fu et al. , “BurstGPT: A real-world workload dataset to optimize LLM serving systems,” arXiv :2401.17644, 2024. [Online]. Available: https://github.com/HPMLL/BurstGPT. [Accessed: Aug. 5, 2026]. [26] Alibaba Cluster Data, “Cluster trace GPU v2023,” 2023. [Online]. Available: https://github.com/alibaba/clusterdata/tree/master/cluster -trace-gpu-v2023. [Accessed: Aug. 5, 2026]. [27] K. Hreinsson, A. Scaglione, M. Alizadeh, and Y. Chen, “New insights from the Shapley-Folkman lemma on dispatchable demand in energy markets,” IEEE Trans. Power Syst. , vol. 36, no. 5, pp. 4028–4041, Sep. 2021. [28] D. P. Bertsekas, Convex Optimization Theory . Belmont, MA, USA: Athena Scientific, 2009. [29] D. B. Rathnayake et al. , “Grid forming inverter modeling, control, and applications,” IEEE Access , vol. 9, pp. 114781–114807, 2021, doi: 10.1109/ACCESS.2021.3104617. [30] R. Teodorescu, M. Liserre, and P. Rodriguez, Grid Converters for Photovoltaic and Wind Power Systems . Hoboken, NJ, USA: Wiley, 2011. [31] A. Yazdani and R. Iravani, Voltage-Sourced Converters in Power Sys-tems: Modeling, Control, and Applications . Hoboken, NJ, USA: Wiley, 2010. [32] A. Qureshi, R. Weber, H. Balakrishnan, J. Guttag, and B. Maggs, “Cutting the electric bill for internet-scale systems,” in Proc. ACM SIGCOMM Conf. Data Commun. , Barcelona, Spain, Aug. 2009, pp. 123–134. [33] K. Kim, F. Yang, V. M. Zavala, and A. A. Chien, “Data centers as dispatchable loads to harness stranded power,” IEEE Trans. Sustain. Energy , vol. 8, no. 1, pp. 208–218, Jan. 2017. [34] M. Chen, C. Gao, M. Song, S. Chen, D. Li, and Q. Liu, “Internet data centers participating in demand response: A comprehensive review,” 
+
+Renewable Sustainable Energy Rev. , vol. 117, Art. no. 109466, Jan. 2020. [35] J. Li, Y. Deng, Z. Zhong, Z. Wu, S. Pang, L. Cui, and G. Min, “An energy-aware virtual machine scheduling approach for cloud data centers,” IEEE Trans. Sustain. Comput. , vol. 10, no. 5, pp. 891–907, 2025, doi: 10.1109/TSUSC.2025.3549001. [36] Y. Guo, Z. Ding, Y. Fang, and D. Wu, “Cutting down electricity cost in Internet data centers by using energy storage,” in Proc. 2011 IEEE Global Telecommun. Conf. , Houston, TX, USA, Dec. 2011, pp. 1–5. [37] National Renewable Energy Laboratory (NREL), “2024 Annual Tech-nology Baseline: Utility-scale battery storage,” 2024. [Online]. Avail-able: https://atb.nrel.gov/electricity/2024/utility-scale battery storage. [Accessed: Aug. 5, 2026]. [38] Electric Reliability Council of Texas (ERCOT), “Real-time settlement point prices,” 2026. [Online]. Available: https://www.ercot.com/mp/d ata-products/data-product-details?id=np6-785-er. [Accessed: Aug. 5, 2026]. [39] Electric Reliability Council of Texas (ERCOT), “Solar power production - actual 5-minute averaged values,” 2026. [Online]. Available: https: //data.ercot.com/data-product-details/np4-738-cd. [Accessed: Aug. 5, 2026]. [40] NVIDIA, “NVIDIA A100 Tensor Core GPU architecture,” White Paper, 2020. [Online]. Available: https://images.nvidia.com/aem-dam/en-zz/ Solutions/data- center/nvidia- ampere- architecture- whitepaper.pdf. [Accessed: Aug. 5, 2026]. [41] Advanced Energy, “ARTESYN OPEN RACK V3 5.5 kW 50 V HPR PSU,” Datasheet, 2024. [Online]. Available: https://www.advancedener gy.com/getmedia/a0b372ed-7676-4d99-ae69-810fe673007f/eng-orv3-h pr-psu-datasheet.pdf. [Accessed: Aug. 5, 2026]. [42] Great River Energy, “204 Tie-line and substation interconnection guide,” 2024. [Online]. Available: https://greatriverenergy.com/wp-content/upl oads/2024/02/204-Tie-Line-and-Substation-Interconnection-Guide.pdf. [Accessed: Aug. 5, 2026].

@@ -1,0 +1,1240 @@
+Title: Multidimensional Resource Scheduling with Small Demands
+
+URL Source: https://arxiv.org/pdf/2609.39349v1
+
+Published Time: Thu, 01 Oct 2026 01:19:42 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# Multidimensional Resource Scheduling with Small Demands ∗
+
+Yossi Azar † Rathish Das ‡ Hao Sun §
+
+Abstract 
+
+We study multidimensional resource scheduling. Each job i has a d-dimensional resource-demand vector vi and a processing time si. The scheduler assigns a start time to each job, subject to the constraint that, at every time, the total demand of the jobs being processed does not exceed 1 in any resource dimension. The objective is to minimize the makespan. We focus on the regime in which every individual resource demand is small. We ask whether the favorable small-vector phenomenon known for multidimensional vector packing, which corre-sponds to the special case of unit processing times, extends to jobs with heterogeneous processing times. The key difficulty is that arbitrary processing times create temporal interactions across multiple duration scales: a long job may overlap many shorter jobs, while feasibility must be maintained throughout every job’s execution interval. We prove that the small-vector phenomenon persists in this temporal setting. For any 0 < ϵ < 1/4, after normalizing the maximum processing time to 1, if every coordinate of every demand vector is at most O(ϵ2/ log (d/ϵ)) , we give a randomized offline algorithm that pro-duces a schedule with expected makespan at most (1 + 6ϵ)OPT + 3. Thus, sufficiently small resource demands admit asymptotically near-optimal schedules in arbitrary dimension, despite heterogeneous processing times. We also obtain constant competitive ratios in the online setting. Let T denote the ra-tio between the maximum and minimum processing times. If every coordinate is at most 
+
+O(1/( log d log T )) , we give a randomized O(1)-competitive algorithm, with a competitive ratio independent of both d and T . We further derandomize our approach, obtaining a deterministic 
+
+O(1)-competitive algorithm under a comparable smallness assumption. 
+
+> ∗
+
+Part of this work was done while the authors were visiting the Simons Institute for the Theory of Computing at UC Berkeley during the Fall 2025 research program Algorithmic Foundations for Emerging Computing Technologies .
+
+> †
+
+Tel Aviv University, Israel. azar@tau.ac.il . Yossi Azar was partially supported by ISF Grant 1728/26. 
+
+> ‡
+
+University of Houston, USA. rathish@uh.edu .
+
+> §
+
+University of Houston, USA. hsun33@central.uh.edu .arXiv:2609.39349v1 [cs.DS] 30 Sep 2026 1 Introduction 
+
+Modern computing systems execute many jobs concurrently while sharing several limited resources. A job may simultaneously consume CPU capacity, memory, memory bandwidth, I/O bandwidth, network capacity, or accelerator resources, and these requirements persist throughout the time that the job executes. Representing such a job by a single scalar size can therefore hide the actual source of contention: two jobs with comparable aggregate demand may interact very differently depending on which resources they use. This motivates multidimensional resource scheduling , where the resource requirement of a job is represented by a vector rather than a scalar. In this paper, we study the following fundamental form of this problem. There are n independent jobs. Job i has a processing time si > 0 and a resource vector 
+
+vi = ( vi, 1, . . . , v i,d ) ∈ Rd
+
+> +
+
+.
+
+There is unit capacity in each of the d resources. Once job i starts, it occupies vi,k units of resource 
+
+k throughout its entire processing interval. Thus, if f (i) is its start time, a schedule is feasible if, for every time t and every resource k ∈ [ d],
+
+∑   
+
+> i∶f(i)≤ t<f(i)+ si
+
+vi,k ≤ 1.
+
+The objective is to minimize the makespan 
+
+Cmax = max  
+
+> i
+
+{f (i) + si}.
+
+Geometrically, the time axis forms a strip, while every job occupies an interval of length si and consumes a d-dimensional vector of capacities throughout that interval. We therefore also view the problem as a multidimensional strip-packing problem. When the processing times of jobs are the same, our problem is equivalent to the well-studied vector-bin-packing problem [7]. 
+
+Why is the problem important? Multidimensional resource requirements arise naturally whenever jobs execute concurrently on a shared system. Classical work on multidimensional scheduling was already motivated by tasks requiring several resources such as CPU, disks, and network capacity simultaneously [7]. This issue has only become more pronounced as modern workloads simultaneously stress processors, memory, bandwidth, and other components. From an algorithmic perspective, resource constraints interact with time in a particularly direct way: the scheduler must decide which jobs should overlap , since resources occupied by a job are released only when that job completes. Consequently, total work alone is not sufficient to characterize a good schedule. A natural lower bound captures this resource–time interaction. Define 
+
+Vk =
+
+> n
+
+∑
+
+> i=1
+
+sivi,k , V = max  
+
+> k∈[ d]
+
+Vk.
+
+Resource k can supply only one unit of capacity per unit of time, and hence every feasible schedule satisfies OPT ≥ V. 
+
+The central question of this paper is when this elementary volume bound is also approximately achievable. In general, resource demands can create severe fragmentation: even when the total volume is small, the resource profiles of simultaneously executing jobs may prevent the available capacities from being efficiently utilized. 1What is known? Our problem is closely related to bin packing problem, more generally to vector bin packing problem. 
+
+Bin packing has been studied since the work of Johnson in the 70s (see, e.g., [16, 17] and surveys [12, 22] for later work). For the vector bin packing (VBP) problem, we pack multi-dimensional vectors and the simple greedy algorithm has a competitive ratio of O(d) [13]. In the offline setting, this was improved to a 
+
+O(1+ϵd +log (1/ϵ)) -approximation in [7]. On the other hand, [2], using ideas from [10], showed that a d1−ϵ-approximation would imply N P = ZP P . For fixed d (i.e., super-polynomial in d running times), the approximation factor improves to ln d + O(1) [6, 5, 7]. To overcome the strong lower bound for arbitrary d, Epstein [11] initiated the study of vector bin packing with variable bin sizes. In the online setting, the O(d) bound was improved to O(log (d 1 
+
+> B−1
+
+)) for B ≥ 2 in [1, 3], who also showed an information-theoretic lower bound of Ω (d 1 
+
+> B−ϵ
+
+) (for any ϵ > 0). For large enough B, the lower bound vanishes; for this case, [1] gave a (1 + ϵ) ⋅ e-competitive algorithm if B = ( 1/ϵ2) ⋅ Ω(log d) (for any ϵ > 0). If vectors are splittable, [1] gave an e-competitive algorithm, and a matching lower bound was shown in [4]. More recently, Sandeep [21] established nearly matching dimension-dependent hardness results: for all sufficiently large constant d, d-dimensional VBP has no asymptotic c log d-approximation for some constant c > 0, unless P = NP, and when d is part of the input, VS is hard to approximate within Ω (( log d)1−ϵ) under a stronger complexity assumption. On the algorithmic side, Kulik, Mnich, and Shachnai [18] recently obtained an asymptotic (1 + ln d − χ(d) + ϵ)-approximation for VBP, for a positive function χ(d), and a (4/3 + ϵ)-approximation for d = 2. These results highlight the intrinsic difficulty of multidimensional packing for unrestricted vectors. The situation changes dramatically when individual vectors are small . Azar et al. [1] initiated a systematic study of this regime for online vector bin packing. While arbitrary vectors admit strong dimension-dependent lower bounds, they showed that sufficiently small vectors admit a competitive ratio arbitrarily close to e, independent of d, and gave a corresponding deterministic result with a slightly stronger smallness assumption. This demonstrated an important phenomenon: multidimensional packing can become qualitatively easier when no individual item consumes a significant fraction of any resource. 
+
+What is missing? The small-vector results above concern static packing : an arriving vector is assigned to a bin and remains part of the load of that bin. Processing times play no role. Con-versely, resource-constrained scheduling captures processing times, but its general approximation guarantees typically depend on the number of resources and do not exploit the regime in which every job has tiny demand in every resource. Our goal is to understand whether the favorable “small-vector phenomenon” survives once time is introduced. This is not an immediate consequence of small-vector bin packing. Assigning a vector to a bin creates one d-dimensional feasibility constraint; assigning a job a start time creates constraints throughout an entire interval. A long job may overlap many short jobs, different duration scales interact with one another, and an overload can potentially occur at many different times and in any of the d resources. Thus, techniques that control the load of a fixed bin do not directly control the temporal pattern of overlaps. This distinction is especially apparent in the online setting: when job i arrives, we must irrevo-cably decide its start time without knowing future jobs. 
+
+Our results. We show that the small-vector assumption remains remarkably powerful even after introducing heterogeneous processing times. Our first result is a near-optimal offline algorithm. We 2normalize the maximum processing time to one. This is easily done offline and can also be done online since we use the doubling technique on the makespan. 
+
+Theorem 1.1 (Informal) . For every 0 < ϵ < 1/4, if 
+
+max  
+
+> i,k
+
+vi,k ≤ ϵ2
+
+24 log (d/ϵ) ,
+
+there is a randomized algorithm that constructs a schedule of expected makespan 
+
+(1 + 6ϵ) OPT +3.
+
+Moreover, the algorithm can be implemented in O(dn log n) time. 
+
+Thus, in the small-vector regime, the schedule can be made asymptotically arbitrarily close to optimal even when d is not a constant. The running time is also nearly linear in the input size. This is in sharp contrast with configuration-based approaches to general vector scheduling: for example, the classical fixed-dimensional PTAS discretizes vectors, enumerates configurations, and combines dynamic programming with LP rounding, leading to a polynomial whose exponent grows rapidly with d and the accuracy parameter. We next consider the online problem. Here, jobs arrive one at a time, and the start time of a job must be fixed upon its arrival. Let T = max i si  
+
+> min isi
+
+.
+
+Theorem 1.2 (Informal) . If max i,k vi,k ≤ 1100 log d log T , there is a randomized online algorithm whose expected makespan is at most 96 OPT .
+
+In particular, the competitive ratio is an absolute constant, independent of both the dimension and the number of jobs; d and T appear only in the smallness requirement. We further remove the randomization. 
+
+Theorem 1.3 (Informal) . For d ≥ 2, there is a deterministic online algorithm with makespan at most 160 OPT , provided that every coordinate satisfies 
+
+max  
+
+> i,k
+
+vi,k ≤ 14000 log d log T .
+
+Taken together, these results extend the small-vector phenomenon from static multidimensional packing to temporal resource scheduling: small vectors allow a near-optimal offline approximation and constant-competitive online algorithms even when jobs have heterogeneous processing times. 
+
+1.1 Techniques 
+
+Our offline algorithm is based on a simple random-placement principle. We first round processing times geometrically and consider the jobs from longer to shorter processing times. Let 
+
+V = max  
+
+> k
+
+∑
+
+> i
+
+tivi,k 
+
+be the max-coordinate resource–time volume after rounding. We create a time horizon of length only slightly larger than V , and independently assign every job a random start time aligned with its rounded processing time. If the job fits throughout its proposed interval, we keep the assignment; otherwise, we send the job to an overflow pool .
+
+> 0Throughout the paper, all logarithms are base 2 unless otherwise specified.
+
+3The main difficulty is that a job can fail because of an overload at any time in its execution interval. A naive union bound over all possible times would destroy the desired guarantee. Geo-metric rounding gives us the crucial structural property: for a job of a fixed processing time, an unsuccessful placement can be witnessed at only a small set of representative time points. We can therefore apply concentration bounds at these points and union-bound over both the relevant times and the d resource dimensions. Small coordinates ensure that the probability of overflow is tiny. We then exploit an apparent mismatch in our favor. The overflow pool can be scheduled by a simple shelf algorithm whose worst-case guarantee loses a factor depending on d. However, the expected resource–time volume that reaches the overflow pool is smaller by a compensating factor. Consequently, the overflow contributes only an O(ϵ) fraction of the original volume, yielding the 
+
+(1 + O(ϵ)) offline guarantee. This “random placement plus cheap repair” viewpoint is substantially simpler than explicitly enumerating multidimensional packing configurations. The randomized online algorithm follows the same high-level principle, but must address two additional obstacles. First, the final resource–time volume is not known in advance; we handle this using a standard doubling argument. Second, an arriving job can interact with multiple processing-time scales. After rounding processing times to powers of two, all relevant events lie on a controlled temporal grid. Concentration followed by a union bound over the grid and the resource dimensions shows that each job enters the overflow pool with sufficiently small probability. A separate online shelf schedule then absorbs the rejected jobs while losing only a constant factor. Finally, our deterministic online algorithm replaces random start times with a fractional schedule and an exponential potential function. The fractional schedule specifies a distribution over possible start times for every job. When processing a job, we show that the expected potential under this distribution does not increase; hence some start time in its support does not increase the potential. Choosing such a start time deterministically maintains control over every resource and every relevant time point. This converts the concentration argument underlying the randomized algorithm into a deterministic online invariant. 
+
+1.2 Other Related Work 
+
+Vector scheduling. Vector scheduling has been studied extensively as models of jobs that si-multaneously require several resources. Chekuri and Khanna [7] systematically studied vector scheduling (VS), where d-dimensional vectors are assigned to a fixed number of machines so as to minimize the maximum load over all machines and coordinates. They gave a PTAS for VS when d
+
+is fixed and an O(log 2 d)-approximation for arbitrary d.The online version of vector scheduling has also received substantial attention. Meyerson, Roytman, and Tagiku [19] obtained an O(log d)-competitive algorithm, and Im, Kell, Kulkarni, and Panigrahi [15] subsequently established an asymptotically tight Θ (log d/ log log d) dependence for deterministic online vector scheduling. Azar, Cohen, and Panigrahi [3] showed that randomization does not asymptotically eliminate this dependence by proving an Ω (log d/ log log d) lower bound for randomized algorithms. Thus, for unrestricted vectors, a dependence on the dimension is unavoidable even online. More recently, Gupta, Krishnaswamy, Sandeep, and Sundaresan [14] studied fully dynamic vector scheduling and vector bin packing with recourse. For VBP, under the assumption that every coordinate is O(1/ log d), they obtain an O(1)-competitive algorithm with O(log n) amortized recourse. Their result provides further evidence that small per-coordinate demands can fundamentally change the behavior of multidimensional packing. Recent work [9] considered online multidimensional vector scheduling under precedence constraints and showed tight logarithmic competitive ratios. 4Temporal and dynamic vector packing. Recent work has considered temporal variants of multidimensional packing. In dynamic vector bin packing, a job has a multidimensional resource demand together with an activity interval, and the algorithm decides where to place the job among multiple bins or servers while respecting the capacity constraints of every active bin [23, 20]. In the model of van Bevern et al. [23], the start and end times of each request are part of the input and the objective is to minimize the number of bins. Murhekar et al. [20] instead consider online jobs that are assigned to servers upon arrival and depart after completing their processing; their objective is to minimize total server usage time. Our problem differs in the central optimization decision. All jobs share a single d-dimensional capacity profile, and the scheduler decides when each job executes. Choosing a start time for job i determines its activity interval [f (i), f (i) + si), and hence which other jobs it overlaps. Thus, unlike the above dynamic packing models, the temporal overlap pattern itself is part of the optimization. The objective is to minimize makespan rather than the number or usage time of bins. This distinction is particularly important for heterogeneous processing times, since the scheduler must coordinate overlaps across multiple duration scales rather than assign already active jobs to different bins. 
+
+# 2 (1 + ϵ)-Approximation for Offline Vector Scheduling 
+
+We normalize the longest processing time of a vector to be 1. Let OP T denote the length of the optimal schedule when vector vi has processing time si.In this section, we prove Theorem 2.1, which states that for d ≥ 2 and any ϵ such that 14 > ϵ > 0and 1 /ϵ ∈ Z, Algorithm 2.1 returns a schedule of expected makespan at most (1 + 6ϵ)OP T + 3 if each coordinate of every vector has size at most ϵ2/( 24 log (d/ϵ)) .
+
+Theorem 2.1. Let d ≥ 2 and let 14 > ϵ > 0 be such that 1/ϵ ∈ Z. There is an offline algorithm for vector scheduling that produces a solution of expected makespan at most (1 + 6ϵ)OP T + 3 for vectors whose coordinates are at most ϵ2 
+
+> 24 log (d/ϵ)
+
+, where the maximum processing time of a vector is normalized to be 1. 
+
+Round all processing times up to the next power of 2 ϵ. Since 2 ϵ ≤ 1 + ϵ, this increases every processing time by a factor of at most 1 + ϵ.Let ti denote the processing time of vi after rounding. Let OP T ′ denote the length of the optimal schedule when vector vi has processing time ti. The optimum amount of time required to schedule these vectors increases by at most a factor of (1 + ϵ), that is, OP T ′ ≤ ( 1 + ϵ)OP T .Recall that 
+
+V = max 
+
+> k∈[ d]
+> n
+
+∑
+
+> i=1
+
+tivi,k 
+
+is the max-coordinate-volume of our vectors. One can see that V is a lower bound for OP T ′.Let 
+
+M = V
+
+1 − ϵ + 1 ≤ ( 1 + 2ϵ)V + 1. (1) 
+
+Vector scheduling algorithm. Our vector scheduling algorithm (Algorithm 2.1) works as fol-lows. Since the entire instance is known in advance, we may index the vectors so that t1 ≥ t2 ≥ . . . ≥
+
+tn.5Algorithm 2.1: Vector scheduling algorithm  
+
+> 1
+
+Input : ϵ > 0, and a set of vectors v1, v 2, . . . , v n with processing times t1, t 2, . . . , t n. 
+
+> 2
+
+W.l.o.g., since the entire instance is known in advance, index the vectors so that 
+
+t1 ≥ t2 ≥ ⋯ ≥ tn. 
+
+> 3
+
+For each i = 1, 2, . . . , n , and for each discrete time 0 ≤ t < V 
+
+> 1−ϵ
+
+such that tti ∈ Z, assign t as the starting time of vi with probability 1
+
+⌈( V 
+
+> 1−ϵ
+
+)/ ti⌉ , independently of the assignments of the other vectors. (That is, the starting time of vi is chosen uniformly from these times.)  
+
+> 4
+
+If a vector cannot fit on the strip when started at its assigned starting time, put it in an “overflow pool”.  
+
+> 5
+
+Round the processing time of each vector in the overflow pool up to the next largest power of 2.  
+
+> 6
+
+Apply Algorithm 2.2 to the vectors in the overflow pool (with rounded processing times), and append the resulting schedule after the schedule of the vectors that fit on the strip. For each i = 1, 2, . . . , n , and for each time 0 ≤ t < V 
+
+> 1−ϵ
+
+such that tti ∈ Z, assign t as the starting time of vi with probability 1
+
+⌈( V 
+
+> 1−ϵ
+
+)/ ti⌉ , independently of the assignments of the other vectors. As a consequence, the starting time of vi is chosen uniformly from these possible times. If a vector cannot fit on the strip when started at its assigned time, we put it in an “overflow pool”, round its processing time to the next largest power of 2, and apply the Shelf Algorithm, Algorithm 2.2, to the vectors in the overflow pool. We append the resulting schedule after the schedule of the vectors that fit on the strip. Remark: We note that it is straightforward to implement the algorithm in almost linear time (i.e. O(dn log n)). 
+
+Algorithm 2.2: Shelf algorithm  
+
+> 1
+
+Input : A sequence of vectors ¯ v1, ¯v2, . . . where ¯ vi has a processing time ti (which is a power of 2).  
+
+> 2
+
+Replace each vector with a larger vector for which all coordinates are the same and are equal to the maximum coordinate qi = max k ¯vi,k ≤ ∑ k ¯vi,k . 
+
+> 3
+
+For each modified vector, if there exists a shelf with processing time ti such that the vector fits there, then put the vector there. Otherwise open a new shelf with processing time ti
+
+and put the vector in the newly opened shelf. 
+
+Lemma 2.2. Suppose that Algorithm 2.1 tentatively assigns a vector vi to time t. There is a set of times τi(t) ⊂ [ t, t + ti) of size at most 2/ϵ such that, if vi cannot fit at time t, then there is some time t′ ∈ τi(t) such that the schedule is overloaded at time t′, that is, for some k ∈ [ d],
+
+∑     
+
+> vjalready scheduled, t′∈[ f(j),f (j)+ tj)
+
+vj,k + vi,k > 1.
+
+Proof. Recall that each tj is equal to 2 ϵw j for some wj ∈ Z. Let g = 1/ϵ, which is an integer. For each j, write wj = qj g + rj , where qj ∈ Z and 0 ≤ rj < g. So, tj = 2qj +rj /g.
+
+Define 
+
+τi(t) ∶= { m2qi+r′/g ∶ r′ ∈ [ g − 1] ∪ { 0}, m ∈ Z, t ≤ m2qi+r′/g < t + ti}.
+
+6We first show that if vi cannot fit when started at time t, then the addition of vi causes an overload at some time in τi(t).Suppose that vi cannot fit when started at time t. If the addition of vi already causes an overload at t, then t ∈ τi(t), since t is an admissible starting time for vi and hence is a multiple of 
+
+ti = 2qi+ri/g.
+
+Otherwise, let t′ > t be the first time in [t, t + ti) at which the addition of vi causes an overload. The load on the strip can change only at the starting and completion times of previously scheduled vectors. Moreover, the completion of a vector can only decrease the load. Therefore, t′ must be the starting time of some previously scheduled vector vj .Since the vectors are considered in nonincreasing order of processing time, tj ≥ ti. Hence 
+
+wj ≥ wi, which implies qj ≥ qi. Since t′ is an admissible start time of vj , for some m ∈ Z, t′ =
+
+mt j = m2qj +rj /g = ( m2qj −qi )2qi+rj /g. Since qj − qi is a nonnegative integer, m2qj −qi ∈ Z. Thus, t′ is a multiple of 2 qi+rj /g, and therefore t′ ∈ τi(t).It remains to bound the size of τi(t). For every r′ ∈ [ g − 1] ∪ { 0}, consecutive multiples of 2 qi+r′/g
+
+are separated by at least 2 qi . On the other hand, ti = 2qi+ri/g < 2qi+1. Therefore, the interval [t, t +ti)
+
+contains at most two multiples of 2 qi+r′/g for each r′. Since there are g = 1/ϵ possible values of r′,we obtain ∣τi(t)∣ ≤ 2g = 2 
+
+> ϵ
+
+.
+
+Lemma 2.3. The probability that a vector vi is placed in the overflow pool is at most 2ϵ/d3.Proof. Fix a possible start time t of vi and condition on vi being assigned time t. Since the start times of the vectors are assigned independently, this conditioning does not affect the distribution of the start times assigned to the vectors considered before vi.For each vector vj considered before vi, each potential start time is assigned to vj with proba-bility 1
+
+⌈( V 
+
+> 1−ϵ
+
+)/ tj ⌉ .We fix the value of k. Consider any particular time t′ ∈ τi(t). Let aj = vj,k ⋅ 24 log (d/ϵ)/ ϵ2. Note that 0 ≤ aj ≤ 1. Let Xj be the indicator random variable that equals 1 if and only if the start time assigned to vector vj is tj ⌊t′/tj ⌋. If this is not an admissible starting time for vj , then Xj = 0. Since the start times of the vectors are assigned independently, the random variables Xj are independent. Let X = ∑ j<i aj Xj , and let μ = 24 log (d/ϵ) 
+
+> ϵ2(1+ϵ)
+
+.Note that Xj = 1 with probability at most 1
+
+⌈( V 
+
+> 1−ϵ
+
+)/ tj ⌉ ≤ (1 − ϵ)tj
+
+V . Substituting this into X =∑j<i aj Xj and simplifying, we deduce that 
+
+E[X] ≤ ∑ 
+
+> j<i
+
+(1 − ϵ)tj
+
+V aj ≤ ∑ 
+
+> j<i
+
+(1 − ϵ)tj
+
+V vj,k 
+
+24 log (d/ϵ)
+
+ϵ2 ≤ 24 log (d/ϵ)
+
+ϵ2(1 + ϵ) = μ, 
+
+where the last inequality uses 1 − ϵ ≤ 1/( 1 + ϵ).Let η = 11 ϵ 
+
+> 12
+
+. Since each 0 ≤ aj Xj ≤ 1, we may think of X as the sum of independent random variables that take values between 0 and 1. Recall that the maximum value of each coordinate of any vector is at most ϵ2 
+
+> 24 log (d/ϵ)
+
+. For the purpose of the analysis only, the coefficients aj scale the resource usage in dimension k by the factor 24 log (d/ϵ)/ ϵ2. This scaling does not change the vectors or the capacity of the scheduling problem; it only means that the random variable X is a normalized representation of the resource usage of the vectors whose assigned start times cause them to overlap time t′.7Suppose that inserting vi causes an overflow in dimension k at time t′. Then the previ-ously scheduled vectors that overlap t′ use more than 1 − vi,k units of resource k. Since vi,k ≤
+
+ϵ2/( 24 log (d/ϵ)) , these vectors use more than 1 − ϵ2/( 24 log (d/ϵ)) units of resource k.Every previously scheduled vector that overlaps t′ has an assigned start time that causes it to overlap t′, and hence its normalized resource usage is included in X. Moreover, X may also include vectors whose assigned start times cause them to overlap t′ but which were subsequently placed in the overflow pool. Thus, if there is an overflow in dimension k at time t′ when attempting to schedule vi, then X ≥ 24 log (d/ϵ) 
+
+> ϵ2
+
+− 1. Under our assumptions on ϵ and d, 24 log (d/ϵ) 
+
+> ϵ2
+
+− 1 ≥ ( 1 + η)μ. Applying the Chernoff bound [8], we find that Pr [X ≥ 24 log (d/ϵ)
+
+ϵ2 − 1] ≤ Pr [X ≥ ( 1 + η)μ] ≤ e− η2μ 
+
+> 3
+
+= e− ϵ2⋅11 2⋅24 log (d/ϵ) 
+
+> 12 2⋅3ϵ2(1+ϵ)
+
+≤ ϵ2
+
+d4 .
+
+Thus, for a fixed k ∈ [ d] and a fixed time t′ ∈ τi(t), the probability that the addition of vi causes an overload in dimension k at time t′ is at most ϵ2/d4.Since this holds for each k ∈ [ d], the probability that the addition of vi causes an overload at time t′ is at most ϵ2/d3.Summing over all times t′ ∈ τi(t), and using ∣τi(t)∣ ≤ 2/ϵ, the probability that vi overflows, conditioned on being assigned start time t, is at most 2 ϵ/d3. Since this bound holds for every possible start time t of vi, the probability that vi is placed in the overflow pool is at most 2 ϵ/d3.Now we consider the makespan of the schedule returned by the shelf algorithm. 
+
+Lemma 2.4. Let S be the set of vectors given to the shelf algorithm. Suppose that each coordinate of a vector in S has size at most δ ≤ 1/2, that the processing time of each vector is a power of 2, and that the maximum processing time of a vector is normalized to be 1. Let ¯V = ∑ i∈S ti max k∈[ d] vi,k and let ˆV = max k∈[ d] ∑i∈S tivi,k be the max-coordinate-volume of the vectors in S. Then the makespan of the shelf algorithm is at most 
+
+(1 + 2δ) ¯V + 2 ≤ ( 1 + 2δ)d ˆV + 2.
+
+Proof. For each vector vi ∈ S, let qi = max k∈[ d] vi,k , and let S′ be the modified vectors obtained from S by replacing each vector vi with a larger vector ¯ vi for which all coordinates are equal to qi.Then 
+
+V (S′) = ∑ 
+
+> i∈S
+
+tiqi = ¯V . 
+
+Moreover, since qi ≤ ∑ k∈[ d] vi,k ,¯V ≤ ∑ 
+
+> k∈[ d]
+
+∑
+
+> i∈S
+
+tivi,k ≤ d ˆV . 
+
+The schedule returned by the shelf algorithm consists of consecutive shelves, where each vector fits inside exactly one shelf. For each shelf length, there is at most one shelf that has more than δ
+
+unused capacity. Indeed, if two shelves of the same length each had more than δ unused capacity, then the first vector placed in the later shelf, whose size is at most δ, would have fit in the earlier shelf. Let τi denote the number of shelves of length 2 −i. The total max-coordinate-volume of vectors packed inside shelves of length 2 −i is at least 2 −i(1 − δ)( τi − 1). This is because, except for at most one shelf of each length, every shelf has at least 1 − δ of its capacity filled. Hence, 
+
+∑
+
+> i≥0
+
+2−i(1 − δ)( τi − 1) ≤ ¯V . 
+
+8Note that 1 /( 1 − δ) ≤ ( 1 + 2δ). By rearranging the terms we get that the total length is at most 
+
+∑
+
+> i≥0
+
+2−iτi ≤ ( 1 + 2δ) ¯V + ∑ 
+
+> i≥0
+
+2−i ≤ ( 1 + 2δ) ¯V + 2 ≤ ( 1 + 2δ)d ˆV + 2.
+
+Proof. (of Theorem 2.1) We now show that Algorithm 2.1 produces a solution of makespan at most (1 + 6ϵ)OP T + 3, in expectation. Let S be the random set of vectors placed in the overflow pool, and let qi = max k vi,k . Since each vector overflows with probability at most 2ϵd3 ,
+
+E [∑ 
+
+> i∈S
+
+tiqi] = ∑ 
+
+> i
+
+tiqi Pr [i ∈ S] ≤ 2ϵd3 ∑
+
+> i
+
+tiqi ≤ 2ϵd2 V. 
+
+Before applying the Shelf Algorithm, we round the processing time of each vector in the overflow pool to the next largest power of 2. This increases every such processing time by a factor of less than 2. Therefore, if ¯VS denotes ∑i∈S tiqi after this rounding, then E[ ¯VS ] ≤ 4ϵd2 V .In our application of Theorem 2.4, take δ = ϵ2/( 24 log (d/ϵ)) . By Theorem 2.4, the Shelf Algo-rithm adds an expected extra processing time of at most (1 + 2δ)E[ ¯VS ] + 2 ≤ ( 1 + 2δ) 4ϵd2 V + 2. Since 
+
+δ ≤ 1/2, this is at most 8ϵd2 V + 2. Every vector that is not placed in the overflow pool starts before V 
+
+> 1−ϵ
+
+and has processing time at most 1. Thus, the makespan of this part of the schedule is at most M . Therefore, the expected length of the entire schedule is at most 
+
+M + 8ϵd2 V + 2 ≤ ( 1 + 2ϵ)V + 1 + 2ϵV + 2 ≤ ( 1 + 4ϵ)V + 3,
+
+where the first inequality uses the bound from Equation (1) and the fact that d ≥ 2. Finally, V ≤ OP T ′ ≤ ( 1 + ϵ)OP T . Therefore, 
+
+(1 + 4ϵ)V + 3 ≤ ( 1 + 4ϵ)( 1 + ϵ)OP T + 3 ≤ ( 1 + 6ϵ)OP T + 3,
+
+where the last inequality follows from ϵ ≤ 1/4. 
+
+# 3 Online with Smaller Vector Size 
+
+In this section, we consider the online version of the vector scheduling problem given in the Intro-duction. Let T be the ratio of the maximum vector processing time to the minimum vector processing time (we round it to the next power of 2). As before, we normalize the maximum processing time of a vector to be 1. Hence the minimum processing time is at least 1 /T . We assume that d, T ≥ 2and that all logarithms are base 2. First, we round up the processing time of each vector to the next largest power of 2. Let ti denote the processing time of vi after rounding. Let OP T ′ denote the length of the optimal schedule when vector vi has processing time ti. The optimal makespan increases by at most a factor of 2, that is, OP T ′ ≤ 2OP T .9Let 
+
+V = max 
+
+> k∈[ d]
+> n
+
+∑
+
+> i=1
+
+tivi,k 
+
+be the overall max-coordinate-volume of our vectors after rounding the processing times. One can see that V is a lower bound for OP T ′.Let 
+
+M = ⌈ 2V ⌉ ≤ 2V + 1.
+
+Our algorithm uses M as a parameter. However, for computing M we need to know the set of vectors in advance, which is not given to us. To overcome this, we use the classical folklore doubling method. Specifically, we maintain a guess for M and start a new phase with a doubled guess whenever the current guess is no longer sufficient. As usual, this increases the competitive ratio by at most a factor of 4. Thus, we first analyze the algorithm assuming that a sufficiently large value of M is known. 
+
+Online algorithm. First, we define the algorithm for a certain choice of ¯M ∈ N. This algorithm, Algorithm 3.1, is given a choice of ¯M ∈ N such that ¯M ≥ ⌈ 2V ⌉.Since each ti is a power of 2 with 1 /T ≤ ti ≤ 1, and both T and ¯M are integers, ¯M /ti ∈ Z. Thus there are exactly ¯M /ti times 0 ≤ t < ¯M such that t/ti ∈ Z.When vector vi arrives, independently of all previous random choices, for each time 0 ≤ t < ¯M
+
+such that t/ti ∈ Z, assign t as the tentative starting time of vi with probability ti/ ¯M . Equivalently, one of these times is chosen uniformly at random. We call the selected time the tentatively assigned 
+
+time of vi.If a vector cannot fit at its tentatively assigned time, we put it in an “overflow pool”. We use Algorithm 2.2 (the Shelf algorithm) for the overflow pool, starting the schedule for the overflow pool at time ¯M . Since the starting time of the schedule for the overflow pool is known in advance and the Shelf algorithm can be run online, each vector in the overflow pool can be assigned a time as soon as it is placed in the overflow pool. Thus, the algorithm does not need to wait for future vectors to arrive before scheduling an overflow vector. 
+
+Algorithm 3.1: Vector schedule for given max-coordinate-volume.  
+
+> 1
+
+Input : ¯M , and a sequence of vectors v1, v 2, . . . , v m of max-coordinate-volume V , with processing times t1, t 2, . . . , t m, that have maximum coordinate at most 1 /( 100 log d log T )
+
+and arrive online, such that ¯M ≥ ⌈ 2V ⌉. 
+
+> 2
+
+When vector vi arrives, independently of all previous random choices, for each time 0 ≤ t < ¯M such that t/ti ∈ Z, assign t as the tentative starting time of vi with probability 
+
+ti/ ¯M . Equivalently, one of these times is chosen uniformly at random.  
+
+> 3
+
+If vi cannot fit at its tentatively assigned time, put it in an “overflow pool”.  
+
+> 4
+
+Use Algorithm 2.2 (the Shelf algorithm) for the overflow pool, starting the schedule for the overflow pool at time ¯M .First, we show in the next lemma that the probability that a vector is placed in the overflow pool is at most 1 /d3.
+
+Lemma 3.1. The probability that a vector vi is placed in the overflow pool by Algorithm 3.1 is at most 1/d3.
+
+10 Proof. Suppose vector vi is tentatively assigned to time τi. We condition on this assignment throughout the proof. Fix k ∈ [ d] and let τ ′ ∈ [ τi, τ i + ti). We first show that the probability that the addition of vi
+
+causes more than 1 unit of resource k to be used at time τ ′ is at most 1 /( T d 4).Let aj = 100 vj,k log d log T . Note that 0 ≤ aj ≤ 1. Let Xj be the indicator random variable that equals 1 if and only if the tentatively assigned 
+
+time of vector vj is tj ⌊τ ′/tj ⌋. Since τ ′ < ¯M , this is an admissible time for vj . Since the tentative times of different vectors are chosen independently, the random variables Xj are independent. Let X = ∑ j<i aj Xj and let μ = 50 log d log T .Note that Xj = 1 with probability tj / ¯M . Substituting this into X = ∑ j<i aj Xj and simplifying, we deduce that 
+
+E[X] = ∑ 
+
+> j<i
+
+tj
+
+¯M aj ≤ ∑ 
+
+> j<i
+
+tj
+
+¯M 100 vj,k log d log T ≤ V
+
+¯M 100 log d log T ≤ 50 log d log T = μ. 
+
+Recall that the maximum value of each coordinate of any vector is at most 1 /( 100 log d log T ).For the purpose of the analysis only, the coefficients aj scale each resource usage by the factor 100 log d log T . This scaling does not change the vectors or the capacity of the scheduling problem; it only means that the random variable X is a normalized representation of the resource usage of the tentatively assigned vectors that overlap time τ ′.Suppose that inserting vi causes an overflow in dimension k at time τ ′. Then the vectors that did not overflow and overlap time τ ′ use more than 1 − vi,k units of resource k. Since vi,k ≤
+
+1/( 100 log d log T ), these vectors use more than 1 − 1/( 100 log d log T ) units of resource k.Every vector that did not overflow and overlaps time τ ′ was tentatively assigned to a time that causes it to overlap τ ′. The random variable X includes the normalized resource usage of all such vectors, as well as possibly additional vectors that were tentatively assigned there but subsequently overflowed. Hence X is at least the normalized resource usage of the vectors that did not overflow and overlap τ ′. Multiplying the preceding lower bound by 100 log d log T , we conclude that an overflow in dimension k at time τ ′ implies X ≥ 100 log d log T − 1. Recall the Chernoff bound which states that, for independent random variables taking values in [0, 1] and with E[X] ≤ μ, we have Pr [X ≥ ( 1 + δ)μ] ≤ e−δ2μ/3.Apply the Chernoff bound with δ = 1/2. Recall that μ = 50 log d log T . Under our assumptions on d and T , 100 log d log T − 1 ≥ 75 log d log T = ( 3/2)μ. Therefore Pr [X ≥ 100 log d log T − 1] ≤ Pr [X ≥ ( 3/2)μ] ≤ e− (1/4)⋅ 50 log d log T 
+
+> 3
+
+≤ 1
+
+T d 4 .
+
+Thus, for any fixed τ ′ ∈ [ τi, τ i + ti), the probability that the addition of vi causes an overflow in dimension k at time τ ′ is at most 1 /( T d 4).We now consider all times in [τi, τ i +ti). Every rounded processing time tj is an integer multiple of 1 /T , and every tentative time of vj is a multiple of tj . Therefore, both the starting and completion times of every vector lie on the 1 /T grid. Consequently, the resource usage is constant on every half-open interval [r/T, (r + 1)/ T ), where r ∈ Z.Hence, if an overflow occurs at some τ ′ ∈ [ τi, τ i +ti), then it also occurs at the grid point 1 
+
+> T
+
+⌊T τ ′⌋.Since ti ≤ 1, the half-open interval [τi, τ i + ti) contains at most T relevant grid points. Taking a union bound over these grid points, the probability that the addition of vi causes resource k to exceed 1 at some time in [τi, τ i + ti) is at most T ⋅ ( 1/( T d 4)) = 1/d4.Since this holds for each k ∈ [ d], taking a union bound over the d coordinates implies that vi
+
+does not fit at its tentatively assigned time τi with probability at most d ⋅ ( 1/d4) = 1/d3.11 Since the bound holds for every possible tentatively assigned time τi, the probability that vi is placed in the overflow pool is at most 1 /d3.
+
+Lemma 3.2. Suppose Algorithm 3.1 is given a sequence of vectors v1, v 2, . . . , v n with processing times t1, t 2, . . . , t n and maximum coordinate at most 1/( 100 log d log T ), and ¯M ∈ Z such that ¯M ≥⌈2V ⌉. Then Algorithm 3.1 produces a schedule for v1, v 2, . . . , v n of expected length at most 4 ¯M .Proof. Let S be the set of vectors placed in the overflow pool and let qi = max k vi,k . Since each vector is placed in the overflow pool with probability at most 1 /d3,
+
+E [∑ 
+
+> i∈S
+
+tiqi] = ∑ 
+
+> i
+
+tiqi Pr [i ∈ S] ≤ 1
+
+d3 ∑
+
+> i
+
+tiqi ≤ 1
+
+d3 ∑
+
+> k∈[ d]
+
+∑
+
+> i
+
+tivi,k ≤ Vd2 .
+
+One can see that Theorem 2.4 also applies when the Shelf Algorithm is run online. Taking ¯V = ∑ i∈S tiqi and δ = 1/( 100 log d log T ), Theorem 2.4 gives a schedule of length at most (1+2δ) ¯V +2. Since δ ≤ 1/2, the expected additional processing time of the Shelf Algorithm is at most 2 V /d2 + 2. Every vector that is not placed in the overflow pool completes by time ¯M . Thus, the expected length of the entire schedule is at most ¯M + 2
+
+d2 V + 2 ≤ 4 ¯M . 
+
+Now we prove the main theorem of this section. 
+
+Theorem 3.3. There is a randomized online algorithm that returns a vector schedule of expected length at most 96 OP T , where OP T is the length of the optimal vector schedule before rounding the vector processing times, when the maximum coordinate of a vector is at most 1/( 100 log d log T ).Proof. If M is known, then we can run Algorithm 3.1 using ¯M = M and obtain a schedule of expected length at most 4 M . Recall that M ≤ 3OP T ′ and OP T ′ ≤ 2OP T , so Algorithm 3.1 obtains a schedule of expected length at most 24 OP T .Using the standard folklore doubling method described previously to guess M increases the competitive ratio by at most a factor of 4. Therefore, the resulting online algorithm has expected length at most 96 OP T . This completes the proof. 
+
+# 4 Derandomizing the Algorithm 
+
+In this section, we derandomize the algorithm from the preceding section. We use the rounded processing times defined there. For m ∈ N, let a collection f0, f 1, . . . , f m be a fractional vector schedule for vectors v1, . . . , v n.Informally, fj (vi) represents the fraction of vector vi assigned to start at time j/T . Formally, we require fj (vi) ≥ 0 for every i and j,
+
+> m
+
+∑
+
+> j=0
+
+fj (vi) = 1 for every i ∈ [ n],
+
+and the resource constraints are satisfied at every time. That is, 
+
+> n
+
+∑
+
+> i=1
+
+∑  
+
+> j∈{ 0,...,m }∶
+> j/T≤t<j/T+ti
+
+fj (vi)vi,k ≤ 1 (2) 12 for every t ∈ R+ and k ∈ [ d].The length of the fractional schedule is max  
+
+> i∈[ n], j ∈{ 0,...,m }∶
+> fj(vi)> 0
+
+( jT + ti) .
+
+The fraction fj (vi) consumes fj (vi)vi,k units of resource k throughout the half-open interval 
+
+[j/T, j /T + ti). Thus, (2) requires that, for every resource k and time t, the total consumption of resource k by all vector fractions active at time t does not exceed its unit capacity. For notational convenience we adopt the convention that fj (vi) = 0 for j ∉ { 0, 1, 2, . . . , m }.We say a fractional vector schedule f0, f 1, . . . , f m has 1/2-slack if ∑ni=1 ∑ j∈{ 0,...,m }∶   
+
+> j/T≤t<j/T+ti
+
+fj (vi)vi,k ≤ 
+
+> 12
+
+holds for any time t and dimension k.We now describe an algorithm to produce a vector schedule from a fractional vector schedule if the max-coordinate-volume is known. Define Q = 4000 log d log T . We scale every coordinate of 
+
+vi by Q and, for notational simplicity, continue to write vi for the scaled vector. We also scale the capacity of every resource from 1 to Q, so this scaling does not change feasibility. This scaling convention is used in both the description and the analysis of the deterministic algorithm below. The statement of Lemma 4.1 refers to the original, unscaled vectors. For a tentative start time f ′(vi) for each vector vi, define the load after processing v1, . . . , v i by 
+
+Lit,k = ∑    
+
+> i′≤i∶
+> f′(vi′)≤ t<f′(vi′)+ ti′
+
+vi′,k .
+
+We also define 
+
+α = e1/16 , g(y) = αy.
+
+The associated potential is Φit,k = g ⎛⎝Lit,k − α ∑
+
+> i′≤iT t
+
+∑  
+
+> j=T(t−ti′)+ 1
+
+fj (vi′ )vi′,k 
+
+⎞⎠ . (3) For a set of times A, let ΦiA,k = ∑ 
+
+> t∈A
+
+Φit,k , ΦiA = ∑ 
+
+> t∈A
+
+∑
+
+> k∈[ d]
+
+Φit,k .
+
+For n′ ∈ N and r′ > 0, denote [0, r ′] 1 
+
+> n′
+
+= [ 0, r ′] ∩ 1 
+
+> n′
+
+Z.We now describe the algorithm for Theorem 4.1. When vi arrives, the algorithm tentatively assigns it to a starting time f ′(vi) = j/T with fj (vi) > 0 that minimizes Φ i   
+
+> [0,q −1
+> T]1
+> T
+
+. If vi fits at that starting time, the assignment is made permanent; otherwise, vi is placed in an overflow pool. We run the Shelf Algorithm, Algorithm 2.2, on the overflow pool, starting the schedule for the overflow pool at time q. Since the starting time of the schedule for the overflow pool is known in advance and the Shelf Algorithm can be run online, each vector can be assigned a time as soon as it is placed in the overflow pool. We will prove the following lemma. 
+
+Lemma 4.1. Suppose d ≥ 2, every vector vi satisfies vi,k ≥ max k′ vi,k ′ 
+
+> d2
+
+for every k ∈ [ d], and the maximum coordinate of every vector is at most 14000 log d log T . Let q be an upper bound for the length of a 1/2-slack fractional vector schedule, where T q ∈ Z. Then Algorithm 4.1 deterministically constructs an online schedule of length q + 2 + 4qd .
+
+13 Algorithm 4.1: Deterministic Vector schedule for given fractional vector schedule and max-coordinate-volume.  
+
+> 1
+
+Input: Vectors v1, . . . , v n, fractional vector schedule f0, f 1, . . . , f m of length at most q. The algorithm maintains that when vi arrives, tentative starting times f ′(vj ) are assigned for all vectors vj with j < i. 
+
+> 2
+
+When vi arrives, tentatively assign it to a starting time j/T with fj (vi) > 0 that minimizes Φi   
+
+> [0,q −1
+> T]1
+> T
+
+. Denote this tentative starting time by f ′(vi). 
+
+> 3
+
+If vi fits at that time f ′(vi), then assign it to that time. Otherwise, vi is placed in an overflow pool.  
+
+> 4
+
+We use Algorithm 2.2 (the Shelf algorithm) for the overflow pool, starting the schedule for the overflow pool at time q. 
+
+> 5
+
+Output: Schedule for v1, . . . , v n.To prove Lemma 4.1, we first show that Φ i   
+
+> [0,q −1
+> T]1
+> T
+
+is nonincreasing in i.
+
+Lemma 4.2. For every i ∈ [ n],
+
+Φi   
+
+> [0,q −1
+> T]1
+> T
+
+≤ Φi−1   
+
+> [0,q −1
+> T]1
+> T
+
+.
+
+Proof. Fix i, t, and k. Consider the randomized assignment that starts vi at j/T with probability 
+
+fj (vi). Conditional on the preceding assignments, vector vi contributes vi,k to the load at time t
+
+with probability ∑T t j=T (t−ti)+ 1 fj (vi). It follows from (3) that 
+
+E[Φit,k ] = ⎛⎝
+
+> T t
+
+∑ 
+
+> j=T(t−ti)+ 1
+
+fj (vi)⎞⎠ g ⎛⎝Li−1 
+
+> t,k
+
++ vi,k − α ∑
+
+> i′≤iT t
+
+∑  
+
+> j=T(t−ti′)+ 1
+
+fj (vi′ )vi′,k 
+
+⎞⎠+ ⎛⎝1 −
+
+> T t
+
+∑ 
+
+> j=T(t−ti)+ 1
+
+fj (vi)⎞⎠ g ⎛⎝Li−1 
+
+> t,k
+
+− α ∑
+
+> i′≤iT t
+
+∑  
+
+> j=T(t−ti′)+ 1
+
+fj (vi′ )vi′,k 
+
+⎞⎠= Φi−1 
+
+> t,k
+
+α−αv i,k ∑T t j=T (t−ti)+ 1 fj (vi) ⎛⎝1 + ⎛⎝
+
+> T t
+
+∑ 
+
+> j=T(t−ti)+ 1
+
+fj (vi)⎞⎠ (αvi,k − 1)⎞⎠≤ Φi−1 
+
+> t,k
+
+exp ⎛⎝−αv i,k ln α
+
+> T t
+
+∑ 
+
+> j=T(t−ti)+ 1
+
+fj (vi) + vi,k (α − 1)
+
+> T t
+
+∑ 
+
+> j=T(t−ti)+ 1
+
+fj (vi)⎞⎠≤ Φi−1 
+
+> t,k
+
+.
+
+The first inequality uses αx − 1 ≤ x(α − 1) for x ∈ [ 0, 1] and 1 + x ≤ ex; here vi,k ∈ [ 0, 1] after scaling. The second uses α ln α ≥ α − 1 for α ≥ 1. Summing over t ∈ [ 0, q − 1 
+
+> T
+
+] 1
+
+> T
+
+and k ∈ [ d] gives 
+
+E[Φi   
+
+> [0,q −1
+> T]1
+> T
+
+] ≤ Φi−1   
+
+> [0,q −1
+> T]1
+> T
+
+.
+
+Therefore, at least one starting time in the support of f (vi) does not increase the total potential. The algorithm chooses such a starting time, so the claim follows. We claim the following lemma holds. 
+
+Lemma 4.3. If Lit,k > Q − 1, then 
+
+Lit,k − 3Q
+
+4 ≥ 96 .
+
+14 Proof. Because Lit,k > Q − 1, it suffices to show that 
+
+Q
+
+4 − 1 ≥ 96 . (4) The definition of Q now implies the desired inequality under the standing assumptions d, T ≥ 2. We next prove the following lemma relating Φ it,k and Lit,k − Q + 1. 
+
+Lemma 4.4. For every i, t, and k,
+
+Φit,k ≥ 12 T d 6(Lit,k − Q + 1)+.
+
+Proof. The claim is immediate when Lit,k ≤ Q − 1. Otherwise, the fractional load bound and (3) yield Φit,k ≥ αLit,k −α 2Q 
+
+> 3
+
+≥ αLit,k − 3Q   
+
+> 4+Q
+> 40
+
+≥ T d 6 αLit,k − 3Q 
+
+> 4
+
+≥ 12 T d 6 (Lit,k − 3Q
+
+4 ) ≥ 12 T d 6(Lit,k − Q + 1).
+
+For the first inequality, the original fractional schedule has 1 /2-slack, so after scaling by Q its fractional load is at most Q/2 and hence at most 2 Q/3. Thus, ∑i′≤i ∑ j∈{ 0,...,m }∶   
+
+> j/T≤t<j/T+ti′
+
+fj (vi′ )vi′,k ≤ 2Q 
+
+> 3
+
+.The second line uses e1/16 ≤ 87 /80. The third inequality follows from 
+
+αQ/40 ≥ eQ/640 ≥ e6 log d log T ≥ T d 6.
+
+The fourth line follows from Lemma 4.3 and the inequality ex/16 ≥ x/2 for x ≥ 96. The final line follows from (4). We now prove Theorem 4.1. 
+
+Proof. (of Theorem 4.1) Because L0 
+
+> t,k
+
+= 0 and the fractional prefix load is also zero, Φ 0 
+
+> t,k
+
+= 1. Hence Φi   
+
+> [0,q −1
+> T]1
+> T
+
+≤ Φ0   
+
+> [0,q −1
+> T]1
+> T
+
+= T qd. (5) Let IS be the set of vectors that do not fit at their tentative start times, and let V S denote their max-coordinate-volume. Here, V S refers to the max-coordinate-volume of the overflow vectors after their coordinates have been scaled by Q. For each i ∈ IS , choose a resource k(i) and a time 
+
+t(i) for which assigning vi would violate the capacity constraint for resource k(i) at time t(i).Since all tentative starting and completion times lie on the 1 
+
+> T
+
+-grid and the load is constant between consecutive grid points, we may choose such a time t(i) ∈ 1 
+
+> T
+
+Z. We say that vi is charged to 
+
+(t(i), k (i)) .For each fixed t and k, suppose that at least one vector in IS is charged to (t, k ), and let vi be the first such vector considered. Since vi does not fit at its tentative starting time and its scaled coordinates are at most 1, immediately before vi is considered, the previously scheduled vectors use more than Q − 1 units of resource k at time t.Moreover, every vector charged to (t, k ) has a tentative assignment that covers time t, and hence contributes its k-th coordinate to Lnt,k . This remains true even if the vector is subsequently placed in the overflow pool, since Lnt,k is defined using the tentative assignments. Therefore, 
+
+∑ 
+
+> i∈IS∶
+> t(i)= t, k (i)= k
+
+vi,k ≤ ( Lnt,k − ( Q − 1)) + .
+
+15 Since vi,k ≥ max k′∈[ d] vi,k ′ 
+
+> d2
+
+and ti ≤ 1 for all i, we have 
+
+V S = max  
+
+> k∈[ d]
+
+∑
+
+> i∈IS
+
+vi,k ti
+
+≤ ∑ 
+
+> i∈IS
+
+∑
+
+> k∈[ d]
+
+vi,k ti
+
+= ∑    
+
+> 0≤t≤q−1
+> T∶
+> t∈1
+> TZ
+
+∑
+
+> k∈[ d]
+
+∑ 
+
+> i∈IS∶
+> t(i)= t, k (i)= k
+
+∑
+
+> k′∈[ d]
+
+vi,k ′ ti
+
+≤ ∑    
+
+> 0≤t≤q−1
+> T∶
+> t∈1
+> TZ
+
+∑
+
+> k∈[ d]
+
+∑ 
+
+> i∈IS∶
+> t(i)= t, k (i)= k
+
+d3vi,k 
+
+≤ d3 ∑    
+
+> 0≤t≤q−1
+> T∶
+> t∈1
+> TZ
+
+∑
+
+> k∈[ d]
+
+(Lnt,k − ( Q − 1)) + .
+
+(6) Here, (x)+ = max {0, x }.We show that Algorithm 4.1 deterministically produces a vector schedule of length at most 
+
+q + 2 + 4qd . First note that if the vector vi is not in the overflow pool, then it is placed at a spot j
+
+such that fj (vi) > 0. By definition, jT + ti ≤ q. In other words, the vectors not in the overflow pool all finish before time q.Combining (6), Lemma 4.4, and Equation (5), we obtain the following bound on the max-coordinate-volume of the overflow vectors. 
+
+V S ≤ d3 ∑    
+
+> 0≤t≤q−1
+> T∶
+> t∈1
+> TZ
+
+∑
+
+> k∈[ d]
+
+(Lnt,k − Q + 1)+ ≤ 2d3
+
+T d 6 ∑    
+
+> 0≤t≤q−1
+> T∶
+> t∈1
+> TZ
+
+∑
+
+> k∈[ d]
+
+Φnt,k ≤ 2qd2 .
+
+We now return to the original, unscaled vectors. The max-coordinate-volume of the overflow vectors is therefore V S 
+
+> Q
+
+, and their maximum coordinate is at most 1 
+
+> Q
+
+. By Theorem 2.4, the length of the schedule returned by the Shelf algorithm is at most 2 + ( 1 + 2
+
+Q ) d V S
+
+Q ≤ 2 + 2dV S ≤ 2 + 4qd .
+
+Thus the total length of the schedule returned by Algorithm 4.1 is at most q + 2 + 4qd .To obtain the deterministic algorithm, we construct a fractional schedule following the ideas of Section 3. Instead of randomly choosing a starting time for ̃ vi, we assign equal fractional mass to the admissible multiples of ti in [0, ¯M ). This construction is summarized in Algorithm 4.2. Now we show how to obtain the deterministic algorithm. 
+
+Theorem 4.5. For d ≥ 2, there is a deterministic online algorithm that returns a vector schedule of length at most 160 OP T , where OP T is the length of an optimal schedule before processing-time rounding, provided that the maximum coordinate of every input vector is at most 
+
+1
+
+Q = 14000 log d log T .
+
+16 Algorithm 4.2: Fractional schedule for a given max-coordinate-volume  
+
+> 1
+
+Input: A value ¯M ∈ Z+ and online vectors v1, . . . , v n with processing times t1, . . . , t n,max-coordinate-volume V , and maximum coordinate at most 1 /( 100 log d log T ), where ¯M ≥ ⌈ 2V ⌉. 
+
+> 2
+
+When vi arrives, set 
+
+fT t (vi) = ti
+
+¯M
+
+for each t ∈ [ 0, ¯M ) such that t/ti ∈ Z, and set fj (vi) = 0 at every other j ∈ Z. 
+
+> 3
+
+Output: A resulting 1 /2-slack fractional vector schedule. 
+
+Proof. First we modify the received set of vectors v1, v 2, . . . , v n so that no coordinate of any vector 
+
+vi is less than 1 
+
+> d2
+
+times the maximum coordinate. That is, for each coordinate vik that is less than   
+
+> max k′vi,k ′
+> d2
+
+, set that coordinate to max k′ vi,k ′ 
+
+> d2
+
+. Call this new set of vectors ˜ v1, ˜v2, . . . , ˜vn. Let ˜V be the max-coordinate-volume of these vectors. 
+
+Lemma 4.6. ˜V ≤ ( 1 + 1 
+
+> d
+
+) V .Proof. For each i ∈ [ n], let k(i) be such that vi,k (i) is a maximum coordinate of vi.˜V = max 
+
+> k∈[ d]
+> n
+
+∑
+
+> i=1
+
+˜vi,k ti ≤ max 
+
+> k∈[ d]
+> n
+
+∑
+
+> i=1
+
+(vi,k + 1
+
+d2 vi,k (i)) ti
+
+≤ max 
+
+> k∈[ d]
+> n
+
+∑
+
+> i=1
+
+vi,k ti + 1
+
+d2
+
+> n
+
+∑
+
+> i′=1
+
+vi′,k (i′)ti′ = V + 1
+
+d2 ∑
+
+> k′∈[ d]
+
+∑
+
+> i′∈[ n]∶
+> k(i′)= k′
+
+vi′,k ′ ti′
+
+≤ V + 1
+
+d2 ∑
+
+> k′∈[ d]
+
+∑
+
+> i′∈[ n]
+
+vi′,k ′ ti′ ≤ V + 1
+
+d2 ∑
+
+> k′∈[ d]
+
+V ≤ V + 1
+
+d V. 
+
+The case ̃ V = 0 is trivial, so assume ̃ V > 0. Let M = ⌈ 2̃V ⌉. First suppose that M is known and set ¯M = M . We apply Algorithm 4.2 to the modified vectors. Since ¯M is an integer and every rounded processing time ti is a power of 2 between 1 
+
+> T
+
+and 1, ¯M /ti ∈ Z. Thus, the fractional masses assigned to each vector sum to 1. Moreover, the latest starting time in the support of f (̃ vi) is ¯M −ti, so every vector fraction finishes by time ¯M . Therefore, the fractional schedule has length at most ¯M .For every time t ∈ [ 0, ¯M ) and vector ̃ vi, exactly one start time in the support of f (̃ vi) covers t.Therefore, for every k ∈ [ d],
+
+> n
+
+∑
+
+> i=1
+
+∑  
+
+> j∶
+> j/T≤t<j/T+ti
+
+fj (̃ vi)̃ vi,k =
+
+> n
+
+∑
+
+> i=1
+
+ti
+
+¯M̃ vi,k ≤̃ V
+
+¯M ≤ 12 .
+
+By construction, the modified vectors satisfy ̃ vi,k ≥ max k′̃ vi,k ′ 
+
+> d2
+
+, and modifying the smaller coor-dinates does not change the maximum coordinate of any vector. Thus, by Lemma 4.1, applying Algorithm 4.1 to this fractional schedule produces an integral schedule of length at most ¯M + 2 + 4 ¯Md ≤ ( 3 + 4
+
+d ) ¯M , 
+
+17 where we use ¯M ≥ 1. Moreover, OP T ′ ≥ V ≥̃ V /( 1 + 1/d) and OP T ′ ≥ 1. Letting M = ⌈ 2̃ V ⌉ gives 
+
+M ≤ ( 3 + 2
+
+d ) OP T ′.
+
+If ¯M = M , then, for d ≥ 2, 
+
+(3 + 4
+
+d ) ¯M ≤ ( 3 + 4
+
+d ) ( 3 + 2
+
+d ) OP T ′ ≤ 20 OP T ′ ≤ 40 OP T. 
+
+As in Section 3, a standard folklore doubling argument for guessing M increases this factor by at most four. Therefore, the resulting deterministic online schedule has length at most 160 OP T .
+
+# AI Disclosure 
+
+The authors used GPT-5.6 Sol (OpenAI) solely for English-language polishing, including improving grammar, clarity, and readability. The tool was not used to develop, verify, or generate any technical content, mathematical arguments, proofs, algorithms, results, or scientific claims in this paper. All technical contributions and their verification are entirely the work of the authors. 18 References 
+
+[1] Yossi Azar, Ilan Reuven Cohen, Amos Fiat, and Alan Roytman. Packing small vectors. In 
+
+Proceedings of the Twenty-Seventh Annual ACM-SIAM Symposium on Discrete Algorithms (SODA) , pages 1511–1525. SIAM, 2016. [2] Yossi Azar, Ilan Reuven Cohen, Seny Kamara, and F. Bruce Shepherd. Tight bounds for online vector bin packing. In Proceedings of the Forty-Fifth Annual ACM Symposium on Theory of Computing (STOC) , pages 961–970. ACM, 2013. [3] Yossi Azar, Ilan Reuven Cohen, and Debmalya Panigrahi. Randomized algorithms for online vector load balancing. In Proceedings of the Twenty-Ninth Annual ACM-SIAM Symposium on Discrete Algorithms (SODA) , pages 980–991. SIAM, 2018. [4] Yossi Azar, Ilan Reuven Cohen, and Alan Roytman. Online lower bounds via duality. In 
+
+Proceedings of the Twenty-Eighth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA 2017, Barcelona, Spain , pages 1038–1050, 2017. [5] Nikhil Bansal, Alberto Caprara, and Maxim Sviridenko. A new approximation method for set covering problems, with applications to multidimensional bin packing. SIAM Journal on Computing , 39(4):1256–1278, 2009. [6] Nikhil Bansal, Marek Eli´ aˇ s, and Arindam Khan. Improved approximation for vector bin packing. In Proceedings of the Twenty-Seventh Annual ACM-SIAM Symposium on Discrete Algorithms (SODA) , pages 1561–1579. SIAM, 2016. [7] Chandra Chekuri and Sanjeev Khanna. On multidimensional packing problems. SIAM Journal on Computing , 33(4):837–851, 2004. [8] Herman Chernoff. A measure of asymptotic efficiency for tests of a hypothesis based on the sum of observations. Ann. Math. Statist. , 23(4):493–507, 1952. [9] Rathish Das and Hao Sun. Approximation hardness of resource scheduling. In Proceedings of the 37th ACM Symposium on Parallelism in Algorithms and Architectures , pages 46–61, 2025. [10] Brian C. Dean, Michel X. Goemans, and Jan Vondr´ ak. Approximating the stochastic knapsack problem: The benefit of adaptivity. Math. Oper. Res. , 33(4):945–964, 2008. [11] Leah Epstein. On variable sized vector packing. Acta Cybern. , 16(1):47–56, 2003. [12] Gabor Galambos and Gerhard J. Woeginger. On-line bin packing – a restricted survey. 
+
+Zeitschrift f¨ ur Operations Research , 42(1):25–45, 1995. [13] M. R. Garey, Ronald L. Graham, David S. Johnson, and Andrew Chi-Chih Yao. Resource constrained scheduling as generalized bin packing. J. Comb. Theory, Ser. A , 21(3):257–298, 1976. [14] Varun Gupta, Ravishankar Krishnaswamy, Sai Sandeep, and Janani Sundaresan. Look before, before you leap: Online vector load balancing with few reassignments. In 14th Innovations in Theoretical Computer Science Conference (ITCS 2023) , volume 251 of Leibniz International Proceedings in Informatics (LIPIcs) , pages 65:1–65:17. Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, 2023. 19 [15] Sungjin Im, Nathaniel Kell, Janardhan Kulkarni, and Debmalya Panigrahi. Tight bounds for online vector scheduling. In 2015 IEEE 56th Annual Symposium on Foundations of Computer Science (FOCS) , pages 525–544. IEEE, 2015. [16] David S. Johnson. Fast algorithms for bin packing. J. Comput. Syst. Sci. , 8(3):272–314, 1974. [17] David S. Johnson, Alan J. Demers, Jeffrey D. Ullman, M. R. Garey, and Ronald L. Graham. Worst-case performance bounds for simple one-dimensional packing algorithms. SIAM J. Comput. , 3(4):299–325, 1974. [18] Ariel Kulik, Matthias Mnich, and Hadas Shachnai. Improved approximations for vector bin packing via iterative randomized rounding. In 2023 IEEE 64th Annual Symposium on Foun-dations of Computer Science (FOCS) , pages 1366–1376. IEEE, 2023. [19] Adam Meyerson, Alan Roytman, and Brian Tagiku. Online multidimensional load balancing. In Approximation, Randomization, and Combinatorial Optimization. Algorithms and Tech-niques (APPROX/RANDOM 2013) , volume 8096 of Lecture Notes in Computer Science , pages 287–302. Springer, 2013. [20] Aniket Murhekar, David Arbour, Tung Mai, and Anup B. Rao. Brief announcement: Dynamic vector bin packing for online resource allocation in the cloud. In Proceedings of the 35th ACM Symposium on Parallelism in Algorithms and Architectures (SPAA) , pages 307–310. ACM, 2023. [21] Sai Sandeep. Almost optimal inapproximability of multidimensional packing problems. In 2021 IEEE 62nd Annual Symposium on Foundations of Computer Science (FOCS) , pages 245–256. IEEE, 2021. [22] Jir´ ı Sgall. Online bin packing: Old algorithms and new results. In CiE , volume 8493 of Lecture Notes in Computer Science , pages 362–372. Springer, 2014. [23] Ren´ e van Bevern, Andrey Melnikov, Pavel V. Smirnov, and Oxana Yu. Tsidulko. On data reduction for dynamic vector bin packing. Operations Research Letters , 51(4):446–452, 2023. 20
