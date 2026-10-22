@@ -1,0 +1,1470 @@
+Title: Dynamic Task and Resource Scheduling Towards Space-Air-Ground-Sea Integrated Network
+
+URL Source: https://arxiv.org/pdf/2609.31011v1
+
+Published Time: Mon, 28 Sep 2026 00:48:34 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> 1
+
+# Dynamic Task and Resource Scheduling Towards Space-Air-Ground-Sea Integrated Network 
+
+Yufei Ye, Graduate Student Member, IEEE , Shijian Gao, Member, IEEE , Xinhu Zheng, Member, IEEE , and Liuqing Yang, Fellow, IEEE 
+
+Abstract —In the context of 6G ubiquitous connectivity, the space–air–ground–sea integrated network (SAGSIN) emerges as a new paradigm for pervasive service provisioning. To support ex-panding maritime activities in infrastructure-scarce ocean areas, we propose an innovative dynamic task and resource scheduling approach for SAGSIN to deliver computing services for ves-sels. It integrates broad-coverage satellites, relay-capable high-altitude platform (HAP), energy-sufficient coastal base station (BS), and flexibly deployed uncrewed aerial vehicles (UAVs) to accommodate wide-area, highly mobile, and sustained maritime services. To address the challenge of task scheduling across four layers, a dynamic task offloading algorithm is developed. It steers task flows toward servers with light loads, strong computing capabilities, and high-rate links based on real-time system states to reduce task execution delay, integrating an anticipatory satel-lite handover strategy to mitigate post-handover congestion and improving satellite resource utilization. Considering the limited endurance of UAVs, we impose residual energy constraints to ensure task backlog handover and safe return. Furthermore, the UAV-BS bandwidth allocation, UAV trajectories, and com-puting resource allocation are jointly optimized to enhance the connectivity among low-altitude devices and accelerate task completion. Simulation results validate the proposed method’s superior adaptability to system resource variations during task execution in complex maritime environments, achieving at least a 23% reduction in average task delay over benchmarks. 
+
+Index Terms —Space-air-ground-sea integrated network, task offloading, efficient scheduling, edge computing, satellite han-dover. 
+
+I. I NTRODUCTION 
+
+# THE Sixth Generation (6G) networks are envisioned to enable ubiquitous computing and connectivity across heterogeneous environments [1]. Under this vision, rapidly expanding maritime activities, such as ocean resource explo-ration and environmental monitoring, are imposing increasing demands on communication and computing resources. How-ever, the limited onboard computing power of vessels and scarce infrastructures in ocean areas pose critical challenges for supporting emerging maritime applications [2]. Maritime service provisioning typically requires wide-area coverage and continuous service availability. Therefore, satel-lites with broad coverage [3], [4] and coastal base stations 
+
+Yufei Ye is with the Intelligent Transportation Thrust, The Hong Kong University of Science and Technology (Guangzhou), Guangzhou 511458, China (e-mail: yye760@connect.hkust-gz.edu.cn). Shijian Gao is with the Internet of Things Thrust, The Hong Kong University of Science and Technology (Guangzhou), Guangzhou 511458, China (e-mail: shijiangao@hkust-gz.edu.cn). Xinhu Zheng and Liuqing Yang are with the Intelligent Transporta-tion Thrust and Internet of Things Thrust, The Hong Kong University of Science and Technology (Guangzhou), Guangzhou 511458, China (e-mail: xinhuzheng@hkust-gz.edu.cn; lqyang@hkust-gz.edu.cn). 
+
+(BSs) [5] with stable energy supply have become the major service providers in ocean areas. Nevertheless, the long com-munication distances and severe path loss of satellite links lead to significant delay, while the limited coverage of BSs restricts their capability to support mobile vessels and distant offshore areas. With the agile mobility and rapid deployment, uncrewed aerial vehicles (UAVs), as key enablers of the low-altitude economy (LAE), have attracted considerable attention as a means of providing computing services to mobile onboard devices [7], [8]. To extend the capabilities of UAVs to ocean areas, recent studies have explored the spectrum-efficient maritime task offloading [6], the discrete-continuous hybrid framework for task offloading decision and communication resource allocation [9], the sea buoy-UAV cooperative comput-ing architecture [10], and the energy-minimization offloading scheme for vessels and underwater sensors [11]. Despite these advances, the compact physical sizes of UAVs result in limited computing capabilities and endurance, which hinders their ability to handle intensive computational demands [12]. In this context, the space-air-ground-sea integrated network (SAGSIN) emerges as a new network architecture to achieve ubiquitous connectivity [13]. For maritime service support, SAGSIN exploits the complementary advantages of hetero-geneous servers, including broad-coverage satellites, energy-sufficient BSs, and flexibly deployed UAVs, and integrates their resources to provide computing services for maritime devices [14]. To harness the potential of this integrated ar-chitecture, recent efforts have been devoted to collaborative edge computing and resource orchestration in SAGSIN. When UAVs are assisted by the BS, maritime task delay is minimized through the joint optimization of communication-computing resources with task offloading ratios [15] and service caching decisions [16]. The authors in [17] develop an online task offloading framework to cope with the time-varying channel conditions. Leveraging the powerful computing capabilities of low earth orbit (LEO) satellites, UAV-satellite collaborative computing frameworks have been designed to save energy for the entire system [18] or UAV servers [19]. A scheme to support tasks with different delay sensitivities is proposed in [20], and a satellite-assisted harvesting-and-offloading method is developed to prolong UAV endurance in [21]. Moreover, [22] designs a three-tier computing system that augments satellites with high access demands by BS, while a multi-armed bandit-based algorithm is proposed in [23] to jointly reduce task delay and energy cost. Acting as relays bridging the space layer and low-altitude region, the high-altitude platforms (HAPs) can effectively alleviate the high path loss of arXiv:2609.31011v1 [cs.NI] 25 Sep 2026 2
+
+satellite links while compensating for resource-limited UAVs. Multi-HAP-assisted computing architectures for SAGSIN have been recently investigated to further reduce task completion time [24] and hybrid service cost [25]. Meanwhile, [26] improves the energy efficiency of heterogeneous servers and [27] investigates the secure task offloading in SAGSIN. Despite the great potential of SAGSIN, several critical challenges remain insufficiently addressed. To cope with the high complexity of task offloading across four layers, most existing studies reduce the feasible decision space by predefin-ing device associations between certain layers, which limits the flexibility of task and resource scheduling and may lead to load imbalance. Meanwhile, the static one-shot scheduling strategies fail to track evolving system conditions during task transmission, leading to degraded performance when tasks reach destination servers. Moreover, adaptive strategies for handling abrupt satellite state transition caused by handover remain underexplored. Satellite offloading decisions based solely on the state of current satellite may result in post-handover congestion or resource underutilization. In addition, existing strategies for UAV energy management mainly focus on minimizing energy consumption or imposing fixed energy budgets, which may compromise service quality. Ensuring that the real-time residual energy of UAVs can support task backlog handover and safe return is more robust for efficient and sustainable service provisioning in maritime environments. To holistically address these challenges, in this paper, we propose a novel dynamic task and resource scheduling method (DASH) for SAGSIN to provide efficient computing support for vessels. DASH enables flexible adaptation to system dy-namics by introducing a low-complexity, layer-wise dynamic task offloading algorithm inspired by backpressure routing the-ory. It adaptively adjusts fine-grained task scheduling decisions according to multi-dimensional, real-time system conditions, including available computing resources of heterogeneous servers, task congestion levels, link capacities, and network topology. To address the underexplored handover problem, DASH further incorporates an anticipatory strategy that proac-tively regulates satellite offloading traffic based on the joint states of both the current and incoming satellites, thereby mitigating post-handover congestion while improving satellite resource utilization. Beyond task offloading, we jointly opti-mize UAV-BS bandwidth allocation, UAV trajectory planning, and computing resource allocation. This strengthens the con-nectivity between vessels and low-altitude UAVs and boosts task completion through the co-design of resource scheduling and physical network architecture. Considering the limited UAV endurance and impracticality of emergency landing in maritime environment, we incorporate UAV residual energy constraints to maintain sufficient energy for task backlog handover and safe return to charging station. This design ensures UAV operational safety and service continuity while avoiding unnecessary energy restrictions that may compromise service quality. Through adaptive multi-layer load balancing and demand-driven resource allocation, DASH provides effi-cient computing services while improving resource utilization efficiency and the ecological stability of the system, laying a crucial foundation for sustainable SAGSIN development. Simulation results demonstrate that DASH achieves supe-rior adaptability to variations in computing and bandwidth resources, substantially reducing the average task execution delay compared with benchmarks while effectively mitigating post-handover satellite congestion. The main contributions of this work are summarized as follows: 1) We propose a novel dynamic task and resource schedul-ing approach for SAGSIN. A low-complexity layer-wise task offloading scheme that adapts to multi-dimensional system dynamics is developed, integrating an anticipa-tory satellite handover strategy to mitigate post-handover congestion and improve resource utilization. 2) Beyond task offloading, we jointly optimize UAV-BS bandwidth allocation, UAV trajectories, and computing resource allocation to further accelerate task completion. Moreover, UAV residual energy constraints are incorpo-rated to ensure task backlog handover and safe return, thereby maintaining UAV operational safety and service continuity in maritime environments. 3) Extensive experiments validate the superiority of the proposed method over benchmarks in adapting to vary-ing system resources, achieving at least a 23% reduction in average task delay while effectively alleviating post-handover congestion on satellite and balancing work-loads across heterogeneous servers. The rest of this article is organized as follows. In Section II, we present the system model of the proposed SAGSIN architecture. Then we formulate the overall problem in Section III. In Section IV, we detail the anticipatory satellite handover strategy and multi-layer task offloading scheme. The solution for joint optimization of multifaceted resources and the com-plexity analysis of overall proposed approach are elaborated in Section V. We illustrate and discuss the simulation results in Section VI and finally conclude this paper in Section VII. II. S YSTEM MODEL 
+
+In this section, we present the system model of the proposed SAGSIN architecture, which consists of the network model, communication model, computation and task queue models, and UAV model, providing a unified framework for subsequent problem formulation and algorithm design. 
+
+A. System Overview 
+
+Fig. 1 depicts the proposed SAGSIN system architecture. Specifically, the sea layer consists of V vessel users denoted by set V = {1, 2, ..., v, ..., V }, while a coastal base station (BS) server is deployed in the ground layer. The air layer comprises 
+
+U UAVs operating in low-altitude regions as lightweight aerial servers, represented by set U = {1, 2, ..., u, ..., U },and an HAP functioning as an aerial BS server in high-altitude region. The space layer consists of an LEO satellite server currently serving the considered area and an incom-ing satellite server that will subsequently provide service to this area. Given the limited endurance of UAVs and the impracticality of emergency landings caused by low battery levels in maritime environments, we deploy a UAV charging station. To characterize the system dynamics, we discretize 3H2S Link V2U Links U2H Links V2B Links 
+
+> Current Satellite HAP UAVs Base Station
+> Incoming Satellite Inter-Satellite Link
+> Vessel Users
+> Task data of different vessels
+> Buffers on each server
+> UAV Charging Station
+
+Fig. 1. Illustration of the multi-layer network architecture for SAGSIN. 
+
+time into slots, each indexed by n starting from 0 and having a length of τ . We take sea surface as the reference plane. In time slot n, the horizontal locations of vessel user v, UAV 
+
+u, coastal BS, HAP, and charging station are denoted by 
+
+Wv (n) = ( xv (n), y v (n)) , Wu(n) = ( xu(n), y u(n)) , Wb =(xb, y b), Wh(n) = ( xh(n), y h(n)) , and Wcs = ( xcs , y cs ),respectively. The height of UAVs, coastal BS, and HAP are signified by Hu, Hb, and Hh, respectively. We denote the size of task data generated by vessel v as 
+
+Dv bits and its computational density as Cv cycles/bit, which indicates the number of CPU cycles required to process each bit of data. The operation process of the whole system is described as follows: In each time slot, each vessel user selects either a UAV or the coastal BS based on the real-time multi-dimensional system states to offload a portion of its task data. Each UAV and the HAP offload part of the selected vessel’s task data stored in their local buffers to the HAP and satellite server, respectively. Meanwhile, the coastal BS, UAVs, HAP, and satellite server compute portions of buffered task data from different vessels. For clarity and conciseness, the key notations in this work and their definitions are summarized in Table I, where the index of the time slot is omitted. 
+
+B. Communication Model 1) Vessel-to-UAV and Coastal BS Communication: In light of the characteristics of marine environment, e.g., strong Line-of-Sight (LoS) links, the wireless channel in ocean area is primarily affected by wave-induced multipath effects and weather conditions. According to [15], [18], [20], the vessel-to-UAV (V2U) link and vessel-to-BS (V2B) link are modeled as the combination of large-scale path loss and small-scale Rician fading. The path loss and the Rician fading between vessel v and UAV u or BS are respectively given by 
+
+hLv,i (n) = L0
+
+dv,i (n)2 = L0
+
+Hi2 + ∥Wi(n) − Wv (n)∥2 , (1a) 
+
+TABLE I MAIN NOTATIONS AND DEFINITIONS 
+
+Notation Definition 
+
+V, U Set of vessel users and UAVs, respectively 
+
+Dv , C v Size and computational density of task data generated by vessel v, respectively 
+
+τ Duration of each time slot 
+
+Tv Total execution delay of vessel v’s task 
+
+Wv , Wu,
+
+Wb, Wh
+
+Positions of vessel v, UAV u, coastal BS, and HAP, respectively 
+
+Hu, H b, H h Height of UAVs, coastal BS, and HAP, respectively 
+
+dh,s Distance between HAP and satellite 
+
+dsaf e Minimum safety distance among UAVs 
+
+Su,max Maximum flight speed of UAV u
+
+av,u V2U offloading decision indicators of vessel vav,b V2B offloading decision indicator of vessel v
+
+av,u,h U2H offloading decision indicators of UAV u
+
+av,h,s H2S offloading decision indicators of HAP 
+
+Bv,b , B v,u Bandwidth allocated by BS and UAV u to vessel vBh, B s Bandwidth for U2H and H2S communications 
+
+Rv,u Data rate between vessel v and UAV uRv,b Data rate between vessel v and coastal BS 
+
+Ru,h Data rate between UAV u and HAP 
+
+Rh,s Data rate between HAP and satellite 
+
+Fv,i Computing resource allocated by server i to the task data of vessel vFi Available computing resource of server iDcomp v,i Amount of vessel v’s data computed by server iQv, 0 Amount of task data on local device of vessel vQv,i Amount of task data of vessel v on server iEcons u Total energy consumption of UAV u in each time slot 
+
+Eu Remaining energy of UAV u at the beginning of each time slot 
+
+Ecs u
+
+Energy required for UAV u to return to charging station at the beginning of each time slot 
+
+Ere u
+
+Energy required for UAV u to transmit remaining data to HAP at the beginning of each time slot 
+
+hRv,i (n) = 
+
+r K0
+
+1 + K0
+
++
+
+r 11 + K0
+
+ov,i (n), (1b) where i ∈ { u, b }, dv,i (n) denote the distance between vessel 
+
+v and UAV u or BS at time slot n, L0 is the reference path loss at distance d0 = 1 m, ov,i (n) ∈ CN (0 , 1) , and K0 is Ri-cian factor. Employing orthogonal frequency division multiple access (OFDMA) technology [15], [24], the transmission data rate between vessel v and UAV u or BS is expressed as 
+
+Rv,i (n) = Bv,i (n) log 2
+
+
+
+1 + Pv (n)hv,i (n)
+
+N0Bv,i (n)
+
+
+
+, (2) where hv,i (n) = hLv,i (n)|hRv,i (n)|2 is the channel gain, Bv,i (n)
+
+signifies the bandwidth allocated to each V2U or V2B channel, 
+
+Pv (n) denotes the transmit power of vessel v, and N0 is noise power spectral density. 
+
+2) UAV-to-HAP Communication: The total path loss be-tween UAV u and HAP at time slot n is formulated as [24] 
+
+Lu,h (n) = Lf,u,h (n) + Lg + Ls, (3) where Lg denotes the atmospheric attenuation and Ls repre-sents the attenuation caused by ionospheric or tropospheric scintillation. Lf,u,h (n) is the free space path loss, which is given by Lf,u,h (n) = 32 .45 + 20 log 10 fc + 20 log 10 du,h (n),where fc is the carrier frequency in MHz and du,h (n) = p(Hh − Hu)2 + ∥Wh(n) − Wu(n)∥2 denotes the distance 4
+
+between UAV u and HAP in km. Hence the transmission rate of this UAV-to-HAP (U2H) link is expressed as 
+
+Ru,h (n) = Bh log 2 1 + Pu(n)GuGh10 − Lu,h (n)10 
+
+N0Bh
+
+!
+
+, (4) where Pu(n) is UAV transmit power, Gu and Gh signify the antenna gain of UAV u and HAP, respectively, and Bh is the bandwidth for U2H communication. Denoting the data volume of the selected vessel v∗ that UAV u offloads to HAP in time slot n as Dtx v∗,u,h (n), the corresponding transmission energy of this UAV is Etx u (n) = Pu(n)Dtx v∗,u,h (n)/R u,h (n).
+
+3) HAP-to-Satellite Communication: Following [24], the large-scale fading between HAP and LEO satellite can be captured by 
+
+ηh,s (n) = ˆ μ + 10 μ log 10 
+
+ dh,s (n)
+
+d0
+
+
+
++ δ, (5) where ˆμ denotes the intercept parameter (i.e., path loss at reference distance), μ is the path loss exponent, dh,s (n) is the HAP-to-satellite (H2S) distance at time slot n, and δ is the model deviation in fitting represented by a zero-mean Gaussian random variable with standard deviation ω = 0 .1 [28]. The transmission rate of the H2S link is given by 
+
+Rh,s (n) = Bs log 2
+
+
+
+1 + Ph(n)hh,s (n)
+
+N0Bs
+
+
+
+, (6) where Bs denotes the bandwidth for H2S communication and 
+
+Ph(n) is the transmit power of HAP. The channel gain is formulated as hh,s (n) = K010 − ηh,s (n)10 GhGs, where Gs is the antenna gain of satellite. 
+
+4) Inter-Satellite Communication: When the current satel-lite is about to leave the considered region with unfinished computation tasks, it forwards the remaining backlogged task data to the incoming satellite via the inter-satellite link (ISL) to enable seamless service handover. Benefiting from the abun-dant optical spectrum and highly concentrated laser beams, ISL can currently achieve transmission rates of 10 Gb/s over thousands of kilometers, with advanced multiplexing schemes potentially extending throughput to Tb/s level [29]. Conse-quently, the communication latency between the current and incoming satellites is mainly dominated by the propagation delay over the long inter-satellite distance, which can be reasonably assumed as Tp, while the transmission delay is negligible [30]. This work focuses on the adaptive control of satellite backlog at handover to prevent post-handover task congestion or overly conservative offloading. The study on ISL is left for future work. 
+
+C. Task Computation and Queue Models 
+
+To efficiently characterize the dynamics of available com-puting resources and task congestion conditions across the system, we present the task computation and queue models in this subsection. We denote the available computing resources (i.e., the maximum processable number of CPU cycles) of server i at time slot n as Fi(n), i ∈ I = {u, b, h, s }. Let 
+
+Qv, 0(n) signify the local task data backlog on vessel v and 
+
+Qv,i (n) denote the backlog of vessel v on the server i at the beginning of time slot n. They are respectively expressed as 
+
+Qv, 0(n) = Qv, 0(n − 1) − X
+
+> u∈U
+
+av,u (n − 1) Dtx v,u (n − 1) 
+
+− av,b (n − 1) Dtx v,b (n − 1) , (7a) 
+
+Qv,i (n) = Qv,i (n − 1) + Dtx v,i (n − 1) − Dcomp v,i (n − 1) 
+
+− 1{i∈{ u,h }} · Dtx v,i,i ′ (n − 1) , i ′ ∈ { h, s }, (7b) where 
+
+Dtx v,i (n − 1) = 
+
+
+
+av,b (n − 1) Dtx v,b (n − 1) , i = b, av,u (n − 1) Dtx v,u (n − 1) , i = u, P 
+
+> u∈U
+
+av,u,h (n − 1) Dtx v,u,h (n − 1) , i = h, av,h,s (n − 1) Dtx v,h,s (n − 1) , i = s, 
+
+and 
+
+Dtx v,i,i ′ (n − 1) = 
+
+ av,u,h (n − 1) Dtx v,u,h (n − 1) , i = u, av,h,s (n − 1) Dtx v,h,s (n − 1) , i = h. 
+
+In (7a), Dtx v,u (n − 1) and Dtx v,b (n − 1) refer to the task data amount offloaded from vessel v to UAV u and BS in time slot n − 1, respectively. av,u and av,b are binary indicators of vessel v’s offloading decision in each time slot. A value of 1 indicates that vessel v chooses the corresponding UAV/BS to offload data. In terms of (7b), Dtx v,i (n − 1) denotes the total data volume of vessel v received by server i, and Dcomp v,i (n−1) 
+
+is the volume of vessel v’s task data computed by server 
+
+i in time slot n − 1. Dtx v,i,i ′ (n − 1) signifies the amount of vessel v’s data offloaded from UAV u to HAP or HAP to satellite. av,u,h = 1 indicates UAV u chooses to offload vessel v’s data to HAP and av,h,s = 1 means HAP offloads vessel v’s data to satellite. The actual amount of transmitted data is bounded by link capacity and data backlog at each device. Specifically, Dtx v,i (n) = min( R∗
+
+> v,i
+
+(n)τ, Q v, 0(n)) , i ∈{b, u } and Dtx v,i,i ′ (n) = min( R∗ 
+
+> i,i ′
+
+(n)τ, Q v,i (n)) , (i, i ′) ∈{(u, h ), (h, s )}, where R∗
+
+> v,i
+
+(n) and R∗ 
+
+> i,i ′
+
+(n) are the ultimate rates obtained after all optimization variables are determined. The energy consumption of UAV u for computing the task of vessel v in time slot n is given by 
+
+Ecomp v,u (n) = κu
+
+ Cv Dcomp v,u (n)3
+
+τ 2 , (8) where κu is the energy efficiency factor depending on the chip architecture of UAV u’s processor [26]. Accordingly, the total computation energy consumption of UAV u in the time slot n
+
+is given by Ecomp u (n) = P 
+
+> v∈V
+
+Ecomp v,u (n).
+
+D. UAV Motion and Energy Model 1) UAV Motion Model: The displacement of UAV u be-tween two consecutive time slots is given by ∆du(n) =
+
+∥Wu(n) − Wu(n − 1) ∥. Let Su,max denote the maximum speed of UAV u. Accordingly, the UAV motion is subject to the following maximum velocity constraint 
+
+∆du(n)
+
+τ ≤ Su,max , ∀u, n. (9) 5
+
+To avoid collisions among UAVs, the inter-UAV distances must be maintained above the minimum safety distance de-noted by dsaf e . Hence, the positions of any pair of UAV u
+
+and u′ must comply with the following constraint: 
+
+∥Wu(n) − Wu′ (n)∥ ≥ dsaf e , ∀u, u ′ ∈ U , u ̸ = u′, ∀n. (10) 
+
+2) UAV Energy Model: The average velocity of the UAV 
+
+u between time slots n − 1 and n can be expressed as 
+
+su(n) = ∆du(n) 
+
+> τ
+
+, thus the corresponding flight energy con-sumption [19] is Ef light u (n) = 0 .5Muτ s u(n)2, where Mu
+
+is the mass of UAV u. To address the difficulties of UAV charging and emergency landing in maritime environments while ensuring service continuity, each UAV is required to reserve sufficient residual energy for two essential operations: uploading its remaining local task backlog to HAP for service handover and returning to the charging station. Based on the above derivation, the energy required for UAV u to return to the charging station at the beginning of time slot n can be expressed as 
+
+Ecs u (n) = 0 .5Mu∥Wu(n − 1) − Wcs ∥Su,auto , (11) where Wu(n−1) denotes its final position in the previous time slot, which is also its initial position at time slot n, and Su,auto 
+
+is the autonomous return flight speed. The energy required for UAV u to transmit the remaining data to HAP is given by 
+
+Ere u (n) = 
+
+P 
+
+> v∈V
+
+Qv,u (n)
+
+Ru,h (n) · Pu(n). (12) The residual energy of UAV u at the start of time slot n is 
+
+Eu(n) = Eu(n − 1) − Econs u (n − 1) , (13) where Econs u (n) = Etx u (n) + Ecomp u (n) + Ef light u (n) is the total energy consumption of UAV u in time slot n.Based on above establishment, we represent the total exe-cution delay of vessel v’s task as 
+
+Tv = ( Nv + 1) · τ, (14) where Nv satisfies the following two formulas simultaneously 
+
+Qv, 0(Nv ) + X
+
+> i∈I
+
+Qv,i (Nv ) > 0, (15a) 
+
+Qv, 0(Nv + 1) + X
+
+> i∈I
+
+Qv,i (Nv + 1) = 0 . (15b) The above formulas indicate that its task data is just cleared from all queues in the system at the beginning of time slot 
+
+Nv + 1 . Since the time slot index starts from 0, the number of time slots required to finish the task of vessel v is Nv + 1 .III. P ROBLEM FORMULATION 
+
+In this section, we first formulate the overall problem based on the system established above. Subsequently, we provide a detailed problem description and introduce the overarching decomposition framework to facilitate problem-solving. Our overall objective is to minimize the total task execution delay of all vessels in the system by jointly optimizing the multi-layer task offloading decisions, bandwidth allocation policies of BS and UAVs, computing resource allocation across heterogeneous servers, and UAV trajectory planning. The overall problem can be mathematically formulated as 
+
+P0: Overall Problem 
+
+min 
+
+> a,B,
+> Dcomp ,WU
+
+X
+
+> v∈V
+
+Tv
+
+s.t. av,u (n), a v,b (n), a v,u,h (n), a v,h,s (n) ∈ { 0, 1},
+
+∀v, u, n, (16a) 
+
+X
+
+> u∈U
+
+av,u (n) + av,b (n) = 1 , ∀v, n, (16b) 
+
+Bv,i (n) ≥ 0, ∀i ∈ { u, b }, v, n, (16c) 
+
+X
+
+> v∈V
+
+av,i (n)Bv,i (n) ≤ Bi(n), ∀i ∈ { u, b }, n, (16d) 
+
+X
+
+> v∈V
+
+Dcomp v,i (n)Cv ≤ Fi(n), ∀i, n, (16e) 
+
+Dcomp v,i (n) ≤ Qv,i (n) + Dtx v,i (n),
+
+∀v, i ∈ { b, s }, n, (16f) 
+
+Dcomp v,i (n) ≤ Qv,i (n) + Dtx v,i (n) − Dtx v,i,i ′ (n),
+
+∀v, (i, i ′) ∈ { (u, h ), (h, s )}, n, (16g) 
+
+Dcomp v,i (n) ≥ 0, ∀v, i, n, (16h) 
+
+Eu(n + 1) ≥ Ecs u (n + 1) + Ere u (n + 1) , ∀u, n, 
+
+(16i) (9) and (10) .
+
+For the optimization variables, the offloading decision set a = {av,u (n), a v,b (n), av,u,h (n), av,h,s (n)|∀ v, u, n }
+
+contains the decision variables of each vessel, UAV, and the HAP in each time slot, where av,u (n) =[av, 1(n), . . . , a v,U (n)] T and av,b (n) denote the V2U and V2B offloading decision of each vessel v, respectively, 
+
+av,u,h (n) = [ a1,u,h (n), . . . , a V,u,h (n)] T signifies U2H of-floading decision of each UAV u, and av,h,s (n) =[a1,h,s (n), . . . , a V,h,s (n)] T is the H2S offloading decision of the HAP. B = {Bu(n), Bb(n)|∀ u, n } includes the bandwidth allocation policy of each UAV u and the BS, where Bu(n) = {Bv,u (n)|∀ v} and Bb(n) = {Bv,b (n)|∀ v}.
+
+Dcomp = {Dcomp v,i (n)|∀ v, i, n } consists of the computing resource allocation of each server. WU = {Wu(n)|∀ u, n }
+
+comprises the trajectory of each UAV. In terms of constraints, (16a) defines the offloading decision indicators of vessels and servers as binary variables, while (16b) ensure that each vessel offloads data to one UAV or BS in each time slot. (16c) imposes the non-negativity of bandwidth allocated to each vessel. (16d) guarantees that the total bandwidth allocated by each UAV or the BS does not exceed its real-time available spectrum. (16e) ensures the total allocated computing resources of each server do not exceed its available capacity. (16f) guarantees that the amount of vessel 
+
+v’s data computed by the BS or satellite in each time slot is bounded by its available backlog after the server receiving its newly offloaded data. (16g) applies similar bounds to UAVs and the HAP, while further excluding the data forwarded to upper-layer servers. (16h) imposes the non-negativity of the computed data volume. (16i) ensures that, after completing the operations in each time slot, the residual energy of each 6𝐀 𝐀 
+
+> 𝐀 𝐀𲐀𝐀𰠀
+> System Starting Time Satellite Handover Time Service Period of Current Satellite: Pre-Handover Period:
+
+0
+
+> Current Time:
+> 𝐀(𝐀) = 𝐀𝐀 𝐀 𝐀
+
+𝐀  
+
+> Weight for State of Incoming LEO Weight for State of Current LEO
+> Starting Time of Pre-Handover Period
+> Fig. 2. Illustration of the real-time joint satellite state for anticipatory handover strategy.
+
+UAV at the beginning of next time slot can support both backlog handover and returning to the charging station. (9) and (10) are the UAV maximum velocity and collision-avoidance constraints, respectively. The problem P0 is an intricate optimization problem arising from the highly dynamic and deeply hierarchical SAGSIN. Specifically, the heterogeneous network architecture intro-duces coupled task offloading decisions among four lay-ers, while the coexistence of bandwidth, task computation, UAV mobility, and residual energy constraints further leads to strongly intertwined optimization variables. Consequently, obtaining the globally optimal solution of this problem in poly-nomial time is intractable. To tackle this challenge, we first develop a low-complexity task offloading algorithm tailored to SAGSIN, which substantially reduces the layer-wise decision-making complexity while adapting to real-time multifaceted system states. Thereafter, UAV-BS bandwidth allocation, UAV trajectories, and computing resource allocation are jointly refined via a block coordinate descent (BCD) framework to efficiently handle the coupled resource optimization. IV. D YNAMIC TASK OFFLOADING ALGORITHM FOR 
+
+SAGSIN The task offloading in SAGSIN involves twofold challenges: the abrupt shift in satellite states caused by handover and the high complexity of task scheduling over the dynamic heterogeneous network. To tackle these issues, this section first introduces the anticipatory strategy for handling satellite handover and then elaborates on the dynamic task scheduling algorithm for SAGSIN. 
+
+A. Anticipatory Satellite Handover Strategy 
+
+The satellite offloading strategy designed solely based on the current satellite state can be myopic. If the incoming satellite possesses significantly lower computing capability, aggressive offloading before handover will lead to task congestion after-wards. Conversely, if it offers substantially stronger computing capability, such offloading strategy may become conservative. Therefore, an adaptive offloading strategy accounting for both satellites is essential to smooth out such abrupt changes. To this end, we formulate the real-time joint states of the current and incoming satellites to guide offloading decision-making, adaptively regulating the amount of data offloaded to the satellite in advance of handover. A pre-handover period 
+
+τhand is set prior to the formal handover time Ts, as illustrated in Fig. 2. Once the system time T (n) enters this period, the real-time joint states of available computing resources and task backlog for both satellites are respectively defined as 
+
+eFs(n) = Ts − T (n)
+
+τhand 
+
+Fs(n) + 
+
+
+
+1 − Ts − T (n)
+
+τhand 
+
+
+
+Fs′ (n),
+
+(17a) 
+
+eQv,s (n) = Ts − T (n)
+
+τhand 
+
+Qv,s (n) + 
+
+
+
+1 − Ts − T (n)
+
+τhand 
+
+
+
+Qv,s ′ (n),
+
+(17b) where Fs′ (n) and Qv,s ′ (n) denote the available computing resources and vessel v’s backlog at time slot n on the incoming satellite. Since it has not started serving this region yet, its backlog can be initialized as zero or flexibly configured based on practical demands. During the pre-handover period, the real-time joint states of satellites are dynamic weighted sums of states for the current and incoming satellites, where the weight of the incoming one increases as handover approaches. These joint states are employed to guide the task offloading strategy, thereby smoothing the transition and enhancing satel-lite resource utilization. The duration of τhand is designed as 
+
+τhand = min 
+
+
+
+Ts,
+
+
+
+ξ · |F s − F s′ |
+
+Cv · Dv
+
+
+
+· τ
+
+
+
+, (18) where F s and F s′ denote average computing resources of the two satellites, Cv and Dv are average computational density and data size among vessels, respectively, and ξ is a tuning parameter. It indicates that a larger capability gap between the two satellites requires a longer preparation period and the system should immediately enter the pre-handover stage when the remaining service time is insufficient. 
+
+B. Dynamic Layer-Wise Task Scheduling for SAGSIN 
+
+The multi-layer architecture of SAGSIN leads to prohibitive complexity in optimizing task offloading decisions. To ad-dress this challenge, we develop a low-complexity approach inspired by backpressure (BP) routing theory to decompose the combinatorial problem into elegant layer-wise task data scheduling, thereby reducing complexity while adapting to multi-dimensional system dynamics. The BP algorithm is a routing scheme for multi-hop net-works that determines data forwarding paths according to congestion differentials among network nodes to maximize network throughput. In recent years, it has been widely applied to various fields, such as satellite networks, mobile ad hoc networks (MANETs), and traffic signal control [31], [32]. Unlike the classical BP algorithm, the destination server of each vessel’s task data should be adaptively optimized rather than predetermined. To align with routing theory, the network is remodeled into a graph as illustrated in Fig. 3. A virtual sink node (VSN) is established for each vessel v. Each server node is connected to all VSNs via virtual computation links. We first homogenize the communication and computing ca-pabilities, laying the foundation for designing the informative task scheduling indicators. We define the rate of each real communication link (i.e., rv,u , rv,b , ru,h , and rh,s ) as the corresponding channel capacity R times τ , and the rate of virtual computation link between server i and VSN v as 7Virtual Sink Nodes (VSN)           
+
+> 𝐀 𝐀 ,𝐀
+> 𝐀 𝐀 ,𝐀
+> 𝐀 𝐀 ,ℎ 𝐀 ℎ ,𝐀
+> 𝐀 𝐀 ,𝐀 𝐀
+> 𝐀 𝐀 ,𝐀 𝐀 𝐀 𝐀 ,ℎ 𝐀 𝐀 𝐀 ,𝐀 𝐀
+> Virtual Computation Links Real Communication Links
+> V
+> B
+> UHV
+> SV
+> : transmittable data volume per time slot by corresponding channel
+> 𝐀 𝐀 ,𝐀 , 𝐀 𝐀 ,𝐀’
+> : computable data volume of vessel vby server iper time slot
+> 𝐀 𝐀 ,𝐀 𝐀
+> ... ...
+> Multiple Vessels Multiple UAVs Multiple VSNs
+
+## ...  
+
+> Fig. 3. The graph model of the proposed SAGSIN architecture containing multiple vessels, multiple UAVs, 1 BS, 1 HAP, and 1 LEO satellite, repre-sented by node V, U, B, H, and S, respectively.
+
+rcv,i = Fi/C v . The time-slot index n is omitted in Fig. 3. In this way, the rate re of each link e is unified as the number of bits that the corresponding channel can transmit or the server can compute within one time slot, while the virtual destination of each vessel’s data is specified as its VSN. The distance of each link e is defined as we = r · rmax /r e, where r and rmax 
+
+are the average and maximum link rates in the system. To guide task data towards servers with low congestion and abundant communication and computing resources, we define the Pressure Index (PI) of vessel v and server i with respect to vessel v’s data at time slot n respectively as 
+
+(Jv, 0(n) = Qv, 0(n) + wmin v, 0 (n),Jv,i (n) = Qv,i (n) + wmin v,i (n), (19) where wmin v, 0 (n) and wmin v,i (n) denote the shortest distances from that node to VSN v, which can be easily obtained by comparing the distances of several paths. The PI functions as an informative indicator that integrates multifaceted real-time attributes of each device regarding vessel v, including task congestion level, available computing capability, rate of links to high-capacity servers, and network topology. A smaller PI reflects a node with a lighter task load, stronger local computing capability, or faster access to high-capacity servers. As the driving force for task offloading, the Pressure Differentials (PDs) of vessel v’s task data on the links between vessel v and UAV u or the BS, between UAV u and HAP, and between HAP and satellite are respectively given by 
+
+
+
+∆Jv→i(n) = Jv, 0(n) − Jv,i (n), ∀i ∈ { u, b },
+
+∆Jv,u →h(n) = max {Jv,u (n) − Jv,h (n), 0},
+
+∆Jv,h →s(n) = max {Jv,h (n) − Jv,s (n), 0}.
+
+(20) Then the offloading decision of each vessel v is the solution to the following formulation subject to constraint (16b) 
+
+av,i (n)∗ = argmax 
+
+> i∈{ u,b }
+
+av,i (n)T [∆ Jv→i(n) ⊙ rv,i (n)] , (21) where the vector av,i (n) = [ av, 1(n), . . . , a v,U (n), a v,b (n)] T ,
+
+∆Jv→i(n) = [∆ Jv→1(n), . . . , ∆Jv→U (n), ∆Jv→b(n)] T ,
+
+Algorithm 1 Dynamic Task Offloading for SAGSIN. 
+
+Input: V, I, Dv , Cv , optimized Wu at previous time slot, and all other relevant parameters at current time slot. 
+
+Output: V2U/B offloading decisions av,i (n)∗, ∀v, U2H of-floading decisions av,u,h (n)∗, ∀u, and H2S offloading decision av,h,s (n)∗ at current time slot n. 
+
+> 1:
+
+Initialize the network graph. Calculate the rates rv,u , rv,b ,
+
+ru,h , rh,s for all real communication links and the rates 
+
+rcv,i for all virtual computation links.  
+
+> 2:
+
+Calculate the distance of each link e by we = r · rmax /r e. 
+
+> 3:
+
+Calculate the PI of all nodes and PD of all real links using (19) and (20), respectively.  
+
+> 4:
+
+for v ∈ V do  
+
+> 5:
+
+Solve (21) by selecting the UAV or BS corresponding to the link with maximum product of PD and rv,i to obtain the offloading decision av,i (n)∗ of vessel v. 
+
+> 6:
+
+end for  
+
+> 7:
+
+for u ∈ U do  
+
+> 8:
+
+Solve (22) by selecting the vessel user that has max-imum PD on this U2H link, thereby determining the offloading decision av,u,h (n)∗ of UAV u. 
+
+> 9:
+
+end for  
+
+> 10:
+
+Solve (22) by selecting the vessel user that has maximum PD on this H2S link to obtain the offloading decision 
+
+av,h,s (n)∗ of the HAP. and rv,i (n) = [ rv, 1(n), . . . , r v,U (n), r v,b (n)] T . This mecha-nism leads each vessel to offload its task data to the UAV or BS offering the best combination of low load and high throughput, thereby avoiding server overload while fully exploiting high-rate channels. The offloading decision of each UAV u and the HAP is expressed as 
+
+av,i,i ′ (n)∗ = argmax 
+
+> v∈V
+
+av,i,i ′ (n)T ∆Jv,i →i′ (n), (22) where ∆Jv,i →i′ (n) = [∆ J1,i →i′ (n), . . . , ∆JV,i →i′ (n)] T
+
+and av,i,i ′ (n) = [a1,i,i ′ (n), . . . , a V,i,i ′ (n)] T subject to P 
+
+> v∈V
+
+av,i,i ′ (n) ≤ 1, (i, i ′) ∈ {(u, h ), (h, s )}. This indi-cates that each UAV and the HAP selects a vessel with the most urgent offloading demands (e.g., severe backlog or the possibility of fast access to the upper-layer server with more computing resources) and transmits its data to HAP and satellite, respectively. Selecting only one vessel’s data prevents servers with low backlog from indiscriminately forwarding ex-cessive buffered data to upper-layer servers, thereby avoiding potential load imbalance. The above task offloading approach is summarized in Algorithm 1 for clarity. By shifting from global coordination to layer-wise pressure-driven forwarding, our scheme reduces the complexity from exponential level to approximately O(V U ). Furthermore, since the PI is updated at each time slot based on instantaneous system states, it possesses strong adaptability to the high dynamics of SAGSIN environments. 8
+
+V. J OINT UAV-BS B ANDWIDTH , UAV T RAJECTORY , AND 
+
+COMPUTING RESOURCE OPTIMIZATION 
+
+Building upon the macroscopic multi-layer task offloading strategy derived according to diverse system states, this sec-tion focuses on the fine-grained orchestration of underlying resources to further enhance the system performance. Specifically, we jointly optimize the UAV-BS bandwidth allocation, UAV trajectory planning, and computing resource allocation of servers. The computational complexity of the proposed overall method is then analyzed. Due to the presence of inter-coupled multi-dimensional variables, this problem is highly intricate. Motivated by the principle of the block coordinate descent (BCD) method [33], which is well adapted to high-dimensional optimization, we decompose the joint op-timization problem into three tractable subproblems to reduce the complexity. Tailored solutions are developed according to the characteristics of each subproblem and they are iteratively optimized until converging to an efficient overall solution. 
+
+A. Bandwidth Allocation Policy of UAVs and BS 
+
+This subproblem aims to maximize the total transmission rate of communication links between each UAV/BS and the vessels it serves by optimizing bandwidth allocation, thereby boosting the volume of offloaded vessel data and reducing overall task delay. This subproblem can be formulated as 
+
+P1: UAV and BS Bandwidth Allocation 
+
+max 
+
+> Bu(n),
+> Bb(n)
+
+X
+
+> i∈{ u,b }
+
+X
+
+> v∈V
+
+av,i (n)Bv,i (n) log 2
+
+
+
+1 + Pv (n)hv,i (n)
+
+Bv,i (n)N0
+
+
+
+s.t. (16c), (16d), and (16i) ,
+
+With determined vessel offloading decisions, the second-order derivative of the objective function w.r.t. Bv,i (n) is 
+
+− Pv (n)2hv,i (n)2  
+
+> [Bv,i (n)N0+Pv(n)hv,i (n)] 2Bv,i (n) ln 2
+
+< 0, proving that it is strictly concave in Bv,i (n). For the constraints, (16c) and (16d) are affine and also convex with Bv,i (n). (16i) can be rewritten as P 
+
+> v∈V u(n)
+
+Bv,u (n) log 2
+
+
+
+1 + Pv (n)hv,u (n)
+
+> Bv,u (n)N0
+
+
+
+≤ A1
+
+> u
+
+(n), ∀u,where Vu(n) is the set of vessels served by UAV u at time slot n, A1
+
+> u
+
+(n) = [Eu(n+1) −Ecs u (n+1) −A2 
+
+> u(n)] Ru,h (n+1)
+> Pu(n+1) τ
+
+, and 
+
+A2
+
+> u
+
+(n) =    
+
+> P
+> v∈V Qv,u (n)−Dcomp v,u (n)−av,u,h (n)Dtx v,u,h (n)
+> Ru,h (n+1)
+
+Pu(n+1) .It is strictly concave in Bv,i (n), by similar reasoning as the objective function. Thus, P1 is a convex optimization problem. 
+
+Proposition 1: The optimal bandwidth allocation policies of the coastal BS and UAVs are expressed as 
+
+
+
+B∗
+
+> v,b
+
+(n) = Pv (n)hv,b (n)
+
+P 
+
+> v∈V b(n)
+
+Pv (n)hv,b (n) Bb(n), v ∈ V b(n),B∗
+
+> v,u
+
+(n) = Pv (n)hv,u (n)
+
+P 
+
+> v∈V u(n)
+
+Pv (n)hv,u (n) Bu(n), v ∈ V u(n),
+
+(23) where Bu(n) = min {Bu(n), B ′
+
+> u
+
+(n)} and B′
+
+> u
+
+(n) satisfies the equation B′
+
+> u
+
+(n) log 2
+
+
+
+1 +   
+
+> P
+> v∈V u(n)Pv(n)hv,u (n)
+> B′
+> u(n)N0
+
+
+
+= A1
+
+> u
+
+(n).Since the left-hand side (LHS) of above equation is monoton-ically increasing with B′
+
+> u
+
+(n), the solution can be efficiently obtained via the bisection method. 
+
+Proof: For the bandwidth allocation of BS, the Lagrange function is expressed as 
+
+L(Bv,b (n), λ b) = X
+
+> v∈V b(n)
+
+Bv,b (n) log 2
+
+
+
+1 + Pv (n)hv,b (n)
+
+Bv,b (n)N0
+
+
+
++ λb
+
+ X
+
+> v∈V b(n)
+
+Bv,b (n) − Bb(n)
+
+ , (24) where λb is the Lagrange multiplier associated with constraint (16d). According to KKT conditions [24], the optimal Bv,b (n)
+
+is obtained when ∂L ∂B v,b (n) = 0 , i.e., 
+
+log 2
+
+
+
+1 + γv,b (n)
+
+Bv,b (n)
+
+
+
+− γv,b (n)[Bv,b (n) + γv,b (n)] ln 2 + λb = 0 ,
+
+(25) where γv,b (n) = Pv (n)hv,b (n) 
+
+> N0
+
+. Let γv,b (n) 
+
+> Bv,b (n)
+
+= mv , (25) can be rewritten as log 2(1+ mv )− mv  
+
+> (1+ mv) ln 2
+
+= −λb. Since the LHS of this equation increases monotonically with mv , the solution for mv is unique. Hence, we have γv,b (n) 
+
+> Bv,b (n)
+
+= β, ∀v ∈ V b(n),where Vb(n) is the vessel set served by BS. The optimal solution occurs only when (16d) is active, as allocating any remaining bandwidth will further increase the data rate. Then we have P 
+
+> v∈V b(n)
+
+B∗
+
+> v,b
+
+(n) = P 
+
+> v∈V b(n)
+> γv,b (n)
+> β∗
+
+= Bb(n).Thus, β∗ = P 
+
+> v∈V b(n)
+
+γv,b (n)/B b(n). Substituting β∗ into 
+
+Bv,b (n) = γv,b (n) 
+
+> β
+
+, we obtain the optimal solution. As for UAV bandwidth allocation, following a derivation similar to the above, the solution satisfying (16c) and (16d) is 
+
+Bv,u (n) = Pv (n)hv,u (n)P   
+
+> v∈V u(n)Pv(n)hv,u (n)
+
+Bu(n). If it satisfies (16i), it will be the final optimal solution. Otherwise, if (16i) is violated, the maximum allocable bandwidth should be reduced to B′
+
+> u
+
+(n) as described in Proposition 1, where the total data rate under optimal allocation is equal to A1
+
+> u
+
+(n), thereby ensuring (16i) is satisfied. This completes the proof. ■
+
+B. UAV Trajectory Optimization 
+
+Beyond bandwidth resource dimension, the mobilities of UAVs provide a crucial degree of freedom to dynamically reconstruct the network topology. By optimizing their trajecto-ries, we directly modulate the V2U channel states. Specifically, the trajectory planning aims to strategically position UAVs to maximize the aggregate data rate and throughput for associ-ated vessels while strictly adhering to kinematic, safety, and residual energy constraints. Retaining the relevant terms, this subproblem is accordingly formulated as 
+
+P2: UAV Trajectory Optimization 
+
+max 
+
+> Wu(n)
+
+X
+
+> u∈U
+
+X
+
+> v∈V
+
+av,u (n)Bv,u (n) log 2
+
+
+
+1 + Pv (n)hv,u (n)
+
+Bv,u (n)N0
+
+
+
+s.t. (9), (10), and (16i) .
+
+The non-convexity of the objective function, constraint (10) and (16i) poses the primary challenge. Further analysis reveals that both the objective function to be maximized and the LHS of constraint (10), which is required to exceed a threshold, can be effectively relaxed using convex lower bounds. A similar strategy can also be applied to handle constraint (16i). Motivated by this insight, we employ the successive 9
+
+convex approximation (SCA) technique to convert the original problem into a series of approximated convex problems, which are solved iteratively until convergence. 
+
+Proposition 2: The problem P2 can be converted into the approximated convex problem expressed as 
+
+P′
+
+> 2
+
+: Convex Approximation Problem of P2
+
+max 
+
+> Wu(n),zv,u (n)
+
+X
+
+> u∈U
+
+X
+
+> v∈V u(n)
+
+eRv,u (n)
+
+s.t. (9) ,
+
+edu,u ′ (n)2
+
+≥ dsaf e 2, ∀u, u ′ ∈ U , u ̸ = u′, (26a) 
+
+Ef light u (n) + Ecs u (n + 1) + A3
+
+> u
+
+(n + 1) τ ·
+
+X
+
+> v∈V u(n)
+
+Bv,u (n) log 2
+
+
+
+1 + γv,u (n)
+
+zv,u (n)
+
+
+
+≤ A4
+
+> u
+
+(n), ∀u, 
+
+(26b) 
+
+zv,u (n) ≤ Hu2 + ∥W (k) 
+
+> u
+
+(n) − Wv (n)∥2
+
++ 2 
+
+
+
+W (k) 
+
+> u
+
+(n) − Wv (n)
+
+T 
+
+Wu(n) − W (k) 
+
+> u
+
+(n)
+
+
+
+,
+
+∀v, u, (26c) where eRv,u (n) and edu,u ′ (n)2
+
+represent the convex lower bound of Rv,u (n) and ∥Wu(n) − Wu′ (n)∥2, respectively, 
+
+zv,u (n) is the introduced auxiliary variable, W (k) 
+
+> u
+
+(n) denotes the solution of UAV u’s position at the k-th iteration, A3
+
+> u
+
+(n +1) = Pu(n+1)  
+
+> Ru,h (n+1)
+
+, and A4
+
+> u
+
+(n) = Eu(n) − Etx u (n) − Ecomp u (n) −   
+
+> P
+> v∈V Qv,u (n)−Dcomp v,u (n)−av,u,h (n)Dtx v,u,h (n)
+> Ru,h (n+1)
+
+· Pu(n + 1) . P′ 
+
+> 2
+
+can be efficiently solved by CVX solver. In each iteration, it is constructed based on the solution of previous iteration and solved iteratively until converging to a near-optimal solution. 
+
+Proof: In the objective function, Rv,u (n) is a non-convex function w.r.t. the variable Wu(n), but it is convex with the en-tire ∥Wu(n)−Wv (n)∥2. Let ϕv,u (n) = ∥Wu(n)−Wv (n)∥2,
+
+Rv,u (n) can be globally lower-bounded by its first-order Taylor expansion with ϕv,u (n) at any point. Then the lower bound of Rv,u (n) is given by 
+
+eRv,u (n) = R(k)
+
+> v,u
+
+(n) + ∇R(k)
+
+> v,u
+
+(n)( ϕv,u (n) − ϕ(k)
+
+> v,u
+
+(n)) , (27) where R(k)
+
+> v,u
+
+(n) and ∇R(k)
+
+> v,u
+
+(n) are the data rate between vessel 
+
+v and UAV u and the first-order derivative of Rv,u (n) w.r.t. 
+
+ϕv,u (n) at the k-th iteration, respectively. Specifically, 
+
+∇R(k)
+
+> v,u
+
+(n) = −Bv,u (n)γv,u (n) log 2 e
+
+
+
+Hu2 + ϕ(k)
+
+> v,u
+
+(n)
+
+ 
+
+Hu2 + ϕ(k)
+
+> v,u
+
+(n) + γv,u (n)
+
+ ,
+
+(28a) 
+
+R(k)
+
+> v,u
+
+(n) = Bv,u (n) log 2 1 + γv,u (n)
+
+Hu2 + ϕ(k)
+
+> v,u
+
+(n)
+
+!
+
+,
+
+(28b) where ϕ(k)
+
+> v,u
+
+(n) = ∥W (k) 
+
+> u
+
+(n) − Wv (n)∥2 and we let 
+
+γv,u (n) = Pv (n)L0|hRv,u (n)|2 
+
+> Bv,u (n)N0
+
+. Consequently, we obtain convex lower bound for the objective function. We rewrite the constraint (10) as ∥Wu(n) − Wu′ (n)∥2 ≥
+
+d2
+
+> saf e
+
+. The LHS is non-convex with Wu(n) and Wu′ (n), but convex with Wu(n) − Wu′ (n), thus its lower bound can be 
+
+Algorithm 2 Two-Stage Computing Resource Allocation. 
+
+Input: V, Qv,i (n), Fi(n), rcv,i (n), κu, Eu(n), Dv , and Cv .
+
+Output: Computing resource allocation strategy Fv,i (n) = 
+
+{Fv,i (n)|∀ v} for server i. 
+
+> 1:
+
+Stage I: Demand-Driven Allocation (All Servers)  
+
+> 2:
+
+Initialize the pending vessel set Vp = V, the assigned vessel set Va = ∅, and the remaining computing resources 
+
+F re i (n) = Fi(n). 
+
+> 3:
+
+while Vp̸ = ∅ do  
+
+> 4:
+
+Allocate computing resource to each vessel v ∈ V p
+
+based on Fv,i (n) = Qv,i (n)/r cv,i (n)  
+
+> P
+> v∈V pQv,i (n)/r cv,i (n)
+
+· F re i (n). 
+
+> 5:
+
+if Fv,i (n) ≤ F max v,i (n), ∀v ∈ V p then  
+
+> 6:
+
+Obtain the computing resource allocation strategy 
+
+F Iv,i (n) = {Fv,i (n)|∀ v} of Stage I.  
+
+> 7:
+
+break  
+
+> 8:
+
+else  
+
+> 9:
+
+for v ∈ V p such that Fv,i (n) > F max v,i (n) do  
+
+> 10:
+
+Set its Fv,i (n) ← F max v,i (n). 
+
+> 11:
+
+Move this vessel v from Vp to Va. 
+
+> 12:
+
+end for  
+
+> 13:
+
+Update F re i (n) ← Fi(n) − P 
+
+> v∈V a
+
+Fv,i (n). 
+
+> 14:
+
+end if  
+
+> 15:
+
+end while  
+
+> 16:
+
+Stage II: Energy-Constrained Scaling (UAV Only)  
+
+> 17:
+
+if (31c) is satisfied by F Iv,u (n) then  
+
+> 18:
+
+Obtain the solution of this UAV u Fv,u (n) = F Iv,u (n). 
+
+> 19:
+
+else  
+
+> 20:
+
+Obtain the scaling coefficient β∗ via the bisection method such that the scaled solution β∗ · F Iv,u (n)
+
+satisfies (31c) with equality.  
+
+> 21:
+
+The final solution Fv,u (n) = β∗ · F Iv,u (n). 
+
+> 22:
+
+end if 
+
+obtained by utilizing its first-order Taylor expansion at any given point ψ(k) 
+
+> u,u ′
+
+= W (k) 
+
+> u
+
+(n) − W (k) 
+
+> u′
+
+(n) as 
+
+edu,u ′ (n)2
+
+=∥ψ(k) 
+
+> u,u ′
+
+∥2 +2 ψ(k) Tu,u ′ (( Wu(n) − Wu′ (n)) − ψ(k) 
+
+> u,u ′
+
+).
+
+(29) (16i) can be rewritten as Ef light u (n) + Ecs u (n + 1) + A3
+
+> u
+
+(n +1) τ · P 
+
+> v∈V u(n)
+
+Bv,u (n) log 2
+
+
+
+1 + γv,u (n) 
+
+> Hu2+∥Wu(n)−Wv(n)∥2
+
+
+
+≤
+
+A4
+
+> u
+
+(n). In the above inequality, the third term of LHS are non-convex w.r.t. Wu(n). To derive a convex upper bound for the LHS, we introduce the auxiliary variables zv,u (n) satisfying 
+
+zv,u (n) ≤ Hu2 + ∥Wu(n) − Wv (n)∥2. (30) The feasible region of (30) is still non-convex. To cope with this, a lower bound for convex RHS of (30) is obtained via its first-order Taylor expansion at point W (k) 
+
+> u
+
+(n) as expressed by (26c). Then (26b) is convex with zv,u (n) and (26c) is convex with zv,u (n) and Wu(n). After the above transformation, the objective function and all constraints of P′ 
+
+> 2
+
+are convex with 
+
+Wu(n) and zv,u (n). This completes the proof. ■
+
+C. Computing Resource Allocation 
+
+As the final stage of task execution in SAGSIN, computing resource management governs the terminal processing rate for 10 
+
+each vessel’s task data. Each server should adaptively allocate computing resources based on the backlog and computational demands of different vessels as well as its real-time computing capability, which is crucial for mitigating system-wide task congestion and accelerating task completion. To this end, we devise a two-stage computing resource allo-cation scheme for heterogeneous servers while satisfying the relevant constraints, i.e., (16e)-(16i). Denoting the computing resource that server i allocates to vessel v at time slot n as 
+
+Fv,i (n), measured in CPU cycles, the above constraints can be rewritten as 
+
+X
+
+> v∈V
+
+Fv,i (n) ≤ Fi(n), ∀i, (31a) 
+
+0 ≤ Fv,i (n) ≤ F max v,i (n), ∀v, i, (31b) 
+
+X
+
+> v∈V
+
+κuFv,u (n)3
+
+τ 2 − Pu(n + 1) 
+
+Ru,h (n + 1) · X
+
+> v∈V
+
+Fv,u (n)
+
+Cv
+
+≤ A5
+
+> u
+
+(n), ∀u, 
+
+(31c) where A5
+
+> u
+
+(n) = Eu(n) − Etx u (n) − Ef light u (n) − Ecs u (n + 1) − 
+
+> Pu(n+1)
+> Ru,h (n+1)
+
+· P 
+
+> v∈V
+
+(Qv,u (n) + av,u (n) · Dtx v,u (n) − av,u,h (n) ·
+
+Dtx v,u,h (n)) and we denote the maximum required resources of vessel v at server i as F max v,i (n) = Cv · (Qv,i (n) + Dtx v,i (n) −
+
+1{i∈{ u,h }} · Dtx v,i,i ′ (n)) , ∀i. The proposed computing resource allocation scheme for each server is detailed in Algorithm 2 .Only the key parameters of this subsection are listed in the input, while other required parameters are omitted for concise presentation. In Stage I, the computing resources of each server are allocated in proportion to the completion time of each vessel’s data backlog on this server while satisfying (31a) and (31b), thereby prioritizing tasks with severe backlog. For each UAV server, Stage II is further executed. If the solution obtained in Stage I violates (31c), it will be scaled in Stage II to ensure the constraint is satisfied. After obtaining the final solution, Dcomp v,i (n) = F ∗
+
+> v,i
+
+(n)/C v , ∀v, i .
+
+D. Complexity Analysis 
+
+The proposed overall approach is summarized in Algo-rithm 3 . At the beginning, we initialize the system parameters and update data backlog queues of all vessels and servers. Then Algorithm 1 is first executed to obtain the multi-layer task offloading decisions. Subsequently, according to the dependencies among the subproblems, we iteratively optimize the UAV-BS bandwidth allocation, UAV trajectory planning, and computing resource allocation for heterogeneous servers in sequence, until convergence or the maximum number of iterations is reached. The superscript j denotes the solution at the start of the j-th iteration. In Algorithm 1 , calculating the rates and distances for all links requires two traversals of them, involving a complexity of O (2(2 V U + 4 V + U + 1)) ≈ O (V U ). To calculate the shortest distance, each UAV and the HAP only need to compare 3 and 2 paths for each vessel, respectively, whereas the shortest distances for the BS and satellite are unique. Each vessel needs to compare 3U + 1 paths. Thus, the complexity of obtaining PI is O (V (3 U + 1) + 3 V U + 2 V ) ≈ O (V U ).Calculating PD for all V2U/B, U2H, and H2S links involves 
+
+Algorithm 3 Proposed Overall Method of Dynamic Task and Resource Scheduling for SAGSIN. 
+
+Input: The UAV positions Wu(n − 1) in previous time slot and all the remaining parameters in current time slot. 
+
+Output: Task offloading decisions a(n), UAV-BS bandwidth allocation Bb(n) and Bu(n), computing resource alloca-tion Dcomp (n), and UAV trajectories Wu(n). 
+
+> 1:
+
+Update data backlog for all devices according to (7) or set Qv, 0(0) = Dv and Qv,i (0) = 0 at the initial time slot. Initialize the iteration number j = 0 . 
+
+> 2:
+
+Execute Algorithm 1 to obtain a(n). 
+
+> 3:
+
+repeat  
+
+> 4:
+
+Solve P1 based on (23) to obtain Bb(n)j+1 and 
+
+Bu(n)j+1 with given Wu(n)j and Dcomp (n)j . 
+
+> 5:
+
+Solve P′ 
+
+> 2
+
+to obtain Wu(n)j+1 with given Bu(n)j+1 
+
+and Dcomp (n)j . 
+
+> 6:
+
+Execute Algorithm 2 to obtain Dcomp (n)j+1 for all servers with given Bb(n)j+1 , Bu(n)j+1 , and 
+
+Wu(n)j+1 . 
+
+> 7:
+
+Update the value of objective function.  
+
+> 8:
+
+Update j = j + 1 . 
+
+> 9:
+
+until The objective value converges or j > j max .complexity of O (V (U + 1) + V U + V ) ≈ O (V U ). Since the multi-layer offloading decisions are made by comparing the PD of each vessel’s data across all communication links, this process has the same complexity as PD calculation. Therefore, the overall complexity of Algorithm 1 is only O (4 V U ) ≈O (V U ). P1 is solved via closed-form solution and an optional bisection search with tolerance ϵ, yielding a worst-case com-plexity of O  V + U log 2( 1 
+
+> ϵ
+
+). Solving P′ 
+
+> 2
+
+by SCA method involves a complexity of O(( V U )3.5). The worst-case com-plexities of Stage I and Stage II in Algorithm 2 are O(V 2) and 
+
+O  V log 2( 1 
+
+> ϵ
+
+), respectively, yielding an overall complexity of 
+
+O  V 2U + V U log 2( 1 
+
+> ϵ
+
+) + 3 V 2 ≈ O  V 2U  for computing resource allocation of all servers. Therefore, the complexity of the overall proposed method summarized in Algorithm 3 is given by O  V U + J(V + U log 2( 1 
+
+> ϵ
+
+) + ( V U )3.5 + V 2U ) ≈O  J(V U )3.5, where J denotes the number of iterations. Despite the inherently exponential complexity of multi-layer task offloading, the proposed method further incorporates multifaceted resource optimization while maintaining only polynomial complexity. This demonstrates its remarkable com-putational efficiency for timely resource scheduling under massive connectivity in SAGSIN. VI. S IMULATION RESULTS 
+
+In this section, we conduct extensive simulation experiments to validate the effectiveness of the proposed method through comparisons with benchmarks. Then we further evaluate its performance in terms of load balancing, UAV energy man-agement, and handover backlog control. 
+
+A. Scenario 
+
+We consider a 2 km ×2 km ocean area. The lower-left corner of the considered area is set as the origin of the horizontal 11                              
+
+> TABLE II SIMULATION PARAMETERS
+> Parameter Value Parameter Value
+> V5–30 N0-174 dBm/Hz
+> Dv2–10 Mb Hu, H b, H h[0.1, 0.03, 20] km
+> Cv100–2000 dh,s 784 km
+> Fu, F b, F h, F s[1, 3, 3, 10] ×10 8cycles/slot Bu, B b, B h, B s[10, 20, 20, 50] MHz
+> Pv, P u, P h[1, 1.5, 2.5] W L0-30 dB
+> Lg, L s[23, 0] dB μ, ˆμ[2, 46.4]
+> Gu, G h, G s[25, 30, 35] dBi Tp, τ [0.01, 0.1] s
+
+coordinate system. Six UAVs are initially deployed at (0.5 km, 0.5 km), (0.5 km, 1 km), (0.5 km, 1.5 km), (1.5 km, 0.5 km), (1.5 km, 1 km), and (1.5 km, 1.5 km), with the maximum speed of 15 m/s and minimum safety distance of 5 m [20]. The vessel locations follow the Poisson distribution, and each travels along a randomly generated trajectory with the velocity ranging from 5 to 15 m/s [24]. The UAV charging station and coastal BS are located at (0, 0.9 km) and (0, 1 km), respectively, while the HAP remains quasi-stationary at the center of the region [25]. Similar to [18], [24], the settings of remaining key parameters are summarized in Table II. The values of bandwidth and computing resources listed in Table II serve as the default settings, which are varied around these baseline values in subsequent experiments when required. 
+
+B. Benchmarks 
+
+To validate the effectiveness of the proposed DASH method, we compare it with the following benchmark schemes:  
+
+> •
+
+DASH w/o HO : The proposed DASH method without anticipatory satellite handover strategy.  
+
+> •
+
+HACO [24]: A multi-HAP-assisted computation offloading algorithm for SAGSIN aiming at minimizing the overall task execution delay.  
+
+> •
+
+FLEC [34]: A four-layer edge computing scheme that aims to minimize system task costs within a similar hierarchical architecture to this study.  
+
+> •
+
+SHAR [35]: A satellite-HAP collaborative computing algorithm with reactive handover scheme, where the full data of unfinished tasks on the current satellite at handover are reoffloaded to the incoming satellite. 
+
+1) Average task delay under varying computing resources: 
+
+Fig. 4 illustrates the average task completion delay among different methods with the percentage variation range of avail-able computing resources of servers across time slots. DASH adaptively adjusts the fine-grained task and resource schedul-ing strategy based on the real-time computing resources of all servers and the incoming satellite, consistently achiev-ing the lowest average delay and the slowest growth trend. When the incoming satellite has limited computing capacity, DASH w/o HO cannot proactively constrain the satellite offloading volume, leading to post-handover congestion and increased satellite computation delay. Conversely, when the incoming satellite has more computing resources, it also fails to adaptively increase satellite offloading volume to exploit. The one-shot task-resource scheduling of HACO, FLEC and   
+
+> Fig. 4. The comparison of average task completion delay among different methods with varying fluctuation range of available computing resources.
+> Fig. 5. The comparison of average task completion delay among different methods with varying fluctuation range of available bandwidth resources.
+
+SHAR leads to inconsistency between the available computing resources at the decision-making time and the time when tasks reach destination servers. Upon task arrival, reduced comput-ing resources increase computation delay, whereas increased resources cannot be exploited. Consequently, their average de-lays grow monotonically with intensifying computing resource fluctuations. For SHAR, the entire tasks that are unfinished on the current satellite at handover need to be recomputed on the incoming satellite, further increasing their computation delay and sensitivity to computing resource variations. DASH adap-tively routes task data based on instantaneous server states, which effectively absorbs the impact of resource fluctuations, reducing the average delay by around 30%, 28%, and 24% compared to SHAR, HACO, and FLEC, respectively. 
+
+2) Average task delay under varying bandwidth resources: 
+
+Fig. 5 depicts the average task completion delay among differ-ent methods with the percentage variation range of available bandwidth for wireless links in the system across time slots. For the proposed DASH method and its ablation variant DASH w/o HO, task offloading and bandwidth allocation are dynamically adjusted based on real-time link states, including available bandwidth, large and small-scale fading, and chan-nel capacities, enabling strong adaptability to communication 12  
+
+> Fig. 6. The comparison of satellite backlog data at handover among different methods with varying computing resource gap of incoming satellite.
+
+dynamics. DASH reduces the average task delay respectively by around 27%, 25%, and 23% compared to SHAR, HACO, and FLEC, since their one-shot scheduling strategies fail to adaptively reroute task when channel conditions deteriorate or reallocate resources when bandwidth becomes abundant. The reactive satellite handover mechanism of SHAR requires unfinished satellite tasks to be retransmitted to incoming satellite, which amplifies the communication latency under limited bandwidth resources. Compared with more dominant computing resources, which govern the terminal processing rates, the intensification of bandwidth fluctuations has a rela-tively smaller impact on their average delay increment. 
+
+3) Handover backlog with different computing resource gap of incoming satellite: Fig. 6 shows the amount of satellite backlog at handover (i.e., task data volume received by the incoming satellite after handover) versus the deficit percent-age in the average available computing resources of the incoming satellite relative to the current one. Benefiting from the anticipatory handover strategy, DASH adaptively restricts the satellite offloading volume as the incoming satellite’s computing capacity continuously decreases, thereby markedly reducing satellite backlog at handover and alleviating post-handover congestion. With fine-grained and balanced task-resource scheduling, DASH w/o HO achieves lower satellite backlog at handover than SHAR, HACO, and FLEC. Due to the reactive handover mechanism of SHAR, the entire data of unfinished tasks at handover on the current satellite are reoffloaded to the incoming satellite, including the already processed portions. This increases the post-handover satellite backlog accumulation. However, since these four methods determine offloading strategies solely based on the current satellite state, they lack adaptability to changes in the com-puting capability of incoming satellite. Consequently, their handover backlogs remain insensitive to the increasing gaps of the incoming satellite’s computing resources. 
+
+4) Average task delay with varying number of vessels: 
+
+Fig. 7 illustrates the average task completion delay among different methods under varying number of vessels. As the number of vessels increases, all methods experience higher delay due to the growing task demands and intensified com-  
+
+> Fig. 7. The comparison of average task completion delay among different methods with varying number of vessels.
+> Fig. 8. The task backlog on different types of servers across time slots.
+
+petition for communication and computing resources. DASH consistently achieves the lowest delay and exhibits the slowest growth trend, validating its superior scalability under differ-ent network scales. With fine-grained task routing based on real-time server states, DASH effectively balances workloads among heterogeneous servers and mitigates congestion caused by increasing access demands. HACO, FLEC, and SHAR establish task offloading strategies according to initial network states, which remain fixed during subsequent task execution and thus limit the efficient utilization of system resources under increasing task demands. Additionally, the binary of-floading mechanisms of HACO and SHAR may overload certain servers under dense vessel scenarios, further increasing task execution delay. 
+
+C. Performance Analysis of the Proposed Method 1) Task backlog among heterogeneous servers: Fig. 8 il-lustrates the task backlog evolution on different types of servers during selected time slots of system operation. The backlog levels are not identical across servers, which reflects the heterogeneous roles and service capabilities of different layers. As a broad-coverage, high-capacity server, the satellite undertakes a relatively large workload. The HAP and BS, 13  
+
+> Fig. 9. The residual energy and handover-and-return energy of UAV servers.
+
+which mainly serve offshore and nearshore areas, respectively, act as medium-scale servers and carry moderate task loads, while UAVs mainly function as flexible low-altitude relay nodes and thus bear lighter burdens. Furthermore, the backlog queues of servers in all layers remain dynamically stable, and their backlog peaks and valleys are generally staggered. This effectively validates the cross-layer load-balancing capability of DASH enabled by its joint adaptation mechanism of task and communication-computing resource scheduling. For task scheduling, DASH dynamically updates the PI of each server in each time slot. Severe backlog at a server will increase its PI, which reduces its offloading attractiveness in subsequent time slots and thereby suppresses the inflow of new task data. In terms of communication, DASH flexibly coordinates band-width resources based on adaptive task scheduling, which pro-motes efficient task transmission towards servers with lighter workloads and abundant computing resources. Regarding task computation, DASH allocates computing resources according to the computational demands of different vessels and their task data buffered on each server, further accelerating backlog processing in a demand-driven manner. 
+
+2) UAV energy management: Fig. 9 depicts the trends of the residual energy and the energy required for task backlog handover and safe return (termed handover-and-return energy) of UAV servers during selected time slots of system operation. For each UAV, its residual energy gradually decreases due to data transmission, task computation, and flight operations, while the required handover-and-return energy fluctuates at a relatively low level due to variations in UAV positions and buffered task backlog. It can be observed that the residual energy of each UAV consistently remains above its handover-and-return energy. When the residual energy of a certain UAV approaches the safety threshold (e.g., the UAV 6), it withdraws from service and returns to the charging station, after which a newly dispatched UAV will take over its role. This validates the effectiveness of the proposed energy-aware UAV scheduling design, which ensures UAV operational safety and service continuity. 
+
+3) Impact of pre-handover period: Fig. 10 shows the in-fluence of the handover control parameter ξ on the average task delay under different computing capability gaps between   
+
+> Fig. 10. Impact of the handover control parameter ξon the average task delay under varying computing resource gap of incoming satellite.
+
+the current and incoming satellites. ξ determines the length of pre-handover period during which DASH accounts for the in-coming satellite state. A larger ξ leads to a longer pre-handover period, allowing DASH to regulate satellite offloading traffic based on both satellite states earlier. Given the same ξ, a larger capability gap results in higher task delay due to the reduced satellite computing resources after handover. For a certain gap, when ξ increases from 10 to 100, the average task delay decreases because a longer preparation period enables DASH to incorporate the incoming satellite state earlier and control the data volume offloaded to satellite. This effectively alleviates post-handover congestion and thereby reduces the average delay. However, further increasing ξ from 100 to 1000 brings little additional benefit and may even slightly increase the delay. This is because an excessively long pre-handover period causes the satellite offloading strategy to be affected by the incoming satellite state too early. As a result, DASH may underutilize the current satellite computing power and restrict satellite offloading conservatively. This indicates that the control parameter should be properly configured according to practical system requirements, while DASH consistently provides effective adaptation under different settings. VII. C ONCLUSIONS 
+
+This paper proposed a dynamic task and resource scheduling method for SAGSIN to minimize task execution delay of vessel users. To address the complexity and high dynamics of multi-layer task offloading, we developed a layer-wise offloading scheme that adapts to real-time system states, along with an anticipatory satellite handover policy to mitigate post-handover congestion. Furthermore, we jointly optimized UAV-BS bandwidth allocation, UAV trajectories, and com-puting resources to accelerate task completion and enhance resource utilization, while ensuring adequate residual energy for backlog handover and safe return of UAVs. Experimental results show that the proposed method significantly reduces task delay under fluctuating system resources and adaptively controls satellite backlog at handover compared with bench-marks. This study provides important insights for the devel-opment of efficient and sustainable SAGSIN systems. 14 
+
+REFERENCES [1] M. A. Jamshed et al., “Non-terrestrial networks for 6G: Integrated, intelligent, and ubiquitous connectivity,” IEEE Commun. Standards Mag. , vol. 9, no. 3, pp. 86-93, Sept. 2025. [2] J. You, Z. Jia, C. Dong, Q. Wu, and Z. Han, “Joint computation offloading and resource allocation for uncertain maritime MEC via cooperation of AAVs and vessels,” IEEE Trans. Veh. Technol. , vol. 74, no. 11, pp. 18081-18095, Nov. 2025. [3] Z. Huang, Z. Yu, L. Wang, H. Zhou, and B. Guo, “Joint optimization of caching, migration, and offloading in satellite-assisted marine networks,” 
+
+IEEE Trans. Netw. , vol. 34, pp. 5082-5097, 2026. [4] Z. Wang, B. Lin, Q. Ye, and H. Peng, “Two-tier task offloading for satellite-assisted marine networks: A hybrid stackelberg–bargaining game approach,” IEEE Internet Things J. , vol. 12, no. 9, pp. 13047-13060, 1 May1, 2025. [5] Z. Huang, Z. Yu, L. Wang, Y. Zhao, H. Zhou, and B. Guo, “Two time-scale DRL for service caching and task offloading in cross-domain marine networks,” IEEE Trans. Mobile Comput. , vol. 25, no. 1, pp. 785-800, Jan. 2026. [6] Y. He, F. Huang, D. Wang, L. Yang, and R. Zhang, “Delay minimization for NOMA-MEC offloading in ABS-aided maritime communication networks,” IEEE Trans. Veh. Technol. , vol. 74, no. 6, pp. 9577-9590, June 2025. [7] Y. Ye, S. Gao, X. Zheng, and L. Yang, ”Multi-tier UAV edge computing toward long-term energy stability for low altitude networks,” IEEE Open J. Commun. Soc. , vol. 7, pp. 6090-6104, 2026. [8] Y. Bai and Y. Zhang, “Dynamic offloading based on Lyapunov opti-mization for UAV-assisted maritime IoT-MEC networks,” IEEE Trans. Veh. Technol. , vol. 74, no. 11, pp. 17894-17906, Nov. 2025. [9] J. Ning, A. Li, G. C. F. Lee, S. Sun, and T. Yang, “MARHO: Hybrid task offloading in maritime MEC via multi-agent reinforcement learning,” 
+
+IEEE Open J. Commun. Soc. , vol. 6, pp. 10322-10337, 2025. [10] W. Xu, W. Luo, Y. Sun, Z. Gao, B. Wu, and L. Lai, “MADRL-based edge computing: Joint energy-latency optimization for marine internet of things,” IEEE Internet Things J. , vol. 12, no. 15, pp. 30228-30241, 1 Aug.1, 2025. [11] M. Dai, Y. Wu, L. Qian, Z. Su, B. Lin, and N. Chen, “UAV-assisted multi-access computation offloading via hybrid NOMA and FDMA in marine networks,” IEEE Trans. Netw. Sci. Eng. , vol. 10, no. 1, pp. 113-127, 1 Jan.-Feb. 2023. [12] S. Qi, B. Lin, Y. Deng, X. Chen, and Y. Fang, “Minimizing maximum latency of task offloading for multi-UAV-assisted maritime search and rescue,” IEEE Trans. Veh. Technol. , vol. 73, no. 9, pp. 13625-13638, Sept. 2024. [13] S. Gao et al., “Integrated sensing, communication, and computation for low-altitude networks towards seamless connectivity and connected intelligence,” IEEE Internet Things Mag. , vol. 9, no. 3, pp. 63-71, May 2026. [14] X. Wang et al., “Bridging terrestrial and non-terrestrial networks: A novel architecture for space-air-ground-sea integration system,” IEEE Wireless Commun. , vol. 32, no. 3, pp. 20-27, June 2025. [15] M. Dai et al., “Latency minimization oriented hybrid offshore and aerial-based multi-access computation offloading for marine communication networks,” IEEE Trans. Commun. , vol. 71, no. 11, pp. 6482-6498, Nov. 2023. [16] Y. Zhang, Z. Na, S. Li, B. Lin, Y. Lin, and A. Nallanathan, “Joint service caching and task offloading for multi-UAV-assisted offshore edge computing networks,” IEEE Trans. Veh. Technol. , vol. 74, no. 12, pp. 19667-19680, Dec. 2025. [17] M. Li, L. P. Qian, F. Fang, and X. Wang, “Online hierarchical com-putation offloading for marine IoT networks: A delay minimization approach,” IEEE Trans. Wireless Commun. , vol. 25, pp. 3422-3436, 2026. [18] Z. Wang, B. Lin, and Q. Ye, “Double-edge-assisted computation offload-ing and resource allocation for space-air-marine integrated networks,” 
+
+IEEE Trans. Veh. Technol. , vol. 74, no. 9, pp. 14501-14514, Sept. 2025. [19] S. Jung, S. Jeong, J. Kang, and J. Kang, “Marine IoT systems with space–air–sea integrated networks: Hybrid LEO and UAV edge com-puting,” IEEE Internet Things J. , vol. 10, no. 23, pp. 20498-20510, 1 Dec.1, 2023. [20] S. Qi, B. Lin, Y. Deng, H. Pan, and X. Hu, “Joint computation offloading and resource management for cooperative satellite–aerial–marine inter-net of things networks,” IEEE Internet Things J. , vol. 12, no. 24, pp. 53164-53176, 15 Dec.15, 2025. [21] M. Dai, S. Chang, Y. Wang, and Z. Su, “Energy-efficient multi-access edge computing for heterogeneous satellite-maritime networks: A hybrid harvesting-and-offloading design,” IEEE Trans. Mobile Comput. , vol. 24, no. 11, pp. 12001-12018, Nov. 2025. [22] H. Zhang, S. Xi, B. Shang, P. Zhang, S. Wu, and C. Jiang, “Energy oriented three-tier computation offloading scheme in maritime edge computing network,” IEEE Trans. Veh. Technol. , vol. 74, no. 5, pp. 8126-8140, May 2025. [23] T. Yang et al., “Multi-armed bandits learning for task offloading in maritime edge intelligence networks,” IEEE Trans. Veh. Technol. , vol. 71, no. 4, pp. 4212-4224, April 2022. [24] W. Wu, W. Feng, Y. Fang, Z. Lin, and X. Lu, “Multi-HAP-assisted computation offloading in space–air–ground–sea integrated network,” 
+
+IEEE Internet Things J. , vol. 12, no. 12, pp. 21806-21818, 15 June15, 2025. [25] W. Li, S. Li, J. Hao, Q. Wu, and R. Wang, ”Efficient task offloading and resource allocation in HAPS-assisted LEO satellite networks: A MAPPO with exact potential game approach,” IEEE Internet Things J. , vol. 13, no. 6, pp. 10179-10195, 15 March15, 2026. [26] Z. Lin, J. Yang, Y. Chen, C. Xu, and X. Zhang, “Maritime distributed computation offloading in space-air-ground-sea integrated networks,” 
+
+IEEE Commun. Lett. , vol. 28, no. 7, pp. 1614-1618, July 2024. [27] D. Wang, T. He, Y. Lou, L. Pang, Y. He, and H. -H. Chen, “Double-edge computation offloading for secure integrated space–air–aqua networks,” 
+
+IEEE Internet Things J. , vol. 10, no. 17, pp. 15581-15593, 1 Sept.1, 2023. [28] S. S. Hassan, Y. K. Tun, W. Saad, Z. Han, and C. S. Hong, “Blue data computation maximization in 6G space-air-sea non-terrestrial networks,” in Proc. IEEE Glob. Commun. Conf. (GLOBECOM) , Madrid, Spain, 2021, pp. 1-6. [29] G. Wang, F. Yang, J. Song, and Z. Han, “Free space optical communi-cation for inter-satellite link: Architecture, potentials and trends,” IEEE Commun. Mag. , vol. 62, no. 3, pp. 110-116, March 2024. [30] R. Esswein, Q. Bayer, S. Mergendahl, J. Ruffley, M. Abdelhakim, and R. K. Cunningham, “Constellation parameters for minimizing propa-gation delay over LEO inter-satellite links,” IEEE Trans. Netw. , doi: 10.1109/TON.2026.3661441. [31] X. Deng, L. Chang, S. Zeng, L. Cai, and J. Pan, “Distance-based back-pressure routing for load-balancing LEO satellite networks,” IEEE Trans. Veh. Technol. , vol. 72, no. 1, pp. 1240-1253, Jan. 2023. [32] S. He, Y. He, Y. Zhang, Q. Shi, and T. Z. Qiu, “Back-pressure-based traffic signal and discretized trajectory joint control for low CAV penetration rate environment,” IEEE Trans. Intell. Veh. , vol. 10, no. 4, pp. 2679-2697, April 2025. [33] J. Zhang et al., “Energy-efficient UAV deployment and computation offloading in space-air-ground integrated networks,” IEEE Trans. Veh. Technol. , vol. 75, no. 2, pp. 3081-3098, Feb. 2026. [34] X. Wang, S. Wang, X. Gao, Z. Qian, and Z. Han, “AMTOS: An ADMM-based multilayer computation offloading and resource allocation optimization scheme in IoV-MEC system,” IEEE Internet Things J. , vol. 11, no. 19, pp. 30953-30964, 1 Oct.1, 2024. [35] R. W. Ibrahim, T. K. Rodrigues, N. Kato, M. Ariyoshi, and Y. Hasegawa, “Latency-aware task offloading in multi-tier SAGIN with FSO-enabled mobile edge computing,” IEEE Trans. Veh. Technol. , vol. 75, no. 6, pp. 10368-10380, June 2026.

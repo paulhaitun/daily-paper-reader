@@ -1,0 +1,1674 @@
+Title: Strong NP-Hardness and Approximation Algorithm for Weighted Tardiness with Release Dates and Identical Processing Times
+
+URL Source: https://arxiv.org/pdf/2609.28751v1
+
+Published Time: Fri, 25 Sep 2026 00:15:12 GMT
+
+Number of Pages: 38
+
+Markdown Content:
+# Strong NP-Hardness and Approximation Algorithm for Weighted Tardiness with Release Dates and Identical Processing Times 
+
+# Zhi-Long Chen 
+
+> University of Maryland
+
+# Nicholas G. Hall 
+
+> The Ohio State University
+> September 23, 2026 arXiv:2609.28751v1 [cs.CC] 23 Sep 2026
+
+Abstract 
+
+We study nonpreemptive scheduling on a single machine with release dates, due dates, positive job weights, and a common processing time. The objective is to minimize total weighted tardiness. Although closely related equal-processing-time problems admit polynomial-time algorithms, the complexity of this problem has remained open in the literature since 2010. We prove that its decision version is strongly NP-complete, even when every job can meet its due date if processed immediately upon release. The reduction is from unweighted MAX-CUT and uses a quadratic number of jobs with polynomially bounded numerical data. Its main ingredient is a constructive normalization theorem that converts every sufficiently inexpensive feasible schedule into a binary choice for each graph vertex; after normalization, total weighted tardiness equals a constant minus a scaled cut value. We also give a deterministic polynomial-time phase-grid assignment algorithm for the shifted objective Φ = F + p ∑ 
+
+> j
+
+wj , where F is total weighted tardiness. The algorithm enumerates at most N release-date residues modulo p, solves one minimum-cost assignment problem for each residue, and returns the best phase-grid schedule. It runs in O(N 5) arithmetic operations and achieves the tight ratio 3 /2 − 1/(2 N ) for this algorithm. Because the added term 
+
+p ∑ 
+
+> j
+
+wj is independent of how the jobs are scheduled, the shifted and original objectives have exactly the same optimal schedules. However, the approximation guarantee applies to the shifted objective; for the original objective, the analysis provides an additive bound. Thus, the paper both resolves the long-standing complexity question and provides a complementary worst-case guarantee for the phase-grid assignment algorithm. 
+
+Subject classifications: Analysis of algorithms: computational complexity; production/scheduling: deterministic single machine. 
+
+AMS classifications (2020): Primary 90B35; Secondary 68Q25, 90C59. 
+
+Keywords: scheduling; weighted tardiness; strong NP-hardness; approximation algorithm; assign-ment. 1 Introduction 
+
+We consider the problem of scheduling N jobs for processing on a single continuously available machine to minimize the total weighted tardiness where jobs have individual release dates and identical processing times. Using the three-field scheduling notation of Graham et al. (1979), where the first field describes the machine environment, the second specifies job restrictions, and the third gives the objective, this problem is denoted as 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj , where each job j is associated with a release date rj , an identical processing time pj = p, a due date dj , and a priority weight wj .In a given schedule, the completion time of job j is denoted as Cj and its tardiness is defined as 
+
+Tj = max {Cj − dj , 0}. Without loss of generality, it is assumed that p and wj ’s are positive integers and rj ’s and dj ’s are nonnegative integers. Scheduling to meet due dates is a basic operations research problem. When work becomes available at different times, a decision maker must determine both which job to process next and whether to wait for a job that has not yet arrived. Total weighted tardiness measures the resulting delay by charging each job a penalty proportional to the time by which it misses its due date. The weights allow the penalty rates to differ across jobs. Equal processing times describe a natural restriction in which every job requires the same amount of machine capacity, while availability, urgency, and delay costs remain heterogeneous. This restriction often changes the computational character of a scheduling problem. It removes the possibility of encoding an arbitrary collection of item sizes directly in processing times. It also permits a polynomially bounded set of candidate start times. For several due-date objectives, these properties support dynamic programming or assignment algorithms. In particular, there are known polynomial-time algorithms for the total unweighted tardiness problem and the weighted number of tardy jobs problem with release dates and equal processing times, i.e., 1 | rj , p j = p | ∑ 
+
+> j
+
+Tj and 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Uj (Baptiste, 1999, 2000), where Uj = 1{Cj >d j } is the tardy-job indicator. It is therefore natural to ask whether the total weighted tardiness problem, i.e., 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj , is also tractable. The answer has remained unresolved in the literature devoted to this problem. van den Akker et al. (2010, pp. 561 and 575) explicitly identify its computational complexity as open. Gafarov et al. (2020, p. 853) subsequently describe it as a minimal open problem in the scheduling classification and conjecture NP-hardness in their complexity discussion and concluding remarks. We prove that the decision problem of 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj is strongly NP-complete (Theorem 1). The result holds even when every due date is at least one processing time after the corresponding release, i.e., dj ≥ rj + p for every job. Every numerical parameter in the reduction, including the objective threshold, is polynomially bounded in the number of jobs. This resolves the published complexity open question and strengthens the NP-hardness conjecture of Gafarov et al. (2020). The proof encodes unweighted MAX-CUT. Each vertex is represented by a block of equal-length jobs with two possible normalized behaviors. A pair of jobs at each incidence determines which weight remains for processing in a final portion of the schedule. Additional equal-length jobs enforce the timing of the blocks through the objective itself. The central argument shows constructively 1that any schedule meeting the reduction’s cost bound can be converted, without increasing cost, into one of these normalized schedules (Proposition 1). The normalized objective has an exact pairwise decomposition. Its coefficients can be chosen independently, which permits a graph interaction to be represented through job weights and due dates (Proposition 2, especially (29)). This provides the needed coupling while all processing times remain identical. The hardness result motivates the search for algorithms with provable performance. A direct multiplicative guarantee for total weighted tardiness is delicate because its optimum may be zero. We therefore analyze the shifted objective Φ( S) = F (S) + p ∑
+
+> j
+
+wj ,
+
+where the added term p ∑ 
+
+> j
+
+wj is independent of how the jobs are scheduled. Consequently, Φ and the original objective F have the same ordering of schedules and the same minimizers. Our deterministic phase-grid assignment algorithm enumerates every distinct release-date residue modulo 
+
+p. For each residue, it rounds releases upward to the associated grid, solves the resulting minimum-cost assignment problem exactly, and retains the best schedule. The algorithm uses at most N
+
+assignments, runs in O(N 5) arithmetic operations, and satisfies Φalg 
+
+Φ∗ ≤ 32 − 
+
+> ∑
+> j
+
+w2
+
+> j
+
+2( ∑ 
+
+> j
+
+wj )2 ≤ 32 − 12N .
+
+The last bound is tight for the specified phase-grid assignment algorithm. Equivalently, the analysis gives an explicit additive guarantee for F ; it does not claim a constant multiplicative approximation for the unshifted objective. The contributions are therefore the construction and normalization that encode a cut problem, together with the phase-enumeration analysis that converts related grid and assignment ideas into a worst-case guarantee for a precisely defined shifted objective. Section 2 reviews the complexity and algorithmic results most directly surrounding the problem, including grid-based methods and shifted-objective analyses. Sections 3 and 4 give the construction and normalization argument. Section 5 derives the cost identity and proves strong NP-completeness. Section 6 presents the phase-grid assignment algorithm and its shifted-objective guarantee, and Section 7 concludes. 
+
+# 2 Related literature 
+
+Table 1 summarizes the complexity results of the single-machine and parallel-machine problems related to the studied problem. We briefly discuss some of the problems and results given in the table and other related literature in the following subsections. 2Table 1: Complexity results surrounding equal-processing-time weighted tardiness     
+
+> Problem Result Source 1||
+
+∑    
+
+> jTjOrdinary NP-hardness; pseudo-polynomial algorithm and FPTAS Lawler (1977, 1982); Du and Leung (1990) 1||
+
+∑           
+
+> jwjTjStrongly NP-hard Lenstra et al. (1977) 1|rj, p j=p|
+
+∑            
+
+> jTjPolynomial, O(N7) algorithm Baptiste (2000) 1|rj, p j=p|
+
+∑             
+
+> jwjUjPolynomial, O(N7) algorithm Baptiste (1999) 1|rj, p j=p|
+
+∑                
+
+> jUjPolynomial, O(N5) algorithm Chrobak et al. (2006) 1|rj=a+kjp, p j=p|
+
+∑           
+
+> jwjTjPolynomial, reduction to assignment Gafarov et al. (2020) 1|rj, p j=p|
+
+∑                 
+
+> jwjTjExplicitly left open; NP-hardness conjectured van den Akker et al. (2010); Gafarov et al. (2020)
+> Same problem, including dj≥rj+pStrongly NP-hard Theorem 1
+> Pm|rj, p j=p|
+
+∑              
+
+> jTj, fixed mPolynomial, O(N3m+4 ) algorithm Baptiste (2000)
+> P|rj, p j=p|
+
+∑           
+
+> jTj, input machine count Polynomial, reduction to LP Brucker and Kravchenko (2005)
+> Pm|rj, p j=p|
+
+∑               
+
+> jwjUj, fixed mPolynomial, O(N6m+1 ) algorithm Baptiste et al. (2004)
+> P|rj, p j=p|
+
+∑    
+
+> jUj, input machine count NP-hard Heeger and Molter (2025)
+
+Note: N is the number of jobs. The symbol P in the machine field denotes an arbitrary number of identical machines; 
+
+Pm denotes a given number ( m) of identical machines; 
+
+2.1 Complexity results 
+
+For arbitrary processing times and no release dates, the distinction between weighted and unweighted tardiness is well established. Lawler (1977) gives a pseudo-polynomial dynamic program for 1 || ∑ 
+
+> j
+
+Tj ,and Du and Leung (1990) prove NP-hardness in the ordinary sense. Lawler (1982) also gives a fully polynomial approximation scheme. The unrestricted weighted counterpart 1 || ∑ 
+
+> j
+
+wj Tj is strongly NP-hard (Lenstra et al., 1977). That result does not establish hardness under a common processing time: a hardness proof for a larger class does not automatically survive the equal-duration restriction. Indeed, when the processing times are identical, i.e., pj = p, if all jobs are available at time zero, the completion positions can be fixed and the jobs assigned to positions at costs wj max {kp − dj , 0}. Thus, 1 | pj = p | ∑ 
+
+> j
+
+wj Tj
+
+reduces to an assignment problem and can be solved in polynomial time (Kuhn, 1955). This is discussed in Gafarov et al. (2020). They also point out that a more general common-grid version of the problem, where rj = a + kj p, for a common nonnegative integer a and a job dependent integer multiplier kj , can be modeled as an assignment problem. Baptiste (1999) establishes strongly polynomial dynamic programs for minimizing the weighted number of tardy equal-length jobs with release dates, both without and with preemption. His nonpreemptive algorithm has running time O(N 7) for N jobs. Baptiste (2000) obtains polynomial algorithms for equal-length scheduling on a fixed number of identical parallel machines, including the total-tardiness objective. The single-machine result gives a polynomial algorithm for 1 | rj , p j =
+
+p | ∑ 
+
+> j
+
+Tj . Thus replacing tardiness amounts by tardy indicators, or replacing arbitrary weights by equal weights, yields tractable neighbors of our problem. 3Subsequent work develops this algorithmic boundary in several directions. Baptiste et al. (2004) give polynomial algorithms for ten equal-processing-time problems, one of which is the weighted number of tardy jobs problem on a fixed number of identical machines. Carlier (1981) gives a polynomial algorithm for deciding whether all equal-length jobs can meet their deadlines and proposes an extension to maximize throughput. Chrobak et al. (2006) identify an error in that maximization extension and provide an O(N 5) algorithm for the unweighted single-machine throughput problem. Their counterexample concerns the maximization extension; the feasibility result remains valid. Throughput and tardiness use the same release-date and due-date information but value late jobs differently. In a throughput problem, the cost associated with a job declared late is independent of how late it is. The remaining jobs can therefore be appended after the chosen on-time subset without changing the selection objective. Under total weighted tardiness, their completion times still contribute to the objective. Our reduction exploits exactly this dependence: the jobs left for the final part of the schedule carry the interaction among the earlier binary choices. For the weighted-tardiness problem studied here, van den Akker et al. (2010) explicitly leave the general computational complexity open, and Gafarov et al. (2020) subsequently conjecture NP-hardness and reiterate the open status. Theorem 1 settles this question by proving strong NP-hardness, even under dj ≥ rj + p. The result also resolves a related classification question in multiple-due-date scheduling. In the equal-processing-time model MDS-EP of Kühn et al. (2024), every job has several due dates, each carrying a penalty if missed. Their Corollary 2 gives a polynomial reduction from 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj to MDS-EP. Composing that reduction with Theorem 1 proves that MDS-EP is NP-hard; this observation does not assert preservation of strong NP-hardness or approximation guarantees. Parallel-machine classifications depend on the number of machines and on preemption assump-tions (Kravchenko and Werner, 2011). Equal-length total tardiness is polynomial for a fixed number of identical machines (Baptiste, 2000), and equal-length weighted throughput is polynomial for a fixed number of nonpreemptive machines (Baptiste et al., 2004). When the number of machines is part of the input, hardness is known for the preemptive weighted-count problem (Brucker and Kravchenko, 2006) and for the nonpreemptive unweighted-count problem with release dates (Heeger and Molter, 2025); the latter resolves the question discussed by Sgall (2012). These parallel-machine results concern tardy-job counts or unweighted tardiness under different machine assumptions, rather than the single-machine weighted-tardiness objective considered here. 
+
+2.2 Exact, heuristic, and grid-based algorithms 
+
+Exact and heuristic procedures for the more general problem 1 | rj | ∑ 
+
+> j
+
+wj Tj also apply when processing times are equal. Aktürk and Özdemir (2000) develop a branch-and-bound method based on time-dependent dominance rules and lower bounds, and Aktürk and Özdemir (2001) use related dominance information in constructive and local-search heuristics. These methods do not exploit the common processing time through residue grids or assignment. For 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj , van 4den Akker et al. (2010) develop a time-indexed formulation over the union of the release-generated grids, together with LP-based structural arguments, branching, and column generation. They report tractable special cases with common due dates, common weights, common releases, or equally ordered release and due dates. Their formulation retains capacity interactions among grids with different residues, whereas our algorithm separates the residue phases and solves one assignment problem for each phase. Their computational procedures address exact solution of instances, but favorable behavior of the LP relaxation does not provide a polynomial worst-case bound for the general problem. For the equal-processing-time problem itself, Gafarov et al. (2020) give two exact algorithms with running time O(N 32N ). One enumerates subsets of jobs fixed to start at their release dates and solves an assignment problem for the remaining jobs. This has the same high-level pattern as our method—enumerate a structural choice, solve an assignment problem, and select the best solution—but its enumeration is exponential and exact, whereas our algorithm examines at most N
+
+residue phases and is polynomial and approximate. They also study dominance properties, special cases, and exact search, and question the completeness of an LP-conversion argument in the earlier work. Our hardness proof and approximation analysis do not rely on that conversion argument. Time grids and assignment reductions also occur in neighboring due-date problems. Dessouky et al. (1990) reduce identical-job scheduling without individual release restrictions to linear assign-ment, obtaining an O(N 3) algorithm for general nondecreasing costs and O(N log N ) algorithms for total tardiness and the weighted number of tardy jobs. Zhang et al. (2025) use generated completion times for bicriterion equal-length scheduling involving total tardiness and the number of tardy jobs on uniform parallel machines, with an O(N 2) Pareto algorithm and O(N log N ) algorithms for two hierarchical variants. The polynomial dynamic programs summarized in the preceding subsection likewise restrict attention to times of the form ri + kp , but optimize jointly over the union of all release-generated grids. In contrast, our algorithm solves an assignment problem independently for each residue class and then compares the phase optima. Gafarov et al. (2020) show that selecting one arbitrary grid can have unbounded relative error for the original objective; Section 6 obtains a bounded additive loss by testing every release phase and evaluates that loss under a shifted objective. 
+
+2.3 Shifted-objective performance guarantees 
+
+There is direct precedent for using a translated objective when tardiness can vanish. For Pm | dj =
+
+d | ∑ 
+
+> j
+
+Tj , Kovalyov and Werner (2002) construct approximation schemes satisfying 
+
+T A − T ∗
+
+T ∗ + d ≤ ε, equivalently T A + dT ∗ + d ≤ 1 + ε. 
+
+Thus the common due date is added explicitly to the performance measure. For fixed m, their two algorithm families run in O(N 2m/ε m−1) and O(N m+1 /ε m) time; for m = 2, the first improves to 
+
+O(N 3/ε ). 5Kolliopoulos and Steiner (2006) study the broader family α | β | ∑ 
+
+> j
+
+wj (Tj + dj ) on single, identical-parallel, uniformly related, and unrelated machines, with variants involving release dates, precedence constraints, and preemption. Their models include, for example, P | rj | ∑ 
+
+> j
+
+wj (Tj + dj ), 1 | rj , prec | ∑ 
+
+> j
+
+wj (Tj + dj ), and R | rj | ∑ 
+
+> j
+
+wj (Tj + dj ). They transfer approximation results from weighted completion time and give an O(N 3/ε ) FPTAS for 1 | dj = D | ∑ 
+
+> j
+
+wj (Tj + dj ). Since ∑ 
+
+> j
+
+wj (Tj + dj ) = ∑ 
+
+> j
+
+wj Tj + ∑ 
+
+> j
+
+wj dj , the modification preserves the optimal schedules while changing the approximation ratio. A related transformation is standard for maximum lateness. If D ≥ max j dj and qj = D − dj ,then max j {Cj + qj } = D + Lmax . In the release-date/delivery-time formulation, Potts (1980) give a 3 /2-approximation for 1 | rj | Lmax , and Mastrolilli (2003) develop PTASs for P | rj | Lmax and its single-machine special case. These two results apply to the delivery completion objective Qmax ,which is equivalent to D + Lmax under the displayed transformation. These studies support the use of a schedule-independent shift as a performance measure, but the guarantee must be identified as applying to the translated objective, not as an ordinary multiplicative approximation for unshifted tardiness. 
+
+2.4 Position of our result 
+
+Our complexity result establishes strong NP-hardness while retaining one machine, equal job lengths, arbitrary release dates, and the usual weighted-tardiness objective. It strengthens the published NP-hardness conjecture and separates this model from both the unweighted total-tardiness problem and the weighted-throughput problem. Complementing that negative result, Section 6 combines residue-class enumeration and assignment with a shifted-objective analysis. We found no previous algorithm with this combination for 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj . The complexity conclusion does not contradict the usefulness of existing exact methods on structured or moderate-size instances, and the shifted guarantee does not imply a multiplicative approximation for the original objective. Several ingredients remain standard and are credited where used: the scheduling notation, candidate-time dominance, bipartite assignment, the weighted completion-time interchange rule of Smith (1956), and the NP-completeness of unweighted MAX-CUT established by Garey et al. (1976). The new contributions are the equal-length scheduling construction, its normalization for arbitrary bounded-cost witnesses, its exact encoding of independently specified positive edge coefficients, and the phase-averaging analysis of the phase-grid assignment algorithm. 
+
+# 3 Reduction from unweighted MAX-CUT 
+
+In a feasible schedule, each job j, for j = 1 , . . . , N , is executed in [ sj , s j + p), where sj ≥ rj . The intervals are pairwise disjoint. Preemption is forbidden and idle time is permitted. The objective is 
+
+> N∑
+> j=1
+
+wj max {0, C j − dj }, where Cj = sj + p. 
+
+6The decision problem asks whether this cost is at most a given nonnegative integer K. All numerical input is binary encoded. Start times may be real. The common processing time is part of the instance, and can vary between instances. The main strong NP-completeness result is stated and proved in Section 5. We first record the left-shifting argument underlying candidate-time discretization in equal-length scheduling (Baptiste et al., 2004; van den Akker et al., 2010). It also specifies why allowing real start times does not invalidate the later integral arguments. For any feasible schedule, let π be its job permutation. Define its earliest schedule by ̂
+
+C0 = 0 ,̂ sπ(k) = max {rπ(k),̂ Ck−1},̂ Ck =̂ sπ(k) + p. (1) Here k is the position in π, and ̂ Ck is the completion time of job π(k) in the earliest schedule. For 
+
+k = 1, feasibility gives sπ(1) ≥ rπ(1) , so (1) gives ̂ sπ(1) ≤ sπ(1) . For k > 1, assume ̂ Ck−1 ≤ Cπ(k−1) .Feasibility gives sπ(k) ≥ rπ(k) and sπ(k) ≥ Cπ(k−1) ; hence (1) gives ̂ sπ(k) ≤ sπ(k). Adding p proves ̂
+
+Ck ≤ Cπ(k) for every k. The new schedule is feasible, has integer starts, and has no greater cost, because tardiness is nondecreasing in completion time. This argument applies to every feasible schedule, including one with noninteger starts, without any optimality assumption. In particular, the minimum over the finitely many earliest permutations attains the optimum. All uses of a one-unit lower bound on positive tardiness below explicitly require an integral schedule, obtained by (1) when necessary. The source problem for the reduction is unweighted MAX-CUT (Garey et al., 1976). The reduction encodes each vertex by a block of equal-length jobs. For every vertex–edge incidence, the construction creates two alternative jobs. In the schedules that survive the normalization argument, exactly one of these two jobs is processed in the corresponding vertex block and the other is postponed to a final tail. This binary choice represents the side of the cut to which the vertex is assigned. The remaining jobs and parameters are chosen so that the block structure is enforced, while the weighted tardiness contributed by the tail decreases exactly when the endpoints of an edge are assigned to different sides of the cut. Section 3.1 gives the full construction of the scheduling instance, including the auxiliary complete graph, the incidence indexing, the job data, the block boundaries, and the decision threshold. Section 3.2 records the parameter inequalities that are used later in the schedule argument. These inequalities ensure that the intended block structure is forced for every schedule whose cost is below the reference bound. Section 4 then shows that such schedules can be transformed into a canonical form, and Section 5 evaluates the cost of canonical schedules to obtain the correspondence with MAX-CUT. 
+
+3.1 Source instance and job data 
+
+Take an unweighted simple graph G = ( V, F), where V = {1, . . . , n } is the vertex set F the edge set, and an integer κ. MAX-CUT asks whether some bipartition cuts at least κ edges. To avoid 7trivial instances of the problem, we assume that there are no isolated vertices in G, and 1 ≤ κ ≤ |F| .Hence, 2 ≤ n ≤ 2|F| .
+
+Auxiliary complete graph. The construction uses the auxiliary complete graph Kn = ( V, E), with 
+
+E = {{ a, b } : 1 ≤ a < b ≤ n}.
+
+Edges in F are called original edges ; edges in E \ F are called added edges . No vertices are added. The MAX-CUT objective counts only original edges, whereas every edge of the auxiliary complete graph participates in the scheduling construction. Define Γ =  
+
+> ⌊
+
+n2
+
+4
+
+> ⌋
+
++ 1 , ∆e = 1 + Γ 1{e∈F} (e ∈ E ). (2) Thus ∆ e = Γ + 1 for an original edge and ∆ e = 1 for an added edge. Put m = n − 1, M = nm , and 
+
+E = |E| = M/ 2 = (n
+
+> 2
+> )
+
+. Each vertex will be associated with a vertex block , defined below as a time interval. 
+
+Edge indices and weight intervals. Write each unordered edge as e = {a, b } with a < b , order 
+
+E lexicographically by te ∈ { 1, . . . , E }, and define 
+
+ℓe = te + ∑  
+
+> f∈E
+> tf<t e
+
+∆f , he = ℓe + ∆ e (e ∈ E ). (3) The sum is over all edges preceding e in this order, including original and added edges. The intervals [ℓe, h e] are disjoint, with a one-unit gap between successive intervals. Their maximum endpoint is 
+
+V = E + ∑
+
+> e∈E
+
+∆e. (4) The scalar V is distinct from the vertex set V.
+
+Vertex–edge incidences and their ranks. For each vertex v ∈ V , let 
+
+Ev = {e ∈ E : v ∈ e} = {{ a, v } : 1 ≤ a < v } ∪ {{ v, b } : v < b ≤ n}.
+
+The set Ev contains all m = n − 1 edges incident to v, with both smaller and larger other endpoints. A vertex–edge incidence (v, e ) records a vertex v and an edge e ∈ E v containing it. An edge 
+
+e = {a, b } = {b, a } has two incidences, ( a, e ) and ( b, e ). There are M = 2 E incidences in total. Each incidence will receive its own job pair, hence one edge gives two such job pairs, one at each endpoint. 8At a fixed vertex v, order its incident edges by increasing other endpoint. For e = {a, b } with 
+
+a < b , the local incidence rank and global incidence rank are defined, respectively, 
+
+kv,e =
+
+> 
+
+b − 1, v = a, a, v = b, 
+
+and gv,e = ( v − 1) m + kv,e .
+
+Local ranks run from 1 to m. The absence of a loop {v, v } explains the two cases in the formula: for v = a, the other endpoint b has rank b − 1, whereas for v = b, the other endpoint a has rank a.Equivalently, the local list is ordered by increasing other endpoint. Global ranks run from 1 to M ,with these local lists concatenated in increasing vertex order. Thus the vertex is ordered first and, within that vertex, the incident edges are ordered by increasing other endpoint (equivalently, by the lexicographic order of their canonical labels restricted to Ev). Write e(g) for the unique edge associated with incidence rank g. For each edge e, its two incidences share the same quantities 
+
+te, ∆e, ℓ e, h e.Table 2 displays the rank pattern for general n.Table 2: Local and global incidence ranks for general n                                                                      
+
+> Vertex vIncident edges in local order Local ranks kv,e Global ranks gv,e
+> 1{1,2},{1,3}, . . . , {1, n }1,2, . . . , n −11,2, . . . , n −12{1,2},{2,3}, . . . , {2, n }1,2, . . . , n −1n, n + 1 , . . . , 2n−2............
+> i{1, i }, . . . , {i−1, i },{i, i + 1 }, . . . , {i, n }1,2, . . . , n −1(i−1)( n−1) + 1 , . . . , i (n−1) ............
+> n{1, n },{2, n }, . . . , {n−1, n }1,2, . . . , n −1(n−1) 2+ 1 , . . . , M
+
+For every vertex v, ordering the other endpoints increasingly while omitting v gives the same set of local ranks {1, . . . , n − 1}. Equivalently, for a neighbor u̸ = v,
+
+kv, {u,v } =
+
+> 
+
+u, u < v, u − 1, u > v. 
+
+In the general row of Table 2, ranks 1 , . . . , i − 1 correspond to the lower-numbered neighbors of i,and ranks i, . . . , n − 1 correspond to its higher-numbered neighbors. Global ranks depend on the vertex: the incidences of vertex v occupy the consecutive block 
+
+{(v − 1)( n − 1) + 1 , . . . , v (n − 1) }.
+
+These n blocks partition {1, . . . , M }.9Charge coefficients and scaling. Define 
+
+P0 = 2 M, L0 = 2 , qe = M − 2te (e ∈ E ),
+
+and, for every vertex v ∈ V , let 
+
+fv = ∑
+
+> e∈E v
+
+∆e
+
+> [
+
+P0
+
+> (
+
+qe + 32
+
+> )
+
++ L0(gv,e − 1) 
+
+> ]
+
+. (5) The coefficients are chosen so that, in the cost calculation for the normalized schedules, all terms depending on only one endpoint choice cancel out. What remains is a constant baseline together with a pairwise saving that occurs exactly when the two endpoint choices differ. Proposition 2 below verifies this cancellation explicitly after scaling. Every qe is a nonnegative even integer. This, together with the fact that P0 is even and gv,e is a positive integer, implies that all fv are positive integers. Write 
+
+fmin = min  
+
+> 1≤v≤n
+
+fv
+
+and set 
+
+U = 1 + V (2 M + 1) P0 +
+
+> n∑
+> v=1
+
+fv, (6) 
+
+G = ∑
+
+> e={a,b }∈E
+> a<b
+
+(U + he) [ P0(2 qe + 3) + L0(ga,e + gb,e − 2)] , (7) 
+
+Q = 
+
+> ⌊
+
+G
+
+2P0fmin 
+
+> ⌋
+
++ 1 . (8) In (7), the sum defining G includes every original and added edge of E exactly once. Finally, let 
+
+P = QP 0, L = QL 0, Fv = Qf v (v ∈ V ), Fsum =
+
+> n∑
+> v=1
+
+Fv, K = QG. (9) The sum defining Fsum includes one charge weight for every vertex. The parameters are defined in the displayed order; no optimum or unknown subset is used in calculating them. 
+
+Block boundaries and jobs. The n vertex blocks are time intervals and therefore have n + 1 boundary times. Define 
+
+bs = ( s − 1)(( m + 2) P + 1) (1 ≤ s ≤ n + 1) , H = bn+1 . (10) Vertex v ∈ V has block [ bv, b v+1 ). Thus b1 = 0, and bn+1 = H is the end of the last vertex block, not an additional vertex. It is also the due date of the last guard and the starting time of the normalized tail. 10 For each incidence g = gv,e = ( v − 1) m + kv,e , introduce two jobs Ag, B g. Add a charge job Zv
+
+and a guard job Rv for each vertex v ∈ V . Every job has processing time P . Their release dates, due dates, and weights are specified in Table 3. In particular, the two jobs Ag, B g associated with incidence g have common due date dg = H − (g − 1) L. There are 2 M + 2 n = 2 n2 jobs. Table 3: Job data in the reduction; every job has processing time P
+
+Job Release Due date Weight Number 
+
+Ag bv + ( k − 1) P H − (g − 1) L U + ℓe MBg bv + ( k − 1) P + 1 H − (g − 1) L U + he MZv bv + mP bv + ( m + 1) P Fv nRv bv + ( m + 1) P + 1 bv+1 K + 1 n                             
+
+> In the Agand Bgrows, v∈ V ,e∈ E v,k=kv,e ∈ { 1, . . . , m }, and g=gv,e =(v−1) m+k∈ { 1, . . . , M }.Each incidence supplies one Ag-job and one
+> Bg-job. In the charge and guard rows, v= 1 , . . . , n .
+
+The target threshold is 
+
+K∗ = K − P
+
+2 Γκ. (11) All job data and the bound K depend only on the graph. The MAX-CUT target κ enters the nontrivial scheduling construction solely through the decision threshold K∗.
+
+3.2 Bounds needed for the schedule argument 
+
+Lemma 1 (Parameter bounds) . The parameters defined in Section 3.1 satisfy 
+
+P = M L > 1, (12) 
+
+(
+
+min  
+
+> 1≤i≤n
+
+Fi
+
+)
+
+(2 P + 1) > K, (13) 
+
+U L > V (2 M + 1) P + Fsum , (14) 
+
+P U > F sum . (15) 
+
+Proof. Recall that P0 = 2 M , L0 = 2, Q ≥ 1, and M = n(n − 1) ≥ 2. Therefore, from (9), 
+
+P = QP 0 = 2 QM = M QL 0 = M L > 1,
+
+which proves (12). For (13), Equation (8) and fmin > 0 give 
+
+Q =
+
+⌊ G
+
+2P0fmin 
+
+⌋
+
++ 1 > G
+
+2P0fmin 
+
+. (16) 11 Hence, using min 1≤i≤n Fi = Qf min , P = QP 0, and K = QG from the scaling definitions (9), 
+
+(
+
+min  
+
+> 1≤i≤n
+
+Fi
+
+)
+
+(2 P + 1) = Qf min (2 QP 0 + 1) 
+
+> 2Q2P0fmin 
+
+> QG, from (16) = K. 
+
+Let δ = 2 P0fmin Q − G. By the definition of Q given in (8), we have 1 ≤ δ ≤ 2P0fmin . The exact margin is (
+
+min  
+
+> 1≤i≤n
+
+Fi
+
+)
+
+(2 P + 1) − K = Q[2P0fmin Q + fmin − G]
+
+= Q(δ + fmin ) > 0.
+
+(17) For (14), Equation (6) gives 
+
+V (2 M + 1) P0 +
+
+> n
+
+∑
+
+> v=1
+
+fv = U − 1.
+
+Using L = 2 Q, P = QP 0 and Fsum = Q ∑ni=1 fi from (9), we obtain 
+
+V (2 M + 1) P + Fsum = Q(U − 1) < 2QU = U L. 
+
+The exact margin, which is used below, is 
+
+U L − V (2 M + 1) P − Fsum = Q
+
+[
+
+2U − V (2 M + 1) P0 −
+
+> n
+
+∑
+
+> i=1
+
+fi
+
+]
+
+= Q
+
+[
+
+2 + V (2 M + 1) P0 +
+
+> n
+
+∑
+
+> i=1
+
+fi
+
+]
+
+= Q(U + 1) > 0.
+
+(18) Finally, Equation (6) gives U > ∑ni=1 fi. Since P0 ≥ 1 and Q > 0, 
+
+P U = QP 0U ≥ QU > Q 
+
+> n
+
+∑
+
+> i=1
+
+fi = Fsum ,
+
+from (6) and (9), and proving (15). Equivalently, the exact margin is P U − Fsum = Q(P0U −
+
+∑ni=1 fi) > 0. The latest release among the A/B -jobs is that of BM , whose local rank is m at vertex n. By the Bg row of Table 3 and the block definition (10), its release date is 
+
+rAB  
+
+> max
+
+= bn + ( m − 1) P + 1 = H − 3P < H. (19) 12 In particular, every A/B -job is available at time H, and the latest such release plus P is H − 2P .By Table 3, the earliest due date occurs at g = M ; using ( M − 1) L = P − L from (12), it is 
+
+H − (M − 1) L = H − P + L > H − P. (20) Thus dj ≥ rj + P for every A/B -job, and equality holds for the charge and guard jobs. Indeed, (19) and (20) give rj + P ≤ H − 2P < H − P < d j for every A/B -job, while the equalities for charge and guard jobs follow from Table 3 and (10). We next give an explicit reference schedule with total weighted tardiness K. This schedule is not claimed to be optimal; its role is to show that the constructed instance has a feasible schedule of cost at most K, and hence the class of schedules considered in the normalization argument is nonempty. It also gives the baseline cost from which the later cut-dependent savings are measured. Let σ be a permutation of {1, . . . , M } such that 
+
+wBσ(1) ≥ · · · ≥ wBσ(M ) ,
+
+with ties broken arbitrarily. Its job sequence is (A1, . . . , A m, Z 1, R 1, A m+1 , . . . , A 2m, Z 2, R 2, . . . , A(n−1) m+1 , . . . , A M , Z n, R n, B σ(1) , . . . , B σ(M )).
+
+The associated start times are 
+
+sA(v−1) m+k = bv + ( k − 1) P (1 ≤ v ≤ n, 1 ≤ k ≤ m),sZv = bv + mP (1 ≤ v ≤ n),sRv = bv + ( m + 1) P + 1 (1 ≤ v ≤ n),sBσ(t) = H + ( t − 1) P (1 ≤ t ≤ M ).
+
+Thus there is one unit of idle time between the completion of each Zv and the start of Rv. Each guard finishes at bv+1 , and the last guard finishes at H. All A-jobs, charge jobs, and guard jobs are on time. The final suffix after time H consists of the B-jobs; informally, this is the tail of the reference schedule. For each edge e = {a, b }, the two tail jobs are Bga,e and Bgb,e , both of weight 
+
+U + he (Table 3). The weight intervals increase with te by (3), so exactly 2( E − te) = M − 2te = qe
+
+tail jobs have greater weight. Hence these two jobs occupy tail positions qe + 1 and qe + 2, with completion times H +( qe +1) P and H +( qe +2) P , in either order. Their due dates are H −(ga,e −1) L
+
+13 and H − (gb,e − 1) L. Both jobs complete after H and have due dates at most H, so Tj = Cj − dj
+
+for each of them. Their total tardiness is therefore 
+
+wBga,e TBga,e + wBgb,e TBgb,e 
+
+= ( U + he)
+
+[
+
+2H + (2 qe + 3) P − (2H − L(ga,e + gb,e − 2) )]
+
+= ( U + he)[P (2 qe + 3) + L(ga,e + gb,e − 2) ].
+
+The first equality subtracts the sum of their due dates from the sum of their completion times; their order is immaterial because their weights are equal. Using (7) and (9) gives 
+
+Wref = ∑
+
+> e={a,b }∈E
+> a<b
+
+(U + he)[P (2 qe + 3) + L(ga,e + gb,e − 2) ]
+
+= ∑
+
+> e={a,b }∈E
+> a<b
+
+(U + he)[QP 0(2 qe + 3) + QL 0(ga,e + gb,e − 2) ]
+
+= ∑
+
+> e={a,b }∈E
+> a<b
+
+Q(U + he)[P0(2 qe + 3) + L0(ga,e + gb,e − 2) ]
+
+= Q ∑
+
+> e={a,b }∈E
+> a<b
+
+(U + he)[P0(2 qe + 3) + L0(ga,e + gb,e − 2) ]
+
+= QG 
+
+= K. 
+
+This complete schedule processes every job exactly once and proves that the optimal objective value of the constructed instance OPT ≤ K. The smaller value K∗ = K − (P/ 2)Γ κ is the decision threshold, not the cost of this reference schedule and not necessarily the optimum. Cut-dependent schedules may meet or improve on K∗ by choosing different modes at different vertices. 
+
+# 4 Schedule normalization 
+
+This section proves that every feasible schedule of cost at most K can be transformed, in polynomial time and without increasing cost, into a highly structured canonical schedule. Consequently, for the decision threshold K∗ ≤ K, it suffices to analyze canonical schedules. We first determine the positions of the guard and charge jobs and characterize the feasible sets of early A/B -jobs. We then use exchange arguments to obtain exactly one early job from each pair ( Ag, B g) and to enforce a consistent A- or B-mode at every vertex. These steps culminate in a normalization theorem showing that every bounded-cost schedule, including one with noninteger start times, can be transformed in polynomial time and without increasing cost into a canonical schedule, as established in Proposition 1. This structure will allow Section 5 to encode a schedule by one binary 14 choice per vertex and calculate its cost edge by edge. It applies to every schedule meeting the decision threshold because K∗ ≤ K by (11). Figure 1 summarizes the normalization steps and their proof references, followed by the cost identity and threshold equivalence. 
+
+Lemma 2 (Control placement) . In any integral feasible schedule of cost at most K, for every i ∈ V ,guard job Ri starts at its release date, while charge job Zi starts at either bi + mP or bi + mP + 1 
+
+and has weighted-tardiness cost zero or Fi, respectively. Proof. By Table 3 and (10), dRi = rRi + P and wRi = K + 1. Thus, if a guard job were late in the integral schedule, it would cost at least K + 1. Every other cost is nonnegative, so this would exceed the schedule’s cost bound. Thus it occupies its prescribed interval. Let s = bi + ( m + 1) P + 1 be its start. Charge Zi has release s − P − 1 and due date s − 1. If the charge does not finish by s, nonpreemption and the fixed guard imply it cannot start before 
+
+s + P and cannot finish before s + 2 P . Its tardiness would be at least 2 P + 1, contradicting (13). Integral feasibility before s leaves exactly the two stated charge starts. For an integral schedule of cost at most K, consider the interval in vertex block i before the charge job starts. Lemma 2 places the charge start at either bi + mP or bi + mP + 1, so this interval has length at most mP + 1 and hence fits at most m A/B -jobs. The gap after a charge and before its guard is at most one unit, less than P . The last guard occupies [ H − P, H ), so no A/B -job can straddle H. Consequently, every A/B -job executed before H is in an early window and completes no later than the last charge start bn + mP + 1 = H − 2P ; by (20) it is on time. Every other A/B -job starts at or after H and is tardy, since Table 3 gives dg ≤ H. Call every A- or B-job processed at or after H a tail job . Thus the tail jobs are precisely the A/B -jobs not processed in an early window; charge and guard jobs are not included. By (19), all tail jobs have release date at most 
+
+H − 3P < H . We may therefore compact them consecutively from H, retaining their order and leaving the early part and charge and guard jobs unchanged; this cannot increase cost. Since there are 2 M A/B -jobs in total, there are at most 2 M tail jobs, so their completion times then satisfy 
+
+H + P ≤ C ≤ H + 2 M P, P ≤ C − dg ≤ (2 M + 1) P. (21) The completion-time bounds use the preceding compaction and the fact that there are at most 2 M
+
+tail jobs. For a tail A/B -job with incidence rank g, Table 3 gives C − dg = ( C − H) + ( g − 1) L. By (12), 0 ≤ (g − 1) L ≤ (M − 1) L = P − L < P , which gives the stated bounds on the job’s tardiness 
+
+C − dg. These bounds do not hold for an arbitrary uncompressed tail; compaction supplies the finite horizon before any exchange is used. The same bounds remain valid if some of these tail slots are later left empty. We use this observation during the exchanges below. 15 Overview of the proof Legend: proof references 
+
+Steps 1–7 preserve feasibility and never increase total weighted tardiness. 
+
+Any feasible schedule with cost ≤ K
+
+Start times may be noninteger; the job permutation is sufficient. 
+
+Input schedule and normaliza-tion bound. 
+
+K∗ ≤ K: (11). 
+
+1 Left shift the given permutation ̂
+
+s π(k) = max {rπ(k),̂ Ck−1},̂ Ck =̂ s π(k) + P ,̂ C0 = 0. Every start becomes integral; no completion time increases. 
+
+1 Proposition 1, proof 
+
+Applied through Lemma 4; the earliest-permutation recurrence is (1). 
+
+2 Fix the guard and charge positions 
+
+sRi = rRi = bi + ( m + 1) P + 1. 
+
+sZi ∈ {bi + mP, b i + mP + 1 }; wZi TZi ∈ {0, F i}.
+
+2 Lemma 2: Control placement 
+
+Integrality and the cost bound force these positions. Each early window holds at most m jobs. 
+
+3 Compact the tail before any exchanges 
+
+Pack the tail consecutively from H = bn+1 in its current order. 
+
+H + P ≤ C ≤ H + 2 M P , P ≤ C − dg ≤ (2 M + 1) P .
+
+3 Compaction before Lemma 3 
+
+That paragraph proves (21); (19) puts every tail release before H.
+
+4 Repair early counts, from the largest defective rank 
+
+Let cg = |{ Ag , B g } ∩ S|, where S is the early set. Choose the largest g with cg̸ = 1; necessarily cg = 0. Insert Ag early, remove at most one lower-rank early job, and rematch the early set. Repeat until cg = 1 for every g.
+
+4 Lemma 4: One early job per incidence 
+
+Lemma 3 supplies matching via the suffix condition (22): 
+
+∑Mh=g ch ≤ M − g + 1. At most M repairs; cost decreases. 
+
+5 Recover each incidence’s own window and position 
+
+All M early slots are filled. Their rank permutation satisfies 
+
+ρg ≤ g, hence ρg = g for every g. Left shift again: 
+
+sk = bi + ( k − 1) P + εk , εk = max {εk−1, z k }, ε0 = 0. 
+
+5 Lemma 5, proof: rank forcing 
+
+Capacity and releases force ρg = g.Here sk is the local early start, zk =0 for a selected A and zk = 1 for a selected B; εk ∈ { 0, 1}.
+
+6 Make each vertex consistent 
+
+Mixed A/B vertex −→ all-B vertex. Swap each early Ag with its tail Bg ; pure vertices keep their mode. 
+
+6 Lemma 5: Vertex consistency 
+
+A mixed vertex already pays Fi. The charge cost stays fixed, while the tail saving in (24) is strictly positive. 
+
+A-mode: xi = 1
+
+Ag early; Bg in the tail. 
+
+sk = bi + ( k − 1) P .Charge cost 0; TZi = 0. One unit idle before Ri.
+
+B-mode: xi = 0
+
+Bg early; Ag in the tail. 
+
+sk = bi + ( k − 1) P + 1. Charge cost Fi; TZi = 1. One unit idle after bi.
+
+Two resulting modes, indepen-dently by vertex. 
+
+In these boxes, g = ( i − 1) m + k and 1 ≤ k ≤ m. Both modes have 
+
+sRi = bi + ( m + 1) P + 1 and CRi = bi+1 : the guard resets the next block. 
+
+7 Compact and sort the tail: canonical schedule 
+
+Exactly M tail jobs run consecutively from H in nonincreasing wj .Each vertex now has one bit xi; its charge contributes Fi(1 − xi). Early A/B -jobs and all guards contribute zero. 
+
+7 Proposition 1: Normalization 
+
+For the fixed tardy tail set, minimize ∑ wj Cj by sorting weights. The entire transformation is polynomial and does not assume optimality. 
+
+8 Evaluate the canonical schedule by its cut 
+
+C(x) = K − P
+
+2
+
+∑
+
+> 1≤a<b ≤n
+
+∆{a,b }|xa − xb|.
+
+C(x) ≤ K∗ ⇐⇒ cG (x) ≥ κ for the graph-specific coefficients. 
+
+8 Proposition 2: Cost identity 
+
+Equation (29); then Theorem 1 
+
+gives the threshold equivalence. Poly-nomial numerical bounds and mem-bership in NP complete strong NP-completeness. 
+
+Solid arrows show normalization; branches show possible vertex modes; the dashed arrow applies the cost identity. 
+
+Figure 1: Normalization of a bounded-cost schedule. Steps 1–7 preserve feasibility and do not increase total weighted tardiness; Step 8 applies the cost identity and the MAX-CUT threshold equivalence. The legend identifies the supporting results. 16 Lemma 3 (Nested slot matching) . Under the charge and guard placements of Lemma 2, let S be a selected set of early A/B -jobs and let cg ∈ { 0, 1, 2} count its members from the job pair (Ag, B g),for 1 ≤ g ≤ M . If S is schedulable before the charge jobs, then necessarily 
+
+> M∑
+> h=g
+
+ch ≤ M − g + 1 (1 ≤ g ≤ M ). (22) 
+
+Conversely, every selected set S whose counts satisfy (22) can be scheduled in the following early slots: slot g = ( i − 1) m + k starts at 
+
+bi + ( k − 1) P + 1 , 1 ≤ i ≤ n, 1 ≤ k ≤ m, (23) 
+
+with all charges one unit late and all guards at their release dates. Proof. From the release date bi + ( k − 1) P associated with incidence rank g = ( i − 1) m + k onward, its vertex window has length at most ( m − k + 1) P + 1 by Lemma 2. It therefore fits at most  
+
+> ⌊
+
+(m − k + 1) P + 1 
+
+P
+
+> ⌋
+
+= m − k + 1 jobs, since P > 1 by (12). Each later window fits at most m. Neither member of a job pair ranked at least g can run before this release date, by the release dates in Table 3 and the ordering of the global incidence ranks. The total capacity is at most ( m − k + 1) + ( n − i)m = M − g + 1. This proves (22); any older jobs occupying these windows can only reduce the available capacity. Conversely, the empty-set case uses no early A/B -job slots. Otherwise let the chosen incidence ranks, with one entry for each selected job, be u1 ≤ · · · ≤ us. The suffix inequality at ut gives 
+
+s − t + 1 ≤ M − ut + 1, so ut ≤ M − s + t. Assign job t to slot number M − s + t in (23), for 1 ≤ t ≤ s. Its incidence rank is at most that slot number; thus its release date is satisfied, even if it is a B-job. Slots do not overlap. The last slot in each vertex block completes at its proposed charge-job start, and the charge job completes at its guard’s start. The latest early-slot completion in (23) is H − 2P , so (20) makes every early A/B -job on time. By Table 3, each charge job is one unit late; summing their weights gives total charge contribution Fsum by (9). 
+
+Lemma 4 (One early job per incidence) . Every feasible schedule of cost at most K can be transformed in polynomial time into an integral feasible schedule of no greater cost with exactly one early member of each job pair (Ag, B g).Proof. Apply (1) and, if needed, compact the tail from H. The cost remains at most K, Lemma 2 applies, and (21) holds. If every early count is one, we are done. Otherwise choose the largest index 
+
+g for which cg̸ = 1. Higher counts are all one; (22) therefore forces cg = 0, giving exactly one unit of slack in the suffix at g. Both members of this job pair are consequently in the tail. Thus Ag has a current tail slot; let C be its completion time in that slot. Let e = e(g). Insert Ag into the early set, removing at most one job from a pair with a lower incidence rank as follows. 17 If no suffix with index below g is tight in (22), insertion alone preserves every inequality. Otherwise let t < g be the largest tight suffix index. All suffixes with indices in ( t, g ] have positive integer slack. The tight suffix at t contains M − t + 1 early jobs by (22); the suffix at g contains 
+
+M − g, because cg = 0 and ch = 1 for h > g . Subtracting gives the number of early jobs with ranks in [ t, g − 1]: (M − t + 1) − (M − g) = g − t + 1 > 0.
+
+Remove any such job D, with incidence rank t ≤ h < g . After insertion and removal, suffix counts at indices at most h have net change zero, those between h + 1 and g increase by one but had slack, and all other suffixes are unchanged. Thus (22) remains valid, and every count remains in {0, 1, 2}.Rebuild the early part using Lemma 3. Every rebuilt early A/B -job is on time, and all guards retain zero cost. If the total charge costs before and after rebuilding are Zold and Znew , respectively, then 0 ≤ Zold , Z new ≤ Fsum , by Lemma 2 for the old charges, Lemma 3 for the rebuilt charges, and (9) for their total weight, so their increase is at most Fsum . Leave guards and all tail slots fixed, except the old slot of Ag, which completes at C. If D was removed, put it in that slot. Write its weight as U + vD with 1 ≤ vD ≤ V , by Table 3, (3), and (4). The common due-date formula in Table 3 gives dh = H − (h − 1) L and dg = H − (g − 1) L. Since h < g , it follows that dh − dg = ( g − h)L ≥ L. The slot starts at or after H, and D is released before H by (19). Moreover, C − dg lies in [ P, (2 M + 1) P ] by (21). Also, H + P ≤ C ≤ H + 2 M P for this tail slot, and 0 ≤ (h − 1) L ≤ (M − 1) L = P − L < P by (12); hence C − dh = C − H + ( h − 1) L also lies in [P, (2 M + 1) P ]. Thus replacement preserves feasibility, both costs are linear tardiness costs, and the tail saving is (U + ℓe)( C − dg) − (U + vD)( C − dh)= U (dh − dg) + ℓe(C − dg) − vD(C − dh)
+
+≥ U L − V (2 M + 1) P > F sum .
+
+The strict inequality is due to (14) of Lemma 1. The omitted term ℓe(C − dg) is nonnegative, and the negative term is bounded using vD ≤ V and the tail horizon. Consequently, writing Jold and 
+
+Jnew for the total schedule costs, we obtain 
+
+Jold − Jnew ≥ U L − V (2 M + 1) P − (Znew − Zold ) ≥ Q(U + 1) > 0.
+
+The last inequality uses Znew − Zold ≤ Fsum and the exact exchange margin (18). This bound covers simultaneous changes to all charges, not only to the two affected vertices. If no job was removed, then after Ag has been moved into the early part, leave its old tail slot idle. By (21), deleting that tail slot saves at least P (U + ℓe), while rebuilding charges adds at most 
+
+Fsum . Hence 
+
+Jold − Jnew ≥ P (U + ℓe) − Fsum = Q
+
+> [
+
+P0(U + ℓe) −
+
+> n∑
+> i=1
+
+fi
+
+> ]
+
+> 0,
+
+18 The equality uses (9), and strict positivity follows from (15). In either case every job is still scheduled exactly once and total cost strictly decreases. Hence the schedule still has cost at most K, and it remains integral because all jobs are placed in integer slots. It also continues to satisfy (21) for the following reason. The exchange only replaces jobs in existing tail slots or leaves such slots empty, so no occupied tail slot moves later than before. If a removed job D with incidence rank 
+
+h is placed in such a slot, then 0 ≤ (h − 1) L ≤ (M − 1) L = P − L < P by (12), so the bound 
+
+P ≤ C − dh ≤ (2 M + 1) P still applies. No tail sorting or compaction is required between exchanges. The largest defective rank has been corrected; every rank at least g now has count one, and any remaining or newly created defect has smaller rank. Repeating therefore terminates after at most 
+
+M exchanges. Each exchange and slot reconstruction takes polynomial time and uses only the displayed job data and the current schedule. No optimality assumption is used. 
+
+Lemma 5 (Vertex consistency) . Every integral feasible schedule of cost at most K with exactly one early member of each job pair (Ag, B g) can be transformed in polynomial time, without increasing cost, into a schedule in which every vertex i uses one of two modes. In the A-mode, for every incidence g of i, job Ag is early and job Bg is in the tail; charge job Zi completes at its due date and contributes zero to the objective. In the B-mode, every such Bg is early and the corresponding 
+
+Ag is in the tail; Zi completes one unit after its due date and contributes Fi. In either mode, guard job Ri starts at its release date. 
+
+Figure 2 illustrates these two modes, including their release and due dates, the one-unit idle interval, and the complementary tail jobs. 
+
+Proof. There are M early A/B -jobs. Each of the n windows can fit at most m jobs by Lemma 2 and the window-capacity paragraph following it. Since M = nm , the M early jobs saturate all n
+
+windows, so every window contains exactly m jobs. Let ag = bi + ( k − 1) P for g = ( i − 1) m + k,with 1 ≤ i ≤ n and 1 ≤ k ≤ m. By the charge-start bound in Lemma 2, the job in local position k and its m − k successors must finish by bi + mP + 1. Its start s therefore satisfies 
+
+s ≤ bi + mP + 1 − (m − k + 1) P = ag + 1. By (10) and Table 3, consecutive ag values differ by P
+
+within a block and by 3 P + 1 between blocks. Thus ag+1 − ag ≥ P > 1, using (12). Hence a job of rank h > g is released at or after ah ≥ ag + P > a g + 1 and cannot occupy this position. If ρg is the incidence rank of the early A/B -job in chronological position g, it follows that ρg ≤ g. Exactly one early member of every job pair is present, so ( ρ1, . . . , ρ M ) is a permutation of 1 , . . . , M . Therefore 
+
+> ∑Mg=1
+
+(g − ρg) = 0, while every summand is nonnegative, giving ρg = g for every g. Each job pair contributes its early member in its own window and position; this conclusion did not assume that the initial early schedule had no idle time. Left shift the resulting permutation using (1). Cost cannot increase; each guard remains at its release by Lemma 2. The order relative to the guards is unchanged, so the early A/B -jobs remain in their own windows. For i > 1, the job preceding the first such job of vertex i is guard Ri−1, which 19 Vertex block i: gk = ( i − 1) m + k, 1 ≤ k ≤ m; every job has duration P .
+
+A-job B-job charge Zi guard Ri release due date 
+
+(a) A-mode: all A-jobs early TZi = 0 , wZi TZi = 0 
+
+Ag1 Ag2 · · · Agm Zi Ri
+
+PPPPP 1
+
+CZi = dZi CRi = dRi
+
+t − bi
+
+0 P 2P
+
+(m − 1) PmP (m + 1) P
+
+(m + 1) P + 1 (m + 2) P + 1 Idle: [ dZi , r Ri ), length 1. Early jobs and guard: zero tardiness. Tail members from this vertex: Bg1 , . . . , B gm , with weights U + he(gk ).
+
+(b) B-mode: all B-jobs early TZi = 1 , wZi TZi = Fi
+
+Bg1 Bg2 · · · Bgm Zi Ri
+
+11111 P 1
+
+dZi CRi = dRi
+
+t − bi
+
+01
+
+P + 1 2P + 1 (m − 1) P + 1 
+
+mP mP + 1 (m + 1) P
+
+(m + 1) P + 1 (m + 2) P + 1 Idle: [ bi, b i + 1), length 1. CZi = dZi + 1 = rRi ; guard unchanged. Tail members from this vertex: Ag1 , . . . , A gm , with weights U + ℓe(gk ).
+
+(c) Global location of the A/B due dates and the tail 
+
+dAg = dBg = dg = H − (g − 1) L, P = M L , g = 1 , . . . , M .Every early A/B -job finishes by H − 2P · · · Rn first tail job · · · 
+
+tH − 2P H − P H H + P H + 2 PdM
+
+· · · 
+
+d2 d1 = HL PH − P < d M ≤ dg ≤ H; every early A/B -job is on time. Every tail job starts at or after H, so its completion time Cg ≥ H + P > d g and its tardiness Tg ≥ P .
+
+Exact release and due dates 
+
+Job Release date Due date Weight 
+
+Agk bi + ( k − 1) P H − (gk − 1) L U + ℓe(gk )
+
+Bgk bi + ( k − 1) P + 1 H − (gk − 1) L U + he(gk )
+
+Zi bi + mP bi + ( m + 1) P Fi
+
+Ri bi + ( m + 1) P + 1 bi+1 = bi + ( m + 2) P + 1 K + 1 
+
+Scale convention. All processing rectangles in (a) and (b) have the same width, representing P ; the one-unit offsets are enlarged for visibility and the ellipses omit middle incidences. Panel (c) has a separate scale; the L spacing is schematic. All displayed time labels and formulas are exact. 
+
+Figure 2: The two normalized vertex modes in Lemma 5. In the A-mode the charge is on time and the one-unit idle interval precedes the guard. In the B-mode that idle interval is at the start of the block, all early jobs and the charge start one unit later, and the charge costs Fi. The guard has identical start and completion times in both modes, so no delay passes to the next block. Complementary jobs remain in the tail; they need not be consecutive there. Panel (c) shows why all early jobs are on time and all tail jobs are tardy. The tail is shown compacted from H.20 completes at bi; for i = 1, the machine is initially available at b1 = 0. Thus no delay is inherited from the preceding block. Write a local earliest start as bi + ( k − 1) P + εk. The recurrence is 
+
+ε0 = 0 , εk = max {εk−1, z k} (1 ≤ k ≤ m),
+
+where zk = 0 for a selected A and zk = 1 for a selected B. Thus εk = max 1≤h≤k zh ∈ { 0, 1}. The final early completion is bi + mP + εm, so 
+
+sZi = bi + mP + εm, TZi = εm.
+
+Thus the charge contribution is Fiεm: it is zero when all selected jobs are A-jobs and equals Fi as soon as a B-job is selected. The guard following Zi starts at max {bi + ( m + 1) P + 1 , b i + ( m + 1) P + εm} = bi + ( m + 1) P + 1 ,
+
+since εm ≤ 1. It completes at bi+1 , which also verifies the block-boundary reset directly. The recurrence takes a maximum of the release offsets, so repeated B selections do not add further one-unit delays. Thus the recurrence gives the two mode timings: in the A-mode, εk = 0 for every k, so one unit of idle time remains immediately before the guard; in the B-mode, εk = 1 for every k, so the charge job finishes exactly when the guard starts. If a vertex has both A-jobs and B-jobs early, let Ai be the nonempty set of its incidence ranks whose Ag is early. For each g ∈ A i, move Bg from the tail into the early position of Ag, and move Ag
+
+to the old tail slot of Bg. Schedule the resulting early B-job at vertex i at the start bi + ( k − 1) P + 1, where g = ( i − 1) m + k. Charge job Zi already contributed Fi to total weighted tardiness and continues to do so. No other window or guard is affected. In each corresponding tail slot, replace 
+
+Bg by Ag, retaining its completion time Cg. Both jobs have due date dg = H − (g − 1) L, both are released before H, and Cg ≥ H + P > d g. The exact reduction in total cost is therefore 
+
+> ∑
+> g∈A i
+> [
+
+(U + he(g)) − (U + ℓe(g))](Cg − dg) = ∑
+
+> g∈A i
+
+∆e(g)(Cg − dg) ≥ P ∑
+
+> g∈A i
+
+∆e(g) > 0. (24) All charge-job contributions remain unchanged, and every replacement is within one job pair ( Ag, B g)with a common due date. Thus this strict saving follows directly from positive coefficients and positive tail tardiness; the due-date-gap margin used in Lemma 4 is unnecessary here. Apply this operation once to every vertex using both job types. The resulting schedule has the claimed modes, with all charge and guard placements and all releases respected. The transformation is polynomial and does not require optimality. Call a schedule canonical if every vertex uses one of the two modes of Lemma 5, its charge starts immediately after its early A/B -jobs, every guard starts at its release, and all remaining A/B -jobs run consecutively from H in nonincreasing weight order. The early job at local position k of vertex 21 i starts at bi + ( k − 1) P in the A-mode, or at bi + ( k − 1) P + 1 in the B-mode, for 1 ≤ i ≤ n and 1 ≤ k ≤ m. Jobs in the tail with equal weights may be ordered arbitrarily. 
+
+Proposition 1 (Normalization of arbitrary bounded-cost schedules) . Every feasible schedule of cost at most K, including one with noninteger starts, admits a canonical schedule of no greater cost. Given its job permutation, such a schedule can be constructed in polynomial time. Proof. Apply Lemma 4. This first left-shifts the input schedule, if necessary, and then produces an integral schedule of no greater cost with exactly one early member of each pair ( Ag, B g). Next apply Lemma 5, which converts the schedule, again without increasing cost, so that every vertex uses one of the two modes and the charge and guard placements have the stated form. It remains to arrange the tail. Compact the tail from H and sort it in nonincreasing weight order. Every tail job is already released and has due date at most H, so it remains tardy in every tail position. For the fixed tail set T , its objective is 
+
+> ∑
+> j∈T
+
+wj Cj − ∑
+
+> j∈T
+
+wj dj .
+
+The second term is independent of order. If adjacent jobs a, b have wa < w b, swapping them changes the weighted completion part by P (wa − wb) < 0. Ties change it by zero. Consequently nonincreasing weights minimize the tail cost; this is the equal-processing-time specialization of Smith’s rule (Smith, 1956). Sorting changes neither feasibility nor any early contribution. There are at most M exchanges for missing early members of the job pairs, at most n vertex-mode conversions, and one tail sort. All computations use only the input permutation and polynomial-bit data from the reduction; the possibly noninteger original start times need not be encoded or manipulated. 
+
+# 5 Cost identity and strong NP-completeness 
+
+Throughout this section, schedules are canonical in the sense of Proposition 1. For each vertex 
+
+i ∈ V , set xi = 1 if vertex i uses the A-mode, so that all its A-jobs are early and the corresponding 
+
+B-jobs are in the tail. Set xi = 0 if vertex i uses the B-mode, so that all its B-jobs are early and the corresponding A-jobs are in the tail. Write x = ( xi)i∈V . Conversely, every vector x ∈ { 0, 1}n
+
+defines a feasible canonical schedule: use the mode timings established in Lemma 5, then process the remaining A/B -jobs consecutively from H in nonincreasing weight order. All tail jobs are released before H by (19). For the fixed tail set, Proposition 1 shows that this order minimizes the tail contribution, with equal-weight ties irrelevant. By Lemma 5, the charge-job contribution at vertex i is Fi(1 − xi). Early A/B -jobs and guards contribute zero by Lemma 2 and the early/tail separation established after its proof. Let C(x) denote the total weighted tardiness of the canonical schedule associated with x; the order of equal-weight tail jobs does not affect this value. 22 Proposition 2 (Cost identity for positive edge coefficients) . Let n ≥ 2, and assign to every edge 
+
+e ∈ E of the complete graph (V, E) a positive integer coefficient ∆e. Using the coefficient array 
+
+(∆ e)e∈E , define the job construction by (3) –(10) and Table 3, without imposing the graph-specific choice (2) or a source threshold. Recompute all derived parameters from this coefficient array, including U, G, Q, P, L, F i, and K. The normalization proposition remains valid, and the resulting scheduling instance has optimum 
+
+OPT = K − P
+
+2 max 
+
+> x∈{ 0,1}n
+> ∑
+> 1≤a<b ≤n
+
+∆{a,b }|xa − xb|.
+
+Proof. Equations (3)–(4) give 1 ≤ ℓe < h e ≤ V and a one-unit gap between successive intervals. The definitions qe = M − 2te and M = 2 E give qe = 2( E − te) ≥ 0. Also P0 = 2 M is even, gi,e − 1 ≥ 0, and each of the n − 1 incident coefficients is a positive integer and hence at least one. Thus (5) gives 
+
+fi ≥ 32 P0
+
+> ∑
+> e∈E i
+
+∆e ≥ 32 P0(n − 1) > 0.
+
+Thus fmin > 0, so Q is well defined. The quantities U, G, Q, P, L, F i, and K are positive integers. The quantities qe, block boundaries, and release dates are nonnegative integers in the ranges already specified. With δ = 2 P0fmin Q − G, the identities established in Lemma 1 give the following strict margins. 
+
+P = M L > 1,
+
+> (
+
+min  
+
+> 1≤i≤n
+
+Fi
+
+> )
+
+(2 P + 1) − K = Q(δ + fmin ) > 0,U L − V (2 M + 1) P − Fsum = Q(U + 1) > 0,P U − Fsum = Q
+
+> (
+
+P0U −
+
+> n∑
+> i=1
+
+fi
+
+> )
+
+> 0.
+
+Here 1 ≤ δ ≤ 2P0fmin follows from the floor definition of the recomputed Q. This is (8); see the calculation of δ in the proof of Lemma 1. The charge and exchange equalities above are (17) and (18), reapplied to the recomputed parameters. No graph-specific coefficient bound occurs in these identities. The release and due-date identities (19) and (20) depend only on P = M L and the block definitions. The guard weight remains K + 1. Thus Lemma 2 applies, compaction gives (21), and Lemmas 3, 4, and 5 remain valid: they use positive interval endpoints, the release/due-date identities, and inequalities (12)–(15), all re-established above for the new coefficients. In particular, Lemma 5 uses only the strict positivity of each ∆ e. The reference schedule in which every vertex uses the A-mode still has cost K, by its construction and evaluation in Section 3.2, using (7) and (9). An optimum exists by the finite earliest-permutation argument following (1); the reference 23 schedule places its cost within the normalization bound. Proposition 1 therefore applies to the supplied coefficient array. Fix e = {a, b } ∈ E with a < b and abbreviate ga = ga,e , gb = gb,e , q = qe, ∆ = ∆ e, and 
+
+u = U + ℓe. The two tail weights are u + ∆ xa and u + ∆ xb. This follows from the mode definition at the start of this section, the weights in Table 3, and he = ℓe + ∆ e in (3). By the canonical weight order in Proposition 1 and the disjoint ordered intervals in (3), the E − te higher intervals precede these two jobs. Each higher interval contains exactly two tail jobs by Lemma 5; hence precisely 2( E − te) = qe = q tail jobs precede them, independently of the bits. The two completions are 
+
+H + ( q + 1) P and H + ( q + 2) P . Table 3 gives dga = H − (ga − 1) L and dgb = H − (gb − 1) L, and the larger weight goes first by Proposition 1. Their combined tail cost is 
+
+P [(q + 1) max {u + ∆ xa, u + ∆ xb}
+
++ ( q + 2) min {u + ∆ xa, u + ∆ xb}]
+
++ L[(ga − 1)( u + ∆ xa) + ( gb − 1)( u + ∆ xb)].
+
+(25) By (5) and the scaling definitions (9), 
+
+Fv = ∑
+
+> e∈E v
+
+∆e
+
+> [
+
+P
+
+> (
+
+qe + 32
+
+> )
+
++ L(gv,e − 1) 
+
+> ]
+
+.
+
+Lemma 5 multiplies each endpoint’s summand by 1 − xv. We therefore allocate to edge e the following portions of the charge contributions of Za and Zb:∆
+
+> [
+
+P
+
+> (
+
+q + 32
+
+> )
+
++ L(ga − 1) 
+
+> ]
+
+(1 − xa)+ ∆ 
+
+> [
+
+P
+
+> (
+
+q + 32
+
+> )
+
++ L(gb − 1) 
+
+> ]
+
+(1 − xb).
+
+(26) Define 
+
+We = P (2 q + 3) + L(ga + gb − 2) ,De = ( u + ∆) We
+
+= ( U + he)[P (2 qe + 3) + L(ga,e + gb,e − 2) ],
+
+(27) and define Φ e(xa, x b) as the sum of the tail contribution (25) and the allocated charge contribution (26). To expose the cancellation, put σe = xa + xb and ηe = |xa − xb|. Since the modes are binary, max {xa, x b} = σe + ηe
+
+2 , min {xa, x b} = σe − ηe
+
+2 .
+
+Substituting these binary max/min identities into (25), and using (27), gives the tail contribution 
+
+uW e + P ∆2
+
+> [
+
+(2 q + 3) σe − ηe 
+
+> ]
+
++ L∆[(ga − 1) xa + ( gb − 1) xb
+
+> ]
+
+.
+
+24 Expanding (26) with the same definition of We gives the allocated charge contribution ∆We − P ∆2 (2 q + 3) σe − L∆[(ga − 1) xa + ( gb − 1) xb
+
+> ]
+
+.
+
+Thus the linear mode terms, including their incidence-specific due-date offsets, cancel exactly, and Φe(xa, x b) = ( u + ∆) We − P ∆2 ηe
+
+= De − P ∆e
+
+2 |xa − xb|.
+
+(28) The charge coefficients therefore leave only a constant and the saving for unequal endpoint modes. In the equal-weight cases, either order gives the same combined cost even when ga̸ = gb, because the weighted due-date sum is unchanged. As in the fixed-tail interchange argument in Proposition 1, when wa = wb, both waCa + wbCb and wada + wbdb are unchanged by interchanging the jobs. Table 4 records the resulting four values. Table 4: Edge contribution after normalization; values follow from (28). 
+
+xa xb Edge contribution 0 0 De
+
+0 1 De − P ∆e/21 0 De − P ∆e/21 1 De
+
+Every charge-job contribution has been allocated exactly once: for each vertex v, summing its endpoint allocations over e ∈ E v gives Qf v(1 − xv) = Fv(1 − xv). Indeed, (26) includes one summand for each incident edge; summing these at v reproduces (5) scaled by (9). Early A/B -jobs and guards have zero cost, and ∑ 
+
+> e∈E
+
+De = QG = K by (27), (7), and (9); the factor Q enters through both P = QP 0 and L = QL 0. Summing (28) over all e ∈ E now gives the complete schedule cost: Lemma 5 and the early/tail separation leave no additional nonzero contributions. 
+
+C(x) = K − P
+
+2
+
+> ∑
+> 1≤a<b ≤n
+
+∆{a,b }|xa − xb|. (29) Every bit vector defines a feasible canonical schedule by the mode-and-tail construction at the start of Section 5. An optimum has cost at most K by the reference schedule in Section 3.2, and hence can be normalized by Proposition 1. Thus the optimum is the minimum of (29) over x ∈ { 0, 1}n,which is 
+
+K − P
+
+2 max 
+
+> x∈{ 0,1}n
+> ∑
+> 1≤a<b ≤n
+
+∆{a,b }|xa − xb|.
+
+This proves the proposition. 25 Proposition 2 requires a strictly positive integer coefficient on every edge of the auxiliary complete graph. It does not apply, as stated, to zero, negative, or arbitrary real coefficients. Each coefficient ∆e is a construction parameter: by (3) it determines the interval width he − ℓe; by Table 3 it determines the weight difference between the A- and B-jobs for both endpoint incidences; and by (5) and (9) it determines the corresponding portions of the endpoint charge weights. We now return to the specific coefficient choice in (2): original graph edges have coefficient Γ + 1, while added auxiliary edges have coefficient 1. 
+
+Theorem 1. The decision version of 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj is strongly NP-complete, even under 
+
+dj ≥ rj + p for every job. In the reduction, all numerical data, including the decision threshold, are bounded by a polynomial in the number of jobs. Proof. Correctness of the reduction. Let cG (x) = ∑{a,b }∈F 
+
+> a<b
+
+|xa − xb| be the number of original edges cut by x, and let s(x) = ∑ni=1 xi be the size of one side. Substituting (2), the coefficient 1 assigned to every auxiliary complete-graph edge contributes s(x)( n − s(x)), the number of crossing pairs in the complete graph. The additional Γ assigned to original graph edges contributes Γ cG (x). The upper bound s(x)( n − s(x)) ≤ ⌊ n2/4⌋ = Γ − 1 follows from the definition of Γ in (2). Thus 
+
+> ∑
+> 1≤a<b ≤n
+
+∆{a,b }|xa − xb| = Γ cG (x) + s(x)( n − s(x)) , 0 ≤ s(x)( n − s(x)) ≤ Γ − 1. (30) Combining (11), (29), and (30) gives 
+
+C(x) − K∗ = P
+
+2
+
+> [
+
+Γ( κ − cG (x)) − s(x)( n − s(x)) ]. (31) For the forward direction, suppose the MAX-CUT instance is YES and choose x with cG (x) ≥ κ.The mode timings of Lemma 5, followed by the tail construction at the start of Section 5, give a feasible canonical schedule. Equation (31) gives C(x) ≤ K∗, since κ − cG (x) ≤ 0 and s(x)( n − s(x)) ≥ 0. For the reverse direction, suppose the constructed scheduling instance has a feasible schedule with cost at most K∗. By (11), 
+
+K∗ = K − P
+
+2 Γκ ≤ K, 
+
+since P > 0, Γ > 0, and κ ≥ 1. Thus the schedule satisfies the cost bound required by Proposition 1, which gives a canonical schedule of no greater cost. If x denotes its mode vector, then C(x) ≤ K∗.If its cut had cG (x) ≤ κ − 1, then (31), together with s(x)( n − s(x)) ≤ Γ − 1 from (30), would imply 
+
+C(x) − K∗ ≥ P
+
+2
+
+> [
+
+Γ − (Γ − 1) ] = P
+
+2 > 0,
+
+a contradiction. Hence cG (x) ≥ κ. Therefore, the MAX-CUT instance is YES if and only if the constructed scheduling instance admits a schedule of cost at most K∗.
+
+Validity and polynomial bounds for the construction. The threshold is integral because P is even. Indeed, P = QP 0 by (9) and P0 = 2 M ; Γ and κ are integers as well, so (11) is integral. For 26 nonnegativity, (2) and (4) give V = 2 E + Γ |F| ≥ Γκ, since κ ≤ |F| . Equation (6) gives U > V .Hence Γκ ≤ Γ|F| ≤ V < U. 
+
+In the reference schedule from Section 3.2, every vertex uses the A-mode. The M jobs processed after H have completion offsets tP , for 1 ≤ t ≤ M ; each of these jobs has weight at least U , and each has due date at most H by Table 3. Thus K ≥ U P ∑Mt=1 t = U P M (M + 1) /2. Since M ≥ 2, this exceeds P Γκ/ 2, so K∗ > 0. Equations (19) and (20), together with Table 3, show that every constructed job satisfies dj ≥ rj + P .The strict inequalities needed for schedule normalization were proved in Lemma 1; here only polynomial magnitude is needed. By (2) and (4), using E = (n
+
+> 2
+> )
+
+, M = n(n − 1) from Section 3.1, and Γ = O(n2) from (2), 
+
+V = E + ∑
+
+> e∈E
+
+∆e = 2 E + Γ |F| ≤ (2 + Γ) 
+
+> (
+
+n
+
+2
+
+> )
+
+= O(n4), M = O(n2).
+
+Every qe and incidence rank is O(M ), P0 = 2 M , and L0 = 2. Thus the coefficient of ∆ e in (5) is 
+
+O(M 2). Each edge occurs twice in the incidence sum, and (4) gives 
+
+> n∑
+> i=1
+> ∑
+> e∈E i
+
+∆e = 2 ∑
+
+> e∈E
+
+∆e ≤ 2V. 
+
+Consequently (5) gives the first bound below, and (6) gives the second: 
+
+> n∑
+> i=1
+
+fi = O(V M 2), U = O(V M 2).
+
+Each bracket in (7) is O(M 2), he ≤ V by (3)–(4), and there are E = M/ 2 edges by Section 3.1. Thus (7) gives G = O(( U + V )M 3). Equation (8) and positivity of the integers P0, f min give 1 ≤ Q = 
+
+> ⌊
+
+G
+
+2P0fmin 
+
+> ⌋
+
++ 1 ≤ G + 1 .
+
+Table 5 collects explicit degree estimates; the hidden constants are uniform and independent of the source graph. To verify the scaling rows of Table 5, the preceding estimate gives G = O(( U + V )M 3) = O(n14 ). Equation (8) gives Q ≤ G + 1 = O(n14 ). Since P0 = 2 M and L0 = 2, (9) gives L = 2 Q = O(n14 )and P = 2 M Q = O(n16 ). Next, (10) gives H = n(( n + 1) P + 1) = O(n18 ), and Table 3 bounds all release and due dates by H, giving the same exponent. Equation (9) gives Fi = Qf i = O(n22 ) and 
+
+K = QG = O(n28 ). The threshold argument above gives 0 ≤ K∗ ≤ K, so K∗ = O(n28 ). The largest weights are the guards’ K + 1 from Table 3. Indeed, (6), (7), and (9) give Fi =
+
+Qf i < QU < QG = K. Also U + he ≤ U + V < G ≤ QG : for the last edge, he = V and qe = 0, so its summand in (7) alone exceeds U + V . Thus all nonguard weights are below K + 1. Therefore, 27 Table 5: Polynomial magnitude bounds in the number of retained graph vertices Quantity Magnitude bound in n
+
+Γ, ∆e, M, P 0, q e, g i,e O(n2)
+
+V O(n4) 
+
+> ∑ni=1
+
+fi, U O(n8)
+
+G, Q, L O(n14 )
+
+P O(n16 )
+
+H, r j , d j O(n18 )
+
+Fi O(n22 )
+
+K, K ∗, w j O(n28 )every target integer has O(log n) bits and magnitude O(n28 ). The job construction in Section 3.1 gives N = 2 M + 2 n = 2 n2 jobs: two for each incidence and a charge and guard for each vertex. Hence O(n28 ) = O(N 14 ). There are O(N ) numerical job entries, each of unary length O(N 14 ), and one threshold, giving total unary encoding length O(N 15 ). Since the source graph has no isolated vertices, n ≤ 2|F| , so this unary output length is polynomial in the graph input length. The reduction therefore proves strong NP-hardness. All parameters can be computed with O(n2) arithmetic operations, using prefix sums for (3) and direct sums for (5) and (7). Their operands have polynomial bit length, so standard integer arithmetic, including the division in (8), takes polynomial time. The coefficients ∆ e specify interval endpoints, not numbers of jobs or time-indexed objects to enumerate. 
+
+Membership in NP. For an arbitrary input instance with N jobs and common processing time p, a job permutation is a certificate using O(N log N ) bits. Compute its earliest schedule by (1). Writing 
+
+rmax = max j rj and wmax = max j wj , induction in (1) gives ̂ Ck ≤ rmax + kp , so every computed completion time is at most rmax + N p , and total weighted tardiness is at most 
+
+N w max 
+
+> (
+
+rmax + N p + max  
+
+> j
+
+|dj |).
+
+The certificate and these computations have polynomial bit length. If any feasible schedule with the given permutation meets the decision threshold, its earliest schedule does too, including when original start times are noninteger, by the dominance argument immediately following (1). Thus the decision problem belongs to NP. Together with the reduction above, this proves strong NP-completeness. 
+
+Remark (Interpretation of the optimum). Retain the notation from the proof of Theorem 1: 
+
+cG (x) is the number of original graph edges cut by x, and s(x) = ∑ni=1 xi is the size of one side of the cut. Proposition 2, specialized using (30), gives OPT = K − P
+
+2 max 
+
+> x∈{ 0,1}n
+> [
+
+ΓcG (x) + s(x)( n − s(x)) ]. (32) 28 Thus minimizing the scheduling objective first maximizes the number of original graph edges cut and, among maximum cuts, maximizes s(x)( n − s(x)). Indeed, by (30), 0 ≤ s(x)( n − s(x)) ≤ Γ − 1. Losing one original cut edge therefore reduces the first term in the maximized expression by Γ, while the largest possible increase in the second term is only Γ − 1. 
+
+# 6 A phase-grid assignment algorithm and its shifted-objective guarantee 
+
+This section complements the strong NP-hardness result with a polynomial-time phase-grid as-signment algorithm and a worst-case analysis. The analysis applies to arbitrary instances of 1 | rj , p j = p | ∑ 
+
+> j
+
+wj Tj and is independent of the reduction in the preceding sections. 
+
+6.1 Shifted objective 
+
+For a feasible schedule S, write 
+
+F (S) = ∑
+
+> j
+
+wj (Cj − dj )+,W = ∑
+
+> j
+
+wj ,F ∗ = min  
+
+> S
+
+F (S).
+
+We analyze the schedule-independent shift 
+
+B(I) = pW, 
+
+Φ( S) = F (S) + B(I) = ∑
+
+> j
+
+wj
+
+> (
+
+Tj (S) + p). (33) Thus Φ ∗ = F ∗ + pW > 0, even when all jobs can be completed on time. The shift scales naturally under changes of time or weight units, does not depend on the algorithm’s output, and is independent of the schedule. Hence F and Φ have the same ordering and the same minimizers. The shift does, however, change approximation ratios, so the guarantee below is explicitly a guarantee for Φ, not for the unshifted objective F .
+
+6.2 The phase-grid assignment algorithm 
+
+For a ∈ [0 , p ), the phase-a grid consists of starts a + kp , k ∈ Z, subject to nonnegative starting times. Let 
+
+A = {rj mod p : 1 ≤ j ≤ N }.
+
+For each distinct phase a ∈ A , the algorithm performs the following steps. 29 1. Round every release date upward to the phase-a grid: 
+
+Rj (a) = a + p 
+
+> ⌈
+
+rj − ap
+
+> ⌉
+
+.
+
+2. Generate the candidate starts 
+
+Ta = {Ri(a) + kp : 1 ≤ i ≤ N, 0 ≤ k < N }.
+
+3. Construct a bipartite graph with one node for every job and one node for every distinct t ∈ T a.Include edge ( j, t ) if t ≥ rj , with cost wj (t + p − dj )+, and find a minimum-cost matching covering every job. 4. Interpret the matching as a schedule and retain the least-cost schedule over all phases. Different slots on one grid define disjoint intervals of length p, so every matching is feasible. Unmatched slots represent idle time; the matching must cover the jobs but need not cover all slots. 
+
+Lemma 6. For a fixed phase a, the matching computes an optimal schedule among all schedules whose starts lie on the phase-a grid. Proof. Take any feasible grid schedule and preserve its job order. Left justify it within the grid: start the first job at its rounded release and each successor at the maximum of its rounded release and the preceding completion time. This cannot increase any completion time. Every maximal consecutive block begins at some Ri(a), and successive jobs in that block start at Ri(a) + kp for 0 ≤ k < N . Hence all starts belong to Ta. Conversely, any matching covering all jobs gives a feasible grid schedule whose objective value is exactly its total edge cost. There are at most N phases, at most N 2 slots per phase, and at most N 3 assignment edges per phase. A rectangular Hungarian implementation uses O(N 2M ) arithmetic operations for N
+
+jobs and M = |T a| slots, so the full algorithm uses O(N 5) arithmetic operations. All generated times and costs have polynomial binary length. In particular, the algorithm does not enumerate all integer times, every residue 0 , . . . , p − 1, or the full time horizon. 
+
+6.3 Worst-case analysis 
+
+For any job order π, left shifting produces its earliest feasible schedule: 
+
+sπ(1) = rπ(1) , sπ(k) = max {rπ(k), s π(k−1) + p} (k ≥ 2) .
+
+It follows that an optimum exists in which every start has the form ri + kp for some 0 ≤ k < N .Consequently, we can choose an earliest optimal schedule in which the residue of every start belongs to A.30 Lemma 7. If all starts in a feasible schedule are rounded upward to the same phase-a grid, the resulting schedule is feasible. If job j is delayed by δj (a), then 0 ≤ δj (a) < p and its cost increases by at most wj δj (a).Proof. For each job j, let ̂
+
+sj = a + p 
+
+> ⌈
+
+sj − ap
+
+> ⌉
+
+denote its start time after upward rounding to the phase-a grid, and let 
+
+δj (a) = ̂ sj − sj .
+
+Since x ≤ ⌈ x⌉ < x + 1, we have 0 ≤ δj (a) < p. Furthermore, ̂ sj ≥ sj ≥ rj , so all release-date constraints remain satisfied. Consider two successive jobs j and k in the original schedule. Feasibility of that schedule implies sk ≥ sj + p. Therefore, ̂
+
+sk = a + p 
+
+> ⌈
+
+sk − ap
+
+> ⌉
+
+≥ a + p 
+
+> ⌈
+
+sj + p − ap
+
+> ⌉
+
+= a + p 
+
+> ⌈
+
+sj − ap
+
+> ⌉
+
++ p
+
+=̂ sj + p. 
+
+Thus, the rounded processing intervals remain disjoint, and the resulting schedule is feasible. The rounded completion time of job j is ̂ Cj = Cj + δj (a). Hence the weighted-tardiness cost of job j
+
+increases by at most wj δj (a). Uniformly averaging the grid phase over [0 , p ) gives mean displacement p/ 2 for each fixed start and hence the additive bound pW/ 2. Weight-dependent averaging over the phases actually enumerated by the algorithm yields the sharper result below. 
+
+Theorem 2. Let Salg be the schedule returned by the phase-grid assignment algorithm, and define 
+
+Falg = F (Salg ), Φalg = Φ( Salg ) = Falg + pW. 
+
+Then 
+
+Falg ≤ F ∗ + D(I), D(I) = p
+
+2W
+
+> 
+
+W 2 − ∑
+
+> j
+
+w2 
+
+> j
+> 
+
+. (34) 
+
+Consequently, 
+
+Φalg 
+
+Φ∗ ≤ 32 − 
+
+> ∑
+> j
+
+w2
+
+> j
+
+2W 2 ≤ 32 − 12N < 32 . (35) 31 Proof. Fix an earliest optimal schedule and let ai = s∗ 
+
+> i
+
+mod p. Every ai is tested. For each i, round all optimal starts upward to the phase-ai grid, and let δj (ai) be the resulting delay of job j. By Lemmas 6 and 7, 
+
+Falg ≤ F ∗ + min 
+
+> i
+> ∑
+> j
+
+wj δj (ai).
+
+Choose index i with probability wi/W for the analysis only. Then min 
+
+> i
+> ∑
+> j
+
+wj δj (ai) ≤ 1
+
+W
+
+> ∑
+> i
+> ∑
+> j
+
+wiwj δj (ai).
+
+When ai = aj , both cross-displacements are zero. Otherwise, the two forward distances around a circle of circumference p satisfy 
+
+δj (ai) + δi(aj ) = p. 
+
+The diagonal terms vanish. Grouping the double sum into unordered pairs gives 1
+
+W
+
+> ∑
+> i
+> ∑
+> j
+
+wiwj δj (ai) = pW 
+
+> ∑
+> i<j ai̸=aj
+
+wiwj ≤ pW
+
+> ∑
+> i<j
+
+wiwj = D(I),
+
+which proves (34). Adding the shift to both the algorithmic and optimal values and using Φ ∗ ≥ pW 
+
+yields Φalg 
+
+Φ∗ ≤ 1 + D(I)
+
+F ∗ + pW ≤ 1 + D(I)
+
+pW = 32 − 
+
+> ∑
+> j
+
+w2
+
+> j
+
+2W 2 .
+
+Finally, ∑ 
+
+> j
+
+w2 
+
+> j
+
+≥ W 2/N by Cauchy–Schwarz. The algorithm itself is deterministic; the random choice is used only in the proof. For N = 1, D(I) = 0 and the algorithm is exact. More generally, let q∗ be the number of distinct phases among the optimal starts used in the proof, and let q = |A| ; then q∗ ≤ q. If Wh is the total weight of the jobs in optimal-start phase h, grouping the pair terms by phase and applying Cauchy–Schwarz gives 
+
+Falg − F ∗ ≤ p
+
+2W
+
+> 
+
+W 2 −
+
+> q∗
+> ∑
+> h=1
+
+W 2 
+
+> h
+> 
+
+≤ pW 
+
+2
+
+> (
+
+1 − 1
+
+q∗
+
+> )
+
+≤ pW 
+
+2
+
+> (
+
+1 − 1
+
+q
+
+> )
+
+.
+
+Hence the ratio is also at most 3 /2 − 1/(2 q). When all releases share one phase, the algorithm is exact. 
+
+6.4 Tightness and the role of the shift 
+
+Proposition 3. For every integer N ≥ 1, an integer-data instance attains ratio 3/2 − 1/(2 N ) for the phase-grid assignment algorithm and the shift (33) .
+
+32 Proof. Set p = N . For i = 0 , . . . , N − 1, create a unit-weight job with 
+
+ri = i(2 N + 1) , di = ri + N. 
+
+Executing each job at its release is feasible and has zero cost. Thus F ∗ = 0, W = N , and Φ ∗ = N 2.The release residues are 0 , 1, . . . , N − 1. At any tested phase, rounding the releases produces a permutation of the delays 0 , 1, . . . , N − 1. The rounded intervals remain disjoint because consecutive releases are 2 N + 1 apart and each delay is at most N − 1. On a fixed tested phase, job i cannot start before its rounded release date and therefore incurs tardiness at least equal to its rounding delay. Scheduling every job at its rounded release date is feasible, so the optimum on each tested grid is the sum of the delays. Hence Falg = N (N − 1) /2, and Φalg 
+
+Φ∗ = N 2 + N (N − 1) /2
+
+N 2 = 32 − 12N .
+
+This proves tightness for the specified phase-grid output, not approximation hardness for the shifted problem. Left justifying the algorithm’s final job order in unrestricted continuous time can only improve its value, but it eliminates the loss on this particular family. For any prescribed shift B(I) > 0, the same additive analysis gives 
+
+Falg + B(I)
+
+F ∗ + B(I) ≤ 1 + D(I)
+
+F ∗ + B(I) ≤ 1 + pW 
+
+2B(I) . (36) Thus B(I) = λpW for fixed λ > 0 gives ratio at most 1 + 1 /(2 λ). Merely increasing the shift can improve this displayed ratio without improving the schedule, so such a change is not a PTAS for a fixed objective. 
+
+# 7 Conclusion 
+
+We have shown that the single-machine total weighted tardiness problem with release dates remains strongly NP-hard when every job has the same processing time and is individually capable of meeting its due date (Theorem 1). This settles the complexity question documented by van den Akker et al. (2010) and Gafarov et al. (2020). Complementing the hardness result, we developed a deterministic phase-grid assignment algorithm that solves at most N minimum-cost assignment problems and runs in O(N 5) arithmetic operations. For the shifted objective Φ = F + p ∑ 
+
+> j
+
+wj , its approximation ratio is at most 3 /2 − 1/(2 N ), and this bound is tight for the specified algorithm (Theorem 2 and Proposition 3). The normalization argument (Proposition 1) is the main structural step in the hardness proof. It applies to every sufficiently inexpensive feasible schedule and produces one binary choice per vertex, after which an exact pairwise cost identity (Proposition 2 and (29)) gives the MAX-CUT 33 correspondence. All job counts and numerical values remain polynomially bounded (Table 5). For the algorithmic result, the key step is instead to average the rounding losses over the release phases with weight-dependent probabilities. This yields the sharper additive error (34), from which the shifted ratio follows. Because an objective shift changes approximation ratios, this result is not a multiplicative guarantee for ordinary total weighted tardiness. The established polynomial cases in the literature remain useful directions for algorithm design. Further restrictions on release dates, weights, their ordering, or the number of release phases may support stronger algorithms even though the general problem is strongly NP-hard. Determining whether the unshifted problem admits a meaningful multiplicative guarantee on restricted instance classes, and whether other polynomial algorithms improve on the phase-grid assignment bound for the shifted objective, remain questions for future work. 
+
+# Data and code availability 
+
+No external empirical data are used. The proofs of Theorems 1 and 2 are self-contained and do not depend on computational experiments. The present manuscript package contains the L ATEX source with an internal bibliography and its compiled PDF; it does not include supplementary implementation code or recorded computational outputs. 
+
+# Acknowledgments 
+
+Generative artificial-intelligence tools assisted with proof development, computational checks, literature searches, and manuscript drafting. 
+
+# References 
+
+Aktürk, M.S., D. Özdemir. (2000). An exact approach to minimizing total weighted tardiness with release dates. IIE Transactions, 32 , 1091–1101. https://doi.org/10.1023/A:1013741325877. Aktürk, M.S., D. Özdemir. (2001). A new dominance rule to minimize total weighted tardiness with unequal release dates. European Journal of Operational Research, 135 (2), 394–412. Baptiste, P. (1999). Polynomial time algorithms for minimizing the weighted number of late jobs on a single machine with equal processing times. Journal of Scheduling, 2 (6), 245–252. Baptiste, P. (2000). Scheduling equal-length jobs on identical parallel machines. Discrete Applied Mathematics, 103 (1–3), 21–32. https://doi.org/10.1016/S0166-218X(99)00238-3. Baptiste, P., P. Brucker, S. Knust, V.G. Timkovsky. (2004). Ten notes on equal-processing-time scheduling: At the frontiers of solvability in polynomial time. 4OR, 2 (2), 111–127. https://doi.org/10.1007/s10288-003-0024-4. 34 Brucker, P., S.A. Kravchenko. (2005). Scheduling jobs with release times on parallel machines to minimize total tardiness . Universität Osnabrück. Fachbereich Mathematik/Informatik Brucker, P., S.A. Kravchenko. (2006). Scheduling equal processing time jobs to minimize the weighted number of late jobs. Journal of Mathematical Modelling and Algorithms, 5 (2), 143–165. https://doi.org/10.1007/s10852-005-9011-4. Carlier, J. (1981). Problèmes d’ordonnancement à durées égales. QUESTIO, 5 (4), 219–228. Chrobak, M., C. Dürr, W. Jawor, Ł. Kowalik, M. Kurowski. (2006). A note on scheduling equal-length jobs to maximize throughput. Journal of Scheduling, 9 (1), 71–73. https://arxiv.org/abs/cs /0410046. Dessouky, M.I., B.J. Lageweg, J.K. Lenstra, S.L. van de Velde. (1990). Scheduling identical jobs on uniform parallel machines. Statistica Neerlandica, 44 (3), 115–123. https://doi.org/10.1111/j.1467 -9574.1990.tb01276.x. Du, J., J.Y.-T. Leung. (1990). Minimizing total tardiness on one machine is NP-hard. Mathematics of Operations Research, 15 (3), 483–495. https://doi.org/10.1287/moor.15.3.483. Gafarov, E.R., A.A. Lazarev, F. Werner. (2020). Minimizing total weighted tardiness for schedul-ing equal-length jobs on a single machine. Automation and Remote Control, 81 (5), 853–868. https://doi.org/10.1134/S0005117920050069. Garey, M.R., D.S. Johnson, L. Stockmeyer. (1976). Some simplified NP-complete graph problems. 
+
+Theoretical Computer Science, 1 (3), 237–267. https://doi.org/10.1016/0304-3975(76)90059-1. Graham, R.L., E.L. Lawler, J.K. Lenstra, A.H.G. Rinnooy Kan. (1979). Optimization and approxi-mation in deterministic sequencing and scheduling: A survey. Annals of Discrete Mathematics, 5 ,287–326. https://doi.org/10.1016/S0167-5060(08)70356-X. Heeger, K., H. Molter. (2025). Minimizing the number of tardy jobs with uniform processing times on parallel machines. In 42nd International Symposium on Theoretical Aspects of Computer Science , Leibniz International Proceedings in Informatics (Vol. 327, pp. 47:1–47:17). Schloss Dagstuhl–Leibniz-Zentrum für Informatik. https://doi.org/10.4230/LIPIcs.STACS.2025.47. Kolliopoulos, S.G., G. Steiner. (2006). Approximation algorithms for scheduling problems with a modified total weighted tardiness objective. Manuscript submitted to Elsevier, December 8, 2006. https://cgi.di.uoa.gr/~sgk/papers/web-tard-mod.pdf. Kovalyov, M.Y., F. Werner. (2002). Approximation schemes for scheduling jobs with common due date on parallel machines to minimize total tardiness. Journal of Heuristics, 8 , 415–428. https://doi.org/10.1023/A:1015487829051. Kravchenko, S.A., F. Werner. (2011). Parallel machine problems with equal processing times: A survey. Journal of Scheduling, 14 (5), 435–444. https://doi.org/10.1007/s10951-011-0231-3. 35 Kuhn, H.W. (1955). The Hungarian method for the assignment problem. Naval Research Logistics Quarterly, 2 (1–2), 83–97. https://doi.org/10.1002/nav.3800020109. Kühn, R., C. Weiß, H. Ackermann, S. Heydrich. (2024). Scheduling a single machine with multiple due dates per job. Journal of Scheduling, 27 , 565–585. https://doi.org/10.1007/s10951-024-00825-w. Lawler, E.L. (1977). A “pseudopolynomial” algorithm for sequencing jobs to minimize total tardiness. 
+
+Annals of Discrete Mathematics, 1 , 331–342. https://doi.org/10.1016/S0167-5060(08)70742-8. Lawler, E.L. (1982). A fully polynomial approximation scheme for the total tardiness problem. 
+
+Operations Research Letters, 1 (6), 207–208. https://doi.org/10.1016/0167-6377(82)90022-0. Lenstra, J.K., A.H.G. Rinnooy Kan, P. Brucker. (1977). Complexity of machine scheduling problems. 
+
+Annals of Discrete Mathematics, 1 , 343–362. https://doi.org/10.1016/S0167-5060(08)70743-X. Mastrolilli, M. (2003). Efficient approximation schemes for scheduling problems with release dates and delivery times. Journal of Scheduling, 6 , 521–531. https://doi.org/10.1023/A:1026272526225. Potts, C.N. (1980). Analysis of a heuristic for one machine sequencing with release dates and delivery times. Operations Research, 28 (6), 1436–1441. https://doi.org/10.1287/opre.28.6.1436. Sgall, J. (2012). Open problems in throughput scheduling. In Algorithms–ESA 2012 , Lecture Notes in Computer Science (Vol. 7501, pp. 2–11). Springer. https://doi.org/10.1007/978-3-642-33090-2_2. Smith, W.E. (1956). Various optimizers for single-stage production. Naval Research Logistics Quarterly, 3 (1–2), 59–66. https://doi.org/10.1002/nav.3800030106. van den Akker, J.M., G. Diepen, J.A. Hoogeveen. (2010). Minimizing total weighted tardiness on a single machine with release dates and equal-length jobs. Journal of Scheduling, 13 (6), 561–576. https://doi.org/10.1007/s10951-010-0181-1. Zhang, J., R. Chen, J. Yuan, C.T. Ng, T.C.E. Cheng. (2025). Bicriterion parallel-machine scheduling of equal-length jobs to minimize total tardiness and number of tardy jobs. Journal of Combinatorial Optimization, 50 , Article 24. https://doi.org/10.1007/s10878-025-01353-9. 36

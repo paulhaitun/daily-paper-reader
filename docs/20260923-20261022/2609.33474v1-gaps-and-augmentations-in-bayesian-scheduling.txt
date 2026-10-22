@@ -1,0 +1,1192 @@
+Title: Gaps and Augmentations in Bayesian Scheduling
+
+URL Source: https://arxiv.org/pdf/2609.33474v1
+
+Published Time: Tue, 29 Sep 2026 02:04:33 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# Gaps and Augmentations in Bayesian Scheduling 
+
+Ahuva Mu’alem ∗
+
+September 29, 2026 
+
+Abstract 
+
+The recent resolution of the Nisan–Ronen conjecture [14, 5] establishes that the optimal worst-case approximation ratio achievable by deterministic truthful mechanisms for minimizing makespan on m unrelated machines is exactly m. This motivates asking how prior information, Bayesian incentive compatibility (BIC), randomization, and machine-side resource augmentation change this prior-free barrier. We obtain three main results. First, we prove an asymptotic 4 /3 lower bound for randomized BIC mechanisms with two machines. This strengthens the previous 1 .2 deterministic-BIC lower bound [13] and extends the impossibility to randomized-BIC mechanisms. Second, randomization is already known to strictly outperform deterministic mechanisms in the prior-free setting: for two machines, a randomized truthful 7 /4-approximation is known, whereas every deterministic truthful mechanism has approximation ratio at least 2 [14]. We show that randomized BIC scheduling mechanisms are likewise strictly more powerful than their deterministic counterparts, exhibiting an asymptotic BIC-integrality gap of 8 /7. Thus, optimality in prior-dependent BIC scheduling can strictly require randomization. This parallels the role of lotteries in multidi-mensional revenue maximization, where randomization can strictly improve revenue [12, 1]. Third, we show that when job assignments are sufficiently well spread across machines (more formally, when the pairwise collision parameter ∆ r is bounded by a constant independent of both the number of machines m and the number of sampled layers r), then O(m/ε ) sampled layers suffice for the standard truthful MinWork mechanism to achieve a (1 + ε)-approximation to the original first-best benchmark. Equivalently, O(m/ε ) sampled replicas per machine suffice. This resource-augmentation result parallels the Bulow–Klemperer perspective [2, 7]. As a by-product, in the standard unaugmented model, MinWork achieves a 
+
+
+
+1 + ∆1(m−1) 2
+
+
+
+-approximation to the first-best benchmark for every prior. 
+
+# 1 Introduction 
+
+Unrelated-machines makespan minimization is a canonical problem in algorithmic mechanism design. There are m machines and n jobs. Machine i’s private type is its vector of processing times for the 
+
+n jobs, and the objective is to minimize the makespan, i.e., the maximum load over machines. If the processing-time matrix were publicly known, this would be a classical scheduling problem. The mechanism-design challenge is that each row of the matrix is privately held by a strategic machine. The seminal work of Nisan and Ronen initiated the study of truthful unrelated-machines scheduling in algorithmic mechanism design [14]. Their MinWork mechanism assigns each job to a machine reporting the smallest processing time for that job and uses VCG payments. It is truthful, meaning that reporting the true processing times is a dominant strategy for every machine. 
+
+> ∗
+
+The author is grateful to the WINE 2026 referees for their thoughtful comments and suggestions. Financial support from the Australian Research Council under grant DP190102064 is gratefully acknowledged. 
+
+1arXiv:2609.33474v1 [cs.GT] 27 Sep 2026 Nisan and Ronen showed that MinWork is an m-approximation, proved a lower bound of 2, and conjectured that no deterministic truthful mechanism could achieve an approximation ratio below 
+
+m; this conjecture was recently proved by Christodoulou, Koutsoupias, and Kov´ acs [5], closing a long-standing open problem in prior-free algorithmic mechanism design. This sharp prior-free barrier motivates asking how prior information, Bayesian incentive compat-ibility, randomization, and resource augmentation change the picture. With a known prior and BIC, truthful reporting maximizes each machine’s expected utility conditional on its own type. To what extent can stronger makespan guarantees be obtained? Are randomized BIC scheduling mechanisms strictly more powerful than deterministic BIC mechanisms? Finally, can adding more machines help the simple truthful MinWork mechanism approach the original first-best benchmark, that is, the minimum makespan achievable when the realized processing times are known and incentive constraints are ignored? 
+
+A 4/3 Bayesian Lower Bound. Our first result is an asymptotic 4 /3 lower bound for randomized BIC mechanisms. We construct a family of two-machine, two-job, two-type-per-machine product priors for which the randomized-BIC-to-first-best ratio approaches 4 /3. This strengthens the 1.2 lower-bound of Mu’alem and Schapira for deterministic-BIC mechanisms [13] in three aspects: it applies to randomized rather than only deterministic BIC mechanisms, the asymptotic lower-bound constant increases from 1.2 to 4 /3, and the hard instance uses only two jobs, rather than three. As a warm-up, we show that the same hard instance already yields an asymptotic 4 /3 lower bound for 
+
+every deterministic BIC mechanism. This class includes, in particular, all deterministic dominant-strategy truthful mechanisms. Consequently, the same 4 /3 lower bound applies to weighted-VCG rules and affine minimizers, even when their report-independent weights and offsets are chosen as a function of the prior. 1
+
+To place the 4 /3 lower bound in context, prior-free truthful mechanisms provide nontrivial upper bounds that also apply in the Bayesian setting. For two machines and two jobs, the best known randomized truthful upper bound is 1 .5059964 [9]. 
+
+The Value of Randomization: A BIC Integrality Gap. Randomization is already known to improve truthful approximation guarantees in the prior-free model. For two machines, Nisan and Ronen established a tight bound of 2 for deterministic truthful mechanisms, while also giving a randomized truthful 7 /4-approximation [14]. This raises a natural question: can randomization also strictly improve the optimal BIC makespan? Our second result answers this question affirmatively. We construct a two-machine, two-job, two-type product-prior that yields OPT DetBIC  
+
+> OPT RandBIC
+
+≥ 87 . Thus, randomization remains valuable even within the weaker BIC solution concept. The separation already appears in a simple environment, regardless of computational considerations. This parallels the role of lotteries in multidimensional revenue maximization, where randomization can be essential for optimality and can strictly improve revenue [12, 1]. 2
+
+Resource augmentation for MinWork. Our third result is naturally framed in the language of competition complexity [2, 7]. We ask how much additional machine-side competition is needed for the simple truthful MinWork mechanism to approach the first-best benchmark in the original 
+
+m-machine market. We sample r independent processing-time profiles from the original prior, 
+
+> 1In the usual value-maximization convention, these mechanisms are known as affine maximizers or weighted VCG mechanisms [15]; in our cost-minimization setting, the corresponding rule is an affine minimizer.
+> 2Importantly, the deterministic-versus-randomized-BIC integrality gap and the randomized-BIC-versus-first-best approximation ratio measure different phenomena and need not be witnessed by the same prior.
+
+2creating mr destination slots, and run MinWork in this replicated sampled environment. Each slot is treated as a distinct strategic machine. Since MinWork minimizes total reported processing cost, standard VCG payments make it dominant-strategy truthful, independently of correlations in the prior. The key quantity is how often two jobs end up at the same destination, which we measure by ∆ r. When these collisions are sufficiently rare, O(m/ε ) layers (equivalently O(m/ε )additional replicas per machine) suffice for MinWork to achieve a (1 + ε)-approximation to the original first-best benchmark , and this dependence is asymptotically tight in the worst case. This result is related to, but different from, the Bulow–Klemperer-style scheduling result of Chawla, Hartline, Malec, and Sivan [3]. Their approach first obtains a guarantee against a relaxed benchmark with fewer machines and then converts this guarantee back to the original m-machine benchmark under additional assumptions, such as MHR. Our analysis instead compares replicated MinWork directly with the original m-machine first best, so no MHR assumption is required. Finally, setting r = 1 in our theorem gives an upper bound for MinWork that holds for every prior: its expected approximation ratio is at most 1 + ∆1(m−1) 2 . This complements Giannakopoulos and Kyropoulou [8]: their sharper analysis relies on stronger independence assumptions, whereas our bound applies more generally. Under their independent machine-identical setting, uniform tie-breaking gives ∆ 1 = 1, so our bound becomes ( m + 1) /2, which is tight for two machines. For larger m, their bound can be substantially sharper. 
+
+1.1 Related Work 
+
+Nisan and Ronen [14] introduced unrelated-machines scheduling as a canonical problem in algorithmic mechanism design, asking how well makespan can be minimized while preserving truthfulness. In the standard prior-free model, no distribution over processing times is assumed. The long-standing Nisan–Ronen conjecture was recently resolved by Christodoulou, Koutsoupias, and Kov´ acs [5], establishing that, for m unrelated machines, no deterministic dominant-strategy truthful mechanism can achieve an approximation ratio below m.Randomization has long played an important role in truthful scheduling. Nisan and Ronen gave a randomized truthful 7/4-approximation for two unrelated machines [14]; their paper credits Daniel Lehmann with the refined case analysis establishing the 7/4 bound. Lu and Yu improved this to 1.6737 and also obtained a 0.8368 m-approximation for general m [11]. Chen, Du, and Zuluaga developed copula-based randomized truthful mechanisms [4]. They obtain an approximation ratio of at most 1 .58606 for two machines in general and 1 .5067711 for the two-machine, two-job case. Kuryatnikova and Vera subsequently improved the two-job upper bound to 1 .5059964 and obtained a nearly matching lower bound within their randomized scale-free mechanism class [9]. Lavi and Swamy study a restricted domain in which every processing time is either low or high and give a black-box transformation from any c-approximation algorithm to a truthful-in-expectation 3 c-approximation mechanism [10]. On the lower-bound side, Mu’alem and Schapira [13] proved a 2 − 1/m lower bound for prior-free randomized truthful scheduling. Their lower bound holds even for the weaker requirement of truthfulness in expectation. Daskalakis and Weinberg study Bayesian truthful scheduling and give polynomial-time Bayesian mechanisms within a factor 2 of the optimal BIC mechanism [6]. Their benchmark is the optimal BIC mechanism, whereas our bounds measure the gap between BIC and the unconstrained first best. The classical Bulow–Klemperer theorem shows that in single-item i.i.d. regular environments, second-price auction with one additional bidder earns at least as much expected revenue as the optimal revenue-maximizing Bayesian auction with the original bidders [2]. Eden et al. [7] formalized this perspective through competition complexity, the number of additional bidders required for 3VCG to match or exceed the revenue of the optimal Bayesian mechanism with the original bidders. Chawla, Hartline, Malec, and Sivan [3] study prior-independent truthful scheduling under machine symmetry. For machine-symmetric product priors with MHR runtimes, their bounded-overload BIC mechanism achieves an O(n/m )-approximation, without requiring knowledge of the processing-time distributions. Giannakopoulos and Kyropoulou [8] take a different approach and analyze the Bayesian performance of MinWork: each job is assigned to the machine on which its processing time is smallest. They assume independent processing times that are identically distributed across machines for each job. Under this symmetry, the minimizing machine of each job is uniformly distributed, turning MinWork into a weighted balls-into-bins process. Using this connection, they prove an O
+
+ log m 
+
+> log log m
+
+
+
+approximation for m machines. 
+
+# 2 Model and Preliminaries 
+
+For a positive integer q, let [ q] = {1, . . . , q }. There are m ≥ 2 machines and n ≥ 1 jobs. Let 
+
+T = ( Tij )i∈[m], j ∈[n] denote the random processing-time matrix, where Tij ≥ 0 is the processing time of job j on machine i. Machine i’s random type is its row Ti = ( Tij )j∈[n]; we write t for a realization of T and ti for its i-th row. For the lower-bound results in Sections 3 and 4, the known prior is a product distribution, 
+
+F = F1 × · · · × Fm, where Fi is a distribution over Rn
+
+> +
+
+. Thus machine types are independent across machines, while coordinates within a machine’s type vector may be arbitrarily correlated across jobs. Section 5 instead allows an arbitrary joint prior over T .A randomized Bayesian mechanism consists of an allocation rule and payments. Given a reported profile bt, it outputs a possibly randomized allocation and a payment vector ( X(bt), p (bt)), where every realization of X(bt) assigns each job to exactly one machine. For a realized allocation x, let xj
+
+denote the machine receiving job j. The load of machine i is Li(x, t i) = Pnj=1 tij 1{xj = i}, and the makespan is Cmax (x, t ) = max i∈[m] Li(x, t i). The first-best optimum is OPT m(t) = min x Cmax (x, t ),
+
+where the minimum is over deterministic allocations. 
+
+Lemma 1 (Randomization does not improve the first-best optimum) . For every realized processing-time matrix t,
+
+min  
+
+> randomized allocations X
+
+EX [Cmax (X, t )] = OPT m(t).
+
+Proof. A randomized allocation is a distribution over deterministic allocations, so its expected makespan cannot be smaller than OPT m(t). Conversely, an optimal deterministic allocation is a degenerate randomized allocation and achieves OPT m(t). Accordingly, our benchmark is the expected first best, ET ∼F [OPT m(T )]. A mechanism is Bayesian incentive compatible (BIC) if truthful reporting maximizes every machine’s interim expected utility. Formally, for every machine i, every true realized type ti and every alternative report bti, let T−i denote the types of all machines other than machine i. Then 
+
+E[pi(ti, T −i) − Li(X(ti, T −i), t i)] ≥ Epi(bti, T −i) − Li(X(bti, T −i), t i) . (2.1) The expectation is over the conditional distribution of the other machines’ types given machine i’s true type, and over the internal randomness of the mechanism. Payments are quasilinear: utility equals payment minus processing cost. 4For priors with E[OPT m(T )] > 0, the approximation ratio of a BIC mechanism M = ( X, p ), evaluated under truthful reporting, is E[Cmax (X(T ), T )]   
+
+> E[OPT m(T)]
+
+, where the expectation in the numerator is also taken over the mechanism’s internal randomness. The MinWork allocation rule assigns each job to a machine with minimum reported processing time. Equivalently, it minimizes the total reported processing time over all allocations. Therefore, together with the standard VCG payments, MinWork is dominant-strategy truthful (hence BIC) and ex-post individually rational [14]. 3 No tie-breaking convention is needed for our lower bounds. In Section 5, ties are broken uniformly among minimizing destinations, independently across jobs, using report-independent randomness. Our lower bounds use only BIC and therefore continue to hold when individual rationality is additionally imposed. 
+
+# 3 The 4/3 Randomized-BIC Lower Bound 
+
+This section establishes our main impossibility theorem. Moving from prior-free randomized truthfulness to Bayesian incentive compatibility can potentially improve performance, but our construction shows that even randomized BIC mechanisms still face an asymptotic 4 /3 gap from the first-best benchmark. The hard instance is a product prior with only two machines, two jobs, and two types per machine. This strengthens the 1.2 deterministic-BIC lower bound of Mu’alem and Schapira [13] in three aspects: the impossibility applies to randomized rather than deterministic BIC mechanisms, raises the asymptotic constant from 1 .2 to 4 /3, and reduces the number of jobs from three to two. We first present the deterministic version as a warm-up and then prove the randomized theorem on the same hard instance. 
+
+The hard instance. We use a simple product prior in which each machine independently takes one of two types, each with probability 1 /2. Fix 0 < δ < 1/4 and set H = 4 
+
+> δ
+
+. Machine 1 has the following two types, specifying its processing times for the two jobs: 
+
+a = (1 , δ ), b = (1 − δ, 2) .
+
+Machine 2 has two possible types, specifying its processing times for the two jobs: 
+
+c = (2 , H ), d = (2 , H/ 2) .
+
+The prior is the product of these two marginals. We show that every randomized BIC mechanism has approximation ratio at least 43+ δ , approaching 4 /3 as δ → 0. 
+
+The first-best optimum. If machine 1 has type a = (1 , δ ), the first-best optimum assigns both jobs to machine 1. The makespan is 1 + δ. Indeed, assigning job 1 to machine 2 already creates load 2, and assigning job 2 to machine 2 creates load at least H/ 2. If machine 1 has type b = (1 − δ, 2), the first-best optimum assigns job 1 to machine 2 and job 2 to machine 1. The resulting loads are 2 and 2, so the makespan is 2 . Giving both jobs to machine 1 gives load 3 − δ > 2, and assigning job 2 to machine 2 creates load at least H/ 2. Therefore, by Lemma 1 
+
+E[OPT 2] = 12 (1 + δ) + 12 · 2 = 3 + δ
+
+2 . (3.1) 
+
+> 3A mechanism is ex-post individually rational (IR) if truthful reporting gives every machine nonnegative utility for every realized type profile and every realization of the mechanism’s randomness.
+
+53.1 The switch inequality 
+
+We now prove the common incentive constraint used in both lower bounds. Let M be a randomized or deterministic BIC mechanism. For a reported type r ∈ { a, b } of machine 1, define the following interim allocation probabilities, where the probability is over machine 2’s type and over the internal randomness of M :
+
+• Br = P[both jobs are assigned to machine 1 | r],
+
+• Sr = P[job 1 is assigned to machine 1 and job 2 is assigned to machine 2 | r],
+
+• Dr = P[job 2 is assigned to machine 2 | r].
+
+Clearly, Sr ≤ Dr. For brevity, write B = Ba, B ′ = Bb, S = Sa, S ′ = Sb, D = Da, D ′ = Db.
+
+Then 
+
+P[machine 1 receives job 1 | a] = B + S, 
+
+and 
+
+P[machine 1 receives job 2 | a] = 1 − D. 
+
+Let Pa and Pb denote machine 1’s interim expected payments when it reports a and b, respectively: 
+
+Pr = ET2,M [p1(r, T 2)] , r ∈ { a, b }.
+
+If the true type is a = (1 , δ ), truthful reporting must give no larger interim cost minus payment than reporting b. Hence (B + S) + δ(1 − D) − Pa ≤ (B′ + S′) + δ(1 − D′) − Pb. (3.2) If the true type is b = (1 − δ, 2), truthful reporting must give no larger interim cost minus payment than reporting a. Hence (1 − δ)( B′ + S′) + 2(1 − D′) − Pb ≤ (1 − δ)( B + S) + 2(1 − D) − Pa. (3.3) 
+
+Claim 1 (Switch inequality) . Every BIC mechanism, deterministic or randomized, satisfies 
+
+δ (B + S) − (B′ + S′) ≤ (2 − δ)( D′ − D). (3.4) 
+
+Proof. Adding (3.2) and (3.3), the payment terms cancel out. Rearranging the remaining terms yields the inequality: δ (B + S) − (B′ + S′) ≤ (2 − δ)( D′ − D) = (2 − δ)((1 − D) − (1 − D′)) .
+
+The switch inequality captures the incentive tradeoff between the two jobs. If machine 1 is more likely to receive job 1 under a than under b, BIC requires it also to receive job 2 more often under a.This is equivalent to job 2 being assigned to machine 2 more often under b, which is costly because its processing time there is at least H/ 2. 
+
+3.2 The Deterministic Lower Bound 
+
+Before proving the randomized lower bound, we give a deterministic warm-up. The same construction yields an asymptotic 4 /3 lower bound for every deterministic BIC mechanism, improving the previous 1.2 bound [13]. This class includes, in particular, all deterministic dominant-strategy truthful mechanisms. Consequently, the same 4 /3 lower bound applies to weighted-VCG rules and, more generally, to affine minimizers with positive report-independent weights and report-independent 6allocation offsets. These parameters may depend on the known prior, provided they are fixed before the realized processing times are observed. Thus, even prior-dependent reweighting of VCG cannot circumvent the asymptotic 4 /3 lower bound. 
+
+Claim 2 (Deterministic BIC lower bound) . For the product prior above, every deterministic BIC mechanism M satisfies 
+
+E[Cmax (M )] 
+
+E[OPT 2] ≥ 43 + δ .
+
+Hence, as δ → 0, the lower bound approaches 4/3.
+
+Full proof in Appendix A.1. 
+
+3.3 The Randomized Lower Bound 
+
+We now prove the main theorem. 
+
+Theorem 1 (Randomized BIC lower bound) . For the product prior above, every randomized BIC mechanism M satisfies 
+
+E[Cmax (M )] 
+
+E[OPT 2] ≥ 43 + δ .
+
+Hence, as δ → 0, the lower bound approaches 4/3.Proof. Let M be any randomized BIC mechanism. We first lower-bound the expected makespan conditional on machine 1’s type. Suppose machine 1 has type a = (1 , δ ). If both jobs are assigned to machine 1, the makespan is 1 + δ. If job 2 is assigned to machine 2, the makespan is at least H/ 2. The remaining allocation assigns job 1 to machine 2 and job 2 to machine 1, and has makespan 2. Therefore 
+
+E[Cmax (M ) | a] ≥ B(1 + δ) + D H
+
+2 + 2(1 − B − D)= 2 − (1 − δ)B +
+
+ H
+
+2 − 2
+
+
+
+D. 
+
+(3.5) Similarly, suppose machine 1 has type b = (1 − δ, 2). If both jobs are assigned to machine 1, the makespan is 3 − δ. If job 2 is assigned to machine 2, the makespan is at least H/ 2. The remaining allocation assigns job 1 to machine 2 and job 2 to machine 1, and has makespan 2. Therefore 
+
+E[Cmax (M ) | b] ≥ B′(3 − δ) + D′ H
+
+2 + 2(1 − B′ − D′)= 2 + (1 − δ)B′ +
+
+ H
+
+2 − 2
+
+
+
+D′.
+
+(3.6) Averaging (3.5) and (3.6) gives 
+
+E[Cmax (M )] ≥ 2 + 1 − δ
+
+2 (B′ − B) + 12
+
+ H
+
+2 − 2
+
+
+
+(D + D′). (3.7) Since S ≥ 0 and S′ ≤ D′, we have S − S′ ≥ − D′. Rearranging the switch inequality (3.4) gives 
+
+B′ − B ≥ 2 − δδ D − 2 − δδ D′ + S − S′. (3.8) Therefore 
+
+B′ − B ≥ 2 − δδ D − 2
+
+δ D′. (3.9) 7Since 0 < δ < 1, the coefficient of B′ − B in (3.7) is positive. Substituting (3.9) into (3.7), and using H = 4 /δ gives 
+
+E[Cmax (M )] − 2 ≥ 1 − δ
+
+2
+
+ 2 − δδ D − 2
+
+δ D′
+
+
+
++ 12
+
+ 2
+
+δ − 2
+
+
+
+(D + D′)= 1 − δ
+
+2
+
+ 2 − δδ D − 2
+
+δ D′
+
+
+
++ 1 − δδ (D + D′)= 1 − δ
+
+2
+
+ 2 − δδ D
+
+
+
++ 1 − δδ D ≥ 0.
+
+The last inequality follows from D ≥ 0 and 0 < δ < 1. Thus E[Cmax (M )] ≥ 2. By (3.1), 
+
+E[Cmax (M )] 
+
+E[OPT 2] ≥ 2(3 + δ)/2 = 43 + δ .
+
+# 4 The Deterministic–Randomized BIC Separation 
+
+The preceding lower bound leaves open a natural question: Can allowing randomization strictly reduce the minimum expected makespan achievable under BIC? In the prior-free setting, Nisan and Ronen showed that no deterministic truthful mechanism for two machines can achieve an approximation ratio below 2, while also giving a randomized truthful 7 /4-approximation [14]. Our next result asks whether an analogous separation occurs within the BIC class. This question parallels the familiar role of lotteries in multidimensional mechanism design. In multidimensional revenue maximization, randomized allocations can be necessary for optimal revenue and can strictly outperform deterministic BIC mechanisms [12, 1]. We answer the question affirmatively by exhibiting a two-machine, two-job, two-type per machine product prior on which randomized BIC strictly outperforms deterministic BIC. Thus, randomization can strictly reduce the minimum expected makespan achievable subject to BIC. Let OPT DetBIC denote the best expected makespan achievable by deterministic BIC mechanisms, and let OPT RandBIC denote the best expected makespan achievable by randomized BIC mechanisms. 
+
+Theorem 2 (Deterministic versus randomized BIC separation) . For every α < 8/7, there exists a two-machine, two-job, two-type-per-machine product prior such that 
+
+OPT DetBIC 
+
+OPT RandBIC 
+
+≥ α. 
+
+Thus 8/7 is an asymptotic lower bound on the deterministic-versus-randomized BIC-integrality gap. 
+
+Full proof in Appendix A.2. 85 Resource Augmentation 
+
+Our next result focuses on the standard MinWork mechanism and is motivated by the notion of competition complexity. The underlying question is in the spirit of Bulow and Klemperer: can a simple mechanism, given additional competition, perform as well as a more sophisticated optimal Bayesian mechanism in the original market? In the classical single-item setting with i.i.d. regular values, Bulow and Klemperer show that the Vickrey auction with one additional bidder obtains at least as much expected revenue as the optimal revenue Bayesian auction with the original bidders [2]. Eden, Feldman, Friedler, Talgam-Cohen, and Weinberg [7] extended this perspective to multidimensional environments and introduced the notion of competition complexity , measuring how many additional bidders are needed for a simple mechanism to outperform the optimal BIC mechanism with the original bidders. Our scheduling question is analogous, although our benchmark is stronger: we compare against the first-best optimum, rather than the second-best optimal BIC benchmark, in the original m-machine market. We sample r independent processing-time profiles from the original prior, calling each draw a layer , and run MinWork on the resulting mr destination slots, where the number of jobs remains unchanged. Thus r is the total number of layers, and the augmentation adds r − 1layers relative to the original market. Let MW (r) denote MinWork in this replicated environment, with ties broken uniformly at random among minimizing slots. We ask how large r must be for MinWork to achieve a (1 + ε)-approximation to the first-best optimum in the original m-machine market. We show that the answer is governed by a pairwise destination-collision parameter ∆ r. If there exists an constant Cac , independent of m and r, such that ∆ r ≤ Cac for all r ≥ 1, then O(m/ε ) total layers suffice. 
+
+5.1 Profile resampling and the original benchmark 
+
+Fix an original market with m machines and n jobs. We use i ∈ [m] for a machine index and j ∈ [n]for a job index. A processing-time profile is the complete matrix T = ( Tij )i∈[m], j ∈[n] ∼ F, where 
+
+Tij ≥ 0 is the processing time of job j on machine i, and F is an arbitrary joint distribution on 
+
+Rm×n 
+
+> +
+
+. We impose no independence across machines or jobs within a profile. For r ≥ 1, the r-layer profile-resampling environment consists of r independent complete draws 
+
+T (1) , . . . , T (r) i.i.d.
+
+∼ F, where T (a) = ( T (a)1 , . . . , T (a) 
+
+> m
+
+), and T (a) 
+
+> i
+
+= ( T (a) 
+
+> ij
+
+)j∈[n] is the processing-time row of machine coordinate i in layer a. Each layer preserves the full dependence structure encoded by F ,while different layers are independent. Thus we resample entire processing-time profiles across all machines, rather than machine rows independently. Here r counts total layers, so the augmentation adds r − 1 layers, or m(r − 1) strategic machines. A destination slot is a pair s = ( i, a ), where i ∈ [m] is a machine coordinate and a ∈ [r] is a layer. The set of destination slots is Sr = [ m] × [r]. Each destination slot ( i, a ) has processing-time vector T (a) 
+
+> i
+
+= ( T (a) 
+
+> ij
+
+)nj=1 . We model every destination slot as a distinct, separately owned strategic machine, so the replicated market contains mr distinct strategic machines. 
+
+Tie-breaking convention. Throughout this section, ties are broken uniformly at random among minimizing destination slots, independently across jobs and using randomness independent of the reports. Equivalently, for each job we may draw an independent uniform random ordering of the destination slots before reports are submitted and select the first minimizing slot in that ordering. When r = 1, the destination slots are the original machines, so this reduces to uniform tie-breaking among the minimizing machines. 9MinWork assigns each job to a destination slot of minimum reported processing time. Conditional on every realization of the tie-breaking randomness, this is a deterministic total-work-minimizing allocation rule with report-independent tie-breaking. Hence, for every realization of the tie-breaking randomness, procurement-VCG payments make truthful reporting a dominant strategy for every destination-slot agent [14]. Therefore, the randomized mechanism is universally truthful. This incentive guarantee is pointwise and requires no distributional independence. We henceforth evaluate the mechanism under truthful reporting. For each job j, define its random selected minimum processing time 
+
+τ (r) 
+
+> j
+
+= min  
+
+> i∈[m], a ∈[r]
+
+T (a) 
+
+> ij
+
+, (5.1) and let R(r) 
+
+> j
+
+∈ S r denote its random destination under MinWork, including the tie-breaking randomness. Write τ (r) = ( τ (r)1 , . . . , τ (r) 
+
+> n
+
+), and R(r) = ( R(r)1 , . . . , R (r) 
+
+> n
+
+). For every realization of the sampled profiles and tie-breaking randomness, if R(r) 
+
+> j
+
+= s = ( i, a ), then s is a minimizing slot for job j. Hence the realized processing time of job j is the realized value of τ (r) 
+
+> j
+
+. Consequently, the makespan of MW (r) is the random variable 
+
+Cmax (MW (r)) = max 
+
+> s∈S r
+> n
+
+X
+
+> j=1
+
+τ (r) 
+
+> j
+
+1{R(r) 
+
+> j
+
+= s}. (5.2) Our benchmark is the expected ex-post first-best makespan in the original m-machine market, 
+
+ET ∼F [OPT m(T )] , rather than the optimum in the augmented mr -slot market. For a nonnegative vector u = ( u1, . . . , u n), define 
+
+Am(u) = max 
+
+max  
+
+> j∈[n]
+
+uj , 1
+
+m
+
+> n
+
+X
+
+> j=1
+
+uj
+
+ . (5.3) For a realized original profile t, let τj (t) = min i∈[m] tij , τ (t) = ( τ1(t), . . . , τ n(t)) .
+
+The quantity Am(τ (t)) is a pointwise lower bound on the first-best makespan. Indeed, under any allocation x, job j requires at least τj (t) units of processing time on the machine to which it is assigned, and hence Cmax (x, t ) ≥ max j∈[n] τj (t). Moreover, the total work performed by x is at least 
+
+P 
+
+> j
+
+τj (t). Since this work is distributed over m machines, Cmax (x, t ) ≥ 1
+
+> m
+
+Pnj=1 τj (t). Taking the minimum over all allocations therefore gives 
+
+Am(τ (t)) ≤ OPT m(t) for every realized profile t. (5.4) Equivalently, Am(τ (T )) ≤ OPT m(T ).
+
+Pairwise destination anti-concentration. We next separate the two ingredients that determine the makespan of MinWork. The vector τ (r) determines the processing times incurred by the jobs, while their destinations determine how these processing times are distributed across slots. We measure the latter through pairwise destination collisions. 10 Definition 1 (Pairwise destination-collision parameter) . For n ≥ 2, let ∆r ∈ [0 , mr ] be any number such that, for every pair of distinct jobs j̸ = j′ and for every realization u of τ (r),
+
+P
+
+h
+
+R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+τ (r) = u
+
+i
+
+≤ ∆r
+
+mr . (5.5) Two jobs collide only if they are sent to the same machine in the same layer. Conditioning on 
+
+τ (r) fixes the processing time incurred by each job under MinWork, leaving only the tie-breaking randomness. A valid collision parameter always exists: since conditional collision probabilities are at most 1, the choice ∆ r = mr is always valid. 4
+
+Under the independence and machine-symmetry assumptions of Giannakopoulos and Ky-ropoulou [8], applying the profile-resampling construction to their setting yields conditionally independent uniform destinations over the mr slots. Hence ∆ r = 1 is a valid and tight choice. By contrast, in the two-machine hard instance of Section 3, both jobs minimize only among the r replicas of machine 1. For some realizations of τ (r), they tie over the same r slots and therefore collide with probability 1 /r . Thus 1 
+
+> r
+
+= 22r , and ∆ r = 2 = m. More generally, every profile-resampling environment admits a collision parameter ∆ r, and Theorem 3 applies without any further independence assumption. 
+
+Theorem 3. For every r ≥ 1 and every ∆r satisfying Definition 1, 
+
+E[Cmax (MW (r))] ≤
+
+
+
+1 + ∆r(m − 1) 2r
+
+
+
+ET ∼F [OPT m(T )] .
+
+Proof. Fix a realization u of τ (r) for which the collision bounds in Definition 1 hold for every pair of distinct jobs. Let A = Am(u). If A = 0, then uj = 0 for every job j, and the conditional makespan is zero. Assume A > 0, and define yj = uj 
+
+> A
+
+. By the definition of Am, 0 ≤ yj ≤ 1 and Pnj=1 yj ≤ m. 
+
+Hence 
+
+y ∈ P n,m := 
+
+z ∈ [0 , 1] n :
+
+> n
+
+X
+
+> j=1
+
+zj ≤ m
+
+ .
+
+For z ∈ P n,m , define 
+
+G(r) 
+
+> u
+
+(z) = E
+
+max 
+
+> s∈S r
+> n
+
+X
+
+> j=1
+
+zj 1{R(r) 
+
+> j
+
+= s} τ (r) = u
+
+ .
+
+Thus G(r) 
+
+> u
+
+(z) has the following interpretation. Conditioning on τ (r) = u fixes the conditional distribution of the MinWork destinations R(r). Keeping this routing distribution fixed, assign job j
+
+size zj , draw the destinations from this conditional distribution, and compute the maximum total size assigned to any destination slot. The expectation of this maximum load is G(r) 
+
+> u
+
+(z).                                                                 
+
+> 4For example, consider two machines and two jobs ( m= 2, r= 1), and write τ=τ(1) and Rj=R(1)
+> j. Suppose the processing-time matrix is, with equal probability,
+> 1111
+> 
+> or
+> 1322
+> 
+> ,where rows correspond to machines and columns to jobs. In the first case, τ= (1 ,1), and independent uniform tie-breaking gives P[R1=R2|τ= (1 ,1)] = 1 /2.
+> In the second case, τ= (1 ,2), and the two jobs uniquely minimize on different machines, so P[R1=R2|τ= (1 ,2)] = 0 .
+> Thus, for every realization uof τ,P[R1=R2|τ=u]≤12.Since m= 2 and r= 1, ∆ 1= 1 is a valid and tight choice. The key point is that τjrecords only the minimum processing time of job j, not the identity of a machine attaining that minimum. For example, τj= 1 means only that the minimum available processing time for job jis 1; by itself, it does not specify the job’s destination.
+
+11 For every fixed realization of the destinations R(r), the function max s∈S r
+
+Pnj=1 zj 1{R(r) 
+
+> j
+
+= s}
+
+is the maximum of finitely many linear functions of z, one for each destination slot s ∈ S r, and is therefore convex in z. Since R(r) has only finitely many possible realizations, G(r) 
+
+> u
+
+is a convex combination of such convex functions. Hence G(r) 
+
+> u
+
+is convex. Since m is an integer, the vertices of Pn,m are the indicator vectors 1S of sets S ⊆ [n] with 
+
+|S| ≤ m. Every z ∈ P n,m is a convex combination of such vertices. Therefore, by convexity, 
+
+G(r) 
+
+> u
+
+(z) ≤ max S⊆[n]
+
+> |S|≤ m
+
+G(r) 
+
+> u
+
+(1S ).
+
+Fix S ⊆ [n] with |S| ≤ m. For each destination slot s ∈ S r, let Ns = P 
+
+> j∈S
+
+1{R(r) 
+
+> j
+
+=
+
+s} and Q = max s∈S r Ns. Thus Q is the maximum number of jobs in S assigned to a single destination slot. For every realized routing, P j<j ′
+
+> j,j ′∈S
+
+1{R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+} = P
+
+> s∈S r
+
+ Ns
+
+> 2
+
+ ≥  Q
+
+> 2
+
+ ≥ Q − 1.
+
+Hence Q ≤ 1 + P j<j ′
+
+> j,j ′∈S
+
+1{R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+}. Since z = 1S gives unit size to the jobs in S and zero size to all other jobs, G(r) 
+
+> u
+
+(1S ) = EQ τ (r) = u ≤ 1 + E
+
+"P j<j ′
+
+> j,j ′∈S
+
+1{R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+} τ (r) = u
+
+#
+
+= 1 + P j<j ′
+
+> j,j ′∈S
+
+P
+
+h
+
+R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+τ (r) = u
+
+i
+
+.
+
+By Definition 1, G(r) 
+
+> u
+
+(1S ) ≤ 1 +  |S|
+
+> 2
+
+ ∆r 
+
+> mr
+
+≤ 1 +  m
+
+> 2
+
+ ∆r 
+
+> mr
+
+= 1 + ∆r (m−1) 2r . Thus for every z ∈ P n,m we have, G(r) 
+
+> u
+
+(z) ≤ 1 + ∆r (m−1) 2r . In particular, G(r) 
+
+> u
+
+(y) ≤ 1 + ∆r (m−1) 2r . Finally, conditional on τ (r) = u,the actual processing time of job j under MinWork is uj = A · yj . Therefore 
+
+E
+
+h
+
+Cmax (MW (r)) τ (r) = u
+
+i
+
+= A · G(r) 
+
+> u
+
+(y) ≤ Am(u) ·
+
+
+
+1 + ∆r(m − 1) 2r
+
+
+
+.
+
+Taking expectations, 
+
+E[Cmax (MW (r))] ≤
+
+
+
+1 + ∆r(m − 1) 2r
+
+
+
+E
+
+h
+
+Am(τ (r))
+
+i
+
+.
+
+Now, Couple the first layer with the original profile, T (1) = T . Since τ (r) 
+
+> j
+
+= min i,a T (a) 
+
+> ij
+
+≤ min i T (1)  
+
+> ij
+
+=
+
+τj (T ), coordinatewise monotonicity of Am gives Am(τ (r)) ≤ Am(τ (T )) . Finally, by (5.4), 
+
+E[Cmax (MW (r))] ≤
+
+
+
+1 + ∆r(m − 1) 2r
+
+
+
+ET ∼F [OPT m(T )] .
+
+5.2 Consequences and Examples 
+
+Theorem 3 becomes especially simple when ∆ r is bounded. In this subsection, we derive the corresponding number of layers needed for a (1 + ε)-approximation. 
+
+Proposition 1. Suppose ∆r ≤ Cac for all r ≥ 1. Then, for every ε > 0, r ≥
+
+l Cac (m−1) 2ε
+
+m
+
+total layers suffice to guarantee E[Cmax (MW (r))] ≤ (1 + ε)ET ∼F [OPT m(T )] . In particular, if Cac is independent of m across a class of priors, then O  mε
+
+ total layers suffice for a (1 + ε)-approximation throughout the family. Proof. By Theorem 3, E[Cmax (MW (r))] ≤
+
+
+
+1 + ∆r (m−1) 2r
+
+
+
+ET ∼F [OPT m(T )] . Since ∆ r ≤ Cac ,12 we have ∆r (m−1) 2r ≤ Cac (m−1) 2r . Therefore, if r ≥
+
+l Cac (m−1) 2ε
+
+m
+
+, then ∆r (m−1) 2r ≤ ε, and hence 
+
+E[Cmax (MW (r))] ≤ (1 + ε)ET ∼F [OPT m(T )] .
+
+If Cac is independent of m, then choosing 
+
+l Cac (m−1) 2ε
+
+m
+
+= O   mε
+
+ total layers suffices for a (1 + ε)-approximation throughout the class of priors. 
+
+Examples. We next give three examples illustrating Proposition 1. 
+
+• No collisions. Suppose that, in every realized layer a, distinct jobs have disjoint sets of minimizing machine coordinates: arg min 
+
+> i
+
+T (a) 
+
+> ij
+
+∩ arg min 
+
+> i
+
+T (a) 
+
+> ij ′
+
+= ∅ for all j̸ = j′.
+
+Recall that a collision can occur only if two jobs choose the same machine coordinate in the same layer, which is ruled out by the disjoint-minimizer condition above. Hence, for every realization u
+
+of τ (r) and for any distinct jobs j̸ = j′, P
+
+h
+
+R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+τ (r) = u
+
+i
+
+= 0 , so ∆ r = 0 for every r.In fact, no augmentation is needed. When r = 1, MinWork assigns different jobs to different machines and therefore has makespan max j τj (T ). This is a lower bound on OPT m(T ), and MinWork attains it. Hence MinWork is first-best for every realization. 
+
+• Independent and machine-identical processing times. Under the assumptions of Gian-nakopoulos and Kyropoulou [8], the processing times {Tij }i∈[m], j ∈[n] are mutually independent, and for each job j there is a distribution Fj such that Tij ∼ Fj for every machine i. Thus, for each fixed job, the processing time is identically distributed across machines, while the distribution may differ across jobs. Under our profile-resampling construction, the mr destination-slot processing times of each job are therefore identically distributed and independent, and the corresponding vectors are independent across jobs. Together with independent uniform tie-breaking, this implies that, conditional on τ (r), the destinations selected by distinct jobs are independent and uniform over the mr destination slots. Therefore, for every realization u of τ (r) and for any distinct jobs 
+
+j̸ = j′,
+
+P
+
+h
+
+R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+τ (r) = u
+
+i
+
+= 1
+
+mr .
+
+Thus for n ≥ 2, ∆ r = 1 is a valid and tight choice for every r. The same constant works for all m,so Proposition 1 gives O(m/ε ) total layers for a (1 + ε)-approximation. 
+
+• A common fast-machine pool. Suppose m is even and the machines are partitioned in advance into two fixed pools of size m/ 2. In each layer, one of the two pools is chosen uniformly at random, independently across layers, to be fast for all jobs. Machines in the fast pool have processing time 1, while machines in the other pool have processing time 2. This models, for example, a shared caching or data-locality effect: in each layer, one pool has the relevant data already cached and can therefore process all jobs faster. Each layer contributes m/ 2 minimizing destination slots, so across r layers every job has exactly 
+
+mr/ 2 minimizing slots. Conditional on any realization of the fast pools, independent uniform tie-breaking therefore gives 
+
+P
+
+h
+
+R(r) 
+
+> j
+
+= R(r) 
+
+> j′
+
+fast-pool realizations 
+
+i
+
+= 1
+
+mr/ 2 = 2
+
+mr .
+
+13 This value is the same for every realization of the fast pools. Thus for n ≥ 2, ∆ r = 2 is a valid and tight choice for every r. Since the same constant works for every even m, Proposition 1 gives 
+
+O(m/ε ) total layers for a (1 + ε)-approximation. The next result shows that this m/ε dependence is tight. In particular, Ω( m/ε ) layers may be necessary even in the independent-uniform case above, where ∆ r = 1. 
+
+Proposition 2. Let n = m ≥ 2, and Tij ≡ 1 for every i, j . Then OPT m = 1 and, under the independent uniform tie-breaking convention, ∆r = 1 for every r. If E[Cmax (MW (r))] ≤ 1 + ε, and 
+
+0 < ε < 12 , then 
+
+r ≥ m − 12[ − log(1 − ε)] > m − 14ε .
+
+In particular, r = Ω( m/ε ).
+
+Full proof in Appendix A.3. 
+
+5.3 The Unaugmented Case: A General Upper Bound 
+
+Observe that ∆ 1 is defined for every prior, without any symmetry or independence assumption. Thus, setting r = 1, Theorem 3 gives the following prior-dependent performance bound for ordinary MinWork: E[Cmax (MW)] ≤
+
+
+
+1 + ∆1(m−1) 2
+
+
+
+E[OPT m]. MinWork does not need to know the prior or ∆1; whenever ∆ 1 can be upper bounded, the theorem gives an explicit guarantee. Because it depends only on pairwise destination collisions, the bound applies more broadly than the Giannakopoulos– Kyropoulou analysis [8], which assumes stronger symmetry and independence. For m = 2 and ∆1 = 1, Theorem 3 gives a 3 /2-approximation. This is tight: on the all-unit instance with two jobs and two machines, which is the canonical balls-into-bins instance underlying the Giannakopoulos– Kyropoulou analysis [8], MinWork has expected makespan 3 /2, while the first-best makespan is 1. For larger m, however, the Giannakopoulos–Kyropoulou bound can be substantially sharper under their symmetric independent setting. 
+
+# 6 Conclusion 
+
+This paper separates three questions in Bayesian scheduling. First, randomized BIC mechanisms can remain bounded away from the first best: we prove an asymptotic 4 /3 lower bound. Second, randomization can strictly improve BIC performance, yielding an asymptotic lower bound of 8 /7on the deterministic-to-randomized BIC gap. Thus, optimal prior-dependent BIC scheduling can require randomization. Third, we show that resource augmentation can make MinWork nearly first best. In the profile-resampling model, E[Cmax (MW (r))] ≤
+
+
+
+1 + ∆r (m−1) 2r
+
+
+
+E[OPT m]. Hence, when ∆ r is bounded by a constant independent of m and r, O(m/ε ) sampled layers suffice for a (1 + ε)-approximation (equivalently, O(m/ε ) sampled replicas per machine suffice), and this dependence is asymptotically tight in the worst case. As a by-product, setting r = 1 yields a general upper bound for ordinary MinWork on every prior. 
+
+# References 
+
+[1] P. Briest, S. Chawla, R. Kleinberg, and S. M. Weinberg. Pricing lotteries. Journal of Economic Theory , 156(1):144–174, 2015. 14 [2] J. Bulow and P. Klemperer. Auctions versus negotiations. 
+
+American Economic Review , 86(1):180–194, 1996. [3] S. Chawla, J. Hartline, D. Malec, and B. Sivan. Prior-independent mechanisms for scheduling. In Proceedings of STOC , pages 51–60, 2013. [4] X. Chen, D. Du, and L. F. Zuluaga. Copula-based randomized mechanisms for truthful scheduling on two unrelated machines. Theory of Computing Systems , 57(3):753–781, 2015. [5] G. Christodoulou, E. Koutsoupias, and A. Kov´ acs. A proof of the Nisan–Ronen conjecture. 
+
+Journal of the ACM , 73(1), Article 6, 6:1–6:43, 2026. [6] C. Daskalakis and S. M. Weinberg. Bayesian truthful mechanisms for job scheduling from bi-criterion approximation algorithms. In Proceedings of SODA , pages 1934–1952, 2015. [7] A. Eden, M. Feldman, O. Friedler, I. Talgam-Cohen, and S. M. Weinberg. The competition complexity of auctions: A Bulow–Klemperer result for multi-dimensional bidders. In Proceedings of EC , page 343, 2017. [8] Y. Giannakopoulos and M. Kyropoulou. The VCG mechanism for Bayesian scheduling. ACM Transactions on Economics and Computation , 5(4):19:1–19:16, 2017. [9] O. Kuryatnikova and J. C. Vera. New bounds for truthful scheduling on two unrelated selfish machines. Theory of Computing Systems , 64(2):199–226, 2020. [10] R. Lavi and C. Swamy. Truthful mechanism design for multidimensional scheduling via cycle monotonicity. Games and Economic Behavior , 67(1):99–124, 2009. [11] P. Lu and C. Yu. An improved randomized truthful mechanism for scheduling unrelated machines. In Proceedings of STACS , pages 527–538, 2008. [12] A. M. Manelli and D. R. Vincent. Multidimensional Mechanism Design: Revenue Maximization and the Multiple-Good Monopoly. Journal of Economic Theory , 137(1):153–185, 2007. [13] A. Mu’alem and M. Schapira. Setting lower bounds on truthfulness. Games and Economic Behavior , 110:174–193, 2018. [14] N. Nisan and A. Ronen. Algorithmic mechanism design. Games and Economic Behavior ,35(1–2):166–196, 2001. [15] K. Roberts. The characterization of implementable choice rules. In J.-J. Laffont, editor, Aggre-gation and Revelation of Preferences. Papers presented at the 1st European Summer Workshop of the Econometric Society , pages 321–348. North-Holland, 1979. 
+
+# A Deferred Proofs 
+
+A.1 Proof of Claim 2 
+
+Proof. Let M be a deterministic BIC mechanism. First suppose that D > 0 or D′ > 0. Since M is deterministic and machine 2’s two types are equally likely, this means that on at least one of the four type profiles, job 2 is assigned to machine 2. On that profile, the makespan is at least H/ 2. Since each profile has probability 1 /4, E[Cmax (M )] ≥ 14 · H 
+
+> 2
+
+= H 
+
+> 8
+
+. Because H = 4 /δ and δ < 1/4, we 15 have H ≥ 16. Therefore E[Cmax (M )] ≥ 2. It remains to consider the case D = D′ = 0. Then job 2 is assigned on every type profile to machine 1, and therefore S = S′ = 0. The switch inequality becomes δ(B − B′) ≤ 0, so 
+
+B ≤ B′. (A.1) Conditional on machine 1 having type a = (1 , δ ), the mechanism either assigns both jobs to machine 1, which has makespan 1 + δ, or assigns job 1 to machine 2 and job 2 to machine 1, which has makespan 2. Hence 
+
+E[Cmax (M ) | a] = B(1 + δ) + (1 − B)2 = 2 − (1 − δ)B. (A.2) Conditional on machine 1 having type b = (1 − δ, 2), assigning both jobs to machine 1 has makespan 3 − δ, while assigning job 1 to machine 2 and job 2 to machine 1 has makespan 2. Hence 
+
+E[Cmax (M ) | b ] = B′(3 − δ) + (1 − B′)2 = 2 + (1 − δ)B′. (A.3) Averaging (A.2) and (A.3), and using (A.1), gives E[Cmax (M )] = 2 + 1−δ 
+
+> 2
+
+(B′ − B) ≥ 2. Thus in all cases E[Cmax (M )] ≥ 2. By (3.1), 
+
+E[Cmax (M )] 
+
+E[OPT 2] ≥ 2(3 + δ)/2 = 43 + δ .
+
+A.2 Proof of Theorem 2 
+
+Proof. For a type r of a given machine, let qr denote its interim allocation vector, whose j-th coordinate is the probability that job j is assigned to that machine. Let Pr denote its interim expected payment. We consider unrelated-machines makespan minimization with two machines and two jobs. Each machine has two possible types, each occurring with probability 1 /2, independently across machines. We denote allocations by 11 , 12 , 21 , 22, where the first digit is the machine receiving job 1 and the second the machine receiving job 2. Fix an integer H ≥ 2. Machine 1 has two possible types, each with probability 1/2: 
+
+A = ( H, H + 1) , B = (3 H + 1 , H ).
+
+Machine 2 has two possible types, each with probability 1/2: 
+
+C = (4 H + 1 , 3H + 1) , D = (2 , 2H + 1) .
+
+The prior is the product of these two marginals. The makespan table is: Profile 11 12 21 22 (A, C ) 2H + 1 3H + 1 4H + 1 7H + 2 (A, D ) 2H + 1 2H + 1 H + 1 2H + 3 (B, C ) 4H + 1 3H + 1 4H + 1 7H + 2 (B, D ) 4H + 1 3H + 1 H 2H + 3 Thus the unique profile-wise first-best optimum is ( A, C ) 7 → 11 , (A, D ) 7 → 21 , (B, C ) 7 →
+
+16 12 , (B, D ) 7 → 21 . Therefore by Lemma 1 
+
+E[OPT 2] = (2 H + 1) + ( H + 1) + (3 H + 1) + H
+
+4 = 7H + 3 4 .
+
+The deterministic BIC optimum. We show that the first-best optimum is not BIC. Under the first-best, machine 1’s interim allocations are qA =   12 , 1 , q B =   12 , 12
+
+ .
+
+The BIC constraints for machine 1 require 
+
+PA − PB ≥ A · (qA − qB ) = ( H, H + 1) ·
+
+
+
+0, 12
+
+
+
+= H + 1 2 ,
+
+and also 
+
+PA − PB ≤ B · (qA − qB ) = (3 H + 1 , H ) ·
+
+
+
+0, 12
+
+
+
+= H
+
+2 .
+
+This is impossible. Therefore the first-best is not BIC. Moreover, as seen from the table above, on each profile, every deterministic allocation other than the first-best increases the makespan by at least H. Hence any deterministic rule with total cost strictly below (7 H + 3) + H = 8 H + 3 is non-BIC. Therefore every deterministic BIC mechanism has total cost at least 8 H + 3, and OPT DetBIC ≥ 8H+3 4 . This lower bound is tight. Consider the deterministic rule (which changes only the allocation for ( B, C ))): (A, C ) 7 →
+
+11 , (A, D ) 7 → 21 , (B, C ) 7 → 11 , (B, D ) 7 → 21 . Its total cost is (2 H + 1) + ( H + 1) + (4 H + 1) + H =8H + 3 . We show that this deterministic allocation rule is BIC. Clearly, for machine 1, we have 
+
+qA = qB =   12 , 1 , hence its BIC constraints are satisfied by choosing PA = PB .For machine 2, we have qC = (0 , 0) , q D = (1 , 0) . Thus qC − qD = ( −1, 0) . The BIC constraints for machine 2 require C · (qC − qD) ≤ PC − PD ≤ D · (qC − qD). That is, −(4 H + 1) ≤ PC − PD ≤ − 2.
+
+This interval is nonempty. For example, choose PC − PD = −2. Thus the rule is deterministic BIC. Consequently, OPT DetBIC = 8H+3 4 .
+
+A randomized BIC mechanism Let δ = 12H+2 . Now consider the following randomized mechanism: ( A, C ) 7 → 11 , (B, C ) 7 → 12 , (B, D ) 7 → 21 , and (A, D ) 7 →
+
+(
+
+21 with probability 1 − δ, 
+
+12 with probability δ. 
+
+This mechanism differs from the first-best optimum only at profile ( A, D ), where allocation 12 has cost 2 H + 1 instead of the optimal cost H + 1. The cost increase at that profile is 
+
+H, and it is incurred with probability δ. Therefore the sum of the four conditional expected profile costs is 7 H + 3 + δH = 7 H + 3 + H 
+
+> 2H+2
+
+. Hence this randomized mechanism has expected makespan 14
+
+
+
+7H + 3 + H
+
+> 2H+2
+
+
+
+. It remains to verify BIC. For machine 1, the interim allocations are 
+
+qA =   1+ δ 
+
+> 2
+
+, 1 − δ
+
+> 2
+
+ , q B =   12 , 12
+
+ . Therefore qA − qB =   δ 
+
+> 2
+
+, 1−δ
+
+> 2
+
+ .
+
+Machine 1’s BIC constraints are feasible if A · (qA − qB ) ≤ PA − PB ≤ B · (qA − qB ). We have 
+
+A · (qA − qB ) = Hδ + ( H + 1)(1 − δ)2 = H + 1 − δ
+
+2 ,
+
+and 
+
+B · (qA − qB ) = (3 H + 1) δ + H(1 − δ)2 = H + (2 H + 1) δ
+
+2 .
+
+17 These two quantities are equal exactly when H + 1 − δ = H + (2 H + 1) δ, or equivalently δ = 12H+2 .
+
+Thus machine 1’s BIC constraints bind exactly and can be satisfied by an appropriate choice of 
+
+PA − PB = H+1 −δ 
+
+> 2
+
+.For machine 2, the interim allocations are qC =  0, 12
+
+ , q D =  1 − δ 
+
+> 2
+
+, δ
+
+> 2
+
+ . Hence qC − qD =
+
+ −1 + δ 
+
+> 2
+
+, 12 − δ
+
+> 2
+
+ . Machine 2’s BIC constraints are feasible if 
+
+C · (qC − qD) ≤ PC − PD ≤ D · (qC − qD).
+
+It is enough to verify that C · (−2 + δ, 1 − δ) < 0 < D · (−2 + δ, 1 − δ) . Now 
+
+C · (−2 + δ, 1 − δ) = (4 H + 1)( −2) + (4 H + 1) δ + (3 H + 1) − (3 H + 1) δ = −(5 H + 1) + Hδ 
+
+Substituting δ = 12H+2 gives −(5 H + 1) + H 
+
+> 2H+2
+
+< −(5 H + 1) + 1 < 0, for every H ≥ 2. In addition, 
+
+D · (−2 + δ, 1 − δ) = 2( −2 + δ) + (2 H + 1)(1 − δ) = 2 H − 3 − δ(2 H − 1) .
+
+Substituting δ = 12H+2 gives 2 H − 3 − 2H−12H+2 = 4H2−4H−52H+2 > 0 for every H ≥ 2. Hence machine 2’s two BIC inequalities are simultaneously satisfied by choosing PC − PD = 0 . Thus the randomized mechanism is BIC. Consequently, OPT RandBIC ≤ 14
+
+
+
+7H + 3 + H
+
+> 2H+2
+
+
+
+.
+
+The integrality gap Combining the deterministic lower bound and the randomized upper bound gives OPT DetBIC 
+
+OPT RandBIC 
+
+≥
+
+> 8H+3 414
+
+
+
+7H + 3 + H
+
+> 2H+2
+
+ = 8H + 3 7H + 3 + H
+
+> 2H+2
+
+.
+
+As H → ∞ , 8H+3 7H+3+ H
+
+> 2H+2
+
+−→ 87 .
+
+A.3 Proof of Proposition 2 
+
+Proof. The first-best optimum is 1, since the m unit jobs can be assigned one per machine. In the r-layer environment, every job ties across all mr destination slots, so independent uniform tie-breaking makes the m destinations independent and uniform. Thus two distinct jobs collide with probability 1 /(mr ), and hence ∆ r = 1. Let Y = Cmax (MW (r)), the maximum occupancy of the mr 
+
+slots. The probability of no collision satisfies P[no collision] = Qm−1
+
+> ℓ=0
+
+ 1 − ℓmr 
+
+ ≤ exp  − m−12r
+
+ .
+
+Since Y ≥ 1 always and Y ≥ 2 whenever a collision occurs, E[Y ] ≥ 1 + P[collision] ≥ 2 −
+
+exp  − m−12r
+
+ . Therefore E[Y ] ≤ 1 + ε implies 1 − exp  − m−12r
+
+ ≤ ε, and hence r ≥ m−12[ − log(1 −ε)] . Finally, for 0 < ε < 1/2, we have − log(1 − ε) ≤ ε 
+
+> 1−ε
+
+< 2ε, which yields r > m−14ε .
+
+18

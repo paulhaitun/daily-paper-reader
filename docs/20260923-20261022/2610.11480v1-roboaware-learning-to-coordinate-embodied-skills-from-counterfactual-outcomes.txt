@@ -1,0 +1,1162 @@
+Title: RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+URL Source: https://arxiv.org/pdf/2610.11480v1
+
+Published Time: Fri, 09 Oct 2026 01:20:51 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+Bohan Zhou 1*† , Xingbei Chen 2,* , Emily Huang 3, Weilin Ruan 1, Haojian Huang 4, Yehang Zhang 2, Zexi Li 1
+
+Wenqian Li 3, Qize Yu 5, Zetian Song 5, Leyi Wu 2, Jinghao Li 1, Mingxuan Song 5, Xinrun Xu 6
+
+Zongyang Qiu 2, Yangkai Wei 3, Tianyi Zhang 3, Kaiwen Zhou 3, Yinchuan Li 3, James Cheng 1
+
+> *
+
+Equal Contribution. †Project Leader. 
+
+> 1
+
+The Chinese University of Hong Kong 2The Hong Kong University of Science and Technology 3Knowin AI 
+
+> 4
+
+The University of Hong Kong 5Peking University 6University of the Chinese Academy of Sciences 
+
+CONTACT {zhoubh} @ link.cuhk.edu.hk 
+
+Embodied coding agents can combine modular robot skills with frozen end-to-end policies, yet effective composition requires anticipating which policy family will succeed in the current physical state. We present RoboAware , which builds on coding agents’ skill orchestration by learning only a state-conditioned responsibility coordinator from counterfactual outcomes. Inspired by the success of REPL, we propose the P 5 schema and formulate a hierarchical MDP based on it. P 5 organizes skills uniformly into five semantic stages, defining where responsibility can be compared. To address the lack of counterfactual branch outcomes in existing work, we introduce State-Locked Counterfactual Branching (SCB) ,which restores the same training state to generate and execute a code block from each admissible family, exposing outcomes that selected-branch experience leaves unobserved. Building on this, we propose 
+
+Execution-Aware Learning (EAL) , which combines Monte Carlo tree search with Q-learning to distill these outcomes into family-conditioned values. At deployment, the coordinator selects the policy family according to observable context, and the frozen coding agent generates the next local code block. Comprehensive single-episode evaluations on 100 tasks show that RoboAware reaches a 77.0% 
+
+overall success rate, with SOTA averages of 90.0% on RoboSuite, 73.8% on diverse LIBERO-Pro task clusters, and 90.0% on challenging RoboTwin bimanual tasks, outperforming existing code-as-policy and VLA-harness baselines. (a) P⁵ Skill Schema (b) P⁵ MDP P⁵ Examples (c) Execution-Aware Learning (EAL) 
+
+Perceive Propose 
+
+Perform 
+
+## P⁵                                 
+
+> Perceive_ object_pose Propose_ eef_pose
+> Plan_motion_ to_eef_pose
+> Perform_ gripper
+> Plan_motion_ to_eef_pose
+> Pick (object) (grasp) (approach) (close) (lift)
+> Place (object) (place) (approach) (open) (retreat)
+> Push (object) (push) (prepush) —(push)
+> Pull (object) (pull) (prepull) —(pull)
+> Rotate (object) (rotate) (prerotate) —(rotate)
+> Left P⁵ (object) (L grasp) (L approach) (L close) (handover)
+> Right P⁵ (object) (R grasp) (R approach) (R close) (R lift)
+> Handover
+
+Mod E2E   
+
+> drawer pregrasp
+> Perceive
+> grasp
+> Propose Plan
+
+RoboAware 
+
+Counterfactual Branching Value Learning Skill Coordination   
+
+> Same State
+> MOD E2E
+> Backup
+> Evaluated
+> Transitions
+
+DSCB Bellman Update  
+
+> context
+> Frozen Coordinator
+> MOD E2E
+> selection code execution
+> Autoregressive VLM
+> <value>
+
+MLP Head 
+
+Pull 
+
+…      
+
+> close lift
+> Gripper Plan
+> box grasp pregrasp
+> Perceive Propose Plan
+
+Post-manipulate Pre-manipulate 
+
+Pick Place 
+
+t
+
+> Perform E2E
+> grasp → pull
+
+(Unifed) 
+
+> place on the table
+> Perform E2E
+> Train
+> loop
+
+Skill 
+
+Task: Put the box inside the drawer on the table 
+
+Figure 1 Overview of RoboAware. (a) The P 5 skill schema decomposes each skill into five stages—perceive, propose, pre-manipulate, perform, and post-manipulate—and unifies primitive skills ( e.g. , pick, place, push, pull) and compositional skills ( e.g. , handover) under one representation. (b) A hierarchical MDP selects a policy family 
+
+ci ∈ { Mod , E2E } at each P 5 stage decision boundary; a coding agent then generates each corresponding code block ai.(c) EAL learns family-conditioned coordination: SCB evaluates modular and end-to-end branches from the same restored state into DSCB , Q-learning yields Qθ (x, c ), and at test time a frozen coordinator selects best ci to condition code generation and execution. 1arXiv:2610.11480v1 [cs.RO] 8 Oct 2026 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+# 1 Introduction 
+
+Performing general-purpose embodied manipulation in diverse and unstructured environments remains challenging in the absence of low-level executor adaptation. Recent progress toward this goal has followed two major paradigms, namely end-to-end policies and coding agents, each with distinct strengths and limitations. Within the end-to-end paradigm, task-specific visuomotor controllers excel at contact-rich control but typically lack native support for open-vocabulary rebinding [1–3]. Vision-language-action (VLA) and world-action models (WAMs) support language-conditioned execution [4–7], yet become unreliable under compositional and state-distribution shifts. Coding agents, by contrast, enable Code-as-Policy [8–10] by flexibly composing program modules for long-horizon tasks. Their physical competence, however, is bounded by the exposed primitives, limiting fine-grained, closed-loop correction during contact-rich interactions. These complementary advantages inspire hybrid frameworks in which coding agents generate modular API compositions or invoke frozen end-to-end policies, most commonly VLAs, as contact-rich primitives [11–13]. Nevertheless, high-level coding agents lack inherent awareness of the divergent consequences of invoking different skill executors. They struggle to choose among an explicit modular composition, any available self-contained policy, and their possible switching patterns. For instance, modular execution can remain stable under task-distribution shift, whereas end-to-end execution excels in case of unexpected interruption. This raises a critical research question: How can we endow coding agents with outcome-aware execution responsibility over embodied skills? 
+
+We address this question with RoboAware , a framework that learns a responsibility boundary between modular composition and end-to-end execution from counterfactual outcomes. Here, a policy family c ∈{Mod , E2E } is the sole high-level coordination action; the API library comprises typed APIs together with their bound low-level backends; responsibility denotes which family should control the next semantically meaningful skill transition. The first challenge is to define where responsibility can be compared. The space of low-level code generation is too expansive and unstructured to provide a tractable basis for responsibility assignment. Inspired by the success of REPL-style programming [14], we propose the P5 Skill Schema 
+
+to address this limitation. The P 5 schema organizes embodied skills into semantically meaningful stages from perception to execution in 3D space. We formulate a finite-horizon hierarchical MDP that selects a policy family at each P 5 stage. At the lower level, we curate an API library combining typed modular interfaces for composability and controllability with end-to-end policies for contact-rich local execution. Conditioned on the selected family and current context, the frozen coding agent πcode generates a complete local code block through the fixed API library. Learning is confined to the responsibility coordinator, while skill implementation leverages the coding agent’s existing code-generation capability. The second challenge is to expose the missing outcome of the skills that were not selected. Many approaches execute open-loop skill sequences or code programs without attending to outcomes [8, 10, 15]. Methods that obtain outcomes typically rely on VLM-based evaluations limited to the predicted outcome of the executed trajectory, and therefore inherit selection bias [13, 16]. We introduce State-Locked Counterfactual Branching (SCB) , which leverages simulator (1) save-restore mechanisms and (2) oracle outcome judgments to execute every admissible family from an identical physical state, producing a same-state set of potential outcomes at each P 5 decision point. To convert these set-wise outcomes into deployable family selection, we formulate Execution-Aware Learning (EAL) , in which Monte Carlo tree search (MCTS) treats restorable P5 decision states as nodes and admissible policy families as edges, while Q-learning distills the explored outcomes into a family-conditioned value function Qθ . The family-wise values encode a relative responsibility preference over modular composition and the end-to-end family, reflecting expected remaining skill- and task-level return under an observation. During deployment, the RoboAware coordinator assigns responsibility by maximizing ρθ induced by Qθ, and a coding agent generates executable code blocks accordingly to transition from one P 5 state to the next, without state restoration or privileged simulator state. See Figure 1 for an overview of the proposed framework. Our contributions are as follows: • We formulate RoboAware as a hierarchical MDP that selects a policy family ci at each P 5 stage to produce code block ai. We curate its lower-level API library around two complementary families, namely composable modular components and end-to-end policies for contact-rich local skills. • We introduce SCB to acquire paired locked-state outcomes, and EAL to learn family-conditioned Qθ
+
+through MCTS-guided exploration and Q-learning. 
+
+> 2
+
+RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+• We recover the coordinator from Qθ and evaluate it on 100 tasks across three benchmarks, obtaining a SOTA 77.0% overall success rate. Ablations confirm the effectiveness of our designs. 
+
+# 2 Methodology 
+
+## 2.1 Problem Formulation 
+
+We consider language-conditioned manipulation in a physics environment E, where the observation at time t
+
+is ot = ( Irgb  
+
+> t
+
+, I d 
+
+> t
+
+, q t) from an agent-view RGB image, a metric depth map, and proprioception. We formulate the task as a finite-horizon MDP M = ( X , C, P, r, γ ). Decision point i occurs at the start of a P 5 stage, where the observation xi = ( ℓ, o i, h i, z i, g i) ∈ X is received. Here ℓ denotes the language instruction, hi
+
+the observable execution history, zi the current P 5 stage, and gi the active skill schema. The high-level action is a policy-family choice ci ∈ C i(zi, g i) ⊆ C = {Mod , E2E }. A coding agent generates a complete executable code block ai ∼ πcode (· | xi, c i) with ai ∈ A ci (xi, z i, g i), where AMod and AE2E are the modular-and end-to-end-family code-block spaces. Executing ai in E until the next decision point induces the transition 
+
+P(xi+1 | xi, c i) = Eai∼πcode (·| xi,c i)[PE (xi+1 | xi, a i)]. A binary reward r is received at task termination. γ = 1. Only the coordinator’s value model Qθ is trained; the coding agent, API interfaces, backend bindings, and low-level backend parameters remain fixed. 
+
+## 2.2 RoboAware Framework Condition on   
+
+> observable context Coordinator
+> 0.72 0.31
+> 3
+
+Closed-Loop Deployment 
+
+···   
+
+> Update
+> Simulate to terminal P5return sum
+> Evaluated Transitions
+> (successful, failed, nonpreferred)
+> 1
+
+State locked Counterfactual Search 
+
+> (restored)
+
+··· ···     
+
+> Selection ·UCB Backup
+> Budget
+> Try both families MOD E2E
+> Rollout
+
+Autoregressive Backbone      
+
+> Instruction Observation History (Stage, Skill) Family
+
+<VALUE> 
+
+MLP Head 
+
+Bellman Update  
+
+> Update
+> 2
+
+Execution-Aware Q-Learning     
+
+> P⁵Stage Boundary Feedback
+> ⋯
+> Back-propagate Retained Transitions
+> Expansion ·SCB
+
+1423 API Library          
+
+> API Calls + Executors
+> Perform_E2E ·VLA / WAM
+> MOD: Perception ·Propose ·Motion ·Gripper
+> E2E:
+> Generated Local Code
+> Coding Agent
+> Execute
+
+Figure 2 Method overview of EAL in RoboAware. (1) State-locked counterfactual search repeats Selection (UCB), Expansion ( SCB paired Mod/E2E branches from a restored ξi), Rollout (suffix return Gi), and Backup within budget 
+
+K, retaining successful, failed, and nonpreferred transitions in DSCB . (2) A VLM backbone with an MLP head maps context–family tokens ending in <VALUE> to Qθ (xi, c i), trained by Bellman updates on skill-completion and terminal-task feedback. (3) At deployment, frozen Qθ induces ρθ and selects c∗ 
+
+> i
+
+= arg max c ρθ (c | xi); a frozen coding agent generates a local code block against the fixed API library and executes it, looping on observable feedback at each P 5 boundary. 
+
+RoboAware formulates heterogeneous policy-family orchestration as stage-conditioned responsibility learning. The pipeline is visualized in Figure 2 and elaborated in Algorithm 1. 
+
+2.2.1 Skill Preparation P5 Skill Schema . We instantiate local embodied skills through either interface-based modular composition or a self-contained end-to-end controller. The P 5 skill schema decomposes each skill into five stages: perceive ,
+
+propose , pre-manipulate , perform , and post-manipulate . As shown in Figure 1, this schema provides a unified representation for arbitrary skills, including primitive skills ( e.g. pick, place, push, pull) and compositional skills ( e.g. handover). Given the task instruction ℓ and initial observation o0, the coding agent constructs a task-level plan G comprising P 5 skill schemas. Responsibility is reconsidered at each P 5 stage. 
+
+API Library Construction . Building on the P 5 stages, we expose an API library that supports the modular and end-to-end policy families. The Mod family uses an explicit intermediate interface for composability 
+
+3RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes    
+
+> Table 1 Offline screening of the selected VLA and WAM backends (successful / total). Full : complete task; G–L : grasp and lift.
+
+Method LIBERO-Pro RoboSuite RoboTwin 2.0 Full G–L Full G–L Full G–L 
+
+π0.5 10/14 13/14 0/4 2/4 0/10 2/10 FastWAM 4/14 11/14 0/4 0/4 10/10 10/10              
+
+> Table 2 High-level embodied APIs under the P 5
+> skill schema; ✓marks stages covered by each API.
+> API perc. prop. pre perf. post
+> Perceive_object_pose ✓
+> Propose_eef_pose ✓
+> Plan_to_eef_pose ✓✓
+> Perform_gripper ✓
+> Perform_E2E ✓✓✓✓
+
+and controllability, whereas the E2E family relies on an implicit internal loop for local contact competence. We assemble the library by offline screening of open-source modular perception, grasping, and motion components alongside released VLA and world-action-model (WAM) policies. For the Mod family, screening retains InstructSAM [17], our augmented NeuGraspNet+ from NeuGraspNet [18]—which expands sparse geometric candidates and selects Top-1 only among planner-feasible grasps—and cuRoboV2 [19] as the core backends for perception, pose proposal, and motion planning, respectively. Together with the deterministic gripper API, these components define the modular calls available to πcode . For the E2E family, offline evaluation reveals limited zero-shot performance on complete tasks, yet these policies perform well on local skills such as grasping and lifting (see Section 3.2). We therefore position VLA and WAM policies as local executors at grasp–lift granularity rather than as end-to-end policies for complete tasks. Effectiveness and efficiency screening selects π0.5 [20] and FastWAM [21] for integration into Perform_E2E (see Table 1). Screening details appear in Appendix B. Each stage admits both families except the propose stage (see Table 2). Perform_E2E spans the perceive , pre-manipulate , perform , and post-manipulate stages. A call remains atomic with respect to family selection until it meets its registered postcondition, reports failure, or exhausts its step budget. The API library, including its typed interfaces, backend bindings, and checkpoints, remains frozen during training and evaluation. 
+
+2.2.2 Execution-Aware Learning 
+
+Existing coding agents cannot reliably anticipate the physical consequences of executing a generated skill. To address this limitation, we propose Execution-Aware Learning ( EAL ) as illustrated in Figure 2, which learns family-conditioned outcome values from controlled simulator experience. 
+
+State-Locked Counterfactual Branching (SCB) is the training-time operator that makes the otherwise missing policy-family outcomes observable. On a fixed set of simulator training tasks, EAL builds a Monte Carlo search tree from each sampled P 5 stage-entry context. Nodes are restorable decision states, and outgoing edges correspond to admissible policy families. Each node stores a snapshot ξi = ( xi, m i, p i, r )containing the simulator and execution state required for exact restoration. Beyond the deployment-visible context xi, it provides oracle masks mi, ground-truth object poses pi, and access to the terminal reward evaluator r. These privileged signals support the training rewards including pose-based assessment under threshold ϵp. The search repeats four search phases within a budget of K completed suffix simulations per root. See Appendix A.2 for details. 
+
+Selection. Starting from the root, the search follows stored tree paths by selecting family edges with UCB at already expanded nodes, where Ni and Ni(c) are node and family-edge visit counts, and ̂ Qi(c) is the empirical return estimate: 
+
+ctree  
+
+> i
+
+= arg max 
+
+> c∈C i
+
+[̂ 
+
+Qi(c) + cucb 
+
+√
+
+log(1 + Ni)1 + Ni(c)
+
+]
+
+. (1) 
+
+Expansion. At a new node, SCB evaluates every admissible family at least once from the same physical state and observable-history prefix. For each c ∈ C i, it restores ξi, samples aci ∼ πcode (· | xi, c ), and executes the block to the next decision point or termination. The resulting transition contains a successor snapshot 
+
+ξci+1 , terminal indicator dci , and training reward ˜ rci . Reevaluating an existing family edge repeats restoration, code generation, and execution with a fresh code sample. 
+
+> 4RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+Rollout. From each nonterminal successor, the codes are generated using API library to complete the suffix. The suffix ends at task termination, unrecoverable failure, or the episode horizon T . Rollout-only states are not added as expanded tree nodes during this simulation. Each completed suffix yields Gi = ∑Tj=i γj−i ˜rj . ˜ rci
+
+is defined in Equation (3). 
+
+Backpropagation. This tree-statistics backup propagates the suffix return Gi along the selected tree path, including each ancestor’s recorded prefix rewards. Each visited node and family-edge count is incremented, and ̂ Q is updated by empirical averaging. These statistics guide subsequent selection; the parameters of Qθ
+
+are optimized only after data collection. Within budget K = 20, all evaluated tree edges, including failed and nonpreferred branches, contribute transitions to the training dataset: 
+
+DSCB = ⋃
+
+> i
+
+{(xi, c, ˜rci , x ci+1 , d ci , ξ ci+1 ) : c ∈ C i
+
+} . (2) 
+
+Execution-Aware Q-learning. A task comprises several P 5 skill blocks. At the end of each P 5 stage, oracle signals in ξci+1 yield a perception score rc 
+
+> p,i
+
+∈ [0 , 1] from agreement with mask mi, and a manipulation score 
+
+rc 
+
+> m,i
+
+∈ [0 , 1] from object-pose error against pi under threshold ϵp. The binary task-success reward r ∈ { 0, 1}
+
+is received only when dci = 1. The transition reward used in both tree search and Q-learning is the linear combination with non-negative weights: ˜rci = wprc 
+
+> p,i
+
++ wmrc 
+
+> m,i
+
++ wtdci r, where wp + wm + wt = 1 . (3) The learning target is Qθ(xi, c ) ≈ max π Eπ
+
+[∑ Tj=i γj−i ˜rj | xi, c i = c], where π governs subsequent family choices under the fixed coding agent and API library. The value Qθ(xi, c ) estimates the remaining skill-and task-level return conditional on choosing family c next. After collecting DSCB across the training tasks, we optimize Qθ on this fixed transition dataset using Bellman targets rather than directly regressing the rollout returns Gi or tree estimates ̂ Qi(c). All evaluated tree edges, including failed and nonpreferred branches, contribute to this update. For transitions sampled from DSCB , we optimize θ by gradient-based backpropagation through Qθ , minimizing the following Smooth-L1 Bellman loss: 
+
+LEAL (θ) = E(xi,c )∼D SCB ℓ
+
+[
+
+Qθ (xi, c ) − (˜rci + γ(1 − dci ) max 
+
+> c′∈C i+1
+
+Q¯θ (xci+1 , c ′))]
+
+, (4) where Q¯θ is a stop-gradient target copy and ℓ(ϵ) refers to the Smooth-L1 loss, which maintains stable gradients in the regime of large errors as the L1 loss does and facilitates smooth optimization for small errors analogous to the L2 loss: 
+
+ℓ(ϵ) = 
+
+{ 12 ϵ2 if |ϵ| < 1,
+
+|ϵ| − 12 otherwise . (5) 
+
+Q-Modeling . Qθ (xi, c ) is parameterized with a lightweight VLM backbone ( e.g. Qwen3.5-0.8B). The state 
+
+xi = ( ℓ, o i, h i, z i, g i) and family c form a multimodal token sequence ending in a <VALUE> token. An MLP head maps its final-layer hidden state to the scalar Q-value, optimized with the Bellman objective in Equation (4). 
+
+2.2.3 Test-Time Skill Coordination 
+
+During training, repeated access to ξi and oracle outcome judgments supervises values, whereas neither is included at test time. The learned values induce a relative responsibility preference over admissible families: 
+
+ρθ (c | xi) = exp( Qθ (xi, c )) 
+
+∑ 
+
+> c′∈C i
+
+exp( Qθ (xi, c ′)) . (6) The RoboAware coordinator selects c∗ 
+
+> i
+
+= arg max c∈C i ρθ(c | xi) (equivalently arg max c Qθ(xi, c ); see Ap-pendix A.3), and the coding agent generates ai ∼ πcode (· | xi, c ∗ 
+
+> i
+
+). The coding agent executes the selected block until the next semantic boundary or task termination, then updates ( hi, z i, g i) from observable feedback. 
+
+> 5RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+Family selection repeats at each subsequent boundary with Qθ fixed. Both family selection and local code generation respond to updated observations without parameter updates or changes to executor interfaces. 
+
+# 3 Experiments 
+
+## 3.1 Experimental Protocol 
+
+Benchmarks . Our evaluation contains 100 tabletop-manipulation tasks across three benchmarks: LIBERO-Pro [22], RoboSuite [23], and RoboTwin 2.0 [24]. We use scene seed 0 only to collect privileged SCB branches and train Qθ . The learned coordinator is then frozen and evaluated on seeds 1–10, giving 1,000 test episodes in total. 
+
+Baselines. We compare RoboAware with the following baselines: • End-to-end policies : π0 [7], π0.5 [20], FastWAM [21], FasterWAM [25], as standalone controllers; • Code-as-policy : CaP [8], CaP-X [9], RATS [26], and ASPIRE [27], without learned family coordination. • VLA with harness : Pigey [28], VLS [29], and Harness-VLA [11], which invoke a frozen policy. 
+
+## 3.2 Benchmark Performance          
+
+> Table 3 Aggregate success rates (%) on LIBERO-Pro (instruction-redirection T/ position-swap S), RoboSuite, and RoboTwin. RoboSuite and RoboTwin use their full task pools under seeds 1–10. Overall is the mean over available columns. On RoboTwin, π0and π0.5are incompatible with RoboTwin’s dual-arm setup, so results involving these models are marked “/” because of the embodiment mismatch. For fair comparison, global cross-episode memory is disabled for baselines that rely on memory. All seeds are tested in one trial .
+
+Method LIBERO-Pro RoboSuite RoboTwin Overall Spat-T Spat-S Obj-T Obj-S Goal-T Goal-S L10-T L10-S 
+
+End-to-end policies 
+
+π0 [7] 0.0 0.0 0.0 2.0 0.0 0.0 0.0 0.0 0.0 / 0.2 
+
+π0.5 [20] 1.0 20.0 1.0 17.0 2.0 38.0 1.0 8.0 0.0 / 9.8 FastWAM [21] 30.0 0.0 10.0 0.0 10.0 0.0 10.0 0.0 0.0 81.9 14.2 FasterWAM [25] 50.0 0.0 10.0 10.0 10.0 10.0 10.0 0.0 0.0 85.6 18.6 
+
+Code as policy 
+
+CaP [8] 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 70.0 5.6 7.6 CaP-X [9] 0.0 0.0 10.0 0.0 0.0 0.0 0.0 0.0 50.0 6.9 6.7 RATS [26] 2.0 18.0 10.0 8.0 8.0 8.0 0.0 0.0 45.0 0.0 9.9 ASPIRE [27] 60.0 51.0 95.0 98.0 45.0 81.0 38.0 22.0 80.0 0.0 57.0 
+
+VLA with harness 
+
+Pigey [28] 80.0 66.0 54.0 54.0 22.0 44.0 28.0 12.0 15.0 / 41.7 VLS [29] 54.0 42.0 41.0 45.0 33.0 38.0 25.0 15.0 0.0 / 32.6 Harness-VLA [11] 50.0 70.0 50.0 90.0 40.0 60.0 40.0 30.0 20.0 / 50.0 
+
+RoboAware (ours) 68.0 68.0 92.0 86.0 66.0 84.0 64.0 62.0 90.0 90.0 77.0 
+
+End-to-end policies struggle with whole-task distribution shifts. For both VLAs and WAMs, unfamiliar skill combinations, scene types, and perturbations may deviate substantially from their training distributions, leading to low zero-shot SRs in Table 3. In comparison, RoboAware generates composable modular alternatives under such conditions while retaining end-to-end policies for local skills suited to their capabilities. 
+
+Code-as-policy methods are constrained by contact precision and accumulated experience. Code-as-policy methods offer stronger long-term planning and composability for long-horizon bimanual tasks such as those in RoboTwin. However, within-skill contact-rich performance depends on available primitives: CaP and CaP-X generate detailed code at test time, yet may lack the precision needed for tasks such as placing a mug 
+
+> 6
+
+RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+inside a microwave in LIBERO-Pro (see Figure 3). Single-turn evaluation without cross-episode adaptation or multi-turn memory further limits the benefits of accumulated experience for memory-based methods like CaP-X, RATS, and ASPIRE. RoboAware addresses these limitations by combining modular composition with local end-to-end control and learning state-dependent family responsibility from training-time outcomes. 
+
+VLA harnesses remain limited by outcome anticipation. We observe that VLS [29] can be misled by early-stage behavior in long-horizon tasks, where initial progress may not reflect readiness for later interactions. Harness-VLA is closely related to our work and achieves competitive performance. However, once the selected family changes the physical state, the alternative family’s outcome at the original state remains unobserved, so family switching relies on experiential judgments. RoboAware addresses this gap through SCB and EAL ,which expose same-state alternatives for family selection. 
+
+## 3.3 Experimental Analysis RoboAware (ours) 
+
+> Task: Put the white mug in the microwave and close it
+
+Cap-X 
+
+Figure 3 Comparison between CaP-X and RoboAware on a contact-rich LIBERO-Pro task “Put the white mug in the microwave and close it.” Task: Pick the salad dressing and place it in the basket 
+
+end-to-end modular hybrid (ours)    
+
+> Mod E2E Mod E2E Mod E2E
+
+Figure 4 A representative LIBERO-Pro task compar-ison and visualization of the responsibility preference distribution ρθ for RoboAware, RoboAware-EO, and RoboAware-MO. 
+
+Takeaway 1: Neither policy family alone provides broad high-success task coverage. We restrict code generation to modular composition (RoboAware-MO) or end-to-end blocks (RoboAware-EO), keeping the same API library and tasks as RoboAware. Success rate (SR) reductions in group A of Table 4 show that both families must be coordinated by state. In a LIBERO-Pro task illustrated in Figure 4, RoboAware-EO and RoboAware-MO fail at different stages, whereas RoboAware succeeds by switching policy families across P5 boundaries. The ρθ visualization assigns lower preference to the families used by the ablation variants at the illustrated states, consistent with their failures. 
+
+Table 4 Ablation success rates (%) on the three benchmarks, grouped by conclusions A–C in this analysis. RoboAware is the common reference. LIBERO-Pro aggregates its eight T/S evaluation splits. Abbreviations: MO = modular only; EO = end-to-end only; UO = unpaired outcomes; TF = training free; FH = fixed handoff; ES = episode selection. Variants LIBERO-Pro RoboSuite RoboTwin 2.0 
+
+A. Policy Family 
+
+RoboAware-MO 54.8 67.5 41.9 RoboAware-EO 49.5 60.0 45.6 
+
+B. Counterfactual Outcome 
+
+RoboAware-UO 58.5 75.0 53.8 RoboAware-TF 51.0 60.0 40.0 
+
+C. Coordination Mode 
+
+RoboAware-FH 64.5 82.5 55.6 RoboAware-ES 59.3 70.0 51.9 RoboAware 73.8 90.0 90.0 
+
+Table 5 Group B ablations of coordinator training and same-state outcomes. ✓:present; ✗: absent. Variant Training Counterfactual 
+
+ours ✓ ✓
+
+ours -UO ✓ ✗
+
+ours -TF ✗ ✗
+
+Table 6 Group C ablations of when family responsibility may change. When: decision points; Family: modular / e2e. Variant When Family 
+
+ours Each stage Mod / E2E 
+
+ours -FH Fixed handoff Mod + E2E 
+
+ours -ES Episode start Mod / E2E 
+
+Takeaway 2: Paired same-state outcomes improve Execution-aware learning. To evaluate the importance of SCB , we ablate coordinator training and counterfactual supervision (Table 5): RoboAware 
+
+7RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+uses both, RoboAware-UO trains Qθ only on executed trajectories without state-locked branching, and RoboAware-TF skips coordinator training so the coding agent chooses directly from the hybrid API library. Higher SR for RoboAware-UO than RoboAware-TF in group B of Table 4 indicates that the coding agent lacks inherent execution awareness and that coordinator training still helps without counterfactuals. Yet executed-only branches inherit the agent’s experience distribution and introduce selection bias. A modest SR decrease for RoboAware-UO relative to RoboAware therefore supports the necessity of paired counterfactual executions from the same ξi.
+
+Takeaway 3: RoboAware benefits from fine-grained coordination at P5 stages. Following the same training protocol to obtain Qθ, we compare three coordination strategies that differ in when family responsibility may change. RoboAware reselects a policy family at every P 5 stage. RoboAware-FH (fixed handoff) follows a fixed protocol: modular APIs for perceive and pre-manipulate , then an E2E call for subsequent execution. RoboAware-ES (episode selection) chooses one family at episode start and retains it for the entire task. Lower SRs for both variants in group C of Table 4 suggests that neither a fixed handoff nor a single episode-level decision tracking changing execution responsibility as well as per-stage coordination (Table 6). 5 10 20 50 
+
+> K
+> 70 75 80 85 90 95 SR (%)
+
+Adopted 
+
+72.0% 80.0% 81.0% 87.0% 85.0% 90.0% 86.0% 90.0%          
+
+> +8.0 pp +6.0 pp +5.0 pp +4.0 pp
+> Uniform UCB
+> Figure 5 Average RoboSuite success rates (%) across bud-gets K∈ { 5,10 ,20 ,50 }.Hollow & filled circles denote RoboAware-UA & RoboAware. We adopt K=20.
+
+Aloha AgileX Franka Panda ARX X5 UR5 WSG Cursor Codex Claude Code 
+
+# 87.0 88.0 85.0 89.0 89.0 87.0 86.0 88.0 90.0 91.0 90.0 87.0  
+
+> SR (%) 84 86 88 90 92
+> Figure 6 RoboTwin 2.0 success rates (%) on a four-task subset across coding-agent backends (rows) and em-bodiments (columns). Color bar shows the SR range.
+
+Takeaway 4: UCB-guided exploration uses a limited branching budget more effectively. To test how a finite simulation budget is allocated during branching, we compare RoboAware with RoboAware-UA, which allocates evaluations uniformly over admissible families instead of the UCB rule in Equation (1). Figure 5 reports both under K ∈ { 5, 10 , 20 , 50 } in RoboSuite. SR gains diminish with K, so we use the elbow 
+
+K=20. Under matched budgets, RoboAware exceeds RoboAware-UA, indicating that UCB concentrates evaluations on promising families more effectively than uniform allocation. 
+
+Takeaway 5: RoboAware is less sensitive to coding-agent and embodiment variations. To assess sensitivity to changes in the coding agent and robot embodiment, we evaluate RoboAware with three coding-agent backends (Claude Code as default, Cursor, and Codex) across four embodiments (Aloha-AgileX as default, Franka-Panda, ARX-X5, and UR5-WSG) on four tasks in RoboTwin 2.0 (See Appendix Appendix C.1 for details), retaining the same API interfaces. Figure 6 shows a small average SR gap across coding-agent backends and embodiments. We attribute the small backend gap to P 5, which limits each generation to one code block ai ∈ A ci (xi, z i, g i). Notably, the cuRoboV2 backend of Plan_to_eef_pose inherently supports different robots through the same API interface across embodiments. 
+
+# 4 Related Work 
+
+> 8RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+## 4.1 Embodied Coding Agents 
+
+Embodied coding agents have progressed along three lines. Early language planners translated goals into sequences over closed skill APIs and improved grounding through semantic matching, affordance scoring, program-structured prompting, and execution feedback [15, 30–32]. Executable-policy methods such as CaP [8], VoxPoser [10], RoboCodeX [33], and CodeDiffuser [34] then generated Python controllers or geometric intermediates, gaining compositionality, spatial reasoning, and interpretability while remaining bounded by designer-provided abstractions and API coverage. Recent systems make the program itself adaptive. CaP-X [9] and AOR [35] repair code from multimodal rollouts, RHO [36] and GaP [37] optimize repository-or graph-structured policies through execution, VLCP [38] rewrites failed controllers within an episode, PhysCaP [39] actively probes latent physical properties, and ASPIRE [27] compounds validated repairs into a reusable skill library. This line strengthens modular program execution, yet its evidence is conditional on generating a modular code block. Neither success nor code-only repair reveals whether an end-to-end block performs better at the same state. We instead use SCB to generate and execute modular and end-to-end coding blocks from the same restored state, and EAL learns their family-conditioned values from paired outcomes. 
+
+## 4.2 End-to-End Policy Orchestration and Execution Harnesses 
+
+End-to-end policy orchestration has likewise progressed along three lines: generalist VLAs including RT-1 [4], RT-2 [5], Octo [40], OpenVLA [6], and π0 [7] broaden local language-conditioned control, while hierarchical agents move planning, memory, grounding, and progress tracking to a VLM or code layer, exposing VLAs as bounded tools. Recent variants add tool-aligned post-training, persistent semantic state, tractability-aware interfaces, interruptible physical orchestration, and modular monitor, planner, and controller wrappers [11, 12, 28, 41–45]. VLS [29] instead steers the sampling of a frozen generative policy with VLM-synthesized rewards. Hybrid and heterogeneous-policy harnesses including RoboRouter [46], RoboHarness [13], and RouterVLA [47] then infer applicability from execution traces, semantic retrieval, capability memory, outcome-disjoint probes, or transition structure. Related methods including Reset [48], SwitchVLA [49], SemHandoff [50], and BICPO-VLA [51] prepare out-of-distribution initial states, condition switching on execution phase, diagnose semantic handoffs, or reduce asynchronous takeover mismatch. Finally, VLM oracles, learned rewards, frozen-feature success probes, counterfactual relabeling, and self-evolving critics detect, rank, or repair attempts [16, 52–60]. These methods estimate absolute success, compare within-policy alternatives, or infer cross-policy suitability from retrospective traces and probes. Our distinction is to use simulator-restored, same-state executions to obtain paired outcomes for modular and end-to-end families within a common skill-stage interface. 
+
+# 5 Conclusion and Limitations 
+
+We presented RoboAware, which learns state-dependent responsibility between modular composition and end-to-end control while keeping the coding agent and API library fixed. The P 5 skill schema defines the semantic boundaries at which responsibility is assigned, and SCB exposes both family outcomes at such a boundary by executing paired code blocks from identical restored states. From this paired experience, 
+
+EAL combines UCB-guided MCTS with Q-learning into family-conditioned estimates of remaining skill-and task-level return. At deployment, these estimates select a family before code generation from observable context alone, and responsibility is reconsidered at each subsequent boundary without simulator restoration, privileged inputs, or online search. Across 100 tasks in LIBERO-Pro, RoboSuite, and RoboTwin 2.0, this makes anticipated physical outcomes an explicit basis for composing complementary frozen skills. We outline two directions for future work. First, RoboAware currently integrates only modular composition and end-to-end policies. Extending it to generalizable reinforcement learning policies, retrieval-based policies, and policies learned from demonstrations may require new counterfactual outcome data and further coordinator training. Second, responsibility also changes hands only at P 5 boundaries, so a single atomic end-to-end invocation may span several stages and leave transient failures to its internal controller until a postcondition, failure signal, or timeout returns control. Finer-grained interruption under ambiguous observations therefore remains an open problem. 
+
+> 9
+
+RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+# References 
+
+[1] Tony Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with low-cost hardware. In Robotics: Science and Systems (RSS) , 2023. [2] Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin Burchfiel, and Shuran Song. Diffusion policy: Visuomotor policy learning via action diffusion. In Robotics: Science and Systems (RSS) , 2023. [3] Yanjie Ze, Gu Zhang, Kangning Zhang, Chenyuan Hu, Muhan Wang, and Huazhe Xu. 3D diffusion policy: Generalizable visuomotor policy learning via simple 3D representations. In Robotics: Science and Systems (RSS) ,2024. [4] Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Joseph Dabis, et al. RT-1: Robotics transformer for real-world control at scale. In Robotics: Science and Systems (RSS) , 2023. [5] Brianna Zitkovich, Tianhe Yu, Sichun Xu, Peng Xu, Ted Xiao, et al. RT-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning (CoRL) , 2023. [6] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, et al. OpenVLA: An open-source vision-language-action model. In Conference on Robot Learning (CoRL) , 2024. [7] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Robert Equi, et al. π0: A vision-language-action flow model for general robot control. In Robotics: Science and Systems (RSS) , 2025. [8] Jacky Liang, Wenlong Huang, Fei Xia, Peng Xu, Karol Hausman, Brian Ichter, Pete Florence, and Andy Zeng. Code as policies: Language model programs for embodied control. In IEEE International Conference on Robotics and Automation (ICRA) , 2023. [9] Letian Fu, Justin Yu, Karim El-Refai, Ethan Kou, Haoru Xue, et al. CaP-X: A framework for benchmarking and improving coding agents for robot manipulation. arXiv preprint arXiv:2603.22435 , 2026. [10] Wenlong Huang, Chen Wang, Ruohan Zhang, Yunzhu Li, Jiajun Wu, and Fei-Fei Li. VoxPoser: Composable 3D value maps for robotic manipulation with language models. In Conference on Robot Learning (CoRL) , 2023. [11] Yixian Zhang, Huanming Zhang, Feng Gao, Xiao Li, Zhihao Liu, et al. Harness VLA: Steering frozen VLAs into reliable manipulation primitives via memory-guided agents. arXiv preprint arXiv:2607.08448 , 2026. [12] Jiaheng Hu, Mohit Shridhar, Caden Lu, Dhruv Shah, Hao-Tien Lewis Chiang, Jie Tan, and Annie Xie. What matters in orchestrating robot policies: A systematic study of hierarchical VLA agents. arXiv preprint arXiv:2606.10267 , 2026. [13] Jinbang Huang, Yuanzhao Hu, Zhiyuan Li, Ran Qi, Yixin Xiao, et al. RoboHarness: Memory-driven orchestration of heterogeneous robot policies for long-horizon planning. arXiv preprint arXiv:2607.18060 , 2026. [14] Anthony Z. Liu, Xinhe Wang, Jacob Sansom, Yao Fu, Jongwook Choi, Sungryull Sohn, Jaekyeom Kim, and Honglak Lee. Interactive and expressive code-augmented planning with large language models. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 20330–20354, 2025. doi: 10.18653/v1/2025.acl-long.994. [15] Ishika Singh, Valts Blukis, Arsalan Mousavian, Ankit Goyal, Danfei Xu, Jonathan Tremblay, Dieter Fox, Jesse Thomason, and Animesh Garg. ProgPrompt: Generating situated robot task plans using large language models. In IEEE International Conference on Robotics and Automation (ICRA) , 2023. [16] Jiachen Zhang, Junnan Nie, Junyi Lao, Wei Cheng, Chenghao Liu, Jiaxin Jiang, and Songfang Huang. What frozen VLAs already know about success: A probing study of value-like structure in foundation robot policies. 
+
+arXiv preprint arXiv:2605.28527 , 2026. [17] Yuqian Yuan, Wentong Li, Zhaocheng Li, Yutong Lin, Juncheng Li, Siliang Tang, Jun Xiao, Yueting Zhuang, and Wenqiao Zhang. InstructSAM: Segment any instance with any instructions. arXiv preprint arXiv:2605.26102 , 2026. [18] Snehal Jauhri, Ishikaa Lunawat, and Georgia Chalvatzaki. Learning any-view 6DoF robotic grasping in cluttered scenes via neural surface rendering. In Robotics: Science and Systems (RSS) , 2024. [19] Balakumar Sundaralingam, Adithyavairavan Murali, and Stan Birchfield. cuRoboV2: Dynamics-aware motion generation with depth-fused distance fields for high-DoF robots. arXiv preprint arXiv:2603.05493 , 2026. [20] Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, et al. π0.5: A vision-language-action model with open-world generalization. In Proceedings of The 9th Conference on Robot Learning , volume 305 of Proceedings of Machine Learning Research , pages 17–40, 2025. URL https://proceedings.mlr.press/v305/black25a.html. [21] Tianyuan Yuan, Zibin Dong, Yicheng Liu, and Hang Zhao. Fast-WAM: Do world action models need test-time future imagination? arXiv preprint arXiv:2603.16666 , 2026. URL https://arxiv.org/abs/2603.16666. [22] Xueyang Zhou, Yangming Xu, Guiyao Tie, Yongchao Chen, Guowen Zhang, Duanfeng Chu, Pan Zhou, and Lichao Sun. LIBERO-PRO: Towards robust and fair evaluation of vision-language-action models beyond memorization. arXiv preprint arXiv:2510.03827 , 2025. [23] Yuke Zhu, Josiah Wong, Ajay Mandlekar, Roberto Martín-Martín, Abhishek Joshi, Kevin Lin, Soroush Nasiriany, and Yifeng Zhu. robosuite: A modular simulation framework and benchmark for robot learning. arXiv preprint arXiv:2009.12293 , 2020. 10 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+[24] Tianxing Chen, Zanxin Chen, Baijun Chen, Zijian Cai, Yibin Liu, Qiwei Liang, Zixuan Li, Xianliang Lin, Yiheng Ge, Zhenyu Gu, et al. RoboTwin 2.0: A scalable data generator and benchmark with strong domain randomization for robust bimanual robotic manipulation. In International Conference on Machine Learning (ICML) , 2026. URL https://icml.cc/virtual/2026/poster/62192. [25] Weiheng Zhao, Haoyi Jiang, Xin Shi, Liu Liu, Fan Huang, Zhizhong Su, Wei Sui, and Xinggang Wang. Faster-WAM: Efficient inference-time future conditioning for robust world action models. arXiv preprint arXiv:2608.04404 , 2026. URL https://arxiv.org/abs/2608.04404. [26] Junyi Zhang, Jiaxin Ge, Hanjun Yoo, Letian Fu, Zihan Yang, Yaowei Liu, Raj Saravanan, Shaofeng Yin, Justin Yu, Dantong Niu, et al. Playful agentic robot learning. arXiv preprint arXiv:2606.19419 , 2026. [27] Runyu Lu, Yubo Wu, Ethan Kou, Letian Fu, Wenli Xiao, Ajay Mandlekar, Yinzhen Xu, Guanya Shi, Ken Goldberg, Ang Chen, Mosharaf Chowdhury, Yuke Zhu, Linxi “Jim” Fan, and Guanzhi Wang. ASPIRE: Agentic /skills discovery for robotics. arXiv preprint arXiv:2607.00272 , 2026. [28] Liane Galanti, Dhruv Shah, and Tri Dao. Addressing the orchestration gap in generalist robots via physical agency. arXiv preprint arXiv:2607.21725 , 2026. [29] Shuo Liu, Ishneet Sukhvinder Singh, Yiqing Xu, Jiafei Duan, and Ranjay Krishna. VLS: Steering pretrained robot policies via vision-language models. arXiv preprint arXiv:2602.03973 , 2026. [30] Chan Hee Song, Jiaman Wu, Clayton Washington, Brian M. Sadler, Wei-Lun Chao, and Yu Su. LLM-Planner: Few-shot grounded planning for embodied agents with large language models. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , pages 2998–3009, 2023. doi: 10.1109/ICCV51070.2023.00280. [31] Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Chebotar, Omar Cortes, et al. Do as I can, not as I say: Grounding language in robotic affordances. In Proceedings of The 6th Conference on Robot Learning , volume 205 of Proceedings of Machine Learning Research , pages 287–318, 2023. URL https://proceedings.mlr.press/v205/ichter23a.html. [32] Wenlong Huang, Fei Xia, Ted Xiao, Harris Chan, Jacky Liang, et al. Inner monologue: Embodied reasoning through planning with language models. In Conference on Robot Learning (CoRL) , 2023. [33] Yao Mu, Junting Chen, Qing-Long Zhang, Shoufa Chen, Qiaojun Yu, Chongjian Ge, Runjian Chen, Zhixuan Liang, Mengkang Hu, Chaofan Tao, Peize Sun, Haibao Yu, Chao Yang, Wenqi Shao, Wenhai Wang, Jifeng Dai, Yu Qiao, Mingyu Ding, and Ping Luo. RoboCodeX: Multimodal code generation for robotic behavior synthesis. In International Conference on Machine Learning (ICML) , volume 235 of Proceedings of Machine Learning Research , pages 36434–36454, 2024. URL https://proceedings.mlr.press/v235/mu24a.html. [34] Guang Yin, Yitong Li, Yixuan Wang, Dale McConachie, Paarth Shah, Kunimatsu Hashimoto, Huan Zhang, Katherine Liu, and Yunzhu Li. CodeDiffuser: Attention-enhanced diffusion policy via VLM-generated code for instruction ambiguity. In Robotics: Science and Systems (RSS) , 2025. [35] Vaishak Kumar. Act-observe-rewrite: Multimodal coding agents as in-context policy learners for robot manipulation. arXiv preprint arXiv:2603.04466 , 2026. [36] Karim Elmaaroufi, Justin Svegliato, Sarunas Kalade, Graham Schelle, Sanjit A. Seshia, and Matei Zaharia. RHO: Your coding agent is secretly a roboticist. arXiv preprint arXiv:2606.16458 , 2026. [37] Kaiyuan Chen, Shuangyu Xie, Letian Fu, Justin Yu, William Pacini, Sandeep Bajamahal, Hudson Kim, Jaimyn Drake, Daehwa Kim, Haoru Xue, Jonathan Francis, Christian Juette, Peter Schaldenbrand, Muhammet Yunus Seker, Ruwan Wickramarachchi, Uksang Yoo, Guanzhi Wang, Adithyavairavan Murali, Balakumar Sundaralingam, S. Shankar Sastry, Spencer Huang, Yuke Zhu, Linxi Fan, and Ken Goldberg. GaP: A graph-as-policy multi-agent self-learning harness for variational automation tasks. arXiv preprint arXiv:2607.05369 , 2026. [38] Dhia Naouali, Minghan Wu, Claudia Wong, Abhinav Puthran, and Omar G. Younis. VLCP: Vision language control policy closed-loop code replanning for robot manipulation. arXiv preprint arXiv:2608.16978 , 2026. [39] Chen-Yu Lin, Jing-Wen Chen, Hsueh-En Chang, Hung-An Chen, Sheng-Hsun Chang, Chi-Pin Huang, Fu-En Yang, Min-Hung Chen, Yi-Ting Chen, Yu-Chiang Frank Wang, and Shao-Hua Sun. PhysCaP: Grounding code-as-policy agent with physics-informed exploration. arXiv preprint arXiv:2608.21031 , 2026. [40] Dibya Ghosh, Homer Rich Walke, Karl Pertsch, Kevin Black, Oier Mees, et al. Octo: An open-source generalist robot policy. In Robotics: Science and Systems (RSS) , 2024. [41] Zixing Lei, Changxing Liu, Yichen Xiong, Minhao Xiong, Yuanzhuo Ding, Zhipeng Zhang, Weixin Li, and Siheng Chen. Towards long-horizon embodied agents with tool-aligned vision-language-action models. arXiv preprint arXiv:2605.13119 , 2026. [42] Khoa Vo, Sieu Tran, Taisei Hanyu, Yuki Ikebe, Duy Nguyen, et al. CodeGraphVLP: Code-as-planner meets semantic-graph state for non-markovian vision-language-action models. arXiv preprint arXiv:2604.22238 , 2026. [43] Jiaqi Peng, Xiqian Yu, Delin Feng, Yuqiang Yang, Wenzhe Cai, et al. Cortex: A bidirectionally aligned embodied agent framework for long-horizon manipulation. arXiv preprint arXiv:2607.05377 , 2026. [44] Siyi Chen, Hugo Hadfield, Alex Zook, Mikaela Angelina Uy, Chan Hee Song, Erwin Coumans, Xuning Yang, Faisal Ladhak, Qing Qu, Stan Birchfield, Jonathan Tremblay, and Valts Blukis. VoLo: A physical orchestrator 11 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+for open-vocabulary long-horizon manipulation. arXiv preprint arXiv:2606.07723 , 2026. [45] Sihyung Yoon, Minjong Yoo, Sanghyun Ahn, Seojeong Choi, and Honguk Woo. RoboBRIDGE: A modular framework for bridging policies to robust real-world robotic agents. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , 2026. [46] Yiteng Chen, Zhe Cao, Hongjia Ren, Chenjie Yang, Wenbo Li, et al. RoboRouter: Training-free policy routing for robotic manipulation. arXiv preprint arXiv:2603.07892 , 2026. [47] Xingyu Ren, Chugang Yi, and Youran Sun. RouterVLA: Budgeted commissioning and expert onboarding for growing VLA pools. arXiv preprint arXiv:2606.27355 , 2026. [48] Yinlong Dai, Andre Keyser, and Dylan P. Losey. Prepare before you act: Learning from humans to rearrange initial states. arXiv preprint arXiv:2509.18043 , 2025. [49] Meng Li, Zhen Zhao, Zhengping Che, Fei Liao, Kun Wu, et al. SwitchVLA: Execution-aware task switching for vision-language-action models. arXiv preprint arXiv:2506.03574 , 2025. [50] Ke Rui, Yushen Zuo, Jiawei Wang, Haoran Jia, Jinming Ma, Weitao Zhou, and Minglei Li. Diagnosing semantic handoff failures in agent-orchestrated vision-language-action skill composition. In RSS SemRob Workshop , 2026. [51] Ming Shang, Yuchen Huang, Jiaoyang Chen, Haoyuan Hu, Han Yu, Liping Song, Luyun Feng, Shuo Bao, Wei Dong, Xinzhou Wang, and Fuchun Sun. BICPO-VLA: Behavior-identified continuation preference optimization for smooth asynchronous vision-language-action control. arXiv preprint arXiv:2608.13924 , 2026. [52] Carl Qi, Xiaojie Wang, Silong Yong, Stephen Sheng, Huitan Mao, et al. Self-refining vision language model for robotic failure detection and reasoning. In International Conference on Learning Representations (ICLR) , 2026. [53] Prasun Saurabh, Pablo Valle, Aitor Arrieta, Shaukat Ali, and Paolo Arcaini. VISOR: A vision-language model-based test oracle for testing robots. In Proceedings of the 3rd ACM International Conference on AI-Powered Software , pages 197–207, 2026. doi: 10.1145/3805760.3814910. [54] Shirui Chen, Cole Harrison, Ying-Chun Lee, Angela Jin Yang, Zhongzheng Ren, et al. TOPReward: Token probabilities as hidden zero-shot rewards for robotics. arXiv preprint arXiv:2602.19313 , 2026. [55] Yanru Wu, Weiduo Yuan, Ang Qi, Vitor Guizilini, Jiageng Mao, and Yue Wang. Large reward models: Generalizable online robot reward generation with vision-language models. arXiv preprint arXiv:2603.16065 ,2026. [56] Jacky Kwok, Christopher Agia, Rohan Sinha, Matt Foutter, Shulu Li, Ion Stoica, Azalia Mirhoseini, and Marco Pavone. RoboMonkey: Scaling test-time sampling and verification for vision-language-action models. In 
+
+Proceedings of The 9th Conference on Robot Learning , volume 305 of Proceedings of Machine Learning Research ,pages 3200–3217, 2025. URL https://proceedings.mlr.press/v305/kwok25a.html. [57] Dayou Li, Jiuzhou Lei, Hao Wang, Lulin Liu, Yunhao Yang, et al. Learning actionable manipulation recovery via counterfactual failure synthesis. arXiv preprint arXiv:2603.13528 , 2026. [58] Catherine Glossop, William Chen, Arjun Bhorkar, Dhruv Shah, and Sergey Levine. CAST: Counterfactual labels improve instruction following in vision-language-action models. IEEE Robotics and Automation Letters , 11(10): 11785–11792, 2026. doi: 10.1109/LRA.2026.3726383. [59] Haru Kondoh, Kei Ota, Asako Kanezaki, and Yueh-Hua Wu. CounterAlign: Counterfactual supervision for vision-language-action models. arXiv preprint arXiv:2608.21740 , 2026. [60] Xin Ding, Liang Mi, Mingzhe Huang, Zixuan Wang, Chao Zhang, Zixu Hao, Fu Chen, Xiangyu Li, Yikai Zheng, Yaoyu Guo, Weijun Wang, Kun Li, Hao Wu, Yunxin Liu, and Ting Cao. Zetta ζ: An efficient closed-loop embodied harness for self-evolving physical intelligence. arXiv preprint arXiv:2608.16590 , 2026. [61] Hao-Shu Fang, Chenxi Wang, Hongjie Fang, Minghao Gou, Jirong Liu, Hengxu Yan, et al. AnyGrasp: Robust and efficient grasp perception in spatial and temporal domains. IEEE Transactions on Robotics , 39(5):3929–3945, 2023. doi: 10.1109/TRO.2023.3281153. [62] Adithyavairavan Murali, Balakumar Sundaralingam, Yu-Wei Chao, Wentao Yuan, Jun Yamada, Mark Carlson, et al. GraspGen: A diffusion-based framework for 6-DOF grasping with on-generator training. In IEEE International Conference on Robotics and Automation (ICRA) , 2026. [63] Xiao-Ming Wu, Jia-Feng Cai, Jian-Jian Jiang, Dian Zheng, Yi-Lin Wei, and Wei-Shi Zheng. An economic framework for 6-DoF grasp detection. In European Conference on Computer Vision (ECCV) , pages 357–375, 2024. doi: 10.1007/978-3-031-73383-3_21. [64] Siang Chen, Pengwei Xie, Wei Tang, Dingchang Hu, Yixiang Dai, and Guijin Wang. Region-aware grasp framework with normalized grasp space for efficient 6-DoF grasping. In Proceedings of The 8th Conference on Robot Learning , volume 270 of Proceedings of Machine Learning Research , pages 1834–1850, 2025. URL https://proceedings.mlr.press/v270/chen25c.html. [65] Jiahui Yang, Jason Jingzhou Liu, Yulong Li, Youssef Khaky, Kenneth Shaw, and Deepak Pathak. Deep reactive policy: Learning reactive manipulator motion planning for dynamic environments. In Proceedings of The 9th Conference on Robot Learning , volume 305 of Proceedings of Machine Learning Research , pages 5056–5071, 2025. URL https://proceedings.mlr.press/v305/yang25d.html. [66] Wil Thomason, Zachary Kingston, and Lydia E. Kavraki. Motions in microseconds via vectorized sampling-based planning. In IEEE International Conference on Robotics and Automation (ICRA) , pages 12 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+8749–8756, 2024. doi: 10.1109/ICRA57147.2024.10611190. [67] Adam Fishman, Aaron Walsman, Mohak Bhardwaj, Wentao Yuan, Balakumar Sundaralingam, Byron Boots, and Dieter Fox. Avoid everything: Model-free collision avoidance with expert-guided fine-tuning. In Proceedings of The 8th Conference on Robot Learning , volume 270 of Proceedings of Machine Learning Research , pages 1925–1948, 2025. URL https://proceedings.mlr.press/v270/fishman25a.html. [68] Moo Jin Kim, Chelsea Finn, and Percy Liang. Fine-tuning vision-language-action models: Optimizing speed and success. In Robotics: Science and Systems (RSS) , 2025. doi: 10.15607/RSS.2025.XXI.017. URL https://www.roboticsproceedings.org/rss21/p017.html. [69] Yang Zhang, Jiangyuan Zhao, Chenyou Fan, Fangzheng Yan, Tian Li, Haitong Tang, et al. PRTS: A Primitive Reasoning and Tasking System via Contrastive Representations. arXiv preprint arXiv:2604.27472 , 2026. URL https://arxiv.org/abs/2604.27472. [70] Songming Liu, Bangguo Li, Kai Ma, Lingxuan Wu, Hengkai Tan, Xiao Ouyang, et al. RDT2: Exploring the Scaling Limit of UMI Data Towards Zero-Shot Cross-Embodiment Generalization. arXiv preprint arXiv:2602.03310 , 2026. URL https://arxiv.org/abs/2602.03310. [71] Delin Qu, Haoming Song, Qizhi Chen, Yuanqi Yao, Xinyi Ye, Yan Ding, et al. SpatialVLA: Exploring spatial representations for visual-language-action models. In Robotics: Science and Systems (RSS) , 2025. doi: 10.15607/RSS.2025.XXI.011. URL https://www.roboticsproceedings.org/rss21/p011.html. [72] StarVLA Community. StarVLA: A Lego-like Codebase for Vision-Language-Action Model Developing. arXiv preprint arXiv:2604.05014 , 2026. URL https://arxiv.org/abs/2604.05014. [73] Jun Cen, Siteng Huang, Yuqian Yuan, Kehan Li, Hangjie Yuan, Chaohui Yu, et al. RynnVLA-002: A Unified Vision-Language-Action and World Model. arXiv preprint arXiv:2511.17502 , 2025. URL https://arxiv.org/abs/2511.17502. [74] Tao Lin, Yilei Zhong, Yuxin Du, Jingjing Zhang, Jiting Liu, Yinxinyu Chen, et al. Evo-1: Lightweight vision-language-action model with preserved semantic alignment. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 13397–13406, 2026. URL https://openaccess.thecvf.com/content/CVPR2026/html/Lin_Evo-1_Lightweight_Vision-Language-Action_ Model_with_Preserved_Semantic_Alignment_CVPR_2026_paper.html. [75] Yandan Yang, Shuang Zeng, Tong Lin, Xinyuan Chang, Dekang Qi, Junjin Xiao, et al. ABot-M0: VLA Foundation Model for Robotic Manipulation with Action Manifold Learning. arXiv preprint arXiv:2602.11236 ,2026. URL https://arxiv.org/abs/2602.11236. [76] Haoxiang Ma, Junhao Cai, Xiaoxu Xu, Hao Li, Yuyin Yang, Yang Tian, et al. InternVLA-A1.5: Unifying Understanding, Latent Foresight, and Action for Compositional Generalization. arXiv preprint arXiv:2607.04988 ,2026. URL https://arxiv.org/abs/2607.04988. [77] Mustafa Shukor, Dana Aubakirova, Francesco Capuano, Pepijn Kooijmans, Steven Palma, Adil Zouitine, et al. SmolVLA: A Vision-Language-Action Model for Affordable and Efficient Robotics. arXiv preprint arXiv:2506.01844 , 2025. URL https://arxiv.org/abs/2506.01844. [78] Yi Yang, Zhihong Liu, Siqi Kou, Yiyang Chen, Yanzhe Hu, Jianbo Zhou, et al. World-Language-Action Model for Unified World Modeling, Language Reasoning, and Action Synthesis. arXiv preprint arXiv:2606.05979 , 2026. URL https://arxiv.org/abs/2606.05979. [79] Jinliang Zheng, Jianxiong Li, Zhihao Wang, Dongxiu Liu, Xirui Kang, Yuchun Feng, et al. X-VLA: Soft-prompted transformer as scalable cross-embodiment vision-language-action model. In International Conference on Learning Representations (ICLR) , 2026. URL https://iclr.cc/virtual/2026/poster/10007740. [80] Haoquan Fang, Jiafei Duan, Donovan Clay, Sam Wang, Shuo Liu, Weikai Huang, et al. MolmoAct2: Action Reasoning Models for Real-world Deployment. arXiv preprint arXiv:2605.02881 , 2026. URL https://arxiv.org/abs/2605.02881. [81] Lin Li, Qihang Zhang, Yiming Luo, Shuai Yang, Ruilin Wang, Fei Han, et al. Causal world modeling for robot control. In Robotics: Science and Systems (RSS) , 2026. doi: 10.15607/RSS.2026.XXII.016. URL https://www.roboticsproceedings.org/rss22/p016.html. [82] Sanjana Srivastava, Chengshu Li, Michael Lingelbach, Roberto Martín-Martín, Fei Xia, et al. BEHAVIOR: Benchmark for everyday household activities in virtual, interactive, and ecological environments. In Conference on Robot Learning (CoRL) , 2021. [83] Soroush Nasiriany, Abhiram Maddukuri, Lance Zhang, Adeet Parikh, Aaron Lo, et al. RoboCasa: Large-scale simulation of household tasks for generalist robots. In Robotics: Science and Systems (RSS) , 2024. [84] Chao Yu, Yuanqing Wang, Zhen Guo, Hao Lin, Si Xu, Hongzhi Zang, Quanlu Zhang, Yongji Wu, Chunyang Zhu, Junhao Hu, Zixiao Huang, Mingjie Wei, Yuqing Xie, Ke Yang, Bo Dai, Zhexuan Xu, Jiakun Du, Xiangyuan Wang, Xu Fu, Letong Shi, Zhihao Liu, Kang Chen, Weilin Liu, Gang Liu, Boxun Li, Jianlei Yang, Zhi Yang, Guohao Dai, and Yu Wang. RLinf: Flexible and efficient large-scale reinforcement learning via macro-to-micro flow transformation. In 20th USENIX Symposium on Operating Systems Design and Implementation (OSDI) ,pages 829–846, 2026. URL https://www.usenix.org/conference/osdi26/presentation/yu-chao. 13 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+# Appendix Contents 
+
+A Methodological Details 15 
+
+A.1 P5 Stage Contracts . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15 A.2 RoboAware: Training and Deployment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 A.3 Responsibility Preference . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 A.4 Q-Value Model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 A.5 Reward Function . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 
+
+B API Library Instantiation 21 
+
+B.1 Typed API Contracts . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 B.2 Object Perception . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 B.3 Pose Proposal . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 B.4 Motion Planning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 B.5 Gripper Control . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 B.6 End-to-End Policy Execution . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 
+
+C Experiment Details 28 
+
+C.1 Benchmark Tasks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 C.2 Baseline Implementations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 C.3 Success and Runtime Metrics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 C.4 Hyperparameters and Experimental Settings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30 C.5 Coding-Agent Backends . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30 C.6 Code-Execution Protocol . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30 C.7 Computation and Software . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31 
+
+D Additional Empirical Results 31 
+
+D.1 Ablation of Harness-VLA . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31 D.2 Visualizations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33 D.3 Failure Modes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33 14 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+# A Methodological Details 
+
+## A.1 P5 Stage Contracts 
+
+Each P 5 stage declares an entry predicate, the typed inputs it requires, an admissible-family set Ci(zi, g i), the APIs a family-constrained code block may call, a success postcondition, and the failure or timeout feedback that chooses the successor stage. Table 1 summarizes these contracts; typed API I/O appears in Table 4. The coordinator selects a family only when the coding agent has control and the current stage’s entry predicate holds. Once an atomic API call begins, that selection remains fixed until the call returns after satisfying its registered postcondition, reporting a failure, or exhausting its step budget. 
+
+Table 1 P5 stage contracts and admissible families. At stage zi of skill gi, the coordinator selects ci ∈ C i(zi, g i) before code generation; APIs must match ( zi, c i) (Table 2 in the main text). Columns: ϕin —entry predicate; Ci—admissible families; ϕout —registered success postcondition; Fail—successor after failure/timeout (retry zi, return upstream ↑, or terminate ⊥). Under Mod, ϕout is the typed modular return (e.g. pose at perceive , eef pose at propose ); under E2E, it is covered by the atomic call postcondition. propose is Mod-only; an E2E call may complete the skill without visiting it.                                                 
+
+> ziϕin Ciϕout Fail
+> perceive target ID/pose /∈hi{Mod ,E2E }typed target info retry / ⊥
+> propose pose/mask ∈hi∧eef target
+> /∈hi
+> {Mod }valid eef pose retry / ↑perceive /⊥
+> pre-manipulate approach target available {Mod ,E2E }pre-contact reached replan / ↑/⊥
+> perform pre-manip. ϕout {Mod ,E2E }contact/gripper postcond. retry / →post-manip. /
+> ⊥
+> post-manipulate perform ϕout {Mod ,E2E }retreat/release/stabilize retry / ↑/⊥
+
+Required inputs and permitted APIs. Under Mod, the permitted API depends on the current stage: 
+
+Perceive_object_pose at perceive , Propose_eef_pose at propose , Plan_to_eef_pose at pre-manipulate 
+
+and post-manipulate , and Perform_gripper at perform . A modular code block may compose only APIs admissible for the current zi (and any immediately chained modular helpers that do not cross a new responsibility boundary). Under E2E, the sole permitted pattern is Perform_E2E (route_id ,. . . ), whose declared coverage is perceive , pre-manipulate , perform , and post-manipulate (Table 2 in the main text). After the coordinator selects E2E, the coding agent supplies route_id and the required typed observations in ai.Thus, Qθ selects the family, while the coding agent selects the backend within that family. 
+
+Why propose admits only Mod . Propose_eef_pose is the only API assigned to propose , where it produces the end-effector target required by modular motion planning. End-to-end backends determine grasp and approach targets internally and do not expose them through this interface, so Perform_E2E does not cover 
+
+propose . Consequently Ci = {Mod } whenever zi is propose , so no E2E comparison is issued at that boundary. A skill enters propose only when it requires an explicit end-effector target. An E2E call beginning at perceive 
+
+or a later admissible stage can therefore complete the skill without entering propose .
+
+Multi-stage atomic returns and stage advancement. A single Perform_E2E call may satisfy several consecutive stage postconditions before returning, but its family assignment remains fixed throughout the call. When control returns, the coding agent updates ( hi, z i, g i) from observable feedback only: typed returns, registered postcondition bits, failure codes, and timeout flags. The next decision stage zi+1 is the earliest stage in the active skill whose entry predicate still holds and whose success postcondition is unmet. Stages whose postconditions have already been satisfied are skipped, so the coordinator makes no additional family selections for them unless execution later reaches an entry where those postconditions are unmet. If the call fails or times out after partial progress, zi+1 is likewise the earliest unmet stage that remains enterable under the returned feedback (often the stage at which the postcondition failed), enabling retry or upstream fallback as in Table 1. If every stage postcondition of gi is met, the skill completes and the plan advances to the next schema in G. If execution must continue but Ci+1 is empty, the episode terminates with failure, as specified in Algorithm 1. 
+
+15 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+## A.2 RoboAware: Training and Deployment 
+
+Algorithm 1: RoboAware: MCTS data collection, Q-learning, and deployment 
+
+Input: training tasks Ttrain ; test instruction ℓtest ; simulator E; πcode and API library; budget K
+
+Output: trained coordinator Qθ ; test execution history h and terminal reward r 
+
+> 1
+
+Freeze πcode and the API library; initialize θ, ¯θ ← θ, and DSCB ← ∅ ;
+
+// Phase 1. Offline training: prepare search roots  
+
+> 2
+
+Collect roots R from training-task P 5 executions using the neighboring-state sampling protocol described below, with matching histories;  
+
+> 3
+
+foreach sampled root ξt ∈ R do  
+
+> 4
+
+Initialize tree T at ξt and remaining budget b ← K; 
+
+> 5
+
+while b > 0 do 
+
+// 1. Selection  
+
+> 6
+
+Follow stored paths by UCB (Equation (1)) to a nonterminal node j; select a new node only if 
+
+b ≥ |C j |, otherwise reevaluate an expanded node; 
+
+// 2. Expansion  
+
+> 7
+
+if node j is new then  
+
+> 8
+
+Set Nj = Nj (c) = 0, ̂ Qj (c) = Qθ (xj , c ), and Aj ← C j ; 
+
+> 9
+
+else  
+
+> 10
+
+Aj ← { ctree  
+
+> j
+
+} by Equation (1);  
+
+> 11
+
+foreach c ∈ Aj do  
+
+> 12
+
+Restore ξj and its history; generate acj ∼ πcode (· | xj , c ) and execute to the next boundary or termination;  
+
+> 13
+
+Record ( xcj+1 , ξ cj+1 , d cj ) and compute ˜ rcj from the skill/task oracle scores;  
+
+> 14
+
+Attach the successor to T ; append ( xj , c, ˜rcj , x cj+1 , d cj , ξ cj+1 ) to DSCB ;
+
+// 3. Rollout  
+
+> 15
+
+Continue a nonterminal successor to a stopping condition without tree expansion; obtain Gj+1 ,or set Gj+1 = 0 if dcj = 1;  
+
+> 16
+
+Gj ← ˜rcj + γG j+1 ;
+
+// 4. Backpropagation  
+
+> 17
+
+Back up Gj and prefix rewards along the selected path; increment visits, average returns into ̂
+
+Q, and set b ← b − 1; 
+
+// Q-learning after data collection  
+
+> 18
+
+Fit Qθ on all of DSCB for M minibatch updates using Equations (4) and (5), learning rate η, and target refresh interval J;
+
+// Phase 2. Deployment with fixed parameters  
+
+> 19
+
+Observe o0; generate test plan G from ( ℓtest , o 0); initialize h0 ← ∅ , ( z0, g 0), and i ← 0;  
+
+> 20
+
+while the task is nonterminal and the episode horizon remains do  
+
+> 21
+
+Build xi = ( ℓtest , o i, h i, z i, g i) and admissible families Ci(zi, g i);  
+
+> 22
+
+if Ci = ∅ then Terminate with failure and exit the loop;  
+
+> 23
+
+c⋆i ← arg max c∈C i ρθ (c | xi); generate ai ∼ πcode (· | xi, c ⋆i );  
+
+> 24
+
+Execute ai to the next boundary or termination, respecting atomic APIs;  
+
+> 25
+
+Observe feedback; update xi+1 and G; i ← i + 1;  
+
+> 26
+
+return success indicator: terminal task reward r
+
+Algorithm 1 separates offline training from deployment. During training, we collect P 5 search roots, run MCTS from those roots, and fit Qθ on the resulting transitions. During deployment, the trained coordinator selects a family at each eligible stage boundary and updates its input from execution feedback. Only Qθ is optimized. The coding agent πcode and API library are fixed before data collection and remain frozen during training and deployment. 
+
+Trajectory collection and neighboring-state sampling. For each training task, πcode constructs a task plan G comprising P 5 skill schemas, with gi identifying the active skill and zi its current stage. A fixed 
+
+> 16 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+sampling rule with support on all admissible families selects the family before each code block is generated. During the resulting simulator rollout τ , we record observations, execution history, schema states, and saved simulator states, together with the start time ti of each visited stage. For each ti, let Wi(∆) contain the nonterminal saved times within ∆ steps of ti at which the same stage-entry conditions hold and control is available to the coding agent. It includes ti and excludes intermediate states inside an atomic API invocation. We draw S times independently and uniformly from this set, with replacement, and form a separate root snapshot for each draw. Each root uses its own matching context xt = ( ℓ, o t, h t, z t, g t). The snapshot, denoted by ξt = ( xt, m t, p t, r ), also stores the simulator and execution state needed to restore that root exactly. Here, 
+
+r denotes access to the task-success evaluator rather than a future reward available to the coordinator. Thus, neighboring roots may differ physically, but all counterfactual branches of one root share the same physical state and observable-history prefix. 
+
+Search and learning contracts. Each root receives a budget of K completed suffix simulations, including the initial family comparisons. UCB descent follows stored tree paths using Equation (1), stopping before terminal nodes. At a new node, counts start at zero and ̂ Qi(c) is initialized from Qθ (xi, c ), whose parameters remain fixed during data collection. Descent stops at an unexpanded nonterminal node when the remaining budget covers every admissible family. Otherwise, it stops at an expanded nonterminal node and selects one family for reevaluation. Every evaluation restores the selected snapshot, samples a fresh family-constrained code block, executes it to the next semantic boundary, and saves the resulting transition and successor snapshot. From each nonterminal successor, the fixed coding agent and API library continue physics execution under the same family-sampling continuation rule to task termination, unrecoverable failure, the episode horizon, or an empty admissible-family set. Reaching any of these stopping conditions sets d = 1 and ends the suffix. States visited only during rollout are not added to the search tree. The suffix return is backed up along the selected path using the recorded prefix rewards, with visit counts incremented and ̂ Q updated by empirical averaging. All expanded edges enter DSCB , including failed and nonpreferred branches. Scores 
+
+rp and rm are emitted at skill completion and are zero at other transitions, while r is emitted only at task termination. Q-learning then uses Equations (4) and (5), with no bootstrap at terminal states and a target copy refreshed every J updates. The sampling parameters ( S, ∆), family-sampling rule, optimization budget 
+
+M , learning rate η, target-update interval J, and related budgets are listed in Table 12. 
+
+Deployment contract. Only the trained Qθ , frozen coding agent, and API library are retained. At every decision point, the coordinator builds xi from observable information, selects an admissible family, and conditions code generation on that choice. Each atomic API call runs until its postcondition is satisfied, a failure is reported, or its step budget is exhausted. Once the call returns, the coding agent uses the feedback to update the history and remaining plan and to determine whether to advance or retry a stage. Task termination, an unrecoverable failure, or the episode horizon ends execution. An empty admissible-family set is treated as failure. Neither state restoration, tree search, oracle shaping rewards, nor parameter updates are used at deployment. Only the terminal task reward r is reported. 
+
+Training data and task pool. We construct DSCB using the procedure in Algorithm 1 and the model in Appendix A.4, with the sampling and optimization settings given below. Data collection with privileged simulator access and subsequent Qθ updates use only scene seed 0 on the coordinator training pool (80 LIBERO-Pro, 4 RoboSuite, and 16 RoboTwin 2.0 tasks; Appendix C.1). Each training task contributes (i) one or more physics trajectories used to mark P 5 stage-entry times, (ii) S neighboring roots per stage entry drawn from Wi(∆) as specified above, and (iii) up to K completed suffix simulations per root, with every expanded family edge written into DSCB .
+
+Root and family sampling. During trajectory collection, we sample uniformly from the families admissible at the current ( zi, g i), so every family in Ci has nonzero probability. Neighboring-state sampling draws S=4 roots independently and uniformly with replacement from Wi(∆) using the default window ∆=10 saved control steps. Within each root budget of K=20 completed suffix simulations (Table 12), the first expansion of a new node evaluates every c ∈ C i once via SCB ; later visits reevaluate a single UCB-selected family (Equation (1)). Rollout continuation after expansion reuses the same family-sampling rule and does not add rollout-only states as tree nodes. All evaluated edges, including failed and nonpreferred branches, remain in 
+
+DSCB .
+
+> 17 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+Q initialization before data collection. Before data collection, we load the released Qwen3.5-0.8B backbone weights, randomly initialize the <VALUE> embedding and MLP head, and set ¯θ ← θ (Algorithm 1). We then hold θ fixed throughout collection. Each new tree node starts with zero visits and initializes ̂ Qi(c) from 
+
+Qθ(xi, c ), which provides the initial value estimate for UCB selection. No return regression or supervised fine-tuning is performed before collection, and the model receives no privileged oracle features. Bellman updates begin only after DSCB is complete, following the single collection-and-fitting cycle used in the reported experiments. 
+
+Optimization protocol. After collection, we optimize θ on the fixed offline set with the Smooth-L1 Bellman loss in Equations (4) and (5), minibatches drawn from DSCB , a stop-gradient target network Q¯θ, and no bootstrap at terminal states. Table 2 lists the fine-tuning method, thinking setting, optimizer, batch size, learning-rate schedule (cosine with warmup), update budget M , target refresh interval J, numeric precision, and checkpoint rule. We select a checkpoint on the validation split described below, following the checkpoint rule in Table 2, and freeze it for all evaluations on seeds 1–10.                     
+
+> Table 2 Coordinator Q-fitting settings. Symbols match Algorithm 1. Setting Value Fine-tuning method full-FT (backbone + MLP value head) Thinking Disabled Optimizer AdamW Minibatch size 16 Learning rate η/ schedule 10 −5, cosine, 5% warmup Gradient updates M10 ,000 Target refresh every Jupdates 500 (hard copy ¯θ←θ)Weight decay / grad clip 10 −4/ 1 .0Numeric precision bf16 Checkpoint selection lowest validation Bellman loss
+
+Grouped training and validation split. The Mod and E2E branches from a given root share both a physical state and an observable-history prefix. Roots sampled from the same neighborhood Wi(∆) are also closely related because they come from nearby states in one trajectory. A random split of individual transitions could therefore place branches from the same root, or transitions from neighboring roots, in both training and validation. To keep these related samples together, we group all transitions from each root and all roots drawn from the same stage-entry neighborhood Wi(∆). Groups are assigned entirely to training or validation using a 90 /10 split, optionally stratified by benchmark and by whether Ci is singleton or binary. No group contributes transitions to both splits; evaluation seeds 1–10 remain unused for fitting or model selection. 
+
+## A.3 Responsibility Preference 
+
+The normalization in Equation (6) defines a relative preference over the nonempty admissible-family set Ci.When Ci = {E2E , Mod }, the value gap compares the same ordered pair at every decision point: ∆θ (xi) = Qθ (xi, E2E) − Qθ (xi, Mod) . (7) Thus, ∆ θ (xi) depends on the context, while the family identities and their order are fixed by definition. The normalized preferences can then be expressed as sigmoids of this gap. Dividing the E2E numerator and denominator by exp( Qθ (xi, E2E)) gives 
+
+> 18 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+ρθ (E2E | xi) = exp( Qθ (xi, E2E)) exp( Qθ (xi, E2E)) + exp( Qθ (xi, Mod)) = 11 + exp( Qθ (xi, Mod) − Qθ (xi, E2E)) = σ(∆ θ (xi)) ,ρθ (Mod | xi) = 1 − ρθ (E2E | xi) = σ(−∆θ (xi)) .
+
+(8) The common normalization cancels in the ratio, so taking its logarithm yields log ρθ (E2E | xi)
+
+ρθ (Mod | xi) = log exp( Qθ (xi, E2E)) exp( Qθ (xi, Mod)) = Qθ (xi, E2E) − Qθ (xi, Mod) = ∆ θ (xi).
+
+(9) Positive gaps favor E2E, negative gaps favor modular composition, and a zero gap gives equal preference to both families. The larger preference equals σ(|∆θ(xi)|) and increases monotonically with |∆θ(xi)|, which therefore measures preference strength. More generally, exponentiation is strictly increasing and the denominator in Equation (6) is positive and shared by all admissible families. Consequently, the transformation preserves family ordering, including ties, and yields the same maximizing families: arg max 
+
+> c∈C i
+
+ρθ (c | xi) = arg max 
+
+> c∈C i
+
+Qθ (xi, c ). (10) When only one family is admissible, its normalized preference is one; the binary sigmoid identities apply only when both families are admissible. An empty admissible-family set terminates execution with failure, as specified in the deployment phase of Algorithm 1. The deployment algorithm therefore selects via ρθ
+
+(equivalently via Qθ ), then generates and executes the corresponding block before reconsidering responsibility at the next semantic boundary. 
+
+## A.4 Q-Value Model 
+
+We instantiate Qθ (xi, c ) with Qwen3.5-0.8B as the multimodal backbone and a scalar MLP value head. Only this coordinator value model is optimized under Equation (4); the coding agent πcode , the typed API library, and all low-level backend checkpoints remain frozen throughout EAL and deployment. 
+
+Observation encoding. At decision point i, the visual stream uses the same agent-view camera as the modular perception API. We resize the agent-view RGB frame Irgb  
+
+> i
+
+and a visualization of the metric depth map Id 
+
+> i
+
+to a shared resolution R×R (Table 3) and encode both through the backbone’s native image pathway. We serialize proprioception qi, including joint positions, end-effector pose, and gripper opening, as structured text. Thus, all components of oi enter Qθ through its image and text pathways, without a separate numeric depth input, depth adapter, or proprioceptive MLP encoder. 
+
+History length and truncation. The execution history hi retains the most recent H stage transitions in full, each recording the chosen family, typed API returns or failure codes, stage advances or retries, and remaining budgets. Older transitions are dropped and replaced by a fixed-length summary of completed skills/stages, persistent object bindings, cumulative failure counts, and the residual step/wall-clock budget. The summarizer uses only information already present in the observable history: training-time oracle fields never enter hi.
+
+Token order. For a queried family c, inputs are packed into one multimodal sequence: 
+
+ℓ → (Irgb  
+
+> i
+
+, I d 
+
+> i
+
+) → qi → hi → gi → zi → c → <VALUE> ,
+
+i.e., instruction, images, proprioception, execution history, current skill, current P 5 stage, family identity, then the special <VALUE> token. For example, consider RoboTwin place_bread_basket at the start of the 
+
+perform stage for picking up the bread. The instruction ℓ is “Place the bread into the basket,” and the image 
+
+> 19 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+inputs show the current R×R RGB frame and depth colormap of the bread, basket, and two arms. The proprioceptive input qi lists joint positions, end-effector poses, and gripper openings. The history hi records the preceding stage transitions. These may include Mod returning the bread pose at perceive , producing an end-effector target at propose , and reaching the pre-grasp pose at pre-manipulate . It also contains the remaining step and wall-clock budgets and a fixed-length summary of earlier completed skills. The active schema gi identifies the bread-picking skill and its unmet postconditions, while zi = perform . Both families are admissible at this point, so the sequence ends with the queried c ∈ { Mod , E2E } followed by <VALUE> .The backbone produces the final-layer hidden state at <VALUE> ; an Lmlp -layer MLP with hidden width dmlp 
+
+maps that state to the scalar Qθ (xi, c ). Table 3 lists the quantitative settings used in our experiments.                 
+
+> Table 3 Q-value model settings. Setting Value Backbone Qwen3.5-0.8B Image viewpoint agent-view RGB + depth visualization Image resolution R×R224 ×224 Proprioception encoding structured text Depth encoding colormap image History window H(full transitions) 4MLP depth Lmlp 2MLP width dmlp 512 Frozen parameters πcode , API library, backend checkpoints
+
+## A.5 Reward Function 
+
+This subsection specifies the training-only oracle rewards in Equation (3). The coordinator never observes 
+
+mi, pi, rp, rm, or r at deployment. As in Appendix A.2, rc 
+
+> p,i
+
+and rc 
+
+> m,i
+
+are emitted when a P 5 skill completes under family c and are zero on non-completion transitions; the binary task reward r is emitted only when the episode terminates ( dci = 1). 
+
+Perception score rp. Let mi be the oracle binary mask of the language-referenced target object in the agent-view image at the skill-entry snapshot ξi. When the executed block exposes an explicit mask ˆ mci
+
+(modular Perceive_object_pose ), mask agreement is the intersection-over-union 
+
+rc 
+
+> p,i
+
+= IoU( ˆ mci , m i) = | ˆmci ∩ mi|| ˆmci ∪ mi| ∈ [0 , 1] , (11) with the convention IoU = 0 if both masks are empty. End-to-end blocks do not return a mask. For those branches we score target-object identity rather than pixel overlap: after execution, the simulator identifies the object instance that was contacted or whose pose changed under the skill; rc 
+
+> p,i
+
+= 1 if that instance matches the object labeled by mi, and 0 otherwise. Thus both families receive a perception score in [0 , 1], but only modular perception is judged by mask IoU; E2E perception is judged by whether the call acted on the oracle-referenced object, consistent with the E2E postcondition coverage in Table 1. 
+
+Manipulation score rm. The manipulation score measures whether the object’s simulator ground-truth pose after skill execution meets the skill’s geometric goal. Write pci+1 for the privileged 6-DoF object pose read from ξci+1 , and p⋆i for the skill goal pose supplied by the same oracle pose channel (placement target, handover target, or other stage goal recorded with the task). Let t(·) and R(·) denote translation and rotation. We measure translation error in meters using the Euclidean distance ∥t(pci+1 ) − t(p⋆i )∥2, and rotation error in radians using the geodesic angle on SO(3), ∠(R(pci+1 ), R (p⋆i )) = arccos ((tr( R(pci+1 )⊤R(p⋆i )) − 1) /2). For skills defined by a contact or grasp postcondition, such as a successful lift, rc 
+
+> m,i
+
+is the corresponding binary oracle predicate. For skills with a 6-DoF placement goal, we instead apply the pose thresholds 
+
+rc 
+
+> m,i
+
+= I[∥t(pci+1 ) − t(p⋆i )∥2 ≤ ϵp ∧ ∠(R(pci+1 ), R (p⋆i )) ≤ ϵR
+
+] , (12) 
+
+> 20
+
+RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+where ϵp is the translational threshold in meters and ϵR is the rotational threshold in radians (Table 12). The main-text phrase “object-pose error against pi” refers to this privileged pose channel used to form ( pci+1 , p ⋆i ), not to scoring the modular pose estimate against the entry state. 
+
+Terminal reward and stopping. The evaluator returns r = 1 iff the task success predicate holds at termination, and r = 0 otherwise. An episode sets dci = 1 and stops on task success, unrecoverable failure, empty admissible-family set, or the episode horizon; only the success case can yield r = 1. The shaped transition reward remains ˜ rci = wprc 
+
+> p,i
+
++ wmrc 
+
+> m,i
+
++ wtdci r with wp + wm + wt = 1. 
+
+# B API Library Instantiation 
+
+## B.1 Typed API Contracts 
+
+Each embodied API in Table 2 in the main text owns one or more P 5 stages and declares typed inputs, outputs, coordinate frames, postconditions, and failure states (Table 4). The family-specific rules in Table 5 determine which APIs a generated code block may call. The coding agent specifies the semantic target and route, whereas embodiment adapters resolve frames, execute the request, and report measured completion. This separates an incorrect target from a failure to reach a correct target and prevents an internal fallback from silently changing the meaning of a call. Within AE2E , route_id selects a retained VLA, video-action, or world-action checkpoint inside the code block; it is not a separate action scored by Qθ. The coordinator observes only typed API returns, not privileged simulator state. We freeze the coding agent, API contracts, backend bindings, and checkpoints before coordinator training. 
+
+Table 4 Typed input/output contracts for the high-level embodied APIs in Table 2 in the main text. The E2E route uses route_id to select one frozen backend.                     
+
+> API Stage Input Output
+> Perceive_object_pose perceive task instruction + agent-view RGB-D + calibration target pose + mask/geometry provenance
+> Propose_eef_pose propose RGB-D geometry + target mask + robot state + task context ranked end-effector target + screening provenance
+> Plan_to_eef_pose pre /post-manipulate scene observation, robot state, target pose, optional attachment continuous, smooth, collision-aware qpos sequence
+> Perform_gripper perform gripper open/close command updated gripper state
+> Perform_E2E perceive ,pre-manipulate ,
+> perform ,post-manipulate route ID + task instruction + RGB-D + proprioception closed-loop control until postcondition, failure, or budget
+
+Table 5 Policy-family bindings for generated code blocks. Mod composes stage-admissible APIs; E2E invokes one frozen backend through route_id .
+
+Policy family Code-block space Permitted API pattern Backend choice Mod AMod stage-admissible modular API composition fixed selected modular backends E2E AE2E Perform_E2E (route_id , . . . ) retained frozen backend selected inside ai
+
+## B.2 Object Perception 
+
+Perceive_object_pose grounds a language reference in an agent-view RGB-D observation and combines the resulting mask with camera calibration and depth to recover a robot-frame target. Valid masked depth pixels are back-projected with the camera intrinsics, transformed through the camera extrinsics, filtered for invalid or isolated points, and summarized by a robust centroid and oriented extent. The API returns the pose together with the mask, supporting points, confidence, and source observation. If the mask is empty, the depth is inconsistent, or the reference is ambiguous, it reports a failure instead of returning a pose. We use InstructSAM [17] as the grounding backend because its instruction-conditioned interface directly accepts the detailed free-form prompt produced by the coding agent from the current task context. The agent can therefore preserve task-specific attributes and spatial relations in a single perception call. The resulting mask is lifted through the shared geometric pipeline, so downstream proposal and motion APIs retain the same typed outputs and failure checks. 
+
+21 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+## B.3 Pose Proposal 
+
+Propose_eef_pose consumes the frozen RGB-D observation, target mask, and derived geometry and returns a grasp target together with its score, rank, predicted width, coordinate transform, screening result, and provenance. We compare proposal methods using the same cuRoboV2 downstream planner and retain each baseline’s original candidate ranking. With the planner held fixed, Success@ k in Table 6 reflects differences in candidate coverage and ordering. This API owns grasp proposal, not placement-pose generation. For placement, the task supplies a target object pose; the motion API resolves it to a TCP target through the held-object transform and ranks routes by feasibility, continuity, and the declared approach or contact constraints. Our NeuGraspNet+ backend addresses two failure modes of native NeuGraspNet [18]. When native geometric sampling produces too few candidates, a RobustSampler derives deterministic top-down, side, and oblique seeds from the target point cloud and its principal directions. The released NeuGraspNet checkpoint still predicts their quality and gripper width, so the fallback expands coverage without another grasp network or task-specific proposals. NeuGraspNet+ then uses cuRoboV2 to identify up to five candidates with feasible approach, grasp, and lift trajectories, and selects the top-ranked grasp from this feasible set. Its confidence gate preserves the network ranking when scores are informative, uses geometry to break near-ties, and gives geometry greater weight when all feasible scores are low. This avoids globally replacing a useful learned ranking with a fixed geometric prior. NeuGraspNet+ reaches 18 /18 Success@1, Success@3, and Success@5 on the 18-task Panda screen (Table 6) and is frozen as the grasp backend. These selection rules prioritize first-choice grasp success over speed and do not involve retraining NeuGraspNet. Because they were developed using the benchmark, their performance on new object distributions requires further validation.                                                     
+
+> Table 6 Grasp proposal results on the 18-task Panda benchmark. All baseline methods use their native proposal rankings; NeuGraspNet uses our final selection pipeline. All methods share the same downstream cuRoboV2 motion planner. Success@ kindicates whether a successful grasp is found within the first kevaluated proposals. Proposal and screening times are averaged over all 18 tasks; Time@1 is averaged over successful Top-1 trials. Method Success@1 ↑Success@3 ↑Success@5 ↑Proposal time (s) ↓Screening time (s) ↓Time@1 (s) ↓
+> AnyGrasp [61] 13/18 16/18 17/18 7.98 3.46 36.39 GraspGen [62] 11/18 12/18 12/18 4.54 3.16 24.84 NeuGraspNet [18] 12/18 13/18 13/18 12.90 1.56 39.05 EconomicGrasp [63] 10/18 12/18 12/18 5.03 1.11 20.68
+> RNGNet [64] 7/18 8/18 8/18 18.89 1.34 46.33 NeuGraspNet+ (ours) 18/18 18/18 18/18 14.36 2.23 49.04
+
+## B.4 Motion Planning 
+
+Plan_to_eef_pose converts a caller-specified end-effector or held-object target into the robot’s command frame, executes a trajectory, and verifies arrival. The fixed-grasp protocol in Table 7 supplies every planner with the same target and therefore isolates planning, whereas planner-native results measure the complete native route. We retain cuRoboV2 [19] as the core global planner and trajectory checker; it is also shared by the proposal comparison in Table 6. For each checked call, the API freezes the current RGB-D frame, robot state, camera calibration, and target mask. It filters robot-image residuals and excludes the grasp target where contact is intended. Closing a successful grasp creates a held-object state containing the measured hand–object transform and attachment geometry; later paths check both robot and attachment against the environment. With target_frame=“tcp” ,the public TCP goal is converted to the native hand frame. With target_frame=“held_object” , the saved transform determines the hand goal that realizes a desired object pose. 
+
+> 22 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+Explicit motion modes. goto_pose provides three motion modes with different planning costs and collision checks. The default auto mode uses cuRoboV2 first, collision-checked multi-seed IK second, and the existing bounded recovery route last; it is appropriate for grasping, long transport, and cluttered motion. ik_-checked skips global planning but captures the scene and collision-checks dense IK branches, including the attachment, for short contact-free adjustments. ik_unchecked skips scene capture and scene-collision checking for deliberate contact such as staged insertion, drawer closing, or door pushing, while retaining multi-seed IK, strict joint-continuity limits, dense execution, tracking, and arrival checks. The “unchecked” mode therefore omits scene-collision checks while retaining these control and execution checks. The mode is selected before execution so that intended contact does not consume the budget in repeated collision-avoidance attempts. This also ensures that a call requested with collision checking cannot silently switch to unchecked execution. For example, a microwave program can use auto for grasp and transport, 
+
+ik_checked for final free-space alignment, and ik_unchecked for insertion or a door-pushing arc. 
+
+Approach and execution acceptance. z_approach adds a waypoint along the declared tool frame. For held-object placement, contact_target marks only a bounded terminal segment as expected contact, leaving the preceding transport checked. Before returning, every route monitors joint tracking and verifies joint and end-effector arrival. The typed result records the resolved frame, motion mode, trajectory source, performed checks, timing, residuals, and a specific failure category, allowing history hi to distinguish planning, execution, and semantic-target failures.                                              
+
+> Table 7 Motion-planning results on the 18-task Panda benchmark. The planner-native fresh protocol is the main end-to-end comparison: each planner independently resolves endpoints, screens proposals, plans, and executes. Pipeline time includes candidate screening, endpoint resolution, and planning; Plan time measures the final selected trajectory only. The fixed-grasp protocol uses a shared grasp target. The conditional diagnostic uses cuRobo-success anchors and should not be ranked directly against the planner-native results. Avoid Everything was evaluated only in the conditional pose-goal diagnostic. Planner-native fresh (main) Fixed grasp Conditional diagnostic Planner Plannable ↑Task success ↑Pipeline / Plan (s) ↓Task success ↑Plan (s) ↓Grasp success ↑Plan (s) ↓
+> cuRoboV2 [19] 18/18 18/18 3.82 / 0.254 15/18 0.192 18/18 0.935
+> DRP/IMPACT [65] 16/18 14/18 6.23 / 0.418 11/18 0.576 16/18 1.526 VAMP [66] 12/18 11/18 73.30 / 9.320 6/18 0.931 14/18 1.598 Avoid Everything [67] –––––2/18 3.677
+
+## B.5 Gripper Control 
+
+Perform_gripper implements binary open or close actions. A command returns only after the observed opening or joint signal remains stable for a fixed dwell window; failure to settle within the budget is reported explicitly. A successful close also initializes the held-object state described above from the measured hand pose. The coding agent uses the same gripper interface across Franka, RoboSuite, and RoboTwin 2.0, with platform-specific adapters mapping commands to native gripper coordinates. An arm selector is omitted for single-arm platforms and explicit on bimanual systems, preserving the selected arm through motion and release. Because this operation is deterministic and embodiment-local, we do not screen alternative gripper controllers, and 
+
+Qθ does not score the adapter. 
+
+## B.6 End-to-End Policy Execution 
+
+Perform_E2E maps an explicit route_id to a frozen VLA, video-action, or world-action checkpoint. It supports three mutually exclusive instruction modes. Task mode forwards the environment task instruction when neither an object nor a prompt is provided. Grasp–lift mode takes an object name, generates a local grasp-and-lift instruction, and updates the held-object state after perception confirms an increase in the object’s height. Bounded-prompt mode forwards an explicit prompt verbatim and requires a step budget because arbitrary local instructions have no common success detector. Invalid argument combinations and missing required task language are rejected. 
+
+> 23 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+Execution ends on task completion, environment termination, a supported model stop signal, or budget exhaustion; grasp–lift mode also ends when its local completion predicate is met. Each call records the instruction and its source, route, executed steps, termination reason, and measured postcondition. Full-task success and grasp–lift success use the task and local predicates, respectively. We screen released routes on 14 LIBERO-Pro tasks, four RoboSuite tasks, and ten RoboTwin 2.0 tasks. The screen specifies one initial state per task, but RoboTwin’s full-task evaluator rejects states that fail expert validation; realized initial states may therefore differ across methods. Full-task and grasp–lift success are reported in Table 8, and execution statistics in Tables 9 to 11. Successful-trial completion times are reported separately from all-trial runtime statistics. Retained routes receive stable route_id s and are frozen before coordinator training. FastWAM and FasterWAM use their LIBERO checkpoints on LIBERO-Pro and RoboSuite, and their RoboTwin checkpoints on RoboTwin. Harness-VLA uses the same LIBERO-trained checkpoint on all three suites. The RynnVLA-002 results reflect a loader that reinitializes part of the VQ encoder, rather than an unmodified checkpoint deployment. JointWAM is excluded because no runnable checkpoint was available in the audited release. These results characterize the specified checkpoint–suite configurations.        
+
+> 24 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+> Table 8 Success counts across three evaluation suites. Full measures successful completion of the entire task, whereas
+> G–L measures whether the policy successfully grasps and lifts the target object, providing a partial-task measure of manipulation capability. Each entry reports the number of successful evaluations over the total number evaluated; the best result in each column is shown in bold. ⋆The π0.5-RLinf-SFT policy uses the same LIBERO-trained checkpoint across all three suites, without suite-specific adaptation. ‡For RynnVLA-002, the current public loader reinitializes part of the VQ encoder when loading the released checkpoint.
+
+# LIBERO-Pro RoboSuite RoboTwin 2.0 Method Full G–L Full G–L Full G–L 
+
+# Vision-Language-Action Policies 
+
+# OpenVLA-OFT [68] 4/14 5/14 0/4 0/4 0/10 1/10 PRTS [69] 6/14 7/14 1/4 1/4 0/10 4/10 RDT2 [70] 0/14 0/14 0/4 0/4 0/10 0/10 SpatialVLA [71] 0/14 0/14 0/4 0/4 0/10 1/10 StarVLA [72] 4/14 3/14 0/4 0/4 0/10 2/10 RynnVLA-002 ‡ [73] 1/14 3/14 0/4 0/4 0/10 1/10 EVO1 [74] 4/14 3/14 0/4 0/4 0/10 3/10 ABot-M0 [75] 4/14 3/14 1/4 0/4 7/10 9/10 InternVLA-A1.5 [76] 5/14 7/14 0/4 0/4 9/10 9/10 SmolVLA [77] 3/14 4/14 0/4 0/4 0/10 3/10 WLA-0 [78] 4/14 4/14 1/4 1/4 8/10 10/10 
+
+# X-VLA [79] 2/14 4/14 0/4 0/4 0/10 0/10 MolmoAct2 [80] 10/14 11/14 1/4 2/4 0/10 0/10 
+
+# π0.5-RLinf-SFT ⋆ [20] 10/14 13/14 0/4 2/4 0/10 2/10 
+
+# Video-Action Models 
+
+# LingBot-VA [81] 0/14 3/14 0/4 2/4 9/10 9/10 
+
+# World-Action Models 
+
+# FastWAM [21] 4/14 11/14 0/4 0/4 10/10 10/10 
+
+# FasterWAM [25] 4/14 11/14 0/4 0/4 8/10 10/10                
+
+> 25 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+> Table 9 Execution efficiency on LIBERO-Pro under the Full and G–L criteria. Full denotes end-to-end task success, while G–L denotes successful grasp and lift of the target object. For each criterion, All trials aggregates both successful and failed episodes and reports the average number of executed steps, average execution time, and effective control frequency. Successful only reports the mean and median completion time over successful episodes only. A dash indicates that the method achieves no successful trial under that criterion and therefore has no successful-only timing statistic. Lower all-trial steps or execution time do not necessarily indicate greater efficiency, since failed episodes may terminate before completing the full rollout horizon; these quantities should therefore be interpreted jointly with the corresponding success counts in Table 8.
+
+Full G–L All trials Successful only All trials Successful only Method Steps Time (s) Hz Mean (s) Median (s) Steps Time (s) Hz Mean (s) Median (s) 
+
+Vision–Language–Action policies 
+
+OpenVLA-OFT 547 .4 34 .2 6.171 7.8 7.5 503 .1 117 .0 6.368 41 .0 35 .6PRTS 459 .8 39 .5 3.017 11 .7 11 .5 429 .2 105 .6 3.506 41 .5 30 .9RDT2 720 .0 126 .6 0.885 — — 720 .0 287 .1 0.771 — —SpatialVLA 720 .0 135 .4 1.608 — — 720 .0 390 .7 1.074 — —StarVLA 542 .4 48 .0 2.338 12 .9 12 .8 580 .5 144 .9 3.871 29 .0 31 .4RynnVLA-002 ‡ 673 .9 81 .9 1.313 11 .1 11 .1 591 .9 1005 .2 0.873 191 .5 145 .9EVO1 542 .0 68 .5 2.008 18 .4 15 .9 581 .8 246 .1 1.906 32 .5 32 .7ABot-M0 540 .9 119 .4 2.392 25 .3 24 .6 580 .1 168 .8 2.402 42 .2 41 .5InternVLA-A1.5 535 .5 157 .8 0.914 67 .2 43 .6 407 .6 166 .4 1.375 38 .9 32 .1SmolVLA 590 .1 113 .3 3.175 29 .9 28 .4 557 .0 242 .9 2.360 55 .5 43 .4WLA-0 541 .6 138 .5 1.192 34 .6 32 .1 533 .4 235 .7 1.522 27 .3 25 .6X-VLA 654 .7 134 .8 3.269 71 .1 71 .1 533 .6 223 .2 6.201 38 .2 40 .2MolmoAct2 301 .1 56 .3 3.649 28 .5 26 .6 213 .6 89 .0 2.841 41 .7 40 .6
+
+π0.5-RLinf-SFT 303 .8 60 .4 4.876 30 .8 29 .5 128 .9 30 .9 4.870 23 .1 20 .0
+
+Video–Action models 
+
+LingBot-VA 720 .0 354 .7 2.315 — — 625 .7 708 .1 1.622 364 .9 227 .6
+
+World–Action models 
+
+FastWAM 542 .6 120 .0 1.451 31 .7 31 .0 177 .7 51 .7 1.459 10 .6 7.1FasterWAM 542 .0 115 .5 2.201 28 .3 27 .5 177 .3 47 .3 1.835 10 .7 6.5
+
+> 26
+
+RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+Table 10 Execution efficiency on RoboSuite under the Full and G–L evaluation criteria. Full requires successful completion of the entire task, whereas G–L requires successful grasp and lift of the target object. For each criterion, 
+
+All trials aggregates both successful and failed evaluations and reports the average number of executed steps, average execution time, and effective control frequency. Successful only reports the mean and median execution time computed only over evaluations satisfying the corresponding success criterion. A dash denotes that no evaluation is successful under that criterion, so successful-only timing statistics are unavailable; NR denotes a statistic that was not recorded. Lower all-trial step counts or execution times do not necessarily indicate higher execution efficiency, since failed evaluations may terminate early rather than complete the full rollout horizon. All-trial efficiency should therefore be interpreted jointly with the corresponding success counts reported in Table 8, where method references are also provided. 
+
+Full G–L All trials Successful only All trials Successful only Method Steps Time (s) Hz Mean (s) Median (s) Steps Time (s) Hz Mean (s) Median (s) 
+
+Vision–Language–Action policies 
+
+OpenVLA-OFT 720 .0 179 .2 2.337 — — 720 .0 111 .2 7.042 — —PRTS 575 .5 160 .0 1.779 37 .6 37 .6 561 .5 94 .5 3.092 18 .2 18 .2RDT2 720 .0 261 .7 0.726 — — 720 .0 202 .5 0.856 — —SpatialVLA 720 .0 313 .1 1.024 — — 720 .0 207 .1 1.546 — —StarVLA 200 .0 46 .7 3.636 — — 720 .0 124 .9 3.971 — —RynnVLA-002 ‡ 220 .0 192 .3 1.478 — — 720 .0 590 .4 1.462 — —EVO1 720 .0 128 .6 2.516 — — 720 .0 128 .9 2.343 — —ABot-M0 576 .8 100 .1 3.739 26 .2 26 .2 720 .0 87 .7 3.754 — —InternVLA-A1.5 720 .0 159 .0 1.460 — — 720 .0 104 .4 1.278 — —SmolVLA 720 .0 164 .4 n.r. — — 720 .0 135 .4 2.958 — —WLA-0 661 .2 139 .5 1.717 97 .0 97 .0 559 .2 127 .4 1.564 20 .2 20 .2X-VLA 720 .0 101 .6 7.382 — — 720 .0 103 .4 7.431 — —MolmoAct2 556 .8 123 .5 1.103 15 .6 15 .6 404 .0 80 .9 2.746 17 .3 17 .3
+
+π0.5-RLinf-SFT 720 .0 129 .7 4.780 — — 424 .8 74 .6 4.952 24 .1 24 .1
+
+Video–Action models 
+
+LingBot-VA 720 .0 377 .8 2.887 — — 526 .8 459 .2 1.303 372 .1 372 .1
+
+World–Action models 
+
+FastWAM 720 .0 166 .5 1.456 — — 720 .0 160 .5 1.451 — —FasterWAM 720 .0 142 .4 1.520 — — 720 .0 149 .1 1.820 — —
+
+27 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+Table 11 Execution efficiency on RoboTwin 2.0 under the Full and G–L evaluation criteria. Full requires successful completion of the entire task, whereas G–L requires successful grasp and lift of the target object. For each criterion, 
+
+All trials reports execution statistics computed over the complete evaluation set, including both successful and failed trials: Steps , Time (s) , and Hz characterize rollout length, execution time, and effective control frequency, respectively. Successful trials reports the mean and median execution time over trials satisfying the corresponding success criterion. A dash denotes that no trial is successful under that criterion, so successful-trial timing statistics are unavailable. Lower all-trial step counts or execution times do not necessarily indicate greater execution efficiency, since failed trials may terminate before task completion and therefore incur shorter rollouts. These efficiency statistics should therefore be interpreted jointly with the corresponding success counts reported in Table 8, where method references are also provided. 
+
+Full G–L All trials Successful trials All trials Successful trials Method Steps Time (s) Hz Mean (s) Median (s) Steps Time (s) Hz Mean (s) Median (s) 
+
+Vision–Language–Action policies 
+
+OpenVLA-OFT 792 .0 1273 .4 3.879 — — 675 .6 1292 .2 3.434 51 .3 51 .3PRTS 790 .0 1620 .3 1.370 — — 464 .5 654 .0 2.139 78 .9 53 .0RDT2 792 .0 1372 .8 0.347 — — 790 .0 1359 .1 0.334 — —SpatialVLA 790 .0 2242 .1 0.669 — — 739 .7 1565 .8 0.797 234 .1 234 .1StarVLA 790 .0 708 .5 3.938 — — 594 .7 621 .8 3.321 96 .4 96 .4RynnVLA-002 790 .0 1343 .2 0.905 — — 734 .8 1258 .9 0.979 121 .3 121 .3EVO1 806 .6 641 .9 1.096 — — 535 .2 399 .3 1.626 111 .7 61 .3ABot-M0 470 .0 245 .5 3.610 144 .0 139 .6 139 .8 117 .7 3.397 44 .2 43 .8InternVLA-A1.5 326 .0 188 .0 1.534 162 .1 153 .9 144 .8 78 .7 1.511 40 .7 42 .5SmolVLA 790 .0 405 .9 2.392 — — 574 .6 332 .6 2.011 48 .1 38 .8WLA-0 368 .0 265 .6 1.295 206 .3 202 .4 81 .4 65 .2 1.318 65 .2 54 .0X-VLA 798 .0 481 .6 7.936 — — 790 .0 493 .5 7.557 — —MolmoAct2 792 .0 670 .4 3.983 — — 790 .0 359 .7 0.871 — —
+
+π0.5-RLinf-SFT 790 .0 616 .1 5.029 — — 666 .8 483 .8 5.042 32 .6 32 .6
+
+Video–Action models 
+
+LingBot-VA 344 .5 203 .8 0.948 150 .0 159 .3 138 .4 168 .4 0.331 101 .1 103 .8
+
+World–Action models 
+
+FastWAM 284 .8 164 .1 0.835 164 .1 153 .6 73 .2 40 .0 1.453 40 .0 38 .7FasterWAM 431 .2 239 .8 1.173 178 .2 179 .3 80 .1 44 .3 1.863 44 .3 45 .6
+
+# C Experiment Details 
+
+## C.1 Benchmark Tasks 
+
+The evaluation suite comprises 100 tabletop-manipulation tasks across three benchmarks with different scene and control requirements: LIBERO-Pro [22] (single-arm tasks under instruction-redirection T and position-swap S perturbations), RoboSuite [23] (single-arm pick–place in clean scenes), and RoboTwin 2.0 [24] (long-horizon bimanual manipulation). The task pool contains 80 LIBERO-Pro, 4 RoboSuite, and 16 RoboTwin 2.0 tasks. Coordinator training uses scene seed 0 for these tasks, while evaluation uses seeds 1–10. This split tests generalization to new scene seeds within the same task pool. LIBERO-Pro columns in Table 3 in the main text follow the eight T/S splits (Spat, Obj, Goal, and L10), each aggregating 10 tasks × 10 seeds; RoboSuite and RoboTwin columns aggregate their full task pools under the same seed range. Mobile-manipulation suites such as BEHAVIOR [82] and RoboCasa [83] fall outside the P 5 tabletop-manipulation scope and are not included. 
+
+Cross-agent and cross-embodiment sensitivity. The study described in Takeaway 5 uses a fixed 3 × 4backend–embodiment grid on four RoboTwin 2.0 task instances: blocks_ranking_rgb (arrange the red, 
+
+28 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+green, and blue blocks), place_cans_plasticbox (place the cans into the plastic box), place_bread_basket 
+
+(place the bread into the basket), and stack_blocks_two (stack two blocks). Claude Code and Aloha–AgileX are the default backend and embodiment, respectively; the comparison swaps in Cursor or Codex, and Franka–Panda, ARX–X5, or UR5–WSG, while retaining the same task instructions, P 5 stage contracts, and typed API interfaces. Cursor and Claude Code both use Claude Opus 4.8 as the underlying generator, while Codex uses GPT-5.5. The backend sweep keeps the API library and trained coordinator fixed, whereas each embodiment uses its corresponding native adapter and compatible low-level controller under the shared API contract; client and decoding details are given in Appendix C.5. The supplementary videos provide one demonstration for each task–embodiment pair, giving 16 clips organized as <task>/<embodiment>.mp4 .These clips illustrate execution on the different embodiments, while Figure 6 in the main text reports the aggregate success rates. 
+
+## C.2 Baseline Implementations 
+
+All methods in Table 3 in the main text share the single-episode evaluation protocol of Appendix C.3: seeds 1–10, one trial per seed, terminal SR only, and no global cross-episode memory. For implementations that support memory across episodes, retrieval over prior tasks, or persistent tip stores, we disable those channels to keep the available experience limited to the current episode. RoboTwin columns marked “/” indicate embodiment mismatch for single-arm VLA checkpoints that are incompatible with the bimanual RoboTwin controllers. 
+
+End-to-end policies. π0 [7] and π0.5 [20] run as frozen open-loop policies under their released checkpoints for the LIBERO / RoboSuite control stacks; they are not re-fine-tuned on our coordinator training pool. FastWAM [21] and FasterWAM [25] likewise use released world-action checkpoints as full-episode controllers (not as Perform_E2E routes). In RoboAware, the retained π0.5 and FastWAM routes appear only inside typed 
+
+Perform_E2E calls at local skill granularity (Appendix B.6). 
+
+Code-as-policy. CaP [8] and CaP-X [9] follow their public code-generation loops over language-conditioned robot APIs; we evaluate them under the shared episode horizon and without their optional cross-episode repair memory. RATS [26] and ASPIRE [27] keep their published planner / skill-library interfaces, again with global memory disabled. These baselines use their published execution-selection rules and do not receive the learned Qθ family coordinator. 
+
+VLA with harness. Pigey [28] and VLS [29] use their public harness wrappers around a frozen generative policy, with early-stop and reward-steering settings taken from the authors’ default configs under the shared single-episode protocol. Harness-VLA [11] is evaluated by us using the RLinf-released pi05_libero130_-fullshot π0.5-RLinf-SFT checkpoint [84], exposed through the vla_act primitive; harness component ablations appear in Appendix D.1. Controlled routing ablations of RoboAware (RoboAware-UO, RoboAware-TF, RoboAware-UA) keep the same coding agent and API library and change only coordinator training or family allocation, as listed in Tables 4 and 5 in the main text. 
+
+## C.3 Success and Runtime Metrics 
+
+This subsection defines the success-rate and runtime measures used in the main evaluation. Each table specifies its task pool, and comparisons within a table use the same success criterion and timing convention unless stated otherwise. The Harness-VLA ablation in Appendix D.1 uses a separate task and seed schedule and reports success among valid completions, together with execution coverage. 
+
+Success-rate denominator. An evaluation episode is one (task, scene seed) pair under seeds 1–10. The binary success indicator is the terminal task reward r ∈ { 0, 1} emitted by the suite’s registered evaluator when the episode ends by task completion, unrecoverable failure, empty Ci, or the horizon T ; partial stage progress never counts as success. The episode-level success rate (SR) is therefore SR ep = 1
+
+N
+
+> N
+
+∑
+
+> n=1
+
+1[rn = 1] ,
+
+> 29 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes
+
+where N is the number of evaluated episodes in the stated pool (for example, N =100 for a 10 tasks × 10 seeds column in Table 3 in the main text, and N =1 ,000 for the full 100 tasks × 10 seeds suite). In the main evaluation, episodes that abort remain in the denominator, including crashes, timeouts, and failures caused by an empty admissible-family set. 
+
+Task- and suite-level weighting. To distinguish equal weighting of tasks from pooling individual episodes, we define two averages. Task macro-average first computes a per-task SR over that task’s seeds, then averages those task rates with equal weight: SR macro = 1
+
+|T | 
+
+∑
+
+> t∈T
+
+SR ep (t).
+
+Episode-weighted (micro) average is SR ep over the pooled episodes and therefore weights tasks by their episode counts. Because every task in the main evaluation has the same number of seeds, the task macro-average and episode-weighted average coincide, both within each suite and across all 1 ,000 episodes. They differ only when tasks contribute unequal numbers of episodes. An unweighted average of the three suite-level rates is a different measure. It gives equal weight to LIBERO-Pro, RoboSuite, and RoboTwin despite their unequal task counts, whereas pooling all episodes gives each task equal weight under this protocol. We therefore identify whether each cross-suite result is an equal-weight suite average or a pooled episode average. Main-text columns use the episode-weighted measure specified in their captions. 
+
+Execution-time scope. Reported times are wall-clock seconds on the evaluation host unless a table names a different clock. End-to-end episode time starts at the post-reset observation used to build the task plan and stops when the episode terminates under the success predicate above; simulator reset and offline model loading are excluded. Averages over all trials include failures; successful-trial means or medians are computed only on episodes with r=1 and are marked undefined when that set is empty, matching Table 11. 
+
+## C.4 Hyperparameters and Experimental Settings 
+
+Table 12 lists the reward weights, search and learning settings, and step budgets used by RoboAware. We distinguish four budgets because they count different parts of execution: environment / control steps advance the physics or low-level controller inside an API; an API step budget caps how long an atomic call may retain control before returning success or a typed failure; semantic decision steps count P 5 boundaries at which the coordinator may select a family; and the MCTS budget K counts completed suffix simulations 
+
+per search root, not environment steps or semantic decisions. Root-collection and rollout suffixes use a fixed family-sampling rule with support on every admissible family; tree Selection uses UCB (Equation (1)) instead. The main experiments use K=20. The RoboSuite ablation compares K ∈ { 5, 10 , 20 , 50 } and shows diminishing success-rate gains beyond K=20 (Figure 5 in the main text). RoboAware-UA uses uniform family allocation under the same K values. 
+
+## C.5 Coding-Agent Backends 
+
+The coding agent πcode is frozen before coordinator training and is shared by RoboAware and the controlled routing baselines. Cursor, Claude Code, and Codex are the client toolchains through which the coding models are accessed. In the reported runs, Cursor and Claude Code both use Claude Opus 4.8, while Codex uses GPT-5.5. We fix the client/CLI versions and decoding settings and record them in the run logs. Sensitivity results in Figure 6 in the main text swap only this backend while keeping the API library, P 5 contracts, and 
+
+Qθ fixed. 
+
+## C.6 Code-Execution Protocol 
+
+Execution sandbox, budgets, and retries. Generated blocks run in a restricted Python process that can import only the registered API library and allowlisted Python standard-library helpers. Each block inherits an API-call budget, a control-step budget, and a 30 s wall-clock timeout (see Table 12). Syntax errors, undefined names, disallowed imports, and API schema violations trigger an automatic repair round that appends the error text and regenerates under the same family constraint, up to Rrepair =2 attempts; 
+
+> 30
+
+RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+Table 12 Hyperparameters of RoboAware.                                          
+
+> Parameter Symbol Setting Discount factor γ1Perception reward weight wp0.2Manipulation reward weight wm0.3Task-success reward weight wt0.5Smooth-L1threshold —1Neighboring-root draws S4Neighboring-time window ∆10 saved control steps UCB coefficient cucb 1.0Suffix-simulation budget K20 Episode horizon T100 decision transitions Q-learning updates M10 ,000 Learning rate η10 −5
+> Target-copy interval J500 updates Translational pose threshold ϵp0.02 m Rotational pose threshold ϵRπ/ 12 rad Atomic API step budget —100 control steps Block wall-clock timeout —30 s Code-repair attempts Rrepair 2Coding-agent history window Hcode 4 full stage transitions
+
+exhausted repairs mark the branch as failed for SCB or terminate the deployment stage according to Table 1. Runtime exceptions raised inside an allowed API are returned as typed failure codes to the agent rather than as raw simulator dumps. 
+
+Episode reset versus memory. Between evaluation episodes (and between independent training trajectories), the coding-client session is reset: conversation state, tool caches, and any product-level memory are cleared so that episode n+1 cannot read traces from episode n. Within an episode, feedback is limited to the observable channel already present in xi: typed API returns, postcondition bits, failure codes, timeouts, and the truncated history hi. We do not enable cross-episode product memory, retrieval over prior tasks, or persistent “global tips” stores for main results; any ablation that reintroduces such memory is labeled separately and is not part of the default RoboAware protocol. Family selection at deployment is supplied by Qθ; the coding agent does not choose ci, and prompts never reveal the unchosen family’s counterfactual outcome. 
+
+## C.7 Computation and Software 
+
+The reported coordinator run used four NVIDIA A100 GPUs with 80 GB memory each. Fitting Qθ took ap-proximately six hours, corresponding to approximately 24 GPU-hours (4 × 6 h). Trajectory and counterfactual data collection took approximately one additional day on the same hardware pool. Data collection therefore accounts for most of the wall-clock time and must be included when reporting the training cost. Supplementary qualitative clips for the cross-embodiment study follow the naming <task>/<embodiment>.mp4 described in Appendix C.1. 
+
+# D Additional Empirical Results 
+
+## D.1 Ablation of Harness-VLA 
+
+Experimental setup. We evaluate the harness components in two stages. All six configurations in Table 13 use the same π0.5 SFT backbone and a common neutral interface prompt. We first screen them on 24 tasks with seed 42, then evaluate Full, w/o Memory, and w/o Memory & SAM3 on 80 tasks with seeds 
+
+{41 , 42 , 43 }. Removing Memory also disables the seed-0 reference, so we use memory package to denote these 
+
+31 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes    
+
+> Table 13 Component configurations for the Harness VLA ablation study. All variants use the same π0.5SFT backbone.
+
+Method Planner Memory Seed-0 reference SAM3 Scripted hybrid VLA A: Full Harness VLA ✓ ✓ ✓ ✓ ✓ π0.5 SFT B: w/o Memory ✓ × × ✓ ✓ π0.5 SFT C: w/o Reference ✓ ✓ × ✓ ✓ π0.5 SFT D: w/o SAM3 ✓ ✓ ✓ × ✓ π0.5 SFT E: w/o Memory & SAM3 ✓ × × × ✓ π0.5 SFT F: Bare SFT × × × × × π0.5 SFT  
+
+> Table 14 Paired ablation screening on 24 tasks using seed 42. Drop is defined as the success rate of Full minus that of the corresponding variant, in percentage points (pp). Confidence intervals are 95% task-bootstrap intervals for the paired drop. S →F counts tasks solved by Full but failed by the ablated variant; F →S counts the reverse. All 24 episodes completed without errors in each variant.
+
+## Method Success / valid Success rate (%) Drop (pp) 95% CI (pp) S→F F→SA: Full Harness VLA 15/24 62.5 – – – –B: w/o Memory 11/24 45.8 16.7 [−8.3, 41 .7] 7 3C: w/o Reference 12/24 50.0 12.5 [−12 .5, 37 .5] 6 3D: w/o SAM3 14/24 58.3 4.2 [−8.3, 20 .8] 2 1E: w/o Memory & SAM3 9/24 37.5 25.0 [4 .2, 45 .8] 7 1F: Bare SFT 10/24 41.7 20.8 [0 .0, 41 .7] 6 1
+
+two components together. The w/o Reference variant removes only the reference while retaining Memory, allowing us to examine that component separately in the screening stage. 
+
+Single-seed screening. Full succeeds on 15 of 24 tasks (62.5%; Table 14). Removing both the memory package and SAM3 produces the largest observed decrease, to 37.5%. This is a drop of 25.0 percentage points (pp), with a 95% task-bootstrap confidence interval of [4 .2, 45 .8] pp. Removing the memory package alone, the seed-0 reference alone, or SAM3 alone reduces success by 16.7, 12.5, and 4.2 pp, respectively, although all three confidence intervals include zero. The larger drop from joint removal does not by itself establish a positive interaction. The estimated additive interaction, SR A − SR B − SR D + SR E , is −4.2 pp and provides no evidence of a positive additive interaction. Bare SFT achieves 41.7%, which is 20.8 pp below Full. Because this variant also removes the planner and scripted hybrid execution, its comparison with Full measures the contribution of the overall harness rather than the planner alone. 
+
+Multi-seed confirmation. Table 15 separates execution errors from completed episodes in which the task fails. Among valid completions, Full achieves 56.6% success, compared with 16.9% for w/o Memory and 20.9% for w/o Memory & SAM3. Because execution errors leave different sets of valid episodes for each variant, we also compare variants on task–seed pairs that completed under both configurations. On these paired subsets, removing the memory package yields a signed difference of −38 .9 pp ( n = 113, 95% CI [ −50 .0, −27 .4] pp), while removing both the memory package and SAM3 yields −35 .8 pp ( n = 109, 95% CI [ −48 .2, −23 .4] pp). Both intervals exclude zero, supporting a contribution from the memory package on the jointly completed episodes. 
+
+> 32
+
+RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+Scope and limitations. Service-connection errors leave only 47.1–49.2% of the 240 scheduled episodes per configuration with valid completions. The paired estimates therefore describe those jointly completed episodes and cannot establish the effect over the full scheduled set. We report execution coverage separately and do not count these service errors as model failures in this ablation. The confirmation stage also omits w/o SAM3, so it does not independently measure the standalone contribution of SAM3. The historical whole-system result of 65/80 (81.25%) used a different prompt and protocol and is therefore not directly comparable with Full in this study. 
+
+## D.2 Visualizations 
+
+Figure 1 shows a further LIBERO-Pro rollout under spatial-language perturbation, extending the cases in Figure 4 in the main text. As before, RoboAware-EO and RoboAware-MO fail in complementary ways, whereas RoboAware completes the task by switching families at P 5 boundaries. Task: Pick the akita black bowl between the plate and the ramekin and place it on the plate 
+
+# end-to-end modular hybrid (ours) 
+
+Figure 1 Additional LIBERO-Pro comparison on “Pick the akita black bowl between the plate and the ramekin and place it on the plate,” complementing Figure 4 in the main text. RoboAware-EO approaches with a misaligned gripper and fails to secure the bowl. RoboAware-MO completes a grasp but selects the wrong object (the cookie box). RoboAware grounds the spatially described bowl and finishes the pick-and-place, succeeding by switching policy families across P 5 boundaries. 
+
+## D.3 Failure Modes 
+
+Figure 2 summarizes the failures observed in LIBERO-Pro and RoboTwin. Grasping and object-holding instability is the largest identified category, accounting for 29.8% of failed rollouts. Constrained contact, insertion, and mechanism actuation account for another 16.7%. Together, these categories represent 46.5% of all failed rollouts, indicating that low-level interaction and contact-rich execution are major sources of failure. Target grounding (5.3%), transport and placement (6.1%), and multi-object sequencing (4.4%) account for smaller identified shares. However, 37.7% of failures remain in Others because the saved evaluation records lack the detailed traces needed to distinguish perception, planning, control, and success-check errors. This limits how strongly the 
+
+Table 15 Multi-seed confirmation on 80 tasks with seeds {41 , 42 , 43 }, yielding 240 scheduled episodes per variant. Valid SR is the number of successful episodes divided by the number of successful and failed episodes, so execution errors are excluded. Coverage is the fraction of the 240 scheduled episodes that completed without errors. Paired differences compare each variant against Full on task–seed pairs that completed without errors in both conditions: ∆ = SR variant − SR Full on that jointly valid subset of size npair , which need not equal the gap between the separately reported valid success rates. Method Success Failure Error Valid / scheduled Valid SR (%) Coverage (%) npair                              
+
+> Paired ∆ (pp) 95% CI (pp) A: Full Harness VLA 64 49 127 113/240 56.6 47.1 –––B: w/o Memory 20 98 122 118/240 16.9 49.2 113 −38 .9[−50 .0,−27 .4] E: w/o Memory & SAM3 24 91 125 115/240 20.9 47.9 109 −35 .8[−48 .2,−23 .4]
+
+33 RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes 
+
+identified categories can characterize the full failure distribution. The categories summarize the observed outcomes. During deployment, recovery and termination instead follow the typed API failures, timeouts, and stage conditions defined in Table 1 and Algorithm 1. 
+
+Figure 2 Failure modes of the unsuccessful rollouts. Grasping instability is the largest identified failure mode (29.8%), followed by constrained contact or insertion failures (16.7%). Grounding, placement, and multi-object sequencing account for 5.3%, 6.1%, and 4.4%, respectively. Others (37.7%) denotes failed rollouts for which the saved evaluation records are insufficient to identify a specific cause (29.8% from LIBERO-Pro and 7.9% from RoboTwin). 34

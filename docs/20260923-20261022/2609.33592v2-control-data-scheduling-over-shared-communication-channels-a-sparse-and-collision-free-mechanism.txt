@@ -1,0 +1,1408 @@
+Title: Control Data Scheduling over Shared Communication Channels: A Sparse and Collision-Free Mechanism
+
+URL Source: https://arxiv.org/pdf/2609.33592v2
+
+Published Time: Wed, 30 Sep 2026 00:48:07 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> 1
+
+# Control Data Scheduling over Shared Communication Channels: A Sparse and Collision-Free Mechanism 
+
+Yuxing Zhong, Zhaohua Yang, Fuhai Nan, Daniel E. Quevedo, and Ling Shi 
+
+Abstract —In systems where controllers operate remotely and communicate with actuators over shared communication chan-nels, it is crucial to efficiently schedule the control data trans-mission to reduce bandwidth usage and actuator effort. In this article, we investigate a novel scheduling mechanism that jointly coordinates control actions across different controllers and different time steps. We propose an algorithm based on the alternating direction method of multipliers (ADMM) to solve the resulting optimization problem. While ADMM is often treated as a black-box solver, the proposed algorithm offers a clear physical interpretation, ensures convergence to a stationary point, and is computationally efficient. Simulation results validate our theoretical results and demonstrate the effectiveness of our proposed algorithm. 
+
+Index Terms —Networked control system, optimization, scheduling, and sparsity. 
+
+I. I NTRODUCTION 
+
+Recent advancements in networked control systems (NCSs) have facilitated wireless sensing, estimation, and control [1, 2]. For example, controllers can now be deployed remotely, with control data transmitted to actuators via wireless communi-cations. While this architecture reduces system wiring, thus enhancing system flexibility and lowering operational costs, it also introduces significant challenges. The limitation of communication bandwidth, coupled with the need to minimize actuator effort, necessitates the careful scheduling of control data transmission to optimize control performance within these resource constraints. 
+
+1) Scheduling over Time: Scheduling-over-time methods have been proposed to minimize actuator effort during the operational period. By designing sparse control data, actuators can remain inactive for the majority of the time. This is particularly important to systems aimed at conserving energy while reducing noise and vibration [3]. Building on this idea, Shi et al. [4] and Nishida and Okano [5] developed scheduling strategies to minimize the quadratic cost while limiting actua-tor activation times. Siami and Jadbabaie [6] later proposed 
+
+Yuxing Zhong was with the Department of Electronic and Computer Engineering, Hong Kong University of Science and Technology when this work was conducted, and is now with the School of Electrical and Computer Engineering, University of Sydney, Australia (email: yux-ing.zhong@connect.ust.hk). Fuhai Nan, Zhaohua Yang and Ling Shi are with the Department of Elec-tronic and Computer Engineering, Hong Kong University of Science and Tech-nology, Hong Kong (e-mail: zyangcr@connect.ust.hk; fnan@connect.ust.hk; eesling@ust.hk). Ling Shi is also with the Department of Chemical and Biological Engineering, Hong Kong University of Science and Technology. Daniel E. Quevedo is with the School of Electrical and Computer Engineer-ing, University of Sydney, Australia (email:daniel.quevedo@sydney.edu.au). Time    
+
+> Over Time
+> Controller Time
+> Over Controllers
+> Controller Time
+> Ours
+> Controller
+> Controller
+> Plant System Model
+> Controller Controller Controller
+> Plant Plant Plant Scheduling Mechanism
+> Idle
+
+Fig. 1: Overview of control data scheduling algorithms. scheduling algorithms based on Hankel-based performance metrics. Furthermore, Kishida [7] and Nagahara et al. [8] introduced a novel maximum hands-off design, which mini-mizes the number of non-zero control signals while satisfying performance or terminal-state requirements. However, these approaches are restricted to systems with a single controller-actuator pair. As modern systems increasingly incorporate multiple controllers and actuators, their applicability to more complex configurations becomes significantly constrained. 
+
+2) Scheduling over Controllers: In systems with multiple controllers and actuators communicating over shared networks, simultaneous transmissions can result in packet collisions, causing all transmissions to fail. Therefore, selecting a subset of controllers for transmission is essential to avoid communi-cation collisions [9]. While extensive research on control data scheduling has primarily focused on analyzing the controllabil-ity or stability of the system under specific scheduling strate-gies [10–15], the effectiveness of these approaches remains unclear. Jiao et al. [16] addressed this issue by minimizing the quadratic cost of the system. However, their method restricts the system to a single active actuator at each time instant. Fig. 1 and Table I summarize the above existing works. While these works are valuable, they only focus on designing scheduling algorithms on one side, i.e., either over time or over controllers. However, in many modern applications [20, 21], controllers are deployed remotely with substantial computa-tional resources, whereas actuators are battery-powered and operate under energy constraints. In such settings, it is de-sirable to reduce control effort while maintaining collision avoidance, even at the expense of increased controller-side arXiv:2609.33592v2 [eess.SY] 29 Sep 2026 2
+
+TABLE I: Overview of existing literature, where ‘S’ and ‘M’ denote ‘single’ and ‘multiple’, respectively. 
+
+System Model Plant Actuator Vector Form Active Actuators Objective Shi et al. [4] S S ✓ NA Minimize the quadratic cost Nishida and Okano [5] S S ✓ NA Minimize the quadratic cost Siami and Jadbabaie [6] S S ✓ NA Optimize Hankel-based performance Kishida [7] S S ✓ NA Minimize the quadratic cost Over Time Nagahara et al. [8] S M ✓ NA Steer the state to a target value Pasqualetti et al. [10] S M ✓ M Steer the state to a target value Summers and Lygeros [11] S M ✓ M Optimize controllability metrics Siami et al. [12] S M ✗ M Optimize controllability metrics Ballotta et al. [13] S M ✗ M Optimize controllability metrics Joseph and Murthy [14] S M ✗ M Analyze controllability conditions Pasand and Montazeri [15] S M ✗ M Analyze controllability conditions Over Controllers Jiao et al. [16] S M ✓ S Minimize quadratic cost Ikeda and Kashima [17] S M ✗ M Optimize controllability metrics Olshevsky [18] S M ✗ M Analyze linear programming (LP) relaxation Xu et al. [19] M M ✗ M Minimize the quadratic cost Over Both Axes 
+
+Ours M M ✓ M Minimize the quadratic cost 
+
+computation. Achieving this objective requires joint schedul-ing over both axes. This problem is more challenging due to the stronger spatiotemporal coupling of control signals. Although several studies have considered joint scheduling [17– 19], their results are limited to scalar systems. In contrast, we investigate joint control data scheduling for general vector systems. Our main contributions are: 1) We formulate a novel joint scheduling problem over both controllers and time. Unlike existing works [17–19], our framework is applicable to general vector systems. 2) We develop an ADMM-based algorithm for the resulting problem. Although ADMM is widely used in optimiza-tion, establishing its convergence or solution quality for general non-convex problems remains difficult [22]. Un-like most existing works that use ADMM solely as a computational tool, our algorithm admits a clear phys-ical interpretation (Fig. 3) and guaranteed convergence (Theorem 10 and Theorem 11) to a stationary point (Theorem 16). 
+
+Notations: The notations R and Rn represent the sets of real numbers and n-dimensional vectors, respectively. For a matrix A, A′ denotes its transpose, ∥A∥F is its Frobenius norm, and Ai, • and A•,j correspond to its i-th row and j-th column vector, respectively. The notation A ⪰ 0 means that A is positive semidefinite. The operators ⊗, ⊙, and 
+
+⊘ refer to the Kronecker product, Hadamard product, and Hadamard division, respectively. The notations ∥ · ∥ 0 and ∥ · ∥ 2
+
+denote the ℓ0 and ℓ2 norms, while | · | is the absolute value. The expression I is the identity matrix. Bold values such as 
+
+0, 1, . . . represent matrices or vectors of the corresponding values with compatible dimensions. The function vec( ·) re-turns the vectorized form of a matrix, and sign(x) is the sign function, i.e., sign(x) = −1 if x < 0; sign(x) = 1 if x > 0;and sign(x) = 0 if x = 0 .II. P ROBLEM FORMULATION 
+
+A. System Model 
+
+Consider N discrete linear time-invariant systems over a finite time horizon T (Fig. 2). The dynamics of i-th system are given by 
+
+xk+1 ,i = Aixk,i + ζk,i Biuk,i , i ∈ N , k ∈ T , (1) where N = {1, . . . , N }, T = {0, . . . , T − 1}, xk,i ∈ Rni
+
+is the system state, uk,i ∈ Rmi is the control input, ζk,i ∈{0, 1} is the binary decision variable indicating whether uk,i 
+
+is transmitted to the plant, i.e., ζk,i = 1 if uk,i is transmitted to the plant and ζk,i = 0 otherwise. We assume that transmissions are instantaneous and error-free. Therefore, when ζk,i = 1 , the plant receives the control signal uk,i perfectly without delay. 
+
+Remark 1. This assumption is commonly adopted in the existing literature [4, 5, 7, 16] and allows us to focus on the joint scheduling design considered in this paper. Incorporating delays or packet losses would introduce randomness into the system, thereby transforming the deterministic optimization problem in (2) into a stochastic one. In such settings, analyt-ical [9] or sampling-based [23] approaches can be employed. We leave these extensions as our future work. For i ∈ N and k ∈ T , we seek control signals uk,i 
+
+and scheduling strategies ζk,i that minimize the finite horizon quadratic cost J = PNi=1 Ji, where 
+
+Ji = 
+
+> T−1
+
+X
+
+> k=0
+
+[x′
+
+> k,i
+
+Qixk,i + ζk,i u′
+
+> k,i
+
+Riuk,i ] + x′
+
+> T,i
+
+QixT,i ,
+
+with Qi ⪰ 0 and Ri ≻ 0.Controller 1 Controller 2 Controller 𝑁     
+
+> ⋮
+> Plant 2Plant 1Plant 𝑁
+> ⋮
+> Shared Network
+
+Fig. 2: System model. As mentioned, we have requirements on ζk,i both over controllers and over time. Specifically: 3
+
+1) Over Controllers : To avoid communication collisions, only a subset of controllers is allowed to transmit simul-taneously, i.e., PNi=1 ζk,i ≤ z for each time k, where 
+
+z < N is a positive integer. 2) Over Time : For each system i, we enforce sparsity on 
+
+ζi ≜ [ζ0,i , . . . , ζ T −1,i ] to reduce the actuator effort over the operational horizon. Our problem of interest can then be formulated as the following optimization problem: 
+
+min 
+
+> {ζk,i },{uk,i }
+> N
+
+X
+
+> i=1
+
+{Ji + αi∥ζi∥0}
+
+s.t.
+
+> N
+
+X
+
+> i=1
+
+ζk,i ≤ z, k ∈ T ,ζk,i ∈ { 0, 1} and (1) , k ∈ T , i ∈ N ,
+
+(2) where αi ≥ 0 is the penalty weight representing the level of emphasis on the sparsity of ζi.
+
+Remark 2. Building upon the standard linear quadratic reg-ulator (LQR) framework [24], we do not impose additional constraints on xk,i and uk,i . Nevertheless, it is important to note that the proposed ADMM framework can be readily extended to accommodate convex constraints in linear or quadratic form. For instance, for the commonly adopted box constraints, both the closed-form updates and the convergence guarantees remain valid. 
+
+B. Reformulation 
+
+Solving (2) directly is challenging due to its nature as an NP-hard mixed-integer program (MIP) [25]. Before we develop the optimization algorithm in the following section, let us first reformulate (2) into an equivalent form with respect to scheduling strategies. Denote ˜uk,i ≜ ζk,i uk,i and define the following: 
+
+¯xi ≜
+
+
+
+x0,i 
+
+...
+
+xT,i 
+
+ , ¯ui ≜
+
+
+
+˜u0,i 
+
+...
+
+˜uT −1,i 
+
+ ,
+
+¯Qi ≜ IT +1 ⊗ Qi,
+
+¯Ri ≜ IT ⊗ Ri,
+
+¯Ai ≜
+
+
+
+Ini
+
+Ai
+
+...
+
+ATi
+
+ , ¯Bi ≜
+
+
+
+0 0 · · · 0
+
+Bi 0 · · · 0
+
+AiBi Bi 0
+
+... ... . . .
+
+AT −1 
+
+> i
+
+Bi AT −2 
+
+> i
+
+Bi · · · Bi
+
+
+
+.
+
+Then, for each system i ∈ N , (1) and Ji can be rewritten as 
+
+¯xi = ¯Aix0,i + ¯Bi ¯ui,Ji = ¯ x′ 
+
+> i
+
+¯Qi ¯xi + ¯ u′ 
+
+> i
+
+¯Ri ¯ui = ¯ u′
+
+> i
+
+Pi ¯ui + q′ 
+
+> i
+
+¯ui + ri,
+
+where Pi = ¯B′ 
+
+> i
+
+¯Qi ¯Bi + ¯Ri, qi = 2 ¯B′ 
+
+> i
+
+¯Qi ¯Aix0,i and ri =
+
+x′ 
+
+> 0,i
+
+¯A′ 
+
+> i
+
+¯Q ¯Aix0,i . Therefore, (2) can be transformed into 
+
+min  
+
+> {˜uk,i }
+> N
+
+X
+
+> i=1
+
+"
+
+( ¯ u′
+
+> i
+
+Pi ¯ui + q′ 
+
+> i
+
+¯ui) + αiT −1X
+
+> k=0
+
+I (∥ ˜uk,i ∥0̸ = 0) 
+
+#
+
+s.t.
+
+> N
+
+X
+
+> i
+
+I (∥ ˜uk,i ∥0̸ = 0) ≤ z, k ∈ T ,
+
+(3) where I(·) denotes the indicator function, which returns 1
+
+when the condition is satisfied and 0 otherwise. 
+
+Remark 3. Problem (2) and (3) are equivalent with respect to objective value and the resulting scheduling decisions. Specifically, when ζk,i = 0 , the value of uk,i does not have any impact on system dynamics. Therefore, any feasible solution to (2) can be transformed into an equivalent feasible solution with the same objective value by setting uk,i = 0 whenever 
+
+ζk,i = 0 .III. M ETHODOLOGY 
+
+Without loss of generality, we consider the case mi = 1 
+
+in this section to simplify the presentation. The proposed algorithm can be readily generalized to arbitrary mi via straightforward matrix manipulations. Note that in the sim-ulation part (Section IV), we consider general systems with 
+
+mi not necessarily equal to 1.Define U ≜ [ ¯ u1, . . . , ¯uN ] ∈ RT ×N , q ≜ [q′
+
+> 1
+
+, . . . , q′ 
+
+> N
+
+]′ ∈
+
+RT N and P ≜ blkdiag( P1, . . . , PN ) ∈ RT N ×T N . Using these definitions, we can rewrite (3) equivalently as: 
+
+min  
+
+> U
+
+vec( U )′P vec( U ) + q′vec( U ) + 
+
+> N
+
+X
+
+> i=1
+
+αi∥U•,i ∥0
+
+s.t. ∥Uk+1 ,• ∥0 ≤ z, k ∈ T .
+
+(4) 
+
+Remark 4. In (4), the requirements on ζk,i over controllers are represented by the row sparsity of U , i.e., ∥Uk+1 ,• ∥0 ≤ z,while the requirements over time are captured by the column sparsity, i.e., ∥U•,i ∥0.To solve (4), we first convexify the objective ∥U•,i ∥0 by replacing it with its ℓ2 surrogate. This relaxation can be further improved with reweighted ℓ2 minimization [26] (introduced in Section III-B). Applying the ℓ2 relaxation leads to the following problem: 
+
+min  
+
+> U
+
+vec( U )′P vec( U ) + q′vec( U ) + 
+
+> N
+
+X
+
+> i=1
+
+αi∥U•,i ∥22
+
+s.t. ∥Uk+1 ,• ∥0 ≤ z, k ∈ T .
+
+(5) 
+
+Remark 5. While ℓ1 relaxation is more commonly used and generally regarded as a more effective convex surrogate than plain ℓ2 relaxation, reweighted ℓ2 minimization has also been proposed as effective approximations of ℓp norms for 0 < p < 
+
+1. As a result, it performs competitively with, and in some applications, outperforms (reweighted) ℓ1 minimization [27]. Moreover, since ℓ2 relaxation enables a closed-form solution for the U -minimization step given in (10), the computation cost is lower than ℓ1-based approaches. These advantages 4
+
+are also validated by the simulation results presented in Section IV. 
+
+Remark 6. While the following proposed ADMM algorithm (see Section III-A) is efficient in practice, its convergence behavior can be sensitive to the choice of hyperparameters, and the iterates may exhibit oscillatory behavior [28]. By using the 
+
+ℓ2 relaxation, we obtain a more robust algorithm with rigorous convergence guarantees (Theorem 10 and Theorem 11). Despite the usage of the ℓ2 surrogate, the constraint 
+
+∥Uk+1 ,• ∥0 ≤ z in (5) remains challenging to handle. In the fol-lowing, we address this using the ADMM technique [29, 30]. 
+
+A. ADMM 
+
+Introducing an auxiliary variable V , (5) can be written as 
+
+min   
+
+> U,V
+
+vec( U )′P vec( U ) + q′vec( U ) + 
+
+> N
+
+X
+
+> i=1
+
+αi∥U•,i ∥22
+
++ 
+
+> T−1
+
+X
+
+> k=0
+
+I (Vk+1 ,• )s.t. U = V ,
+
+where I(x) is an indicator function such that I(x) = 0
+
+if ∥x∥0 ≤ z and I(x) = +∞ otherwise. Its augmented Lagrangian is then given by 
+
+L(U , V , Λ) = vec( U )′P vec( U ) + q′vec( U )+
+
+> N
+
+X
+
+> i=1
+
+αi∥U•,i ∥22 + 
+
+> T−1
+
+X
+
+> k=0
+
+I (Vk+1 ,• )+ Tr[ Λ′(U − V )] + ρ
+
+2 ∥U − V ∥2 
+
+> F
+
+,
+
+where Λ ∈ RT ×N is the Lagrangian multiplier and ρ > 0 is the parameter for the regularization term. The ADMM algorithm is then structured into the following three alternating steps: 
+
+
+
+V -Minimization : V t+1 = arg min V L(U t, V , Λt); 
+
+U -Minimization : U t+1 = arg min U L(U , V t+1 , Λt); 
+
+Λ-Update : Λt+1 = Λt + ρ(U t+1 − V t+1 ),
+
+where (·)t represents the t-th iteration of the algorithm. Next, we derive closed-form solutions for each of the three ADMM update steps. It is worth noting that, instead of simply treating ADMM as a black-box solver, our proposed ADMM algorithm offers three advantages: (i) the updates admit closed-form expressions, (ii) the updates have physical interpretations, and (iii) convergence to a stationary point is guaranteed. 
+
+1) Development of V -Minimization: Denote Y t = U t +
+
+Λt/ρ . The following lemma gives the V -minimization step. 
+
+Lemma 7. The solution to V t+1 = arg min V L(U t, V , Λt)
+
+is determined by 
+
+V t+1  
+
+> k+1 ,i
+
+=
+
+(
+
+Y tk+1 ,i , if ∥Y tk+1 ,i ∥2 ≥ ηtk+1 ;0, otherwise , (6) where ηtk+1 is the z-th largest value of ∥Y tk+1 ,i ∥2 for i ∈ N .
+
+Proof. The V -minimization step is equivalent to 
+
+V t+1 = arg min 
+
+> V
+
+(T −1X
+
+> k=0
+
+I (Vk+1 ,• ) + ρ
+
+2 ∥Y t − V ∥2
+
+> F
+
+)
+
+,
+
+which can be again equivalently transformed into the following optimization problem: 
+
+min  
+
+> V
+
+∥Y t − V ∥2
+
+> F
+
+s.t. ∥Vk+1 ,• ∥0 ≤ z, k ∈ T . (7) By considering each row of V separately, (7) can be decom-posed into T optimization problems. For k ∈ T , we then have 
+
+min  
+
+> V
+
+∥Y tk+1 ,• − Vk+1 ,• ∥22
+
+s.t. ∥Vk+1 ,• ∥0 ≤ z. (8) Let Υk+1 be the index set of nonzero elements in Vk+1 ,• ,and Υck+1 = N /Υk+1 be that of zero elements. Obviously, we require |Υk+1 | ≤ z. The objective of (8) is then given by 
+
+∥Y tk+1 ,• − Vk+1 ,• ∥22
+
+= X
+
+> i∈Υk+1
+
+∥Y tk+1 ,i − Vk+1 ,i ∥22 + X
+
+> i∈Υck+1
+
+∥Y tk+1 ,i − Vk+1 ,i ∥22
+
+≤ X
+
+> i∈Υck+1
+
+∥Y tk+1 ,i ∥22.
+
+To minimize the objective function, Υck+1 should include the 
+
+N − z smallest absolute values of ∥Y tk+1 ,i ∥2 for i ∈ N . Thus, the solution is determined by (6). 
+
+2) Development of U -Minimization: The U -minimization step is equivalent to 
+
+U t+1 = arg min  
+
+> U
+
+vec( U )′P vec( U ) + q′vec( U )+
+
+> N
+
+X
+
+> i=1
+
+αi∥U•,i ∥22 + Tr (Λt)′U  + ρ
+
+2 ∥U − V t+1 ∥2 
+
+> F
+
+.
+
+(9) Let ¯ut+1  
+
+> i
+
+, vt+1  
+
+> i
+
+and λti denote the i-th column of U t+1 ,
+
+V t+1 and Λt, respectively. By considering each column i
+
+separately, we decompose (9) into N problems, i.e., 
+
+¯ut+1  
+
+> i
+
+= arg min 
+
+> ¯ui
+
+¯u′
+
+> i
+
+Pi ¯ui + q′ 
+
+> i
+
+¯ui + αi∥ ¯ui∥22
+
++ ( λti)′ ¯ui + ρ
+
+2 ∥ ¯ui − vt+1  
+
+> i
+
+∥22
+
+= arg min 
+
+> ¯ui
+
+12 ¯u′
+
+> i
+
+Φi ¯ui − (ρvt+1  
+
+> i
+
+− qi − λti)′ ¯ui,
+
+where i ∈ N and Φi = 2 Pi + ( ρ + 2 αi)I. Since Φi ≻ 0, we obtain 
+
+¯ut+1  
+
+> i
+
+= Φ−1 
+
+> i
+
+(ρvt+1  
+
+> i
+
+− qi − λti). (10) 
+
+3) Separation Principle: While ADMM is commonly used for non-convex optimization problems, it has a clear physical interpretation in our specific problem. Recall that our goal is to schedule the control data both over controllers and over time. The proposed ADMM algorithm effectively “separates” this co-design process into two iterative steps: one over controllers and the other over time. Specifically:  
+
+> •
+
+V -Minimization: Recall (7). Starting from U t, which may not be feasible to the original problem (5), this 5
+
+step generates a feasible solution V t+1 while keeping the distance between U t and V t+1 , i.e., ∥U t − V t+1 ∥F ,small. Thus, this step can be regarded as the scheduling-over-controllers step.  
+
+> •
+
+U -Minimization: Recall (9). This step yields a column-sparse-promoting U t+1 while maintaining a small dis-tance between U t+1 and V t+1 . Thus, this step can be viewed as the scheduling-over-time step. Fig. 3 provides a visual illustration of the iterative steps of the ADMM algorithm. 𝑽 -Minimization 𝑼 -Minimization                        
+
+> 𝚲 -Update Scheduling over controllers (row sparse) Scheduling over time (column sparse)
+> Vt+1 = arg min
+> VL(Ut,V,Λt)Ut+1 = arg min
+> UL(U,Vt+1 ,Λt)
+> Λt+1 =Λt+ρ(Ut+1 −Vt+1 )
+
+Fig. 3: Illustration of the iterative steps in ADMM. 
+
+4) Theoretical Analysis: This part provides a theoretical analysis of the proposed ADMM algorithm. Let ¯ωi and ωi represent the largest and smallest eigen-values of Pi + αiI, respectively. Define ¯ω ≜ max i ¯ωi and 
+
+ω ≜ min i ωi.
+
+Lemma 8. If ρ > 4¯ ω2/ω , then for each iteration t, there exists a constant κ > 0 such that 
+
+L(U t+1 , V t+1 , Λt+1 )−L (U t, V t, Λt) ≤ − κ∥U t+1 −U t∥2 
+
+> F
+
+.
+
+Proof. See Appendix A. 
+
+Lemma 9. If ρ > 2¯ ω, then the sequence {L (U t, V t, Λt)}∞
+
+> t=0
+
+is lower bounded. 
+
+Proof. See Appendix B. 
+
+Theorem 10. If ρ > max {4¯ ω2/ω, 2¯ ω}, then the sequence 
+
+{L (U t, V t, Λt)}∞ 
+
+> t=0
+
+converges as t → ∞ .
+
+Proof. By Lemma 8 and Lemma 9, L(U t, V t, Λt) is mono-tonically decreasing and lower bounded, and therefore conver-gent as t → ∞ .
+
+Theorem 11. If ρ > max {4¯ ω2/ω, 2¯ ω}, then we obtain 
+
+∥U t+1 − U t∥2 
+
+> F
+
+→ 0, ∥V t+1 − V t∥2 
+
+> F
+
+→ 0 and ∥Λt+1 −
+
+Λt∥2 
+
+> F
+
+→ 0 as t → ∞ .
+
+Proof. See Appendix C. Theorems 10 and 11 establish the convergence of our proposed ADMM algorithm. Although ADMM is widely ap-plied to non-convex optimization problems, deriving rigorous convergence guarantees for the general non-convex setting remains challenging [22]. Consequently, such convergence results are extremely limited in the existing literature. Having secured convergence, we now examine the “quality” of the solution. Since (5) is non-convex, certifying global optimality is generally intractable. Instead, it is standard to characterize solutions through first-order necessary optimality conditions, i.e., the Karush-Kuhn-Tucker (KKT) conditions. However, due to the non-smooth cardinality constraints in (5), the standard KKT framework is not directly applicable. To overcome this, we adopt the notion of L-stationarity, which generalizes first-order stationarity to cardinality-constrained problems. 
+
+Definition 12 (L-stationarity [31]) . For the problem 
+
+{min f (x) : x ∈ X } with f (·) : Rn → R continuously differentiable, a point x is an L-stationary point if 
+
+x ∈ P X
+
+
+
+x − 1
+
+L ∇f (x)
+
+
+
+,
+
+where ∇f (x) is the gradient of f (x) and PX (·) is the orthogonal projection onto X .
+
+Remark 13. Definition 12 extends the standard notion of a stationary point. In the special case where X is closed and convex, x is a stationary point if and only if the equality 
+
+x = PX (x − 1 
+
+> L
+
+∇f (x)) holds for any L > 0 [32]. 
+
+Proposition 14. If U ⋆ is an optimal solution to (5), then 
+
+vec( U ⋆) is an L-stationary point to (5) for any L > 2¯ ω.
+
+Proof. The proof follows directly from [31, Theorem 2.2] and is therefore omitted. 
+
+Remark 15. Proposition 14 shows that L-stationarity with 
+
+L > 2¯ ω is a necessary condition for optimality. It is impor-tant to note that ¯ω is not a consequence of our algorithm design. Instead, it is introduced as part of the definition of L-stationarity in [31], and the requirement L > 2¯ ω is an intrinsic characteristic of the problem formulation. In the following, we use the superscript (·)∞ to denote the corresponding limit values generated by ADMM. 
+
+Theorem 16. For any L ≥ ρ, vec( U ∞) is a L-stationary solution to (5). 
+
+Proof. See Appendix D. Since ρ > max {4¯ ω2/ω, 2¯ ω}, Theorem 16 ensures that the limit point by ADMM, i.e., vec( U ∞), is at least an L-stationary point for any L > max {4¯ ω2/ω, 2¯ ω}. In other words, vec( U ∞) satisfies this necessary optimality condition. 
+
+B. Reweighted Minimization 
+
+The ℓ2-relaxation in (5) penalizes larger numbers more heavily than the ℓ0-norm does. To better approximate the behavior of ℓ0 norm, we adopt the reweighted ℓ2 minimization approach [26]. It increases the weights for small elements in the norm, i.e., replacing ∥ ¯ui∥22 with ¯u′
+
+> i
+
+Wi ¯ui, where 1
+
+Wi = diag[ 1 ⊘ ( ¯ ui ⊙ ¯ui + ϵ)] .
+
+By iteratively updating these weights, the reweighted method reduces the excessive penalization of larger numbers. Note that in this case, (10) is slightly modified into 
+
+¯ut+1  
+
+> i
+
+= (2 Pi + 2 αiWi + ρtI)−1(ρtvt+1  
+
+> i
+
+− qi − λti). (11)   
+
+> 1The variable ϵis a small positive constant introduced to ensure the inversion is well-defined. 6
+
+C. Strategy Refinement 
+
+In (3), we consolidate the design of ζk,i and uk,i into a single variable, i.e., ˜uk,i = ζk,i uk,i . However, due to the 
+
+ℓ2 relaxation in (5), this formulation tends to over-penalize nonzero entries in U , driving them unnecessarily small rather than achieving true sparsity. Consequently, the resulting U is not optimal for the underlying schedule and thus can be further improved. To “unpenalize” and restore these overly suppressed ele-ments, we introduce a strategy refinement step. Specifically, we use the obtained matrix U to inform our scheduling variable ζk,i , and then refine and recompute the control signals 
+
+uk,i based on that schedule. Firstly, we extract ζk,i from U . Recall 
+
+U =
+
+
+
+˜u0,1 ˜u0,2 · · · ˜u0,N 
+
+˜u1,1 ˜u1,2 · · · ˜u1,N 
+
+... ... . . . ...
+
+˜uT −1,1 ˜uT −1,2 · · · ˜uT −1,N 
+
+ .
+
+The scheduling strategy ζk,i is then computed as 
+
+ζk,i =
+
+(
+
+0 if ∥˜uk,i ∥2 = 0; 1 otherwise , (12) Then the control signal uk,i can be directly computed as described in the following lemma. 
+
+Lemma 17 (Proposition 3.1 [4]) . For each system i, given a schedule {ζk,i }T −1 
+
+> k=0
+
+, the control signal uk,i that minimizes Ji
+
+is expressed as 
+
+uk,i = −[B′
+
+> i
+
+Sk+1 ,i Bi + Ri]−1B′
+
+> i
+
+Sk+1 ,i Aixk,i , (13) where Sk,i is computed recursively as 
+
+Sk,i = A′
+
+> i
+
+Sk+1 ,i Ai + Qi
+
+− ζk,i A′
+
+> i
+
+Sk+1 ,i Bi[B′
+
+> i
+
+Sk+1 ,i Bi + Ri]−1B′
+
+> i
+
+Sk+1 ,i Ai,
+
+with initial condition ST,i = Qi.For any given schedule {ζk,i }T −1 
+
+> k=0
+
+, Lemma 17 provides the optimal control signal uk,i in a simple closed form. Conse-quently, the refinement step is guaranteed to yield a lower objective value for Problem (4), while incurring only negli-gible computational overhead. A summary of the proposed 
+
+ℓ2 reweighted ADMM algorithm with strategy refinement is provided in Algorithm 1. 2
+
+IV. S IMULATION 
+
+In this section, we evaluate the performance of our proposed Algorithm 1 through two sets of simulations: (i) a case study comparing its performance with that of ℓ1-based approaches, and (ii) an extensive evaluation on a large collection of randomly generated spatially distributed systems.                                               
+
+> 2The computational complexity is primarily driven by the V-and
+> U-minimization steps, whose dominant operations are matrix inver-sion and sorting, respectively. Consequently, the overall time complex-ity is O(PNi=1 m3
+> iT3+T N log N),while the memory complexity is
+> O((max imi)2T2+N).
+
+Algorithm 1: The ℓ2 reweighted ADMM algorithm. 
+
+Data: collision-free requirement z, penalty weight αi,regularization variable ρ
+
+Result: control data uk,i and its schedules ζk,i 
+
+initialize Λ0 = 0miT ×N
+
+initialize U 0 by solving (5) without constraints 
+
+repeat /* reweighted minimization */ 
+
+compute Wi = diag[ 1 ⊘ ( ¯ u0 
+
+> i
+
+⊙ ¯u0 
+
+> i
+
++ ϵ)] 
+
+t ← 0
+
+repeat /* ADMM */ 
+
+a) V -minimization: compute V t+1 via (6) b) U -minimization: obtain U t+1 via (11) c) Λ-update: Λt+1 = Λt + ρt(U t+1 − V t+1 )
+
+t ← t + 1 
+
+until convergence or maximum iterations 
+
+Λ0 ← Λt
+
+compute V t+1 via (6) and U 0 ← V t+1 
+
+until convergence or maximum iterations compute ζk,i via (12) with U ← U 0
+
+compute uk,i via (13) It is important to note that the choice of ρ influences the convergence speed of the ADMM algorithm [22]. Throughout the theoretical development in Section III-A, we consider a fixed ρ value, and establish convergence guarantees under the condition ρ > max {4¯ ω2/ω, 2¯ ω}. In this part, however, we adopt the following adaptive update rule 3:
+
+ρt+1 = min {θρ t, ρ max },
+
+where θ > 1 is a scaling parameter, and ρmax >
+
+max {4¯ ω2/ω, 2¯ ω} is a prescribed upper bound. This heuristic allows aggressive updates during the early iterations, while gradually increasing ρ to enhance convergence as the algo-rithm progresses. Such adaptive strategies have been reported to perform well in practice [22, 33]. Throughout the simulations, we use ρ0 = 0 .004 , ρmax = 40 ,and θ = 1 .2. Moreover, we set N = 4 , z = 3 , Qi = I and 
+
+Ri = I for i = 1 , . . . , N . For notational simplicity, we denote 
+
+α = [ α1, . . . , α N ].
+
+A. Case Study 
+
+Consider the scenario where the following N = 4 systems operate over a shared network: 
+
+A1 =
+
+0.8930 −0.00062 2.7738 0.8864 
+
+
+
+, A2 =
+
+0.8895 −0.00294 0.9447 0.9968 
+
+
+
+,
+
+A3 =
+
+ 0.9654 −0.00182 
+
+−0.6759 0.9433 
+
+
+
+, A4 =
+
+0.8227 −0.00168 6.1233 0.9367 
+
+
+
+,
+
+B1 =
+
+−0.000034 0.0986 
+
+−0.000157 0.1045 
+
+′
+
+, B2 =
+
+−0.000097 0.1016 
+
+−0.000092 0.1014 
+
+′
+
+,
+
+B3 =
+
+−0.000096 0.1016 
+
+−0.000127 0.1031 
+
+′
+
+, B4 =
+
+−0.000095 0.1015 
+
+−0.000063 0.1000 
+
+′
+
+.             
+
+> 3Since θ > 1, there exists a finite iteration index t0such that ρt=ρmax
+> for all t≥t0. Hence, after t0, the adaptive algorithm coincides with the fixed-ρscheme analyzed previously in Theorems 10 and 11. Nevertheless, a rigorous extension would require a separate examination of the transient phase t < t 0, which is beyond the scope of the present work. 7
+
+The initial state of each system is a 2-dimensional random vector, with each element sampled independently from a uni-form distribution over the interval (0 , 1) . The horizon length is set to T = 30 .Fig. 4 shows the resulting total number of transmissions (NoT), i.e., PT −1
+
+> k=0
+
+PNi=1 ζk,i , and the corresponding cost value 
+
+J for different choices of α. We observe that both reweighted approaches outperform plain ℓ1 minimization, yielding a more favorable trade-off between actuator effort and performance. Secondly, although reweighted ℓ1 and reweighted ℓ2 achieve comparable sparsity-recovery performance, our proposed ℓ2-based algorithm is more computationally efficient. As reported in Table II, it requires approximately half the number of iterations and exhibits a significantly lower per-iteration com-putation time. These results indicate that, besides offering the-oretical guarantees, the proposed formulation is also effective in practice. Fig. 4 also illustrates the effect of the refinement step. The amount of improvement depends strongly on the quality of the sparse approximation obtained previously. When sparsity is promoted less accurately (plain ℓ1 minimization), the re-finement procedure can substantially reduce the resulting cost 
+
+J. In contrast, for the two reweighted methods, since the weighting scheme already partially mitigates the shrinkage effect, refinement yields a smaller improvement. Nevertheless, refinement consistently lowers the cost in all three approaches, confirming its effectiveness as a post-processing step. Number of Transmissions (NoT)                       
+
+> 20 30 40 50 60 70 80 90
+> Cost  J
+> 2400 2600 2800 3000 3200 3400 3600
+> Plain `1
+> Reweighted `1
+> Reweighted `2(proposed) Plain `1(before re -nement) Reweighted `1(before re -nement) Reweighted `2(before re -nement)
+> 28 30 32 34 36 38 2750 2800 2850 2900
+
+Fig. 4: Trade-offs between NoT and J. The curves are gener-ated by varying α from 04 to 10 4.TABLE II: Average computational burden of the reweighted 
+
+ℓ1 and reweighted ℓ2 schemes over 36 simulation runs. Reweighted ℓ1 Reweighted ℓ2
+
+Number of Iterations 97.1388 49.7222 Time per Iteration (s) 15.4248 0.0705 
+
+B. Spatially Distributed Systems 
+
+We evaluate the proposed algorithm on a class of randomly generated spatially distributed networks inspired by [34]. Consider N = 4 systems, each consisting of two spatially distributed nodes, whose locations are generated randomly and independently within a 10 × 10 square region. For system i,the dynamics are 
+
+[ ˙ xi]j = −[xi]j + X 
+
+> j̸=s
+
+e−d(j,s )[xi]s + ui,
+
+where [·]j is the j-th element of a vector, d(j, s ) is determined by the Euclidean distance between nodes j and s. The compact form of the system is then given by 
+
+˙xi = Aci xi + ui,
+
+where Aci is uniquely determined by the node locations. Considering a unit sampling time, the discrete system is 
+
+xk+1 ,i = Aixk,i + Biuk,i ,
+
+with Ai = eAci and Bi = eAci
+
+R 10 e−Aci τ dτ . The initial state of each system is selected independently and uniformly from 
+
+(0 , 5) . The horizon length is set to T = 10 .It is easy to verify that the above generated systems are unstable. To evaluate our proposed algorithm under different dynamical characteristics, we generated 150 independent sys-tem realizations, which can be partitioned into the following three categories:  
+
+> •
+
+Unstable : 50 realizations in which all four systems are generated according to the procedure described above;  
+
+> •
+
+Stable : 50 realizations in which the Ai matrices are first generated according to the above procedure, and subsequently scaled using their spectral radius so that all four systems are stable;  
+
+> •
+
+Mixed : 50 realizations consisting of two stable and two unstable systems, constructed from the same generation procedure. The average relative NoT and cost J are provided in Table III, where the values are normalized by a baseline policy in which every controller transmits at every time step. 4
+
+The results demonstrate that our framework effectively balances actuator effort and performance across all system classes. In particular, increasing α consistently reduces NoT while maintaining an acceptable increase in J, which indicates that our proposed framework is valid for various system dynamics. An interesting phenomenon is observed in the mixed sce-nario. Since unstable systems are significantly more sensitive to transmission absence, the proposed algorithm tends to allocate more communication resources to them. This behavior is reflected in the relative NoT, which remains close to 
+
+0.5, suggesting a policy in which the unstable systems are scheduled frequently and the stable ones only intermittently. V. C ONCLUSION 
+
+In this paper, we tackled the problem of control data scheduling in networked control systems with shared commu-nication channels between remote controllers and actuators.    
+
+> 4Since at most three out of four controllers can transmit simultaneously, the maximum achievable relative NoT under the collision-free constraint is
+> 3/4 = 0 .75 , which corresponds to the case where α=04.8
+
+TABLE III: Average relative NoT and relative control cost J for randomly generated spatially distributed systems. Stable Unstable Mixed 
+
+α 04 14 24 54 04 14 24 54 04 0.14 0.24 0.54
+
+Relative NoT 0.75 0.62 0.48 0.31 0.75 0.30 0.24 0.18 0.75 0.60 0.58 0.57 Relative Cost J 1.08 1.09 1.10 1.18 2.07 2.12 2.14 2.15 1.11 1.12 1.17 1.20 We introduced a novel scheduling mechanism that jointly co-ordinates control data transmissions across multiple controllers and time steps and developed an ADMM-based algorithm for it. The algorithm is computationally efficient and offers a clear physical interpretation. Moreover, we prove that it is convergent and the returned solution is at least an L-stationary point of the relaxed problem, which is a necessary condition for optimality. Simulation results demonstrated that the proposed approach effectively reduces the communication burden and actuation effort while incurring a slight degradation in system performance. Future work may focus on analyzing the controllability/stability under the scheduling strategy. APPENDIX APROOF OF LEMMA 8For the function L(U t, V t, Λt), we define the difference ∆
+
+between each iteration t as 
+
+∆ ≜ L(U t+1 , V t+1 , Λt+1 ) − L (U t, V t, Λt). (14) Since V t+1 = arg min V L(U t, V , Λt), it follows that 
+
+L(U t, V t+1 , Λt) − L (U t, V t, Λt) ≤ 0. (15) Additionally, since L(U , V , Λ) is strongly convex in U and 
+
+U t+1 = arg min U L(U , V t+1 , Λt), we have 
+
+L(U t+1 , V t+1 , Λt) − L (U t, V t+1 , Λt)
+
+≤ − ω∥U t+1 − U t∥2 
+
+> F
+
+. (16) Finally, define Fi(u) ≜ u′Piu + q′
+
+> i
+
+u + αi∥u∥22. With the optimality of ¯ut+1  
+
+> i
+
+in (10), we have 
+
+ρ(ut+1  
+
+> i
+
+− vt+1  
+
+> i
+
+) = −2( Pi + αiI)ut+1  
+
+> i
+
+− qi − λti.
+
+Combining it with the Λ-update, i.e., Λt+1 = Λt + ρ(U t+1 −
+
+V t+1 ), we obtain 
+
+λti = −∇F i( ¯ uti), (17) where ∇F i(u) = 2( Pi + αiI)u + qi is the gradient of Fi(u).Then, from the Λ-update and (17), we derive the following: 
+
+L(U t+1 , V t+1 , Λt+1 ) − L (U t+1 , V t+1 , Λt)= Tr[( Λt+1 − Λt)′(U t+1 − V t+1 )] = 1
+
+ρ ∥Λt+1 − Λt∥2 
+
+> F
+
+= 1
+
+ρ
+
+> N
+
+X
+
+> i=1
+
+∥λt+1  
+
+> i
+
+− λti∥22
+
+= 4
+
+ρ
+
+> N
+
+X
+
+> i=1
+
+∥(Pi + αiI)( ut+1  
+
+> i
+
+− uti)∥22 ≤ 4
+
+ρ ¯ω2∥U t+1 − U t∥2 
+
+> F
+
+.
+
+(18) Substituting (15)(16), and (18) into (14) and defining κ ≜
+
+ω − 4¯ ω2/ρ , we obtain 
+
+∆ ≤ − 
+
+
+
+ω − 4
+
+ρ ¯ω2
+
+
+
+∥U t+1 − U t∥2 
+
+> F
+
+= −κ∥U t+1 − U t∥2 
+
+> F
+
+.
+
+Since ρ > 4¯ ω2/ω , we have κ > 0, which completes the proof. APPENDIX BPROOF OF LEMMA 9
+
+Fi(v) − F i(u) ≤ ∇F i(u)′(v − u) + ¯ ωi∥v − u∥22. (19) Substituting (17) into (19) and considering vti and ¯uti, we obtain 
+
+Fi(vti ) − ¯ωi∥vti − ¯uti∥22 ≤ F i( ¯ uti) + ( λti)′( ¯ uti − vti ). (20) Therefore, 
+
+L(U t, V t, Λt) = 
+
+> N
+
+X
+
+> i=1
+
+Fi( ¯ uti) + ( λti)′( ¯ uti − vti )
+
++ ρ
+
+2
+
+> N
+
+X
+
+> i=1
+
+∥ ¯uti − vti ∥22 + 
+
+> T−1
+
+X
+
+> k=0
+
+I (Vk+1 ,• )
+
+≥
+
+> N
+
+X
+
+> i=1
+
+n
+
+Fi(vti ) + ( ρ
+
+2 − ¯ωi)∥ ¯uti − vti ∥22
+
+o
+
+≥
+
+> N
+
+X
+
+> i=1
+
+Fi(vti ),
+
+where the first inequality follows from (20) and the fact that PT −1 
+
+> k=0
+
+I (Vk+1 ,• ) ≥ 0, and the second inequality holds because ρ > 2¯ ω. Furthermore, Fi(u) is lower bounded since it is quadratic with Pi + αiI ≻ 0. Therefore, we conclude that 
+
+L(U t, V t, Λt) is lower bounded, thus completing the proof. APPENDIX CPROOF OF THEOREM 11 From Theorem 10, we know {L (U t, V t, Λt)}∞ 
+
+> t=0
+
+con-verges, i.e., L(U t+1 , V t+1 , Λt+1 ) − L (U t, V t, Λt) → 0 as 
+
+t → ∞ . Therefore, Lemma 8 indicates that ∥U t+1 − U t∥2 
+
+> F
+
+→
+
+0.From (18), we obtain ∥Λt+1 −Λt∥2 
+
+> F
+
+≤ 4¯ ω∥U t+1 −U t∥2 
+
+> F
+
+→
+
+0 as t → ∞ .9
+
+To analyze the convergence of ∥V t+1 − V t∥2 
+
+> F
+
+, we use the 
+
+Λ-update. Specifically, we have 
+
+∥V t+1 − V t∥2
+
+> F
+
+= ∥U t+1 − U t − 1
+
+ρ (Λt+1 − Λt) + 1
+
+ρ (Λt − Λt−1)∥2
+
+> F
+
+≤
+
+
+
+∥U t+1 − U t∥F + 1
+
+ρ ∥Λt+1 − Λt∥F + 1
+
+ρ ∥Λt − Λt−1∥F
+
+2
+
+≤ 3∥U t+1 − U t∥2 
+
+> F
+
++ 3
+
+ρ2 ∥Λt+1 − Λt∥2 
+
+> F
+
++ 3
+
+ρ2 ∥Λt − Λt−1∥2 
+
+> F
+
+.
+
+As t → ∞ , each term on the right-hand side converges to zero, ∥V t+1 − V t∥2 
+
+> F
+
+→ 0 as well. APPENDIX DPROOF OF THEOREM 16 We assume that the limit point (U ∞, V ∞, Λ∞) is unique. If multiple limit points exist, the subsequent derivation remains valid by considering an appropriate convergent subsequence. To prove Theorem 16, it suffices to verify the following conditions [31, Lemma 2.2]: (I) For k ∈ T , ∥U ∞ 
+
+> k+1 ,•
+
+∥0 ≤ z;(II) For k ∈ T and i ∈ N ,
+
+∥∇ k+1 Fi(¯u∞ 
+
+> i
+
+)∥2
+
+(
+
+≤ Lη k+1 if U ∞ 
+
+> k+1 ,i
+
+= 0; = 0 otherwise ,
+
+where Fi(·) is defined in Appendix A, ∇k+1 Fi(·)
+
+denotes the k +1 -th component of its gradient and ηk+1 
+
+is the z-th largest value of ∥U ∞
+
+> k+1 ,i
+
+∥2 for i ∈ N .We begin by recalling Theorem 11 and the ADMM update steps. The convergence of Λt+1 − Λt implies 
+
+U ∞ − V ∞ = lim 
+
+> t→∞
+
+ U t+1 − V t+1  = lim 
+
+> t→∞
+
+Λt+1 − Λt
+
+ρ = 0 .
+
+Thus, ∥U ∞ 
+
+> k+1 ,•
+
+∥0 = ∥V ∞ 
+
+> k+1 ,•
+
+∥0 ≤ z, which proves (I). We now verify (II) by analyzing the V -minimization step given in (6). Consider the two cases: 
+
+Case 1: ∥Y tk+1 ,i ∥2 ≥ ηtk+1 . In this case, the update is 
+
+V t+1  
+
+> k+1 ,i
+
+= Y tk+1 ,i = U tk+1 ,i + Λtk+1 ,i /ρ. 
+
+Taking the limit t → ∞ and using the fact that U ∞ = V ∞,we obtain Λ∞ 
+
+> k+1 ,i
+
+= 0 . Combining with (17), we conclude that 
+
+Λ∞ 
+
+> k+1 ,i
+
+= −∇ k+1 Fi(¯u∞ 
+
+> i
+
+) = 0 .
+
+Case 2: ∥Y tk+1 ,i ∥2 < η tk+1 . Here, the update yields V t+1  
+
+> k+1 ,i
+
+=0. Taking the limit t → ∞ , we obtain V ∞ 
+
+> k+1 ,i
+
+= U ∞ 
+
+> k+1 ,i
+
+= 0 .Furthermore, from Case 1 we have η∞ 
+
+> k+1
+
+= ηk+1 . Therefore, 
+
+∥Y ∞
+
+> k+1 ,i
+
+∥2 = ∥U ∞ 
+
+> k+1 ,i
+
++ Λ∞
+
+> k+1 ,i
+
+/ρ ∥2 = ∥Λ∞
+
+> k+1 ,i
+
+/ρ ∥2 ≤ ηk+1 .
+
+Thus, ∥∇ k+1 Fi(¯u∞ 
+
+> i
+
+)∥2 = ∥Λ∞
+
+> k+1 ,i
+
+∥2 ≤ ρη k+1 ≤ Lη k+1 .Since the two cases correspond exactly to (II), the proof of Theorem 16 is complete. REFERENCES 
+
+[1] J. P. Hespanha, P. Naghshtabrizi, and Y. Xu, “A survey of recent results in networked control systems,” Proc. IEEE ,vol. 95, no. 1, pp. 138–162, 2007. [2] G. C. Walsh and H. Ye, “Scheduling of networked control systems,” IEEE Control Syst. Mag. , vol. 21, no. 1, pp. 57–65, 2001. [3] C. C. Chan, “The state of the art of electric, hybrid, and fuel cell vehicles,” Proc. IEEE , vol. 95, no. 4, pp. 704– 718, 2007. [4] L. Shi, Y. Yuan, and J. Chen, “Finite horizon LQR control with limited controller-system communication,” 
+
+IEEE Trans. Autom. Control , vol. 58, no. 7, pp. 1835– 1841, 2012. [5] S. Nishida and K. Okano, “Sparsity-constrained linear quadratic regulation problem: Greedy approach with per-formance guarantee,” in Proc. Eur. Control Conf. IEEE, 2024, pp. 3612–3617. [6] M. Siami and A. Jadbabaie, “A separation theorem for joint sensor and actuator scheduling with guaranteed performance bounds,” Automatica , vol. 119, p. 109054, 2020. [7] M. Kishida, M. Barforooshan, and M. Nagahara, “Hands-off control for discrete-time linear systems subject to polytopic uncertainties,” IFAC-PapersOnLine , vol. 51, no. 23, pp. 355–360, 2018. [8] M. Nagahara, D. E. Quevedo, and D. Neˇ si´ c, “Maximum hands-off control: a paradigm of control effort minimiza-tion,” IEEE Trans. Autom. Control , vol. 61, no. 3, pp. 735–747, 2015. [9] Y. Zhong, N. Yang, L. Huang, G. Shi, and L. Shi, “Sparse sensor selection for distributed systems: An l1-relaxation approach,” Automatica , vol. 165, p. 111670, 2024. [10] F. Pasqualetti, S. Zampieri, and F. Bullo, “Controlla-bility metrics, limitations and algorithms for complex networks,” IEEE Trans. Control Netw. Syst. , vol. 1, no. 1, pp. 40–52, 2014. [11] T. H. Summers and J. Lygeros, “Optimal sensor and actuator placement in complex dynamical networks,” 
+
+IFAC Proc. Vol. , vol. 47, no. 3, pp. 3784–3789, 2014. [12] M. Siami, A. Olshevsky, and A. Jadbabaie, “Determin-istic and randomized actuator scheduling with guaran-teed performance bounds,” IEEE Trans. Autom. Control ,vol. 66, no. 4, pp. 1686–1701, 2020. [13] L. Ballotta, G. Joseph, and I. R. Thete, “Pointwise-sparse actuator scheduling for linear systems with controllability guarantee,” IEEE Control Syst. Lett. , vol. 8, pp. 2361– 2366, 2024. [14] G. Joseph and C. R. Murthy, “Controllability of linear dy-namical systems under input sparsity constraints,” IEEE Trans. Autom. Control , vol. 66, no. 2, pp. 924–931, 2020. [15] M. M. S. Pasand and M. Montazeri, “Structural proper-ties, lqg control and scheduling of a networked control system with bandwidth limitations and transmission de-lays,” IEEE/CAA J. Autom. Sin. , vol. 4, no. 4, pp. 817– 829, 2017. [16] J. Jiao, D. Maity, J. S. Baras, and S. Hirche, “Actua-tor scheduling for linear systems: A convex relaxation approach,” IEEE Control Syst. Lett. , vol. 7, pp. 7–12, 2022. [17] T. Ikeda and K. Kashima, “Sparse control node schedul-ing in networked systems based on approximate con-10 
+
+trollability metrics,” IEEE Trans. Control of Netw. Syst. ,vol. 9, no. 3, pp. 1166–1177, 2022. [18] A. Olshevsky, “On a relaxation of time-varying actuator placement,” IEEE Control Syst. Lett. , vol. 4, no. 3, pp. 656–661, 2020. [19] J. Xu, C. Wen, and D. Xu, “Optimal control data schedul-ing with limited controller-plant communication,” Sci. China Inf. Sci. , vol. 61, pp. 1–15, 2018. [20] Y. Ma, Y. Wang, S. Di Cairano, T. Koike-Akino, J. Guo, P. Orlik, X. Guan, and C. Lu, “Smart actuation for end-edge industrial control systems,” IEEE Trans. Autom. Sci. Eng. , vol. 21, no. 1, pp. 269–283, 2022. [21] M. Mozaffari, W. Saad, M. Bennis, Y.-H. Nam, and M. Debbah, “A tutorial on UAVs for wireless networks: Applications, challenges, and open problems,” IEEE Commun. Surv. Tutor. , vol. 21, no. 3, pp. 2334–2360, 2019. [22] S. Magn´ usson, P. C. Weeraddana, M. G. Rabbat, and C. Fischione, “On the convergence of alternating di-rection Lagrangian methods for nonconvex structured optimization problems,” IEEE Trans. Control Netw. Syst. ,vol. 3, no. 3, pp. 296–309, 2015. [23] A. Mesbah, “Stochastic model predictive control: An overview and perspectives for future research,” IEEE Control Syst. Mag. , vol. 36, no. 6, pp. 30–44, 2016. [24] D. Bertsekas, Dynamic programming and optimal con-trol: Volume I . Athena scientific, 2012, vol. 4. [25] R. M. Karp, Reducibility among Combinatorial Prob-lems . Springer, 2010. [26] R. Chartrand and W. Yin, “Iteratively reweighted algo-rithms for compressive sensing,” in Proc. IEEE Int. Conf. Acoust. Speech Signal Process. , 2008, pp. 3869–3872. [27] I. Daubechies, R. DeVore, M. Fornasier, and C. S. G¨ unt¨ urk, “Iteratively reweighted least squares minimiza-tion for sparse recovery,” Commun. Pure Appl. Math. ,vol. 63, no. 1, pp. 1–38, 2010. [28] Z. Xu, S. De, M. Figueiredo, C. Studer, and T. Goldstein, “An empirical study of ADMM for nonconvex problems,” 
+
+arXiv preprint arXiv:1612.03349 , 2016. [29] S. Boyd, N. Parikh, E. Chu, B. Peleato, J. Eckstein 
+
+et al. , “Distributed optimization and statistical learn-ing via the alternating direction method of multipliers,” 
+
+Found. Trends Mach. Learn. , vol. 3, no. 1, pp. 1–122, 2011. [30] Z.-L. Shi, X. P. Li, C.-S. Leung, and H. C. So, “Cardi-nality constrained portfolio optimization via alternating direction method of multipliers,” IEEE Trans. Neural Netw. Learn. Syst. , vol. 35, no. 2, pp. 2901–2909, 2022. [31] A. Beck and Y. C. Eldar, “Sparsity constrained nonlin-ear optimization: Optimality conditions and algorithms,” 
+
+SIAM J. Optim. , vol. 23, no. 3, pp. 1480–1509, 2013. [32] D. P. Bertsekas, “Nonlinear programming,” J. Oper. Res. Soc. , vol. 48, no. 3, pp. 334–334, 1997. [33] Z. Peng, J. Chen, and W. Zhu, “A proximal alternating direction method of multipliers for a minimization prob-lem with nonconvex constraints,” J. Glob. Optim. , vol. 62, no. 4, pp. 711–728, 2015. [34] N. Motee and A. Jadbabaie, “Optimal control of spatially distributed systems,” IEEE Transactions on Automatic Control , vol. 53, no. 7, pp. 1616–1629, 2008.

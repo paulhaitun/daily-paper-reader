@@ -1,6 +1,1796 @@
 {
-  "generated_at": "2026-03-06T19:11:18.471356+00:00",
-  "updated_date": "20260306",
+  "generated_at": "2026-10-22T15:34:18.198008+00:00",
+  "updated_date": "20260923-20261022",
   "carryover_days": 9,
-  "items": []
+  "tag_states": {
+    "embodied-ai": {
+      "updated_date": "20260923-20261022",
+      "carryover_days": 9,
+      "items": [
+        {
+          "id": "2610.12561v1",
+          "source": "arxiv",
+          "title": "What Should Embodied Agents Remember? Benchmarking and Evaluating Memory Modality for Embodied Agents",
+          "abstract": "Memory allows large language model (LLM) agents to use past experience, often stored as textual records, when responding to requests. For embodied agents that control robots, visual and spatial observations introduce a broader choice of memory modalities, affecting both the information available for subsequent tasks and the model inference costs of constructing and using memory. We introduce MeMoREval, a benchmark for studying this problem through a controlled experience-request protocol. Agents first experience a sequence of events without knowing the subsequent tasks, and subsequently they use memory to respond to information and action requests without receiving new observations. The benchmark comprises 53 tasks across four simulated indoor environments and measures task success alongside the inference costs of memory construction and use. Our reference evaluations reveal that storing frames outperforms storing generated descriptions at lower write-time inference cost for the primary model, while storing frames with scene graphs achieves the highest aggregate task success for every tested model. Extensions to accumulated experience, selective frame retention, and visual input to memory writers demonstrate how the benchmark accommodates further memory-design investigations. Two physical-robot demonstrations establish the feasibility of applying its protocol beyond simulation.",
+          "authors": [
+            "Junxiang Wang",
+            "Yuchen Liu",
+            "Yi Wu",
+            "Guofei Chen",
+            "Nir Pechuk",
+            "Tao Chen",
+            "Zackory Erickson",
+            "Yuzhe Qin",
+            "Tianyu Li"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-08T18:00:03+00:00",
+          "link": "https://arxiv.org/pdf/2610.12561v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "benchmark for memory modality in embodied agents controlling robots",
+          "llm_evidence_cn": "面向具身智能体记忆模态的评测基准",
+          "llm_evidence": "面向具身智能体记忆模态的评测基准",
+          "canonical_evidence": "面向具身智能体记忆模态的评测基准",
+          "llm_tldr_en": "MeMoREval benchmarks how embodied LLM agents store and reuse visual, spatial and textual memory, showing modality choices trade off task information against inference cost.",
+          "llm_tldr_cn": "现有大模型智能体多以文本记录记忆，而控制机器人的具身智能体还需处理视觉与空间观测，记忆模态选择直接影响可用信息与推理开销。作者提出MeMoREval基准，通过先经历事件、后无新观测作答的受控协议，系统比较不同记忆模态。实验覆盖53个信息与动作请求任务，揭示各模态在性能与成本上的权衡。该工作为具身智能体记忆设计提供了标准化评测基础。",
+          "llm_tldr": "现有大模型智能体多以文本记录记忆，而控制机器人的具身智能体还需处理视觉与空间观测，记忆模态选择直接影响可用信息与推理开销。作者提出MeMoREval基准，通过先经历事件、后无新观测作答的受控协议，系统比较不同记忆模态。实验覆盖53个信息与动作请求任务，揭示各模态在性能与成本上的权衡。该工作为具身智能体记忆设计提供了标准化评测基础。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find articles about embodied intelligence, embodied agents, and robot learning.",
+          "matched_requirement_id": "req-9",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.12561v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.11006v1",
+          "source": "arxiv",
+          "title": "Non-Clairvoyant Scheduling is Hard Even for Trees",
+          "abstract": "We study online scheduling of parallel jobs on $m$ identical processors to minimize maximum flow time. Each arriving job is represented by a directed acyclic graph (DAG) whose vertices are unit-time subjobs and whose edges specify precedence constraints. We consider non-clairvoyant algorithms: the DAG is not known when a job arrives, and each subjob is revealed only when it becomes ready. Agrawal, Moseley, Newman, and Pruhs (SPAA 2024) showed that First-In-First-Out (FIFO) has competitive ratio $Ω(\\log m)$ even when every job is an out-tree. They also proved that FIFO is $O(\\log m)$-competitive in several natural settings and asked whether this guarantee extends to general instances. More broadly, they asked whether any non-clairvoyant algorithm can be $O(1)$-competitive.   We answer both questions in the negative by proving a lower bound of $Ω(\\min\\{m,\\mathrm{OPT}\\})$ for every non-clairvoyant online algorithm, where $\\mathrm{OPT}$ is the maximum flow time of an optimal offline schedule. In particular, every non-clairvoyant algorithm has competitive ratio $Ω(m)$ on some instance with $\\mathrm{OPT} \\ge m$. The lower bound holds even when every job is an out-forest. We complement these lower bounds with an asymptotically optimal non-clairvoyant algorithm. FIFO is $O(m)$-competitive, but can have competitive ratio $Ω(m)$ even when $\\mathrm{OPT}=O(1)$. For instances with small $\\mathrm{OPT}$, we design a Small-Frontier-First algorithm that is $O(\\mathrm{OPT})$-competitive. Combining the two algorithms yields an $O(\\min\\{m,\\mathrm{OPT}\\})$-competitive non-clairvoyant algorithm.",
+          "authors": [
+            "Kunal Agrawal",
+            "Owen Druzgal",
+            "Milind Prabhu",
+            "Jinhao Zhao"
+          ],
+          "primary_category": "cs.DS",
+          "categories": [
+            "cs.DS"
+          ],
+          "published": "2026-10-07T23:40:29+00:00",
+          "link": "https://arxiv.org/pdf/2610.11006v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "non-clairvoyant online scheduling of parallel DAG jobs on identical processors",
+          "llm_evidence_cn": "同构处理器上并行DAG作业的非预知在线调度",
+          "llm_evidence": "同构处理器上并行DAG作业的非预知在线调度",
+          "canonical_evidence": "同构处理器上并行DAG作业的非预知在线调度",
+          "llm_tldr_en": "The paper studies non-clairvoyant online scheduling of parallel DAG jobs to minimize maximum flow time and shows strong lower bounds even for tree-structured jobs.",
+          "llm_tldr_cn": "针对并行作业在到达时结构未知的在线调度场景，本文研究以最小化最大流时间为目标、作业以DAG表示且子任务逐步揭示的非预知调度问题。作者在树形实例上给出下界分析，回应了此前关于FIFO竞争比能否推广到一般实例、以及是否存在常数竞争比算法的开放问题。结果表明即便结构简单的树形作业，非预知调度依然困难。该结论界定了在线并行调度算法的理论极限。",
+          "llm_tldr": "针对并行作业在到达时结构未知的在线调度场景，本文研究以最小化最大流时间为目标、作业以DAG表示且子任务逐步揭示的非预知调度问题。作者在树形实例上给出下界分析，回应了此前关于FIFO竞争比能否推广到一般实例、以及是否存在常数竞争比算法的开放问题。结果表明即便结构简单的树形作业，非预知调度依然困难。该结论界定了在线并行调度算法的理论极限。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "scheduling algorithms for distributed and real-time systems",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.11006v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.10409v1",
+          "source": "arxiv",
+          "title": "RobotWorld: Benchmarking Multimodal Agents for Robot Use Across Diverse Tasks and Embodiments",
+          "abstract": "General-purpose agents increasingly write code, use tools, and complete complex digital tasks, raising the question of how far these capabilities carry into the physical world. To investigate this, we introduce RobotWorld, a challenging simulation testbed for robot use: turning instructions and observations into physical task execution through robot interfaces. Its 84 tasks span manipulation, mobile manipulation, locomotion, driving, and aerial control, with explicit interaction budgets and executable success checks. By analysing task outcomes alongside execution traces, we identify both the capabilities that transfer and the gaps that prevent reliable completion. Furthermore, we find that current agents can construct sophisticated perception and control workflows, including image segmentation, camera calibration, spatial estimation, and dynamics-based computation. These capabilities, however, do not consistently compose into successful behaviour: agents lose task-relevant object states despite reaching commanded poses, fail to correct ineffective actions, recover too late, or mistake unfinished tasks for completion. This uneven transfer also differs across models: Astra succeeds more often on spatial and constrained-contact goals, whereas Opus 5.5 succeeds more often on continuous-balance and timed-interaction goals. By linking these outcomes to execution behaviour, RobotWorld provides both a rigorous proving ground and an empirical account of the remaining capability gaps, thereby establishing concrete targets for training and designing more reliable physical-world agents.",
+          "authors": [
+            "Zhiqin Yang",
+            "Chenxin Li",
+            "Xiaomeng Hu",
+            "Yibin Liu",
+            "Weidong Huang",
+            "Jiankai Sun",
+            "Haitao Li",
+            "Zijian Wu",
+            "Yuzhi Huang",
+            "Fanding Huang",
+            "Hanwen Sun",
+            "Jiashun Liu",
+            "Jingqi Tong",
+            "Mingxin Huang",
+            "Shaoli Hu",
+            "Shijue Huang",
+            "Tianyi Bai",
+            "Xinyuan Wang",
+            "Yunlong Lin",
+            "Zhengyang Tang",
+            "Zhexin Zhang",
+            "Zhuo Chen",
+            "Xierui Song",
+            "Juntao Dai",
+            "Boyuan Chen",
+            "Jiaming Ji",
+            "Fangneng Zhan",
+            "Mengkang Hu",
+            "Wei Xue",
+            "Yonggang Zhang",
+            "Han Hu",
+            "Tsung-Yi Ho",
+            "Yike Guo"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO",
+            "cs.LG"
+          ],
+          "published": "2026-10-07T16:55:24+00:00",
+          "link": "https://arxiv.org/pdf/2610.10409v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "simulation testbed benchmarking multimodal agents executing physical robot tasks",
+          "llm_evidence_cn": "评测多模态智能体执行物理机器人任务的仿真测试平台",
+          "llm_evidence": "评测多模态智能体执行物理机器人任务的仿真测试平台",
+          "canonical_evidence": "评测多模态智能体执行物理机器人任务的仿真测试平台",
+          "llm_tldr_en": "RobotWorld is a simulation testbed of 84 physical robot tasks that measures how far general-purpose multimodal agents transfer from digital tool use to real embodied control.",
+          "llm_tldr_cn": "通用智能体擅长写代码与数字任务，但其能力能否迁移到物理世界仍不清楚。作者构建RobotWorld仿真测试平台，将指令与观测通过机器人接口转化为操作、移动、驾驶与飞行等84项物理任务，并设置交互预算与可执行成功判定。通过分析任务结果与执行轨迹，研究揭示了可迁移的能力与阻碍可靠完成的差距。该基准为评估具身智能体的物理任务执行提供了统一测试环境。",
+          "llm_tldr": "通用智能体擅长写代码与数字任务，但其能力能否迁移到物理世界仍不清楚。作者构建RobotWorld仿真测试平台，将指令与观测通过机器人接口转化为操作、移动、驾驶与飞行等84项物理任务，并设置交互预算与可执行成功判定。通过分析任务结果与执行轨迹，研究揭示了可迁移的能力与阻碍可靠完成的差距。该基准为评估具身智能体的物理任务执行提供了统一测试环境。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find articles about embodied artificial intelligence systems that perceive, reason, plan, and act in physical environments.",
+          "matched_requirement_id": "req-7",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.10409v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.05530v1",
+          "source": "arxiv",
+          "title": "Optimal Dynamic Resource Allocation for Multicore Real-time Systems",
+          "abstract": "We formulate a novel optimal control problem for data-driven dynamic resource allocation in multicore real-time systems. The proposed formulation accounts for hard deadline constraints and resource bounds. Under mild assumptions, we prove several results on the feasibility and existence of optimal solution for the proposed formulation. Building on these analyses, we design an algorithm to solve the multi-core dynamic resource allocation problem. We demonstrate the practical use of this new algorithm by experimentally evaluating it on a real multicore platform using four benchmarks from the literature.",
+          "authors": [
+            "Georgiy A. Bondar",
+            "Abigail Eisenklam",
+            "Ripon C. Sarker",
+            "Linh Thi Xuan Phan",
+            "Abhishek Halder"
+          ],
+          "primary_category": "eess.SY",
+          "categories": [
+            "eess.SY",
+            "cs.OS",
+            "math.OC"
+          ],
+          "published": "2026-10-04T20:53:05+00:00",
+          "link": "https://arxiv.org/pdf/2610.05530v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "optimal dynamic resource allocation with hard deadlines in multicore real-time systems",
+          "llm_evidence_cn": "多核实时系统中带硬截止期的动态资源分配",
+          "llm_evidence": "多核实时系统中带硬截止期的动态资源分配",
+          "canonical_evidence": "多核实时系统中带硬截止期的动态资源分配",
+          "llm_tldr_en": "The paper formulates an optimal control problem for data-driven dynamic resource allocation in multicore real-time systems with hard deadlines and proves an efficient solving algorithm.",
+          "llm_tldr_cn": "多核实时系统需要在硬截止期与资源上限约束下动态分配资源，传统方法难以兼顾最优性与可行性。作者将其建模为新的最优控制问题，并在温和假设下证明了最优解的存在性与可行性。基于此设计求解算法，并在真实多核平台上用四个基准进行实验评估。结果验证了该算法在实际系统中的有效性，为实时资源调度提供了理论支撑与可落地方法。",
+          "llm_tldr": "多核实时系统需要在硬截止期与资源上限约束下动态分配资源，传统方法难以兼顾最优性与可行性。作者将其建模为新的最优控制问题，并在温和假设下证明了最优解的存在性与可行性。基于此设计求解算法，并在真实多核平台上用四个基准进行实验评估。结果验证了该算法在实际系统中的有效性，为实时资源调度提供了理论支撑与可落地方法。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.05530v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.28514v1",
+          "source": "arxiv",
+          "title": "Diverse Schedules for Makespan Minimization on Unrelated Machines",
+          "abstract": "We study makespan minimization on unrelated machines with the additional goal of constructing diverse schedules: Instead of outputting a single schedule, we seek a collection of schedules with provable makespan guarantees and substantially different job assignments. Committing to a single schedule in advance may be undesirable. Processing times may be uncertain, and constraints or domain knowledge may emerge later, so $k$ schedules of similar quality offer meaningful alternatives. We measure pairwise diversity by the weighted Hamming distance between job assignments and study the two standard objectives in the diverse-solutions literature: max-sum diversity, which maximizes the total pairwise distance between schedules, and max-min diversity, which maximizes the smallest pairwise distance.   For the max-sum objective, we show that optimal diversity can be achieved in polynomial time without sacrificing the classic makespan approximation factor. For every feasible makespan target $T$, we can compute $k$ schedules of makespan at most $2T$ whose max-sum diversity is optimal among all $k$ schedules of makespan at most $T$. Therefore, we match the classic factor-$2$ makespan guarantee of Lenstra, Shmoys, and Tardos (Math. Prog., 1990) and preserve optimal diversity.   For the max-min objective, we show that the diversity problem is inherently harder. Namely, we show that, even without makespan constraints, deciding whether three schedules of given pairwise diversity exist is NP-hard. We complete this with two complementary bicriteria approximation algorithms for every fixed $k$ and $\\varepsilon \\in (0,1)$. The first preserves almost all of the optimal max-min diversity with makespan at most $(3\\lceil12/\\varepsilon\\rceil+1)T$. The second keeps the makespan arbitrarily close to the classic $2$ guarantee while achieving a $\\frac{1}{2}(1-\\varepsilon)$ fraction of the optimal max-min diversity.",
+          "authors": [
+            "Sebastian Bruchhold",
+            "Matthias Mnich",
+            "Karolina Tammemaa",
+            "Morten Weber",
+            "Michalis Xefteris",
+            "Bart Zondervan"
+          ],
+          "primary_category": "cs.DS",
+          "categories": [
+            "cs.DS"
+          ],
+          "published": "2026-10-20T16:53:42+00:00",
+          "link": "https://arxiv.org/pdf/2610.28514v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "makespan minimization scheduling on unrelated machines with diverse schedules",
+          "llm_evidence_cn": "无关机器上的完工时间最小化与多样化调度",
+          "llm_evidence": "无关机器上的完工时间最小化与多样化调度",
+          "canonical_evidence": "无关机器上的完工时间最小化与多样化调度",
+          "llm_tldr_en": "The paper studies makespan minimization on unrelated machines while producing k diverse schedules with quality guarantees, useful when processing times are uncertain.",
+          "llm_tldr_cn": "在无关机器调度中，处理时间可能不确定或约束后期才出现，仅提交单一调度存在风险。作者提出同时构造k个具有完工时间保证且彼此差异显著的调度方案，并以加权汉明距离度量多样性，研究最大和与最大最小两类多样性目标。该工作给出了兼顾调度质量与多样性的算法与理论保证。它为不确定性环境下的调度决策提供了更灵活的备选方案。",
+          "llm_tldr": "在无关机器调度中，处理时间可能不确定或约束后期才出现，仅提交单一调度存在风险。作者提出同时构造k个具有完工时间保证且彼此差异显著的调度方案，并以加权汉明距离度量多样性，研究最大和与最大最小两类多样性目标。该工作给出了兼顾调度质量与多样性的算法与理论保证。它为不确定性环境下的调度决策提供了更灵活的备选方案。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.28514v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.20134v1",
+          "source": "arxiv",
+          "title": "Tactile-Guided Robot Learning: From Representation Learning to Foundation Models",
+          "abstract": "Tactile sensing is becoming central to robust, adaptive, and dexterous robotic manipulation. Beyond its traditional role in contact detection and reactive control, touch is increasingly used to learn transferable representations, condition manipulation policies, and support embodied physical reasoning. Yet existing surveys largely emphasize tactile hardware and perception, leaving the rapid shift toward learning-based tactile manipulation insufficiently synthesized. This paper reviews tactile-guided skill learning from a learning-centric perspective, organized by the functional role of touch across the learning and control pipeline. We examine tactile representation and policy learning, tactile foundation models, predictive and adaptive control, and generalization across objects, tasks, sensors, embodiments, and simulation-to-real transfer. Across these directions, we identify common design principles and remaining challenges in learning transferable physical representations, integrating semantic reasoning with contact-level control, and scaling tactile learning across heterogeneous data and hardware. Finally, we outline emerging directions toward tactile foundation and world models that can predict, reason about, and adapt physical interactions. Together, this review characterizes the transition of touch from a task-specific feedback signal toward a core modality for general-purpose embodied intelligence. An accompanying database of the reviewed literature and associated resources is available at https://sites.google.com/view/touch-in-robot-learning-review.",
+          "authors": [
+            "Kiyanoush Nazari",
+            "Luchen Li",
+            "Haoshu Fang",
+            "Nima Fazeli",
+            "Zhibin Li",
+            "Fumiya Iida",
+            "Thomas George Thuruthel"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-14T12:54:05+00:00",
+          "link": "https://arxiv.org/pdf/2610.20134v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "survey of tactile-guided robot learning from representation learning to foundation models",
+          "llm_evidence_cn": "从表示学习到基础模型的触觉引导机器人学习综述",
+          "llm_evidence": "从表示学习到基础模型的触觉引导机器人学习综述",
+          "canonical_evidence": "从表示学习到基础模型的触觉引导机器人学习综述",
+          "llm_tldr_en": "This survey reviews learning-centric tactile-guided robot manipulation, covering tactile representation and policy learning, tactile foundation models, and predictive adaptive control.",
+          "llm_tldr_cn": "触觉感知对稳健灵巧的机器人操作日益关键，但既有综述多聚焦硬件与感知，忽视学习驱动的转变。本文以学习为中心，按触觉在学习与控制流程中的功能角色组织综述，涵盖触觉表示与策略学习、触觉基础模型以及预测与自适应控制。文章系统梳理了触觉引导技能学习的最新进展。该综述为具身操作中的触觉学习研究提供了结构化参考框架。",
+          "llm_tldr": "触觉感知对稳健灵巧的机器人操作日益关键，但既有综述多聚焦硬件与感知，忽视学习驱动的转变。本文以学习为中心，按触觉在学习与控制流程中的功能角色组织综述，涵盖触觉表示与策略学习、触觉基础模型以及预测与自适应控制。文章系统梳理了触觉引导技能学习的最新进展。该综述为具身操作中的触觉学习研究提供了结构化参考框架。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.20134v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.16967v1",
+          "source": "arxiv",
+          "title": "Proactive Physical AI through Continuous Observation and Timely Intervention",
+          "abstract": "Physical AI is commonly formulated around an explicitly specified task: given a goal or instruction, a system perceives, reasons, and acts. In many real-world settings, however, important tasks emerge from continuously changing world states before a person explicitly formulates them. We study this complementary problem as Proactive Physical AI, where an AI system continuously observes the physical world, identifies situations that warrant intervention, and initiates appropriate actions at the right time. We develop ProAgent, an end-to-end system built around two components: a Jev-style proactive timing model (dubbed StreamingJev) that determines whether and when intervention is needed, and a Response Model that generates responses for people or invokes available device capabilities for physical execution. To support learning at scale, we develop an automated data pipeline that converts videos into supervision for proactive timing. Experiments demonstrate strong proactive performance under both explicit objectives and standing roles, combining more accurate intervention timing with fewer false triggers than the source-backbone baseline. Real-robot evaluations further demonstrate ProAgent's ability to identify emerging needs and translate them into appropriate physical actions.",
+          "authors": [
+            "Zhenhua Yang",
+            "Jiafeng Liang",
+            "Xingyu Zhou",
+            "Yi Jiang",
+            "Xiayu Cao",
+            "Zui Chen",
+            "Luqi Wang",
+            "Haiyang Sun",
+            "Yufei Xiang",
+            "Chang Li",
+            "Rongchuan Mu",
+            "Bowen Chi",
+            "Zihe Tong",
+            "Mingyu Li",
+            "Huijie Ma",
+            "Yiqiao Yang",
+            "Baoqi Ren",
+            "Zhiming Ma",
+            "Zhihao Zhu",
+            "Jiahao Ji",
+            "Zhuoyao Wang",
+            "Qianyu Wang",
+            "Xiangyu Liu",
+            "Wang Zixiang",
+            "Shunliang Zhang",
+            "Ming Liu",
+            "Xiaocheng Feng",
+            "Duyu Tang",
+            "Bing Qin"
+          ],
+          "primary_category": "cs.CV",
+          "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.RO"
+          ],
+          "published": "2026-10-12T15:33:34+00:00",
+          "link": "https://arxiv.org/pdf/2610.16967v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "proactive physical AI that continuously observes the world and intervenes at the right time",
+          "llm_evidence_cn": "持续观测物理世界并及时干预的主动式物理人工智能",
+          "llm_evidence": "持续观测物理世界并及时干预的主动式物理人工智能",
+          "canonical_evidence": "持续观测物理世界并及时干预的主动式物理人工智能",
+          "llm_tldr_en": "ProAgent formulates Proactive Physical AI, continuously observing the physical world and deciding whether and when to intervene, rather than waiting for explicit task instructions.",
+          "llm_tldr_cn": "传统物理人工智能依赖明确给定的任务指令，而现实中重要任务常在世界状态变化中自发涌现。作者提出主动式物理人工智能问题，要求系统持续观测物理世界、识别需干预的情形并及时行动。为此构建ProAgent端到端系统，包含判断何时干预的StreamingJev主动时机模型与生成响应的响应模型。该工作拓展了具身系统从被动执行到主动感知与干预的能力边界。",
+          "llm_tldr": "传统物理人工智能依赖明确给定的任务指令，而现实中重要任务常在世界状态变化中自发涌现。作者提出主动式物理人工智能问题，要求系统持续观测物理世界、识别需干预的情形并及时行动。为此构建ProAgent端到端系统，包含判断何时干预的StreamingJev主动时机模型与生成响应的响应模型。该工作拓展了具身系统从被动执行到主动感知与干预的能力边界。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+          "matched_requirement_id": "req-1",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.16967v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.04861v1",
+          "source": "arxiv",
+          "title": "Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice",
+          "abstract": "Real-time directed acyclic graph (DAG) scheduling provides a rigorous basis for timing analysis and efficiency in component-oriented real-time systems (CORTS) such as autonomous driving systems, yet challenges remain from the perspectives of both theorists and practitioners. For theorists, no OS natively supports the DAG task model; algorithms are therefore evaluated only analytically or in simulation, ignoring real-hardware overheads. For practitioners, today's CORTS platforms (ROS~2 and AUTOSAR Adaptive Platform) are designed for service composition rather than timing analyzability; adopting DAG scheduling research therefore demands substantial code changes and developer discipline. This paper proposes Awkernel, the first open-source real-time operating system (RTOS) that natively supports real-time DAG scheduling research, bridging DAG scheduling theory and CORTS practice. For theorists, Awkernel is a real-hardware testbed: it exposes a modular OS-native DAG scheduler for easy algorithm implementation, plus a random workload generator and built-in metrics for evaluation. For practitioners, Awkernel is not a full replacement for today's platforms but a CORTS platform maximizing timing analyzability: its familiar publish/subscribe model keeps porting mechanical, mapping each callback to one subtask. Moreover, its function-as-subtask (FasS) API enforces DAG semantics (precedence constraints) without programmer discipline, yielding applications that match the theoretical DAG model and directly inherit its efficiency and safety guarantees. On a Raspberry Pi~4, microbenchmarks confirm microsecond-level scheduling overheads; a global earliest deadline first (GEDF) scheduler fits in 226~lines; and a practitioner ports part of an autonomous driving system using only the FasS API, without reasoning about DAG semantics.",
+          "authors": [
+            "Atsushi Yano",
+            "Ryo Nishimura",
+            "Yutaro Kobayashi",
+            "Yuuki Takano",
+            "Takahiro Ishikawa-Aso",
+            "Takuya Azumi"
+          ],
+          "primary_category": "cs.OS",
+          "categories": [
+            "cs.OS"
+          ],
+          "published": "2026-10-04T02:02:37+00:00",
+          "link": "https://arxiv.org/pdf/2610.04861v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "RTOS supporting real-time DAG scheduling for component-oriented real-time systems",
+          "llm_evidence_cn": "面向组件化实时系统支持DAG调度的实时操作系统",
+          "llm_evidence": "面向组件化实时系统支持DAG调度的实时操作系统",
+          "canonical_evidence": "面向组件化实时系统支持DAG调度的实时操作系统",
+          "llm_tldr_en": "Real-time DAG scheduling lacks native OS support, forcing evaluation in simulation. Awkernel is an RTOS bridging DAG scheduling theory and component-oriented real-time systems practice, enabling timing-analyzable scheduling on real hardware for systems like autonomous driving.",
+          "llm_tldr_cn": "实时有向无环图调度为自动驾驶等组件化实时系统提供时序分析基础，但缺乏原生支持DAG任务模型的操作系统，算法多在仿真中评估。作者提出Awkernel，首个支持DAG调度的实时操作系统，弥合调度理论与组件化实时系统实践之间的差距。该工作使调度算法可在真实硬件上进行可时序分析的评估，推动实时系统调度研究落地。",
+          "llm_tldr": "实时有向无环图调度为自动驾驶等组件化实时系统提供时序分析基础，但缺乏原生支持DAG任务模型的操作系统，算法多在仿真中评估。作者提出Awkernel，首个支持DAG调度的实时操作系统，弥合调度理论与组件化实时系统实践之间的差距。该工作使调度算法可在真实硬件上进行可时序分析的评估，推动实时系统调度研究落地。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "scheduling algorithms for distributed and real-time systems",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.04861v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.28259v1",
+          "source": "arxiv",
+          "title": "Large Multimodal Models for Direct Robot Control: GPT-6 as a Beginning",
+          "abstract": "Recent advances in visuospatial understanding and agentic reasoning enable direct robotic manipulation with general-purpose multimodal models, but their embodied capabilities remain poorly understood. This paper systematically evaluate GPT-6 Astra for closed-loop robotic manipulation using a lightweight agent execution framework. We first probe three fundamental embodied capabilities-depth perception, embodied in-context learning, and tactile understanding-and demonstrate that the model can exploit depth information, acquire simple manipulation strategies from contextual demonstrations, and use tactile feedback to correct its actions. We then evaluate GPT-6 Astra across five established manipulation benchmarks along six capability dimensions. Despite competitive performance on several benchmarks-26.92\\% success on RoboDojo and 76.0\\% on RoboTwin 2.0-our analysis reveals a pronounced gap between semantic reasoning and physical execution, particularly in consequence-aware action planning, precision, and complex motion coordination. To further examine these limitations, we introduce LIBERO-GeoMotion, a new benchmark of geometry-constrained tasks that require precise pose alignment, coordinated translation and rotation, and anticipation of physical action consequences. GPT-6 Astra achieves only 11.1\\% zero-shot success, exposing the difficulty of translating spatial understanding into physically feasible motion. Real-world experiments corroborate these findings: zero-shot execution is feasible for simple tasks, yet persistent deficits remain in motion feasibility, precise control, and physical safety, while substantial inference latency further hinders practical deployment. Overall, our results characterize the emerging embodied capabilities of general-purpose multimodal models and delineate the key challenges toward safe, efficient, and reliable robotic manipulation.",
+          "authors": [
+            "Youwei Zhou",
+            "Bohan Hou",
+            "Yankai Fu",
+            "Yaoxu Lyu",
+            "Yifan Ye",
+            "Shilin Shan",
+            "Chen Guo",
+            "Jiaming Liu",
+            "Ran He",
+            "Caifeng Shan",
+            "Shanghang Zhang",
+            "Jianfei Yang",
+            "Zhihe Lu"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-20T14:15:04+00:00",
+          "link": "https://arxiv.org/pdf/2610.28259v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "evaluating multimodal models for closed-loop robotic manipulation",
+          "llm_evidence_cn": "评估多模态大模型用于闭环机器人操作",
+          "llm_evidence": "评估多模态大模型用于闭环机器人操作",
+          "canonical_evidence": "评估多模态大模型用于闭环机器人操作",
+          "llm_tldr_en": "The paper probes GPT-6 Astra on closed-loop robotic manipulation, testing depth perception, embodied in-context learning and tactile understanding, then benchmarks it across five manipulation suites and six capability dimensions.",
+          "llm_tldr_cn": "通用多模态模型的视觉空间理解与智能体推理使直接机器人操作成为可能，但其具身能力仍缺乏系统认识。作者用轻量级智能体执行框架评估GPT-6 Astra的闭环操作能力，先探测深度感知、具身上下文学习与触觉理解三项基础能力，再在五个操作基准和六个能力维度上评测。结果显示模型能利用深度信息、从示范中习得简单策略并用触觉纠正动作，为通用模型充当机器人控制器提供了经验依据。",
+          "llm_tldr": "通用多模态模型的视觉空间理解与智能体推理使直接机器人操作成为可能，但其具身能力仍缺乏系统认识。作者用轻量级智能体执行框架评估GPT-6 Astra的闭环操作能力，先探测深度感知、具身上下文学习与触觉理解三项基础能力，再在五个操作基准和六个能力维度上评测。结果显示模型能利用深度信息、从示范中习得简单策略并用触觉纠正动作，为通用模型充当机器人控制器提供了经验依据。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.28259v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.26577v1",
+          "source": "arxiv",
+          "title": "SafeWall: A Risk-Aware Job Walltime Recommendation for HPC Scheduling",
+          "abstract": "In high-performance computing (HPC), users must submit resource requirements for their jobs, with user-supplied walltime being a critical parameter. However, these estimates are notoriously inaccurate, as users tend to overestimate walltime to prevent the scheduler from terminating their jobs prematurely. While existing work on learning-based walltime prediction primarily focuses on maximizing prediction accuracy, such predictions are inherently risky for walltime recommendations. Specifically, underestimation leads to job termination before completion, resulting in lost progress and wasted resources. In this study, we present SafeWall, a novel recommendation method that adjusts walltime predictions by incorporating an explicit, nonnegative safety buffer to mitigate underestimation risk. The core of our approach is a risk-aware buffer that dynamically calibrates safety margins based on individual user's historical behavior. When user data is limited, the system employs statistical shrinkage to align these margins with a global baseline, ensuring robustness. This yields a lightweight mechanism that optimizes the trade-off between prediction accuracy and termination risk. SafeWall is modular and applicable to various learning-based prediction models. We evaluate SafeWall using five public workload traces, including the full-lifetime job log from the 4,392-node Theta machine at the Argonne Leadership Computing Facility. Across all traces, SafeWall substantially reduces underestimation risk compared to the unbuffered base predictors, while preserving competitive accuracy. The source code is publicly available at https://github.com/SPEAR-UIC/JSSPP26-SafeWall.",
+          "authors": [
+            "Kanglin Xu",
+            "Michael Papka",
+            "Zhiling Lan"
+          ],
+          "primary_category": "cs.DC",
+          "categories": [
+            "cs.DC",
+            "cs.LG"
+          ],
+          "published": "2026-10-19T15:27:28+00:00",
+          "link": "https://arxiv.org/pdf/2610.26577v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "risk-aware job walltime recommendation for HPC scheduling",
+          "llm_evidence_cn": "面向高性能计算调度的风险感知作业运行时长推荐",
+          "llm_evidence": "面向高性能计算调度的风险感知作业运行时长推荐",
+          "canonical_evidence": "面向高性能计算调度的风险感知作业运行时长推荐",
+          "llm_tldr_en": "User-supplied walltimes in HPC are inaccurate and risky, so SafeWall adjusts learned predictions with an explicit nonnegative safety buffer to avoid premature job termination while limiting over-reservation.",
+          "llm_tldr_cn": "高性能计算中用户提交的作业运行时长估计普遍失真，用户倾向高估以避免作业被提前终止，而低估又会造成进度损失与资源浪费。作者提出SafeWall，在预测基础上加入显式非负安全缓冲，实现风险感知的运行时长推荐，而非单纯追求预测精度。该工作把调度中的资源预留风险纳入优化目标，为作业调度与资源分配提供了更稳健的决策方法。",
+          "llm_tldr": "高性能计算中用户提交的作业运行时长估计普遍失真，用户倾向高估以避免作业被提前终止，而低估又会造成进度损失与资源浪费。作者提出SafeWall，在预测基础上加入显式非负安全缓冲，实现风险感知的运行时长推荐，而非单纯追求预测精度。该工作把调度中的资源预留风险纳入优化目标，为作业调度与资源分配提供了更稳健的决策方法。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find articles about scheduling algorithms, job scheduling, and resource allocation.",
+          "matched_requirement_id": "req-10",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.26577v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.01343v1",
+          "source": "arxiv",
+          "title": "Robust Non-Clairvoyant Scheduling with Classification Models",
+          "abstract": "We study the classical single-machine scheduling problem of minimizing the sum of completion times of jobs in a non-clairvoyant setting, where the processing time of each job remains unknown until its completion. This is a hard problem for which no constant competitive algorithm is possible. Inspired by robust optimization and learning-augmented algorithms, we introduce a novel robustness framework that leverages structural information provided by a classification model to overcome this limitation. Specifically, we assume that jobs are partitioned into classes and we have access to the confusion matrix of the classifier, whose entry $(k,\\ell)$ indicates the number of jobs predicted to belong to class~$k$ but that actually belong to class~$\\ell$. In this manner, we are able to characterize uncertainty as a set of permutations within each predicted class, rather than as a collection of discrete numerical scenarios, avoiding the computational difficulty of classical robust metrics, such as Min-Max and Min-Max Regret. In addition to these worst-case metrics, we also consider the expected objective over all scenarios. We first propose an optimal non-adaptive strategy that is oblivious with respect to all three robust criteria. We then investigate adaptive and randomized algorithms, showing that they can outperform the optimal non-adaptive strategy when the matrix exhibits particular structural properties.",
+          "authors": [
+            "Anthony Dugois",
+            "Vincent Fagnon",
+            "Giorgio Lucarelli"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.DS"
+          ],
+          "published": "2026-10-01T09:16:47+00:00",
+          "link": "https://arxiv.org/pdf/2610.01343v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "learning-augmented non-clairvoyant scheduling with classification models",
+          "llm_evidence_cn": "结合分类模型的学习增强非先知调度",
+          "llm_evidence": "结合分类模型的学习增强非先知调度",
+          "canonical_evidence": "结合分类模型的学习增强非先知调度",
+          "llm_tldr_en": "Non-clairvoyant single-machine scheduling admits no constant competitive algorithm, so the paper proposes a robustness framework that uses classifier confusion-matrix structure to design better scheduling policies.",
+          "llm_tldr_cn": "非先知设定下最小化作业完成时间之和的单机调度问题极难，不存在常数竞争比的算法。作者借鉴鲁棒优化与学习增强算法思想，假设作业可划分为若干类别并已知分类器混淆矩阵，据此构建新的鲁棒性框架来利用结构信息设计调度策略。该方法把预测信息与最坏情况保证结合，为调度算法在信息不完备条件下的优化提供了新思路。",
+          "llm_tldr": "非先知设定下最小化作业完成时间之和的单机调度问题极难，不存在常数竞争比的算法。作者借鉴鲁棒优化与学习增强算法思想，假设作业可划分为若干类别并已知分类器混淆矩阵，据此构建新的鲁棒性框架来利用结构信息设计调度策略。该方法把预测信息与最坏情况保证结合，为调度算法在信息不完备条件下的优化提供了新思路。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.01343v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.06306v1",
+          "source": "arxiv",
+          "title": "Inspect Robots: Evaluating the Capabilities and Safety of Embodied AI",
+          "abstract": "General purpose language models are increasingly able to control robotic hardware. Understanding the capabilities and safety of these models when embodied is therefore increasingly important for understanding their societal impact and risks. To this end, we introduce Inspect Robots, a modular, open-source framework for developing and running evaluations of embodied agents. Inspect Robots pairs customizable, reusable abstractions for specifying physical evaluations and analyzing their results with infrastructure that automates evaluation setup, execution and termination. We demonstrate Inspect Robots by using it to evaluate the capabilities and safety of six policies based on frontier language models. Inspect Robots has seen significant early uptake, receiving nearly 100,000 downloads in the three months since its release.",
+          "authors": [
+            "Christopher Leet",
+            "Achu Menon",
+            "Sravanthi Machcha",
+            "Sabrina Zou",
+            "Aayushya Patel",
+            "Aditya Kumar Singh",
+            "Anish Kr Singh",
+            "Galaba Vamsi",
+            "Javin Ahuja",
+            "Sai Asish Yamani",
+            "Tushar Anand",
+            "Vedang Alle",
+            "Zihan Jack Zhang",
+            "Tzu Kit Chan",
+            "Jay Chooi"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-05T13:29:24+00:00",
+          "link": "https://arxiv.org/pdf/2610.06306v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Open-source framework for evaluating embodied AI capabilities and safety",
+          "llm_evidence_cn": "评估具身人工智能能力与安全性的开源框架",
+          "llm_evidence": "评估具身人工智能能力与安全性的开源框架",
+          "canonical_evidence": "评估具身人工智能能力与安全性的开源框架",
+          "llm_tldr_en": "Introduces Inspect Robots, a modular open-source framework for evaluating embodied agents, and demonstrates it on six language-model policies to assess capabilities and safety.",
+          "llm_tldr_cn": "针对通用语言模型开始控制机器人硬件后其具身能力与安全风险难以系统评估的问题，论文提出Inspect Robots模块化开源框架，提供可复用的物理评估抽象和自动化执行基础设施。该框架支持指定评估任务、自动运行与终止，并分析具身智能体的能力与安全表现。作者用其评测六个基于前沿语言模型的策略，验证了框架的可用性并获得早期采用。工作为具身智能体的标准化能力与安全评测提供了工具基础。",
+          "llm_tldr": "针对通用语言模型开始控制机器人硬件后其具身能力与安全风险难以系统评估的问题，论文提出Inspect Robots模块化开源框架，提供可复用的物理评估抽象和自动化执行基础设施。该框架支持指定评估任务、自动运行与终止，并分析具身智能体的能力与安全表现。作者用其评测六个基于前沿语言模型的策略，验证了框架的可用性并获得早期采用。工作为具身智能体的标准化能力与安全评测提供了工具基础。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find articles about embodied intelligence, embodied agents, and robot learning.",
+          "matched_requirement_id": "req-9",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.06306v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.39349v1",
+          "source": "arxiv",
+          "title": "Multidimensional Resource Scheduling with Small Demands",
+          "abstract": "We study multidimensional resource scheduling. Each job $i$ has a $d$-dimensional resource-demand vector $v_i$ and a processing time $s_i$. The scheduler assigns a start time to each job, subject to the constraint that, at every time, the total demand of the jobs being processed does not exceed $1$ in any resource dimension. The objective is to minimize the makespan.   We focus on the regime in which every individual resource demand is small. We ask whether the favorable \\emph{small-vector phenomenon} known for multidimensional vector packing, which corresponds to the special case of unit processing times, extends to jobs with heterogeneous processing times. The key difficulty is that arbitrary processing times create temporal interactions across multiple duration scales: a long job may overlap many shorter jobs, while feasibility must be maintained throughout every job's execution interval.   We prove that the small-vector phenomenon persists in this temporal setting. For any $0<ε<1/4$, after normalizing the maximum processing time to $1$, if every coordinate of every demand vector is at most $O(ε^2/\\log(d/ε))$, we give a randomized offline algorithm that produces a schedule with expected makespan at most $ (1+6ε)\\mathrm{OPT}+3$. Thus, sufficiently small resource demands admit asymptotically near-optimal schedules in arbitrary dimension, despite heterogeneous processing times.   We also obtain constant competitive ratios in the online setting. Let $T$ denote the ratio between the maximum and minimum processing times. If every coordinate is at most $O(1/(\\log d\\log T))$, we give a randomized $O(1)$-competitive algorithm, with a competitive ratio independent of both $d$ and $T$. We further derandomize our approach, obtaining a deterministic $O(1)$-competitive algorithm under a comparable smallness assumption.",
+          "authors": [
+            "Yossi Azar",
+            "Rathish Das",
+            "Hao Sun"
+          ],
+          "primary_category": "cs.DS",
+          "categories": [
+            "cs.DS"
+          ],
+          "published": "2026-09-30T09:11:11+00:00",
+          "link": "https://arxiv.org/pdf/2609.39349v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Multidimensional resource scheduling with small demands",
+          "llm_evidence_cn": "小需求下的多维资源调度",
+          "llm_evidence": "小需求下的多维资源调度",
+          "canonical_evidence": "小需求下的多维资源调度",
+          "llm_tldr_en": "Studies multidimensional resource scheduling where jobs have d-dimensional demands and processing times, focusing on the small-demand regime and whether the small-vector phenomenon extends.",
+          "llm_tldr_cn": "针对多维资源调度中作业同时具有d维资源需求和不同加工时间的问题，论文在任意时刻各维总需求不超过1的约束下最小化工期。研究聚焦每个资源需求都很小的情形，探讨向量装箱中已知的小向量现象能否推广到异构加工时间。关键难点在于任意加工时间会引入跨多个时长的时序交互，论文对此进行分析并给出理论进展。工作推进了多维资源调度在小需求与异构加工时间下的理解。",
+          "llm_tldr": "针对多维资源调度中作业同时具有d维资源需求和不同加工时间的问题，论文在任意时刻各维总需求不超过1的约束下最小化工期。研究聚焦每个资源需求都很小的情形，探讨向量装箱中已知的小向量现象能否推广到异构加工时间。关键难点在于任意加工时间会引入跨多个时长的时序交互，论文对此进行分析并给出理论进展。工作推进了多维资源调度在小需求与异构加工时间下的理解。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.39349v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.24617v1",
+          "source": "arxiv",
+          "title": "Task Offloading and Resource Allocation for Deterministic Service Provisioning in the IoT-Edge-Cloud Continuum",
+          "abstract": "Future networks will seamlessly integrate computing and communication resources within a unified ecosystem of IoT devices, edge nodes, and cloud servers, forming an IoT-edge-cloud continuum. Within such an ecosystem, tasks can be dynamically offloaded to leverage resources across the continuum and efficiently scale with demand. Task offloading has traditionally focused on minimizing task execution latency or energy consumption. In contrast, we propose a deterministic task offloading and resource allocation scheme for the joint management of communication and computing resources to support services with deterministic service-level requirements. The proposed scheme aims to maximize the number of tasks completed on time, rather than minimizing the latency of individual tasks. To do so, it exploits variable task latency requirements to distribute the workload across the continuum. It can also prioritize high-priority tasks under resource scarcity. Numerical evaluations demonstrate that a deterministic task offloading strategy scales more effectively and can better guarantee timely task completion by balancing resource utilization across the continuum.",
+          "authors": [
+            "K. Aghababaiyan",
+            "B. Coll-Perales",
+            "J. Gozalvez"
+          ],
+          "primary_category": "cs.NI",
+          "categories": [
+            "cs.NI"
+          ],
+          "published": "2026-10-17T10:44:50+00:00",
+          "link": "https://arxiv.org/pdf/2610.24617v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Deterministic task offloading and resource allocation in IoT-edge-cloud",
+          "llm_evidence_cn": "物联网边缘云中的确定性任务卸载与资源分配",
+          "llm_evidence": "物联网边缘云中的确定性任务卸载与资源分配",
+          "canonical_evidence": "物联网边缘云中的确定性任务卸载与资源分配",
+          "llm_tldr_en": "Proposes deterministic task offloading and resource allocation for the IoT-edge-cloud continuum, jointly managing communication and computing resources to meet deterministic service requirements.",
+          "llm_tldr_cn": "针对传统任务卸载主要优化时延或能耗、难以保障物联网边缘云连续体中确定性服务需求的问题，论文提出确定性任务卸载与资源分配方案。该方法联合管理通信和计算资源，在物联网设备、边缘节点与云服务器构成的连续体中动态卸载任务。方案以最大化满足确定性服务等级的任务完成数量为目标，提升资源利用与服务可预测性。工作为边缘云连续体的确定性服务保障提供了任务调度与资源分配框架。",
+          "llm_tldr": "针对传统任务卸载主要优化时延或能耗、难以保障物联网边缘云连续体中确定性服务需求的问题，论文提出确定性任务卸载与资源分配方案。该方法联合管理通信和计算资源，在物联网设备、边缘节点与云服务器构成的连续体中动态卸载任务。方案以最大化满足确定性服务等级的任务完成数量为目标，提升资源利用与服务可预测性。工作为边缘云连续体的确定性服务保障提供了任务调度与资源分配框架。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.24617v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.06212v1",
+          "source": "arxiv",
+          "title": "Serve Now or Improve Later? Scheduling Self-Evolution in Online Agent Systems",
+          "abstract": "Online agents can improve future service by constructing reusable tools, guidance, or model states, but this work competes with current requests for the same GPUs. Exploiting idle compute for self-evolution faces a fundamental systems constraint: benefits arrive only after an artifact is published and used, while pausing evolution leaves service capacity waiting for memory release and runtime recovery. An investment worth completing may therefore be worth postponing. We present LearnSched, a state-aware scheduler that brings the reuse window of a capability and the timely return of compute into a common investment model. LearnSched incorporates candidate progress, checkpoint overhead, and the current recovery path into action values. Under the same information and capacity constraints, it uses one-step counterfactual rollout to choose progress, checkpointing, or waiting relative to a fully costed window policy. We characterize handoff costs through independent A100 component measurements and evaluate action selection in 1920 paired finite-model scenarios. When cold recovery is expensive, waiting for longer execution windows can improve net value by avoiding handoffs; in evaluated warm-recovery scenarios, the strong window policy already achieves the same value. Retaining recoverable state can shorten capacity return and reduce the need for complex evolution scheduling.",
+          "authors": [
+            "Yangbo Wei",
+            "Junhong Qian",
+            "Zhen Huang",
+            "Zhenyu Su",
+            "Qifan Wang",
+            "Shaoqiang Lu",
+            "Rumin Zhang",
+            "Chen Wu",
+            "Lei He"
+          ],
+          "primary_category": "cs.DC",
+          "categories": [
+            "cs.DC"
+          ],
+          "published": "2026-10-05T12:22:40+00:00",
+          "link": "https://arxiv.org/pdf/2610.06212v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "State-aware scheduler for compute allocation in online agent systems",
+          "llm_evidence_cn": "在线智能体系统中算力分配的状态感知调度器",
+          "llm_evidence": "在线智能体系统中算力分配的状态感知调度器",
+          "canonical_evidence": "在线智能体系统中算力分配的状态感知调度器",
+          "llm_tldr_en": "Presents LearnSched, a state-aware scheduler that treats self-evolution of online agents as an investment and balances reuse windows against timely return of GPU compute.",
+          "llm_tldr_cn": "针对在线智能体可利用空闲GPU自进化以提升未来服务、但自进化与当前请求争用算力且收益滞后的问题，论文提出LearnSched状态感知调度器。该方法将能力复用窗口与算力及时回收纳入统一投资模型，并把候选进度、检查点开销和恢复路径纳入动作价值。调度器在服务当前请求与投入自进化之间进行权衡，决定何时服务、何时改进。工作将自进化视为可调度投资，为在线智能体系统的算力资源分配提供了系统化框架。",
+          "llm_tldr": "针对在线智能体可利用空闲GPU自进化以提升未来服务、但自进化与当前请求争用算力且收益滞后的问题，论文提出LearnSched状态感知调度器。该方法将能力复用窗口与算力及时回收纳入统一投资模型，并把候选进度、检查点开销和恢复路径纳入动作价值。调度器在服务当前请求与投入自进化之间进行权衡，决定何时服务、何时改进。工作将自进化视为可调度投资，为在线智能体系统的算力资源分配提供了系统化框架。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.06212v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.36171v1",
+          "source": "arxiv",
+          "title": "SkillWeaver: Agentic Exploration over Neural Interaction Skills for Scalable Robot Data Generation",
+          "abstract": "Large-scale demonstrations have driven unprecedented progress in robot learning, yet collecting robot data through teleoperation is expensive and difficult to scale to diverse environments and long-horizon tasks. Simulation offers a scalable alternative, but existing data-generation pipelines often rely on open-loop controllers, scripted skill sequences, or task-specific programs. We introduce SkillWeaver, an agentic framework that autonomously generates robot experience by exploring over Neural Interaction Skills (NIS): reusable, parameterized, closed-loop policies that expose learned physical interaction capabilities to a reasoning agent. Given a task and a simulated environment, a VLM agent reasons about what to do next, invokes and parameterizes NIS to interact with the environment, observes their outcomes, and generates verification, reflection, and memory to guide subsequent exploration. We instantiate NIS as reinforcement-learned policies for closed-loop, contact-rich manipulation and organize exploration as verifier-guided tree search, enabling the agent to discover successful long-horizon behaviors without relying on predetermined execution pipelines. SkillWeaver scales autonomously to 39.1K demonstrations across 14.1K scenes, which we distill into visuomotor policies. Across simulation benchmarks and real-world manipulation, training on SkillWeaver-generated experience substantially improves generalization to novel objects, spatial configurations, tasks, and environments, and enables zero- and few-shot sim-to-sim and sim-to-real transfer. Our results suggest agentic exploration over neural interaction skills as a scalable alternative for robot data generation.",
+          "authors": [
+            "He Zhu",
+            "Lusen Zhao",
+            "Kwan Man Cheng",
+            "Su Li",
+            "Katerina Fragkiadaki"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-09-28T19:41:42+00:00",
+          "link": "https://arxiv.org/pdf/2609.36171v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Agentic exploration over neural interaction skills for robot data generation",
+          "llm_evidence_cn": "基于神经交互技能的机器人数据生成智能体探索",
+          "llm_evidence": "基于神经交互技能的机器人数据生成智能体探索",
+          "canonical_evidence": "基于神经交互技能的机器人数据生成智能体探索",
+          "llm_tldr_en": "Introduces SkillWeaver, an agentic framework that explores reusable neural interaction skills to autonomously generate scalable robot experience in simulation.",
+          "llm_tldr_cn": "针对机器人学习依赖大规模演示、而遥操作数据采集成本高且难以扩展到多样环境和长程任务的问题，论文提出SkillWeaver智能体框架。该方法在神经交互技能上自主探索，这些技能是可复用、参数化的闭环策略，由视觉语言模型智能体推理下一步并生成机器人经验。框架减少了对开环控制器、脚本化技能序列和任务专用程序的依赖。工作为可扩展机器人数据生成和具身智能体学习提供了自主探索方案。",
+          "llm_tldr": "针对机器人学习依赖大规模演示、而遥操作数据采集成本高且难以扩展到多样环境和长程任务的问题，论文提出SkillWeaver智能体框架。该方法在神经交互技能上自主探索，这些技能是可复用、参数化的闭环策略，由视觉语言模型智能体推理下一步并生成机器人经验。框架减少了对开环控制器、脚本化技能序列和任务专用程序的依赖。工作为可扩展机器人数据生成和具身智能体学习提供了自主探索方案。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.36171v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.05964v1",
+          "source": "arxiv",
+          "title": "From Social Reasoning to Embodied Interaction: An Agentic Framework for Social Robots",
+          "abstract": "Natural face-to-face human--robot interaction requires a robot to understand an evolving social situation, decide when to engage, and express its intent through coordinated physical behavior. Yet existing approaches rarely close this loop: foundation-model agents provide increasingly capable multimodal reasoning and memory but remain largely disembodied, while expressive virtual agents do not face the physical constraints of real robots, and physical social robots typically address social reasoning and embodied expression only partially. We present ARISE, a unified framework that bridges Agentic Reasoning and Interactive Social Embodiment on the Sophia humanoid robot. ARISE integrates multimodal context understanding, long-term memory, and reactive and proactive interaction to determine when and what to communicate, and translates social intent into robot-native gestures coordinated with speech and mechanical facial expressions through streaming execution. Extensive evaluations on Sophia demonstrate strong perceived interaction quality, expressive and well-coordinated embodied behavior, and substantial latency reductions through streaming execution. These results highlight the importance of jointly reasoning about what to communicate, when to engage, and how to physically express social intent for natural interaction with humanoid robots. Project Page: https://robosocial.github.io/",
+          "authors": [
+            "Ziyu Cheng",
+            "Yuewen Guo",
+            "Zhirui Liu",
+            "Dong Zhang",
+            "Haotao Lu",
+            "Jingyi Yu",
+            "Ye Shi",
+            "Jingya Wang"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-05T08:15:21+00:00",
+          "link": "https://arxiv.org/pdf/2610.05964v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "embodied social robot framework connecting agentic reasoning with physical expression",
+          "llm_evidence_cn": "连接智能体推理与具身表达的社交机器人框架",
+          "llm_evidence": "连接智能体推理与具身表达的社交机器人框架",
+          "canonical_evidence": "连接智能体推理与具身表达的社交机器人框架",
+          "llm_tldr_en": "Social robots must reason about evolving situations and express intent through physical behavior, but reasoning agents remain disembodied. ARISE unifies agentic reasoning with interactive social embodiment on the Sophia humanoid, integrating multimodal context and long-term memory.",
+          "llm_tldr_cn": "自然人机交互要求机器人理解动态社交情境并决定何时参与，同时通过协调的物理行为表达意图。现有基础模型智能体推理能力强但缺乏具身，虚拟智能体又不受真实机器人物理约束。本文提出ARISE框架，在Sophia人形机器人上融合多模态情境理解、长期记忆与具身表达，将智能体推理与交互式社交具身相连接。该工作为闭环的社交人机交互提供了统一方案。",
+          "llm_tldr": "自然人机交互要求机器人理解动态社交情境并决定何时参与，同时通过协调的物理行为表达意图。现有基础模型智能体推理能力强但缺乏具身，虚拟智能体又不受真实机器人物理约束。本文提出ARISE框架，在Sophia人形机器人上融合多模态情境理解、长期记忆与具身表达，将智能体推理与交互式社交具身相连接。该工作为闭环的社交人机交互提供了统一方案。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find articles about embodied intelligence, embodied agents, and robot learning.",
+          "matched_requirement_id": "req-9",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.05964v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.36578v1",
+          "source": "arxiv",
+          "title": "Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions",
+          "abstract": "Scheduling problems arise from repeatedly selecting one item from a set of candidates based on their states. These problems often reduce to assigning priority scores and choosing the highest-ranked item. In this work, we propose a factorized scheduling principle (FSP) framework to learn interpretable and transferable scheduling rules. The FSP framework represents system states as condition distributions and decomposes a global scheduling principle into additive univariate and pairwise components with identifiability constraints. The scheduling principle enables the framework to maintain a simple priority-based structure during deployment. This principle is learned by using a policy-based objective combined with a temporal-difference signal defined on the condition distribution. Experiments on synthetic and realistic scheduling tasks demonstrate the FSP framework's strong performance, interpretability, and zero-shot generalization across different system scales.",
+          "authors": [
+            "Hong Je-Gal",
+            "Hyun-Suk Lee"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI"
+          ],
+          "published": "2026-09-29T02:55:27+00:00",
+          "link": "https://arxiv.org/pdf/2609.36578v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "learning interpretable priority-based scheduling policies via structured additive functions",
+          "llm_evidence_cn": "通过结构化加性函数学习可解释的优先级调度策略",
+          "llm_evidence": "通过结构化加性函数学习可解释的优先级调度策略",
+          "canonical_evidence": "通过结构化加性函数学习可解释的优先级调度策略",
+          "llm_tldr_en": "Scheduling reduces to scoring candidates by priority, but learned policies are often opaque. This paper proposes a factorized scheduling principle decomposing the global rule into additive univariate and pairwise components, yielding interpretable and transferable priority policies.",
+          "llm_tldr_cn": "许多调度问题可归结为按状态为候选对象打分并选出最高者，但学习得到的调度策略往往缺乏可解释性与可迁移性。本文提出因子化调度原理FSP框架，将系统状态表示为条件分布，并把全局调度规则分解为带可识别性约束的单变量与成对加性分量。该框架在部署时保持简单的优先级结构，并通过策略目标学习。结果表明该方法能获得可解释且可迁移的调度规则。",
+          "llm_tldr": "许多调度问题可归结为按状态为候选对象打分并选出最高者，但学习得到的调度策略往往缺乏可解释性与可迁移性。本文提出因子化调度原理FSP框架，将系统状态表示为条件分布，并把全局调度规则分解为带可识别性约束的单变量与成对加性分量。该框架在部署时保持简单的优先级结构，并通过策略目标学习。结果表明该方法能获得可解释且可迁移的调度规则。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.36578v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.06006v1",
+          "source": "arxiv",
+          "title": "Learning While Scheduling Jobs under Context-Dependent Service Rates: An Anytime Rate-Optimal Algorithm",
+          "abstract": "We study contextual queueing bandits, where a learner schedules jobs while learning unknown service rates modeled by logistic functions of job-server features. Performance is measured by queue length regret, the expected excess queue length at round $t$ relative to an oracle that knows the service rates. Existing decaying-regret guarantees either have a suboptimal decay rate or require a known fixed horizon. They also assume context-wise slack and a strictly positive minimum eigenvalue of the feature covariance. In this paper, we propose WISE (Widest Interval Selection with Elimination), achieving rate-optimal $\\widetilde{\\mathcal O}(t^{-1/2})$ queue length regret at every sufficiently large time without knowing the horizon. We assume capacity slack, meaning that expected incoming workload under best-server service is below service capacity, and impose no covariance lower bound. Our analysis uses a workload potential measuring the expected service attempts needed by waiting jobs on their best servers. Its drift on nonempty rounds combines a negative term ensured by capacity slack with errors from suboptimal service choices. Then an elliptical potential count bounds how often WISE selects wide confidence intervals, thereby limiting the number of rounds with large service errors. We also sharpen the arrival-rate dependence of an existing lower bound and make its dependence on feature dimension and server count explicit. We prove another lower bound that quantifies the increase in regret as the normalized capacity slack decreases; to our knowledge, this is the first such lower bound for CQB. Simulations show small regret even when context-wise slack fails.",
+          "authors": [
+            "Seoungbin Bae",
+            "Dabeen Lee"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG"
+          ],
+          "published": "2026-10-05T09:02:51+00:00",
+          "link": "https://arxiv.org/pdf/2610.06006v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "online job scheduling with learning of context-dependent service rates",
+          "llm_evidence_cn": "在调度作业的同时学习上下文相关服务速率",
+          "llm_evidence": "在调度作业的同时学习上下文相关服务速率",
+          "canonical_evidence": "在调度作业的同时学习上下文相关服务速率",
+          "llm_tldr_en": "Contextual queueing bandits require scheduling jobs while learning unknown service rates from features. This paper proposes WISE, achieving rate-optimal queue-length regret at every sufficiently large time without knowing the horizon.",
+          "llm_tldr_cn": "在上下文排队bandit中，学习器需在调度作业的同时学习由特征逻辑函数刻画的服务速率，而现有递减遗憾保证要么速率次优，要么需要已知固定时间范围。本文提出WISE算法，采用最宽区间选择与淘汰机制。该算法在无需已知时间范围的情况下，于任意足够大的时刻达到速率最优的队列长度遗憾。结果放宽了此前对上下文松弛与特征协方差正定的假设，提升了在线调度学习的实用性。",
+          "llm_tldr": "在上下文排队bandit中，学习器需在调度作业的同时学习由特征逻辑函数刻画的服务速率，而现有递减遗憾保证要么速率次优，要么需要已知固定时间范围。本文提出WISE算法，采用最宽区间选择与淘汰机制。该算法在无需已知时间范围的情况下，于任意足够大的时刻达到速率最优的队列长度遗憾。结果放宽了此前对上下文松弛与特征协方差正定的假设，提升了在线调度学习的实用性。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.06006v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.07382v1",
+          "source": "arxiv",
+          "title": "Toward Trustworthy Physical AI for Human Interaction",
+          "abstract": "Robots are entering human spaces faster than we can establish when they deserve trust. We propose a framework for trustworthy physical AI that integrates Safety, Behavioral Intelligibility, and Perceptual Alignment across embodiment, control, cognition, and design. Trustworthiness emerges from aligning physical capabilities, observable behavior, and expectations people form during interaction.",
+          "authors": [
+            "Niccolò Pagliarani",
+            "Maximilian Stölzle",
+            "Cosima du Pasquier",
+            "Jeff Lui",
+            "Andrew Sabelhaus",
+            "Cecilia Laschi",
+            "Gentiane Venture",
+            "Daniela Rus",
+            "Matteo Cianchetti"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-05T20:53:59+00:00",
+          "link": "https://arxiv.org/pdf/2610.07382v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "framework for trustworthy physical AI spanning embodiment, control and cognition",
+          "llm_evidence_cn": "涵盖具身、控制与认知的可信物理智能框架",
+          "llm_evidence": "涵盖具身、控制与认知的可信物理智能框架",
+          "canonical_evidence": "涵盖具身、控制与认知的可信物理智能框架",
+          "llm_tldr_en": "Robots enter human spaces faster than trust criteria exist. This paper proposes a framework for trustworthy physical AI integrating safety, behavioral intelligibility and perceptual alignment across embodiment, control, cognition and design.",
+          "llm_tldr_cn": "机器人进入人类生活空间的速度快于我们判断其是否值得信任的能力，缺乏系统的可信性标准。本文提出面向可信物理人工智能的框架，在具身、控制、认知与设计四个层面整合安全性、行为可理解性与感知对齐三个维度。框架认为可信性源于物理能力、可观察行为与人所形成期望之间的对齐。该工作为具身智能系统的可信部署提供了概念性指导。",
+          "llm_tldr": "机器人进入人类生活空间的速度快于我们判断其是否值得信任的能力，缺乏系统的可信性标准。本文提出面向可信物理人工智能的框架，在具身、控制、认知与设计四个层面整合安全性、行为可理解性与感知对齐三个维度。框架认为可信性源于物理能力、可观察行为与人所形成期望之间的对齐。该工作为具身智能系统的可信部署提供了概念性指导。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "research on embodied intelligence and physically grounded intelligent systems",
+          "matched_requirement_id": "req-3",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.07382v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.01887v1",
+          "source": "arxiv",
+          "title": "TRACE: Tackling Real-World Resource Assignment Problems via Agentic Heuristic Design",
+          "abstract": "Dynamic resource assignment, the real-time allocation of task streams to heterogeneous processing nodes, is the backbone of modern computing infrastructure. While learning-based schedulers excel in research, industrial deployments still rely on hand-written rules that operators can read, audit, and execute within tight latency budgets. LLM-based Automatic Heuristic Design (AHD) promises to automate writing such rules. However, existing AHD frameworks were developed for combinatorial problems fully specified to the LLM, and they learn only from a scalar fitness score. In real systems, the behaviour that determines a good heuristic, such as processor speeds or power consumption, is unknown a priori: the score reveals which heuristic performs better, but not why. This missing information is recorded in the system logs that every evaluation produces. Exploiting it is non-trivial: logs are massive and noisy, the relevant signals depend on the objective, and their content and format vary across hardware and software stacks, so they can neither be fed to an LLM as is nor processed by a fixed parser. We propose TRACE, which couples an evolutionary AHD loop with an agentic knowledge-extraction workflow. A Reasoner agent analyzes the log schema in light of the objective and formulates hypotheses about the system dynamics; a Coder agent writes and executes schema-specific code to test them, producing insights or executable tools for the evolved heuristics. We evaluate TRACE on a synthetic cloud benchmark and a 5G vRAN scenario built from industrial testbed measurements and operational traffic traces. TRACE consistently outperforms state-of-the-art AHD methods in resource assignment problems and yields more auditable heuristics at under 2% overhead.",
+          "authors": [
+            "Jose A. Ayala-Romero",
+            "Andres Garcia-Saavedra",
+            "Xavier Costa-Perez"
+          ],
+          "primary_category": "cs.NE",
+          "categories": [
+            "cs.NE",
+            "cs.LG"
+          ],
+          "published": "2026-10-01T15:38:04+00:00",
+          "link": "https://arxiv.org/pdf/2610.01887v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "LLM agentic automatic heuristic design for dynamic resource assignment and scheduling",
+          "llm_evidence_cn": "面向动态资源分配与调度的LLM智能体自动启发式设计",
+          "llm_evidence": "面向动态资源分配与调度的LLM智能体自动启发式设计",
+          "canonical_evidence": "面向动态资源分配与调度的LLM智能体自动启发式设计",
+          "llm_tldr_en": "TRACE employs LLM coding agents to design readable, auditable scheduling heuristics for real-world dynamic resource assignment, learning from live system feedback instead of a scalar fitness score.",
+          "llm_tldr_cn": "真实系统中的动态资源分配仍依赖人工编写的调度规则，而已有自动启发式设计只针对完全给定的组合问题并从标量适应度学习。论文提出TRACE智能体框架，让LLM智能体在资源分配环境中交互探索、观察运行反馈并迭代修复启发式程序。实验表明其生成的规则可读可审计且满足低延迟要求，为工业级调度自动化提供了可行路径。",
+          "llm_tldr": "真实系统中的动态资源分配仍依赖人工编写的调度规则，而已有自动启发式设计只针对完全给定的组合问题并从标量适应度学习。论文提出TRACE智能体框架，让LLM智能体在资源分配环境中交互探索、观察运行反馈并迭代修复启发式程序。实验表明其生成的规则可读可审计且满足低延迟要求，为工业级调度自动化提供了可行路径。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.01887v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.26751v1",
+          "source": "arxiv",
+          "title": "Beyond Omni: A Unified MLLM for Embodied Sensory Understanding",
+          "abstract": "Recent embodied systems increasingly build on multimodal large language models (MLLMs) for their pretrained understanding and reasoning capabilities, but their perception of the physical world remains largely limited to basic modalities such as vision and audio. However, broadening MLLMs to more diverse sensory modalities from the physical environment is challenging: their representations are often weakly connected to the MLLM and vary substantially in structure and statistics, while their interpretation still requires shared high-level understanding and reasoning. We therefore propose Unisense, a unified embodied MLLM framework that supports diverse physical sensory modalities within a shared multimodal architecture. Unisense follows a two-stage training process: (i) aligning sensory representations with language to establish a language-accessible interface; and (ii) tuning modality-specific experts within the shared LLM to provide specialized processing for different sensory modalities. To support broad sensory learning, we curate Unisense-1M, a large-scale embodied sensory training corpus comprising 1M samples across 8 sensory modalities. We further evaluate Unisense on 12 benchmarks spanning depth, point cloud, IMU, tactile, thermal, radar, motion, and smell understanding. Across these heterogeneous sensing tasks, Unisense achieves strong performance and outperforms both generalist and specialized models on most benchmarks, demonstrating the potential of pretrained MLLMs as unified models for embodied sensory understanding.",
+          "authors": [
+            "Shiyun Xiong",
+            "Dongming Wu",
+            "Peiwen Sun",
+            "Bokang Yang",
+            "Jiaxu Wang",
+            "Xiaolou Sun",
+            "Mingxing Wen",
+            "Xiangyu Yue"
+          ],
+          "primary_category": "cs.CV",
+          "categories": [
+            "cs.CV"
+          ],
+          "published": "2026-10-19T17:14:37+00:00",
+          "link": "https://arxiv.org/pdf/2610.26751v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Unified embodied MLLM perceiving diverse physical sensory modalities",
+          "llm_evidence_cn": "统一具身多模态大模型感知多种物理传感模态",
+          "llm_evidence": "统一具身多模态大模型感知多种物理传感模态",
+          "canonical_evidence": "统一具身多模态大模型感知多种物理传感模态",
+          "llm_tldr_en": "Unisense is a unified embodied MLLM framework that plugs diverse physical sensory modalities into a shared multimodal architecture via two-stage training, broadening embodied perception beyond vision and audio.",
+          "llm_tldr_cn": "现有具身系统依赖多模态大模型，但其对物理世界的感知仍局限于视觉与音频等少数模态，且新模态表征与模型连接薄弱。论文提出Unisense统一具身多模态大模型框架，通过两阶段训练将结构各异的物理传感器模态接入共享多模态架构。实验显示该框架能在统一架构下有效理解并推理多种物理传感模态，为具身智能拓展更丰富的物理感知提供了统一建模范式。",
+          "llm_tldr": "现有具身系统依赖多模态大模型，但其对物理世界的感知仍局限于视觉与音频等少数模态，且新模态表征与模型连接薄弱。论文提出Unisense统一具身多模态大模型框架，通过两阶段训练将结构各异的物理传感器模态接入共享多模态架构。实验显示该框架能在统一架构下有效理解并推理多种物理传感模态，为具身智能拓展更丰富的物理感知提供了统一建模范式。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+          "matched_requirement_id": "req-1",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.26751v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.29337v1",
+          "source": "arxiv",
+          "title": "Workflow-Aware Communication and Computation Scheduling for Mobile Edge AI Agents",
+          "abstract": "AI agents are increasingly deployed in mobile edge environments to autonomously handle diverse tasks through multi-step workflows. Unlike conventional dependency-aware tasks with predefined dependency structures, agent workflows are dynamically generated based on intermediate execution results. To minimize the weighted sum of job completion latencies, this paper models partially revealed agent workflows using dynamic workflow graphs and formulates an online scheduling problem that jointly optimizes computation placement, wireless resource block allocation, and edge computing resource allocation. To address the uncertainty of future workflow evolution, we first transform the weighted completion time objective into an equivalent per-slot holding cost and characterize the optimal policy through a Bellman equation. We then construct a tractable look-ahead cost-to-go surrogate based on the revealed workflow and the estimated remaining latencies of active jobs. The proposed scheduling algorithm leverages the surrogate to determine computation placement and uses the resulting operation criticality to allocate wireless and edge computing resources online. Simulation results show that the proposed algorithm outperforms the benchmark schemes across diverse scenarios.",
+          "authors": [
+            "Xingqiu He",
+            "Chaoqun You",
+            "Feng Wang",
+            "Zihan Chen",
+            "Shuai Wang",
+            "Jihong Park"
+          ],
+          "primary_category": "cs.NI",
+          "categories": [
+            "cs.NI"
+          ],
+          "published": "2026-10-21T07:34:58+00:00",
+          "link": "https://arxiv.org/pdf/2610.29337v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Online joint scheduling of computation and wireless resources for dynamically generated agent workflows",
+          "llm_evidence_cn": "面向动态生成智能体工作流的计算与无线资源在线联合调度",
+          "llm_evidence": "面向动态生成智能体工作流的计算与无线资源在线联合调度",
+          "canonical_evidence": "面向动态生成智能体工作流的计算与无线资源在线联合调度",
+          "llm_tldr_en": "This paper models partially revealed AI-agent workflows as dynamic graphs and formulates an online scheduling problem jointly optimizing computation placement, radio blocks and edge resources to cut completion latency.",
+          "llm_tldr_cn": "移动边缘AI智能体的工作流依赖结构在执行中动态生成，传统依赖感知调度难以应对其不确定性。论文用动态工作流图刻画部分可见的智能体工作流，构建联合优化计算放置、无线资源块与边缘算力分配的在线调度问题。通过把加权完成时间目标转化为逐时隙形式，所提在线算法有效降低了作业完成延迟，为边缘智能体场景下的实时动态调度提供了可行方案。",
+          "llm_tldr": "移动边缘AI智能体的工作流依赖结构在执行中动态生成，传统依赖感知调度难以应对其不确定性。论文用动态工作流图刻画部分可见的智能体工作流，构建联合优化计算放置、无线资源块与边缘算力分配的在线调度问题。通过把加权完成时间目标转化为逐时隙形式，所提在线算法有效降低了作业完成延迟，为边缘智能体场景下的实时动态调度提供了可行方案。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "scheduling algorithms for distributed and real-time systems",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.29337v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.13830v1",
+          "source": "arxiv",
+          "title": "Scheduling in Cloud,Fog, and Edge Computing: A Comparative Analysis and Decision Framework for Technique Selection",
+          "abstract": "The increasing heterogeneity and dynamism of cloud, fog, and edge computing make scheduling a challenging problem involving diverse resource capabilities, workload characteristics, latency and energy constraints, and competing optimization objectives. Although numerous scheduling methods have been proposed, existing reviews often provide fragmented coverage of computing environments, scheduling granularities, or technique families, offering limited guidance on selecting an appropriate approach for specific requirements. This review presents a comparative analysis of task, job, and workflow scheduling across the cloud, fog, and edge paradigms, covering heuristic, metaheuristic, learning-based, and hybrid techniques. Studies published between 2020 and 2026 are analyzed according to scheduling granularity, computing environment, optimization objectives, constraints, performance metrics, and evaluation tools. The analysis highlights trade-offs among computational efficiency, optimization capability, adaptability, and implementation complexity across technique families. Heuristic methods offer low computational overhead for relatively stable scheduling conditions, whereas metaheuristic methods are suited to complex and multi-objective optimization problems. Learning-based methods provide greater adaptability to dynamic and uncertain environments but introduce data, training, inference, and convergence requirements. Hybrid methods combine complementary capabilities but generally increase computational and implementation complexity. Based on these findings, a decision framework is developed to guide technique selection according to workload characteristics, environmental conditions, optimization objectives, resource constraints, and computational requirements.",
+          "authors": [
+            "Rana Ghazali",
+            "Douglas G. Down"
+          ],
+          "primary_category": "cs.DC",
+          "categories": [
+            "cs.DC"
+          ],
+          "published": "2026-10-09T16:38:48+00:00",
+          "link": "https://arxiv.org/pdf/2610.13830v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Comparative analysis of task, job and workflow scheduling methods across cloud, fog and edge",
+          "llm_evidence_cn": "跨云、雾、边缘的任务、作业与工作流调度方法比较分析",
+          "llm_evidence": "跨云、雾、边缘的任务、作业与工作流调度方法比较分析",
+          "canonical_evidence": "跨云、雾、边缘的任务、作业与工作流调度方法比较分析",
+          "llm_tldr_en": "This review compares task, job and workflow scheduling across cloud, fog and edge computing, covering heuristic, metaheuristic, learning-based and hybrid techniques, and offers a decision framework for technique selection.",
+          "llm_tldr_cn": "云、雾与边缘计算的异构与动态性使调度成为涉及资源能力、负载特征与多目标权衡的难题，而现有综述覆盖碎片化，难以指导技术选择。论文对任务、作业与工作流调度在三种范式下的启发式、元启发式、学习型与混合方法进行比较分析，归纳不同环境与调度粒度下各类技术的适用条件，并给出技术选择决策框架，为实际系统挑选调度算法提供了结构化指导。",
+          "llm_tldr": "云、雾与边缘计算的异构与动态性使调度成为涉及资源能力、负载特征与多目标权衡的难题，而现有综述覆盖碎片化，难以指导技术选择。论文对任务、作业与工作流调度在三种范式下的启发式、元启发式、学习型与混合方法进行比较分析，归纳不同环境与调度粒度下各类技术的适用条件，并给出技术选择决策框架，为实际系统挑选调度算法提供了结构化指导。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.13830v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.00605v1",
+          "source": "arxiv",
+          "title": "Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers",
+          "abstract": "The rapid proliferation of data centers (DCs), driven by cloud computing and artificial intelligence (AI), has led to massive energy demand and carbon emissions, posing significant sustainability challenges. Carbon-aware optimization in geographically distributed data centers has been widely studied. Most existing approaches mainly focus on operational carbon emissions from server usage. However, existing literature often ignores workload-induced thermal stress, which accelerates nonlinear hardware degradation. This leads to more frequent server replacements and ultimately increases embodied carbon emissions. To address these limitations, we propose a comprehensive carbon life-cycle modeling framework for distributed data centers. Apart from operational carbon emissions, this work combines workload scheduling with a utilization-dependent exponential aging model to evaluate long-term carbon costs from server degradation. In order to solve the proposed optimization model in an online and privacy-preserving manner, an enhanced Lyapunov framework with time-varying queue shifting (TVQS) is first introduced to handle system uncertainties. Then, a zero-sum perturbation-based alternating direction method of multipliers (ZSP-ADMM) framework is developed to enable distributed coordination across geographically separated data centers while protecting locally exchanged workload information. Simulation results demonstrate that the proposed approach achieves up to 13.0% lower carbon emissions and 12.6% lower operational costs compared with benchmarks.",
+          "authors": [
+            "Junyu Lin",
+            "Wenjie Liu",
+            "Shunbo Lei",
+            "Wentian Lu",
+            "Jianhui Wang",
+            "Junhong Liu"
+          ],
+          "primary_category": "eess.SY",
+          "categories": [
+            "eess.SY"
+          ],
+          "published": "2026-09-30T19:10:56+00:00",
+          "link": "https://arxiv.org/pdf/2610.00605v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "online distributed scheduling and resource allocation in geo-distributed data centers",
+          "llm_evidence_cn": "地理分布式数据中心的在线分布式调度与资源分配",
+          "llm_evidence": "地理分布式数据中心的在线分布式调度与资源分配",
+          "canonical_evidence": "地理分布式数据中心的在线分布式调度与资源分配",
+          "llm_tldr_en": "The paper proposes an aging-aware online distributed scheduling framework for geo-distributed data centers that models hardware degradation and embodied carbon, jointly reducing operational and embodied emissions.",
+          "llm_tldr_cn": "现有数据中心碳感知优化多只关注服务器运行产生的运营碳，忽略工作负载热应力加速硬件老化所带来的隐含碳。作者提出覆盖全生命周期的碳建模框架，将热应力导致的非线性硬件退化纳入考量，并设计老化感知的在线分布式调度方法在地理分布式数据中心间分配负载。实验表明该方法在降低运营碳排放的同时抑制硬件更换频率与隐含碳。其贡献在于把可持续性目标从运行阶段扩展到设备全生命周期。",
+          "llm_tldr": "现有数据中心碳感知优化多只关注服务器运行产生的运营碳，忽略工作负载热应力加速硬件老化所带来的隐含碳。作者提出覆盖全生命周期的碳建模框架，将热应力导致的非线性硬件退化纳入考量，并设计老化感知的在线分布式调度方法在地理分布式数据中心间分配负载。实验表明该方法在降低运营碳排放的同时抑制硬件更换频率与隐含碳。其贡献在于把可持续性目标从运行阶段扩展到设备全生命周期。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "scheduling algorithms for distributed and real-time systems",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.00605v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.10962v1",
+          "source": "arxiv",
+          "title": "iAm.md: Robot Skill Self-Assessment through Agentic Introspection for Unknown Open-Vocabulary Domains",
+          "abstract": "Agentic AI based on Large Language Model generalization capabilities offers a wide range of potential applications, including planning for embodied tasks. For example, embodied agents based on Foundation models can generate plausible plans in autonomous robotics scenarios. Due to limited context windows or hallucinatory phenomena in the next-token prediction formulation, behaviors may be generated without establishing whether the deployed robot and the observed environment actually support the requested operation, in what we call a \"grounding failure\". Thanks to the recent improvements in reasoning capabilities of foundation models, autonomous robot behavior generation problem can be formulated as a code generation problem. We present iAm.md, a Markdown standard and generation framework, that allows anchoring this process in complementary forms of deployment evidence. Through open-vocabulary semantic mapping, we combine local vision-language detections and object segmentation and refer them to persistent object records in this intermediate standardized representation, allowing agentic introspection. We then study this new technique on a simulated TIAGo, on navigation-and-manipulation tasks, showing how this standardized representation jointly supports skill self-assessment and executable task generalization.",
+          "authors": [
+            "Vincenzo Guarino",
+            "Emanuele Musumeci",
+            "Vincenzo Suriani",
+            "Daniele Nardi"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO",
+            "cs.AI"
+          ],
+          "published": "2026-10-07T22:28:28+00:00",
+          "link": "https://arxiv.org/pdf/2610.10962v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "robot skill self-assessment and grounding for embodied planning via agentic introspection",
+          "llm_evidence_cn": "通过智能体内省实现机器人技能自评估与具身规划落地",
+          "llm_evidence": "通过智能体内省实现机器人技能自评估与具身规划落地",
+          "canonical_evidence": "通过智能体内省实现机器人技能自评估与具身规划落地",
+          "llm_tldr_en": "iAm.md lets robots self-assess skills through agentic introspection, formulating behavior generation as code generation to avoid grounding failures in unknown open-vocabulary domains.",
+          "llm_tldr_cn": "基于基础模型的具身智能体虽能生成看似合理的计划，却常因上下文有限或幻觉而出现落地失败，即未确认机器人本体与环境是否支持该操作。作者提出iAm.md，将自主机器人行为生成建模为代码生成问题，通过智能体内省对机器人技能进行自评估，判断在未知开放词汇域中哪些操作可被真实执行。该方法提升了计划与物理可行性的对齐程度。其贡献在于为具身规划提供了可验证的落地机制。",
+          "llm_tldr": "基于基础模型的具身智能体虽能生成看似合理的计划，却常因上下文有限或幻觉而出现落地失败，即未确认机器人本体与环境是否支持该操作。作者提出iAm.md，将自主机器人行为生成建模为代码生成问题，通过智能体内省对机器人技能进行自评估，判断在未知开放词汇域中哪些操作可被真实执行。该方法提升了计划与物理可行性的对齐程度。其贡献在于为具身规划提供了可验证的落地机制。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.10962v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.17329v1",
+          "source": "arxiv",
+          "title": "DynaSPLIT: Strong tail-optimal scheduling for the M/G/n with heavy-tailed job sizes",
+          "abstract": "We study the asymptotic response time tail in the M/G/n queue with heavy-tailed (regularly varying) job sizes. For this setting, strongly tail optimal policies are known only at lower load, where n-1 servers suffice for stability. At higher load, the tail optimal scheduling has been open. This paper presents DynaSPLIT, the first strongly tail optimal policy at high load. Together with prior work, this result shows that strong tail optimality is achievable across the entire stability region of the M/G/n with heavy-tailed job sizes.",
+          "authors": [
+            "Zhouzi Li",
+            "Mor Harchol-Balter",
+            "Alan Scheller-Wolf"
+          ],
+          "primary_category": "cs.PF",
+          "categories": [
+            "cs.PF",
+            "math.PR"
+          ],
+          "published": "2026-10-12T19:39:53+00:00",
+          "link": "https://arxiv.org/pdf/2610.17329v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "tail-optimal job scheduling policy for M/G/n queues with heavy-tailed job sizes",
+          "llm_evidence_cn": "面向重尾作业规模的M/G/n队列尾最优作业调度策略",
+          "llm_evidence": "面向重尾作业规模的M/G/n队列尾最优作业调度策略",
+          "canonical_evidence": "面向重尾作业规模的M/G/n队列尾最优作业调度策略",
+          "llm_tldr_en": "Tail-optimal scheduling in M/G/n queues with heavy-tailed job sizes was open at high load. DynaSPLIT gives the first strongly tail-optimal policy there, extending strong tail optimality to the whole stability region.",
+          "llm_tldr_cn": "重尾作业规模下的M/G/n队列中，高负载情形的响应时间尾最优调度长期未被解决，已有强尾最优策略仅适用于低负载区间。本文提出DynaSPLIT策略，通过在高负载下动态拆分作业到不同服务器进行调度来抑制尾延迟。分析表明该策略首次在高负载下实现强尾最优，与既有低负载结果合并后覆盖整个稳定域。这一结果说明强尾最优调度在重尾作业场景下是普遍可达的。",
+          "llm_tldr": "重尾作业规模下的M/G/n队列中，高负载情形的响应时间尾最优调度长期未被解决，已有强尾最优策略仅适用于低负载区间。本文提出DynaSPLIT策略，通过在高负载下动态拆分作业到不同服务器进行调度来抑制尾延迟。分析表明该策略首次在高负载下实现强尾最优，与既有低负载结果合并后覆盖整个稳定域。这一结果说明强尾最优调度在重尾作业场景下是普遍可达的。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.17329v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.29308v1",
+          "source": "arxiv",
+          "title": "LLM-Based Exogenous World Modeling for Dynamic Scheduling",
+          "abstract": "Dynamic scheduling requires dispatching online arrivals while anticipating future jobs, as poor decisions can compound downstream costs under nonlinear tardiness objectives. We show that a pretrained large language model (LLM) can serve as the exogenous component of a structured world model, forecasting uncertain future job arrivals. Specifically, we exploit an afterstate decomposition, which separates known deterministic shop transitions from uncertain exogenous job arrivals, enabling the LLM to forecast only the latter through a compact belief representation. Building on this, we develop Afterstate World-Model Planning (AWMP), which combines an evolved, belief-conditioned dispatching strategy with short scenario-based rollouts. A surprise-triggered refresh mechanism queries the LLM only when newly observed arrivals deviate sufficiently from previous forecast, and online residual self-calibration further conditions the LLM on its recent forecast errors to handle nonstationary arrivals. Across diverse arrival distributions, AWMP reduces weighted tardiness by 6-21% on dynamic job-shop and 22-46% on flexible job-shop benchmarks, relative to the best of eight classical priority-dispatching rules.",
+          "authors": [
+            "Ni Zhang",
+            "Haofeng Yuan",
+            "Jianan Zhou",
+            "Shiji Song",
+            "Zhiguang Cao"
+          ],
+          "primary_category": "cs.AI",
+          "categories": [
+            "cs.AI",
+            "cs.CL"
+          ],
+          "published": "2026-10-21T07:01:25+00:00",
+          "link": "https://arxiv.org/pdf/2610.29308v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "LLM-based exogenous world model with afterstate planning for dynamic job scheduling",
+          "llm_evidence_cn": "基于大模型的外生世界模型与事后状态规划用于动态作业调度",
+          "llm_evidence": "基于大模型的外生世界模型与事后状态规划用于动态作业调度",
+          "canonical_evidence": "基于大模型的外生世界模型与事后状态规划用于动态作业调度",
+          "llm_tldr_en": "Dynamic scheduling must dispatch online arrivals while anticipating future jobs. The paper uses an LLM as the exogenous part of a structured world model with afterstate decomposition, and builds Afterstate World-Model Planning for better dispatching under tardiness objectives.",
+          "llm_tldr_cn": "动态调度需要在线派工的同时预判未来作业到达，在非线性拖期目标下错误决策会累积下游成本。本文利用预训练大语言模型作为结构化世界模型的外生分量，通过事后状态分解把确定性的车间转移与不确定的作业到达分离，使模型仅需以紧凑信念表示预测后者。在此基础上提出事后状态世界模型规划AWMP，结合信念条件派工策略与短程情景推演。实验显示该方法能有效降低拖期相关成本，说明世界模型规划可显著提升动态调度的前瞻决策能力。",
+          "llm_tldr": "动态调度需要在线派工的同时预判未来作业到达，在非线性拖期目标下错误决策会累积下游成本。本文利用预训练大语言模型作为结构化世界模型的外生分量，通过事后状态分解把确定性的车间转移与不确定的作业到达分离，使模型仅需以紧凑信念表示预测后者。在此基础上提出事后状态世界模型规划AWMP，结合信念条件派工策略与短程情景推演。实验显示该方法能有效降低拖期相关成本，说明世界模型规划可显著提升动态调度的前瞻决策能力。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.29308v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.17881v1",
+          "source": "arxiv",
+          "title": "Agentic Robot Creation through Generation, Verification, and Revision",
+          "abstract": "Can an AI agent turn high-level user intent into a functioning robot and teach it how to behave? We study this question from two complementary aspects: embodiment and behavior creation. For embodiment creation, we investigate how well current multimodal models capture mechanical requirements, and introduce computational metrics for evaluating generated designs before fabrication. For behavior creation, we present Roboforge, an agentic framework that turns task specifications into executable policies through motion generation, policy learning, and execution-grounded revision. Given a robot embodiment and task, the agent generates a reference motion, configures the learning objective, and trains a policy. Crucially, motion remains in the loop: rollout feedback can revise the reference motion, reward, or both. We evaluate a generated embodiment across multiple MLLMs and behavior creation across four diverse robots against reward-refinement and one-shot motion baselines. Our computational metrics expose recurring mechanical failures in generated designs, while behavior experiments show that execution-grounded refinement improves task-level behavior and execution quality. Finally, we fabricate an agent-generated Gorilla and directly deploy learned behaviors on the physical robot.",
+          "authors": [
+            "Xuebing Li",
+            "Yibo He",
+            "Sitong Liu",
+            "Ran Ji",
+            "Jiayuan Gu"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-13T07:37:48+00:00",
+          "link": "https://arxiv.org/pdf/2610.17881v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "agentic framework that creates robot embodiment and learns executable policies from task specs",
+          "llm_evidence_cn": "从任务规格创造机器人本体并学习可执行策略的智能体框架",
+          "llm_evidence": "从任务规格创造机器人本体并学习可执行策略的智能体框架",
+          "canonical_evidence": "从任务规格创造机器人本体并学习可执行策略的智能体框架",
+          "llm_tldr_en": "The paper asks whether an agent can turn user intent into a working robot and teach it behavior. It evaluates multimodal models on mechanical requirements and presents Roboforge, which generates motion, learns policies and revises them with execution feedback.",
+          "llm_tldr_cn": "现有方法难以让AI智能体从高层用户意图直接造出可用机器人并赋予其行为。本文从本体创造与行为创造两方面研究，先评估多模态模型对机械设计要求的理解并给出可制造前评估的计算指标，再提出Roboforge智能体框架，通过参考运动生成、策略学习与执行反馈修订把任务规格转化为可执行策略。结果表明运动始终处于回路中的迭代方式能有效提升策略质量。该工作为端到端的具身智能体构建提供了新范式。",
+          "llm_tldr": "现有方法难以让AI智能体从高层用户意图直接造出可用机器人并赋予其行为。本文从本体创造与行为创造两方面研究，先评估多模态模型对机械设计要求的理解并给出可制造前评估的计算指标，再提出Roboforge智能体框架，通过参考运动生成、策略学习与执行反馈修订把任务规格转化为可执行策略。结果表明运动始终处于回路中的迭代方式能有效提升策略质量。该工作为端到端的具身智能体构建提供了新范式。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.17881v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.24431v1",
+          "source": "arxiv",
+          "title": "Low-Bit Distributed Constrained Optimization with Application to Optimal Scheduling and Allocation",
+          "abstract": "This paper proposes a distributed resource allocation algorithm in which each agent communicates only the sign of its local cost gradient, a single bit per directed link per iteration. The algorithm is based on Laplacian-gradient dynamics and preserves the equality (demand) constraint at every iterate, guaranteeing anytime feasibility irrespective of termination time.   First, we provide a complete Lyapunov-based convergence analysis for the fixed-step-size regime: the iterates are shown to enter, in at most O(1/\\varepsilon^2) iterations, a neighborhood of the optimizer whose radius scales as O(τ) in the decision variable and O(τ^2) in the cost residual, where $τ$ is the step-size. Crucially, the step-size bound is a time-invariant network constant (depending only on the graph Laplacian spectrum and the cost curvature bounds), so no adaptive tuning is required.   Second, we characterize the invariant set under B-connected, weight-balanced digraphs, strictly weaker than the all-time connectivity and doubly-stochastic weights assumed in most prior work, and show that any odd, sign-preserving nonlinearity yields the same invariant-set and descent structure, with the single-bit protocol being the extreme communication-minimizing instance of a broader nonlinear class.   Third, we address local box constraints via smooth penalty relaxation and quantify explicitly how the penalty weight interacts with the step-size bound and the optimality gap.   Simulations on economic dispatch (1000 generators) and CPU scheduling (500 servers) demonstrate that the single-bit protocol achieves 5-60 times reduction in total communication cost relative to multi-bit baselines, at the price of a tunable and explicitly bounded optimality gap. A diminishing step-size schedule is shown empirically to eliminate this gap; its formal convergence analysis is identified as an open problem.",
+          "authors": [
+            "Mohammadreza Doostmohammadian",
+            "Sergio Pequito"
+          ],
+          "primary_category": "eess.SY",
+          "categories": [
+            "eess.SY",
+            "cs.DC",
+            "cs.MA",
+            "math.OC"
+          ],
+          "published": "2026-10-17T03:49:52+00:00",
+          "link": "https://arxiv.org/pdf/2610.24431v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "distributed resource allocation algorithm with one-bit communication for optimal scheduling",
+          "llm_evidence_cn": "用于最优调度与分配的单比特通信分布式资源分配算法",
+          "llm_evidence": "用于最优调度与分配的单比特通信分布式资源分配算法",
+          "canonical_evidence": "用于最优调度与分配的单比特通信分布式资源分配算法",
+          "llm_tldr_en": "The paper proposes a distributed resource allocation algorithm where agents exchange only the sign of local gradients, one bit per link. Laplacian-gradient dynamics keep demand constraints feasible at every iterate, with Lyapunov convergence analysis.",
+          "llm_tldr_cn": "分布式资源分配中通信开销与可行性保障是关键难题。本文提出仅传输局部代价梯度符号的分布式分配算法，每条有向链路每轮只传一比特，基于拉普拉斯梯度动力学并保证每次迭代都满足等式需求约束，从而实现随时可行。作者给出固定步长下的完整李雅普诺夫收敛分析，刻画了收敛到最优邻域所需的迭代次数与邻域半径。该结果说明极低通信量下仍可获得可靠的调度与分配解。",
+          "llm_tldr": "分布式资源分配中通信开销与可行性保障是关键难题。本文提出仅传输局部代价梯度符号的分布式分配算法，每条有向链路每轮只传一比特，基于拉普拉斯梯度动力学并保证每次迭代都满足等式需求约束，从而实现随时可行。作者给出固定步长下的完整李雅普诺夫收敛分析，刻画了收敛到最优邻域所需的迭代次数与邻域半径。该结果说明极低通信量下仍可获得可靠的调度与分配解。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.24431v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.35032v1",
+          "source": "arxiv",
+          "title": "JRDB-AVR: An Active Visual Reasoning Benchmark for Embodied Agents in Real-World Environments",
+          "abstract": "In complex embodied visual reasoning scenarios, an agent often has only a limited field of view, and the evidence needed to answer a question may be distributed across time, viewpoint, and interacting objects. A model may therefore give a plausible answer without ever observing the relevant object, time, or view that supports it. Current visual reasoning benchmarks largely evaluate passive observations and final answers, overlooking settings that require active reasoning and evidence acquisition. We introduce JRDB-AVR, a benchmark derived from existing real-world JRDB robotics data through a structured question-generation engine that turns this gap into an explicit evaluation: an embodied agentic system receives a visual reasoning question, requests bounded observations by timestamp and viewing angle, and is evaluated on both the final answer and the grounded visual evidence supporting it. The benchmark contains diverse questions over multiple real-world environments involving temporal search, viewpoint selection, and human-oriented compositional reasoning. We also introduce JRDB-AVR-Agent, a reference active reasoning agentic method that maintains an explicit observation-grounded graph-based world model and answers through solving. Experiments reveal a substantial gap between answer accuracy and evidence accuracy in current baselines, showing that current VLMs can produce unsupported correct answers and that active evidence-aware evaluation is necessary for embodied visual reasoning. Code and benchmark are available at https://github.com/ControlNet/JRDB-AVR.",
+          "authors": [
+            "Zhixi Cai",
+            "Fucai Ke",
+            "Sukai Huang",
+            "Maria Garcia de la Banda",
+            "Peter J. Stuckey",
+            "Gholamreza Haffari",
+            "Hamid Rezatofighi"
+          ],
+          "primary_category": "cs.AI",
+          "categories": [
+            "cs.AI",
+            "cs.CV",
+            "cs.RO"
+          ],
+          "published": "2026-09-28T12:30:11+00:00",
+          "link": "https://arxiv.org/pdf/2609.35032v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "benchmark for active visual reasoning and evidence acquisition by embodied agents in real-world environments",
+          "llm_evidence_cn": "真实环境中具身智能体主动视觉推理与证据获取的基准",
+          "llm_evidence": "真实环境中具身智能体主动视觉推理与证据获取的基准",
+          "canonical_evidence": "真实环境中具身智能体主动视觉推理与证据获取的基准",
+          "llm_tldr_en": "Embodied visual reasoning agents often answer plausibly without observing supporting evidence. JRDB-AVR builds an active reasoning benchmark from real robot data, requiring agents to actively acquire evidence across time and viewpoints.",
+          "llm_tldr_cn": "具身视觉推理中智能体视野有限，支撑答案的证据分散在时间、视角与交互物体之间，模型可能在未观测到关键证据时给出貌似合理的回答。现有基准多评估被动观察与最终答案，忽视主动推理过程。本文基于真实JRDB机器人数据，通过结构化问题生成引擎构建JRDB-AVR基准，要求具身智能体主动获取证据再作答。该基准为评估真实环境中的主动感知与推理能力提供了更严格的测试手段。",
+          "llm_tldr": "具身视觉推理中智能体视野有限，支撑答案的证据分散在时间、视角与交互物体之间，模型可能在未观测到关键证据时给出貌似合理的回答。现有基准多评估被动观察与最终答案，忽视主动推理过程。本文基于真实JRDB机器人数据，通过结构化问题生成引擎构建JRDB-AVR基准，要求具身智能体主动获取证据再作答。该基准为评估真实环境中的主动感知与推理能力提供了更严格的测试手段。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+          "matched_requirement_id": "req-1",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.35032v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2609.39416v1",
+          "source": "arxiv",
+          "title": "Communication-Free Distributed Multi-Robot Task Allocation under Partial Observations Using Labeled Multi-Bernoulli Filtering",
+          "abstract": "This paper proposes a communication-free multi-robot task allocation framework based solely on local observations. In this study, tasks are defined as reaching target locations. Each robot estimates the positions of neighboring robots using a Labeled Multi-Bernoulli (LMB) filter and independently assigns tasks through a greedy auction-based strategy. By continuously updating state estimates and reallocating tasks during execution, the proposed method enables decentralized coordination without explicit communication. Monte Carlo simulations demonstrate that the proposed method enables effective cooperative task allocation without inter-robot communication while remaining robust to measurement clutter and observation uncertainty.",
+          "authors": [
+            "Takumi Ito",
+            "Akiya Kamimura"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO",
+            "eess.SY"
+          ],
+          "published": "2026-09-30T09:56:04+00:00",
+          "link": "https://arxiv.org/pdf/2609.39416v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "communication-free distributed multi-robot task allocation using local observations",
+          "llm_evidence_cn": "仅依赖局部观测的无通信分布式多机器人任务分配",
+          "llm_evidence": "仅依赖局部观测的无通信分布式多机器人任务分配",
+          "canonical_evidence": "仅依赖局部观测的无通信分布式多机器人任务分配",
+          "llm_tldr_en": "The paper proposes a communication-free multi-robot task allocation framework where each robot estimates neighbors with a labeled multi-Bernoulli filter and assigns targets via greedy auction, reallocating online under partial observations.",
+          "llm_tldr_cn": "多机器人任务分配通常依赖机器人间通信，在通信受限或不可用的场景中难以实施。本文提出一种仅基于局部观测的无通信任务分配框架，各机器人利用标记多伯努利滤波器估计邻居位置，并通过贪心拍卖策略独立分配到达目标点的任务，在执行中持续更新估计并重新分配。蒙特卡洛仿真表明该方法无需显式通信即可实现有效的协同任务分配，并对量测杂波保持鲁棒。该工作为受限通信下的分布式机器人资源调度提供了新思路。",
+          "llm_tldr": "多机器人任务分配通常依赖机器人间通信，在通信受限或不可用的场景中难以实施。本文提出一种仅基于局部观测的无通信任务分配框架，各机器人利用标记多伯努利滤波器估计邻居位置，并通过贪心拍卖策略独立分配到达目标点的任务，在执行中持续更新估计并重新分配。蒙特卡洛仿真表明该方法无需显式通信即可实现有效的协同任务分配，并对量测杂波保持鲁棒。该工作为受限通信下的分布式机器人资源调度提供了新思路。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2609.39416v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.29945v1",
+          "source": "arxiv",
+          "title": "Pre-emptive Carbon Aware Scheduling for Edge Workloads",
+          "abstract": "Power grids use a constantly changing mix of fossil fuels and clean renewables like solar and wind. Because of this, the {\\em carbon footprint} fluctuates drastically based on time and geographic location. Time-varying carbon intensity creates opportunities to reduce carbon emissions by shifting workloads to cleaner periods, but deadlines, task dependencies, and limited edge capacity constrain this flexibility. We study carbon-aware scheduling of jobs with release times, deadlines, and arbitrary precedence constraints under piecewise-constant carbon costs. Jobs execute preemptively on a single edge server or are outsourced at job-dependent costs to an unlimited-capacity cloud, modeled as providing instantaneous execution. The objective is to minimize the sum of edge carbon costs and cloud outsourcing costs while satisfying all timing and precedence constraints. For edge-only execution, we give an exact polynomial-time algorithm. Allowing cloud outsourcing makes the problem NP-hard, but we obtain a fully polynomial-time approximation scheme through a reduction to preemptive scheduling with rejection penalties (weighted tardiness). In contrast, even two edge servers without job migration admit no polynomially bounded approximation when carbon-cost variation is unrestricted, unless \\(P=NP\\). We complement these theoretical results with experiments on controlled synthetic workloads and production-derived Alibaba traces. On synthetic instances, our incremental max-flow implementation is $4.96\\times$ faster on average than a direct min-cost flow, while experiements on production-derived workloads evaluate its performance under realistic job structures.",
+          "authors": [
+            "Cecilia Chen",
+            "Rajni Dabas",
+            "Samir Khuller",
+            "Emilie Rivkin"
+          ],
+          "primary_category": "cs.DS",
+          "categories": [
+            "cs.DS"
+          ],
+          "published": "2026-10-21T16:11:15+00:00",
+          "link": "https://arxiv.org/pdf/2610.29945v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "carbon-aware job scheduling with deadlines and precedence constraints on edge servers",
+          "llm_evidence_cn": "带截止时间与优先级约束的边缘作业碳感知调度",
+          "llm_evidence": "带截止时间与优先级约束的边缘作业碳感知调度",
+          "canonical_evidence": "带截止时间与优先级约束的边缘作业碳感知调度",
+          "llm_tldr_en": "Studies preemptive carbon-aware scheduling of jobs with release times, deadlines and precedence constraints on a single edge server with cloud outsourcing, minimizing carbon plus cost.",
+          "llm_tldr_cn": "电网碳强度随时间与地域波动，为把负载迁移到更清洁时段提供了减排机会，但截止时间、任务依赖和边缘容量限制了这种灵活性。论文研究在分段常数碳成本下，带释放时间、截止时间和任意优先约束的作业调度问题，作业可在单一边缘服务器上抢占执行，或以与作业相关的成本外包到无限容量的云。作者给出调度模型与优化目标，最小化边缘侧碳成本与外包成本之和，并分析该问题的算法性质。该工作为边缘计算场景下的绿色作业调度提供了可用的优化框架。",
+          "llm_tldr": "电网碳强度随时间与地域波动，为把负载迁移到更清洁时段提供了减排机会，但截止时间、任务依赖和边缘容量限制了这种灵活性。论文研究在分段常数碳成本下，带释放时间、截止时间和任意优先约束的作业调度问题，作业可在单一边缘服务器上抢占执行，或以与作业相关的成本外包到无限容量的云。作者给出调度模型与优化目标，最小化边缘侧碳成本与外包成本之和，并分析该问题的算法性质。该工作为边缘计算场景下的绿色作业调度提供了可用的优化框架。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.29945v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.15205v1",
+          "source": "arxiv",
+          "title": "MoSAIC: Learning DAG Scheduling Heuristics from Optimal Schedules through Motif-Aware Recovery and LLM-Guided Reasoning",
+          "abstract": "Efficient task scheduling in heterogeneous computing systems remains a fundamental challenge in embedded and high-level synthesis flows. This paper presents MoSAIC (Motif-aware Scheduling with AI-driven Cognition), a learning-based framework that bridges the gap between exact and heuristic scheduling approaches for DAG-based applications. The system uses the reasoning capabilities of large language models (LLMs) to learn the relationships between DAG structures and scheduling priority functions. The framework first leverages the OR-Tools CP-SAT solver [4] to generate optimal schedules, which are then used to supervise the learning of compact priority-based scheduling functions through Bayesian Optimization. These learned heuristics capture relationships between scheduling decisions and structural graph features such as rank, depth, and fanout, enabling the construction of a reusable knowledge base across diverse DAG instances. Experimental results across synthetic graph families and real-world benchmarks, including PolyBench and MachSuite, show that the learned heuristics consistently improve over classical approaches such as HEFT [2], while maintaining low runtime overhead. The results indicate that combining optimal supervision with learning-based generalization provides a practical approach for scalable and adaptive task scheduling.",
+          "authors": [
+            "Shiva Ahir",
+            "Hashmath Shaik",
+            "Alex Doboli",
+            "Nadeem Yaseen",
+            "Simona Doboli"
+          ],
+          "primary_category": "cs.AR",
+          "categories": [
+            "cs.AR",
+            "cs.IR",
+            "cs.LG"
+          ],
+          "published": "2026-10-10T22:31:46+00:00",
+          "link": "https://arxiv.org/pdf/2610.15205v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "learning DAG scheduling heuristics with LLM-guided reasoning and optimal schedules",
+          "llm_evidence_cn": "利用大模型推理学习DAG调度启发式",
+          "llm_evidence": "利用大模型推理学习DAG调度启发式",
+          "canonical_evidence": "利用大模型推理学习DAG调度启发式",
+          "llm_tldr_en": "Proposes MoSAIC, a learning-based framework that uses LLM reasoning and optimal schedules from CP-SAT to learn compact priority-based DAG scheduling heuristics for heterogeneous systems.",
+          "llm_tldr_cn": "异构计算系统中的高效任务调度长期是难题，精确方法与启发式方法之间存在明显鸿沟。论文提出MoSAIC框架，利用大语言模型的推理能力学习有向无环图结构与调度优先级函数之间的关系。方法先用OR-Tools的CP-SAT求解器生成最优调度作为监督信号，再通过贝叶斯优化学习紧凑的优先级调度函数。实验表明该框架能在保持调度质量的同时获得可快速执行的启发式策略，为嵌入式与高层次综合流程中的任务调度提供了新思路。",
+          "llm_tldr": "异构计算系统中的高效任务调度长期是难题，精确方法与启发式方法之间存在明显鸿沟。论文提出MoSAIC框架，利用大语言模型的推理能力学习有向无环图结构与调度优先级函数之间的关系。方法先用OR-Tools的CP-SAT求解器生成最优调度作为监督信号，再通过贝叶斯优化学习紧凑的优先级调度函数。实验表明该框架能在保持调度质量的同时获得可快速执行的启发式策略，为嵌入式与高层次综合流程中的任务调度提供了新思路。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.15205v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.12957v1",
+          "source": "arxiv",
+          "title": "JoyInside-VLM-Agent: Product-Conditioned Multimodal Policy Learning for Embodied Agents",
+          "abstract": "Embodied agents must translate multimodal observations and user requests into executable actions while adapting to product constraints, changing goals, and execution feedback. We present JoyInside-VLM-Agent, a ReAct-style multimodal agent developed through product-conditioned trajectory construction and staged policy learning for robotic platforms and smart hardware. A closed-loop sandbox generates multimodal interaction trajectories covering goal revisions and failure recovery, which are checked against execution outcomes and semantic criteria. Supervised fine-tuning and multi-teacher on-policy distillation precede reinforcement learning with DPER (Dual-Source Privileged On-Policy Self-Distillation with Token-Level Evidence Routing). DPER routes token-level evidence between a frozen privileged teacher and a privileged student sharing the rollout policy's parameters, modulating reward-derived token advantages while preserving their signs. Training rewards combine generative process evaluation, multi-judge rankings, and task-queue consistency. JoyInside-VLM-Agent achieves a BFCL v4 overall score of 77.44, exceeding the evaluated baselines; results on the other public benchmarks are mixed. On JoyInside-Devices and JoyInside-Robotics, the evaluated system, which includes domain-specific skill refinement, leads the baselines on all reported metrics. Two real-world quadruped case studies illustrate visually grounded search, replanning after execution failure, and explicit failure reporting.",
+          "authors": [
+            "Gangyi Li",
+            "LuYao Wang",
+            "Jingfu Sun",
+            "Jingyi Yuan",
+            "Hang Liu",
+            "Hao Zong",
+            "Yujia Hu",
+            "Tingting Gao",
+            "Jianyong Wang",
+            "Xu Yang"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO",
+            "cs.AI",
+            "cs.LG"
+          ],
+          "published": "2026-10-09T03:54:58+00:00",
+          "link": "https://arxiv.org/pdf/2610.12957v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "multimodal embodied agent mapping observations to executable actions",
+          "llm_evidence_cn": "将多模态观测映射为可执行动作的具身智能体",
+          "llm_evidence": "将多模态观测映射为可执行动作的具身智能体",
+          "canonical_evidence": "将多模态观测映射为可执行动作的具身智能体",
+          "llm_tldr_en": "JoyInside-VLM-Agent is a ReAct-style multimodal agent for embodied platforms that builds product-conditioned trajectories in a closed-loop sandbox and trains policies via SFT, multi-teacher distillation, and RL with DPER to handle goal changes and failures.",
+          "llm_tldr_cn": "具身智能体需把多模态观测与用户请求转化为可执行动作，并适应产品约束、目标变更与执行反馈。本文提出JoyInside-VLM-Agent，一种ReAct式多模态智能体，先用闭环沙盒构造覆盖目标修改与失败恢复的产品条件轨迹，再经监督微调、多教师策略蒸馏与带DPER的强化学习分阶段训练策略。轨迹会按执行结果与语义标准校验。该工作为机器人平台与智能硬件的策略学习提供了可落地范式。",
+          "llm_tldr": "具身智能体需把多模态观测与用户请求转化为可执行动作，并适应产品约束、目标变更与执行反馈。本文提出JoyInside-VLM-Agent，一种ReAct式多模态智能体，先用闭环沙盒构造覆盖目标修改与失败恢复的产品条件轨迹，再经监督微调、多教师策略蒸馏与带DPER的强化学习分阶段训练策略。轨迹会按执行结果与语义标准校验。该工作为机器人平台与智能硬件的策略学习提供了可落地范式。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+          "matched_requirement_id": "req-1",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.12957v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.27613v1",
+          "source": "arxiv",
+          "title": "Embodied Task Agents Can Perform Fine Manipulation through Tactile In-Context Learning",
+          "abstract": "Can embodied task agents use tactile experience to perform fine manipulation without task-specific model training? We investigate this capability through Tactile-ETA, a system that incorporates tactile experience into an embodied task agent through in-context learning. Successful expert demonstrations show how contact changes during manipulation. We pair each recorded robot movement with its camera views and bilateral tactile observations. We keep tactile observations at the start and end of each movement and add two neighboring time points when the tactile images change markedly in between. The agent combines these demonstrations with current vision, tactile observations, and proprioception to select actions through general-purpose robot tools, without updating model parameters. Across four simulated manipulation tasks, adding tactile observations to the same two expert demonstrations increases average success from 15.75% to 24.00%, with current sensing and execution interfaces held fixed. Further experiments show that performance depends on the sensory content and representation of demonstrations, while comparing agent models on Lift Bottle reveals substantial differences under the same system configuration. On the real-robot tasks, demonstrations with aligned visual and tactile observations increase the task success rate from 0% to 60%. These findings demonstrate the feasibility of using tactile experience in context for fine manipulation and suggest a path toward extending embodied task agents to additional sensory inputs.",
+          "authors": [
+            "Yubang Wang",
+            "Zezheng Huai",
+            "Yifei Zhang",
+            "Jinhao Wu",
+            "Yitong Chen",
+            "Haozhe Zhang",
+            "Sixian Li",
+            "Jingjing Gong",
+            "Zhenyang Lin",
+            "Ziyang Chen",
+            "Xipeng Qiu"
+          ],
+          "primary_category": "cs.RO",
+          "categories": [
+            "cs.RO"
+          ],
+          "published": "2026-10-20T04:27:15+00:00",
+          "link": "https://arxiv.org/pdf/2610.27613v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "embodied task agent performing fine manipulation via tactile in-context learning",
+          "llm_evidence_cn": "具身任务智能体通过触觉上下文学习完成精细操作",
+          "llm_evidence": "具身任务智能体通过触觉上下文学习完成精细操作",
+          "canonical_evidence": "具身任务智能体通过触觉上下文学习完成精细操作",
+          "llm_tldr_en": "Tactile-ETA tests whether embodied agents can do fine manipulation without task-specific training by pairing expert demonstrations with camera views and bilateral tactile readings, letting a general robot agent pick actions via in-context learning.",
+          "llm_tldr_cn": "精细操作通常需要任务特定训练，本文探究具身智能体能否仅凭触觉经验直接完成操作。作者提出Tactile-ETA，将专家示范中的接触变化与相机视图、双侧触觉观测配对，并保留动作起止及触觉剧变时刻，让通用机器人智能体结合当前视觉、触觉与本体感知在上下文中选择动作。结果表明无需任务特定训练即可完成精细操作。该工作说明触觉上下文学习能增强具身智能体的灵巧操作能力。",
+          "llm_tldr": "精细操作通常需要任务特定训练，本文探究具身智能体能否仅凭触觉经验直接完成操作。作者提出Tactile-ETA，将专家示范中的接触变化与相机视图、双侧触觉观测配对，并保留动作起止及触觉剧变时刻，让通用机器人智能体结合当前视觉、触觉与本体感知在上下文中选择动作。结果表明无需任务特定训练即可完成精细操作。该工作说明触觉上下文学习能增强具身智能体的灵巧操作能力。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.27613v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.04301v1",
+          "source": "arxiv",
+          "title": "EnvDreamer: Large-Scale Multimodal-to-Environment Generation for Embodied AI",
+          "abstract": "Large datasets and high capacity models have accelerated progress in vision and language. This work introduces a platform aimed at bringing comparable gains to embodied learning, world models, and robotics. We present EnvDreamer, a framework that uses large language and vision language models to generate Unreal Engine 5 environments for embodied AI and robot training. EnvDreamer enables sampling of large, diverse, interactive, customizable, and validator passed virtual environments for training and evaluation across navigation, interaction, and manipulation. We illustrate the platform with a large set of generated scenes and simple baselines. Policies trained on EnvDreamer generated environments, without explicit mapping or human task supervision, achieve competitive results on multiple embodied benchmarks spanning navigation, rearrangement, and manipulation. EnvDreamer also supports image-conditioned reconstruction for real-to-sim studies. Finally, we release EnvDreamer-20k, a dataset of 20,000 validator passed environments with task programs, scene graphs, trajectories, and metadata to support reproducible benchmarking.",
+          "authors": [
+            "Kabir Swain",
+            "Sijie Han",
+            "Antonio Torralba"
+          ],
+          "primary_category": "cs.AI",
+          "categories": [
+            "cs.AI"
+          ],
+          "published": "2026-10-03T05:28:33+00:00",
+          "link": "https://arxiv.org/pdf/2610.04301v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "environment generation platform for embodied AI and robot training",
+          "llm_evidence_cn": "面向具身智能与机器人训练的环境生成平台",
+          "llm_evidence": "面向具身智能与机器人训练的环境生成平台",
+          "canonical_evidence": "面向具身智能与机器人训练的环境生成平台",
+          "llm_tldr_en": "EnvDreamer uses LLMs and VLMs to generate diverse, interactive Unreal Engine 5 environments for embodied AI and robot training, showing that policies trained on generated scenes can transfer without explicit maps or human task supervision.",
+          "llm_tldr_cn": "视觉与语言领域受益于大数据与大模型，而具身学习与机器人训练仍缺乏同等规模的环境数据。本文提出EnvDreamer，利用大语言模型与视觉语言模型生成虚幻引擎5虚拟环境，覆盖导航、交互与操作任务，并提供大量多样、可交互、可定制且通过校验的场景。实验显示在生成环境中训练的策略无需显式建图或人工任务监督即可迁移。该平台为具身智能与机器人训练提供了可扩展的环境来源。",
+          "llm_tldr": "视觉与语言领域受益于大数据与大模型，而具身学习与机器人训练仍缺乏同等规模的环境数据。本文提出EnvDreamer，利用大语言模型与视觉语言模型生成虚幻引擎5虚拟环境，覆盖导航、交互与操作任务，并提供大量多样、可交互、可定制且通过校验的场景。实验显示在生成环境中训练的策略无需显式建图或人工任务监督即可迁移。该平台为具身智能与机器人训练提供了可扩展的环境来源。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "research on embodied artificial intelligence systems that perceive and act in physical environments",
+          "matched_requirement_id": "req-1",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.04301v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.15949v1",
+          "source": "arxiv",
+          "title": "Distributed Observation Scheduling and Sensor Fusion For Large Agile Constellations",
+          "abstract": "With the rapid increase in interest towards large scale earth observing satellite constellations, the problem of properly commanding and utilizing these systems has become increasingly relevant. This work focuses on a complete distributed approach to this problem, incorporating an observation task allocation and scheduling algorithm in addition to a sensor data fusion algorithm for end-to-end target coverage and processing. Observation task allocation and scheduling is performed in this work through the combination of the bid warped consensus based bundle algorithm (BWCBBA) and a lightweight observation scheduler for bid scoring. This method produces a unique mapping of tasks to command agents when allowed to iterate sufficiently. The approach to distributed data fusion in this work occurs primarily through an ownership model in which one satellite takes ownership of a system track in the constellation. After local information is shared between the sensing nodes to create the system tracks, the dedicated fusion nodes assume ownership for further information fusion and track information is disseminated throughout the constellation for data association. This paper analyzes the performance of these two algorithms over a set of increasingly decentralized architectures to highlight the performance losses compared to more traditional centralized methods.",
+          "authors": [
+            "Nicholas Niziolek",
+            "Ryan Draves",
+            "Nolan Ales",
+            "Nolan Stevenson",
+            "Eli Jones",
+            "Eric Frew",
+            "Nisar Ahmed"
+          ],
+          "primary_category": "eess.SY",
+          "categories": [
+            "eess.SY"
+          ],
+          "published": "2026-10-11T22:15:07+00:00",
+          "link": "https://arxiv.org/pdf/2610.15949v1",
+          "tags": [
+            "keyword:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "distributed task allocation and scheduling algorithm for satellite constellations",
+          "llm_evidence_cn": "面向卫星星座的分布式任务分配与调度算法",
+          "llm_evidence": "面向卫星星座的分布式任务分配与调度算法",
+          "canonical_evidence": "面向卫星星座的分布式任务分配与调度算法",
+          "llm_tldr_en": "This paper presents a fully distributed approach for large satellite constellations, combining the bid-warped consensus bundle algorithm with a lightweight observation scheduler plus sensor fusion to achieve end-to-end task allocation and target coverage.",
+          "llm_tldr_cn": "随着大规模对地观测卫星星座快速发展，如何有效指挥并利用这些系统成为关键问题。本文提出一套完整的分布式方案，把基于投标扭曲共识的捆绑算法与轻量观测调度器结合，完成任务到指令智能体的分配与调度，并配合传感器数据融合实现端到端目标覆盖与处理。实验表明在充分迭代时该方法能给出唯一且稳定的任务映射。该工作为大规模分布式系统的调度与资源分配提供了可扩展范式。",
+          "llm_tldr": "随着大规模对地观测卫星星座快速发展，如何有效指挥并利用这些系统成为关键问题。本文提出一套完整的分布式方案，把基于投标扭曲共识的捆绑算法与轻量观测调度器结合，完成任务到指令智能体的分配与调度，并配合传感器数据融合实现端到端目标覆盖与处理。实验表明在充分迭代时该方法能给出唯一且稳定的任务映射。该工作为大规模分布式系统的调度与资源分配提供了可扩展范式。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "scheduling algorithms for distributed and real-time systems",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.15949v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.13534v1",
+          "source": "arxiv",
+          "title": "MAGMA-Bench: Evaluating Long-Horizon Embodied Agents under Dynamic Tasks and Execution Failures",
+          "abstract": "Long-horizon embodied agents must maintain task-relevant information, coordinate heterogeneous robots, and adapt their decisions as execution unfolds. Existing benchmarks investigate dynamic task execution and embodied multi-agent coordination, but provide limited evaluation of their intersection. We introduce MAGMA-Bench, an architecture-agnostic benchmark for persistent task reasoning in dynamic multi-robot environments. MAGMA-Bench evaluates agents across increasing task horizons and controlled online perturbations, including execution failures, task interruptions, and mission updates, with scenarios requiring coordination across robots with heterogeneous capabilities. It uses a structured skill-level interface to separate task-level reasoning from perception and low-level control. We evaluate locally deployable open-weight planners, multi-agent state-tracking strategies, and frontier models. Even the strongest evaluated models fail on a substantial fraction of clean episodes, and their success rates decrease further under online perturbations. Supervised adaptation greatly improves a small model, but performance remains substantially lower on longer and multi-robot missions. We release the benchmark, 261,646 task-level training examples, and an architecture-agnostic expert-trace generation pipeline.",
+          "authors": [
+            "Loan Bernat",
+            "Matthieu Grard",
+            "Ariane Herbulot",
+            "Florent Lamiraux"
+          ],
+          "primary_category": "cs.AI",
+          "categories": [
+            "cs.AI",
+            "cs.RO"
+          ],
+          "published": "2026-10-09T12:54:11+00:00",
+          "link": "https://arxiv.org/pdf/2610.13534v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "benchmark for long-horizon embodied agents in dynamic multi-robot tasks",
+          "llm_evidence_cn": "动态多机器人任务下长时程具身智能体的基准",
+          "llm_evidence": "动态多机器人任务下长时程具身智能体的基准",
+          "canonical_evidence": "动态多机器人任务下长时程具身智能体的基准",
+          "llm_tldr_en": "MAGMA-Bench is an architecture-agnostic benchmark for long-horizon embodied agents that evaluates persistent task reasoning across increasing horizons and controlled perturbations like execution failures and mission updates in heterogeneous multi-robot settings.",
+          "llm_tldr_cn": "长时程具身智能体需在任务推进中保持关键信息、协调异构机器人并动态调整决策，而现有基准对动态执行与多机协同的交叉情形评估有限。本文提出架构无关的MAGMA-Bench，通过递增任务时程与受控在线扰动（如执行失败、任务中断与任务更新）进行评测，并用技能级接口分离任务推理与底层执行。该基准系统刻画了智能体在动态多机器人环境中的持续推理能力。它为具身智能体的鲁棒性与协调研究提供了标准化评测工具。",
+          "llm_tldr": "长时程具身智能体需在任务推进中保持关键信息、协调异构机器人并动态调整决策，而现有基准对动态执行与多机协同的交叉情形评估有限。本文提出架构无关的MAGMA-Bench，通过递增任务时程与受控在线扰动（如执行失败、任务中断与任务更新）进行评测，并用技能级接口分离任务推理与底层执行。该基准系统刻画了智能体在动态多机器人环境中的持续推理能力。它为具身智能体的鲁棒性与协调研究提供了标准化评测工具。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+          "matched_requirement_id": "req-8",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.13534v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.14686v1",
+          "source": "arxiv",
+          "title": "Vesta: Queueing-Aware LLM Scheduling for Real-World Workloads",
+          "abstract": "Agentic applications generate multi-turn sequences of LLM requests, with each new turn extending the context accumulated from prior interactions and tool calls. Prefix caching reuses the KV cache of earlier turns and avoids redundant prefill, but routing every turn to its cache-affine instance can create severe local queues while capacity remains idle elsewhere. Remote KV cache access relaxes this tension, yet migrating execution adds transfer work and is harmful when the cluster is already congested. Thus, deciding where to execute a request requires reasoning jointly about cache locality, queueing, and the current operating point of the cluster.   We present Vesta, a queueing-aware scheduler for distributed agentic LLM serving. Vesta assigns each session a stable holder for its authoritative KV cache while independently selecting an executor for every request. Grounded in classical queueing theory, its objective accounts for backlog, reusable prefixes, KV cache transfer, and the queueing externality of additional service demand; it migrates execution to recover idle capacity when beneficial and favors placements that add the least prefill and transfer work as congestion rises. Vesta also migrates reusable prefixes across length buckets to avoid cold starts. On real-world agentic workloads, Vesta improves throughput by 14.0\\% and reduces mean TTFT by 57.8\\% over the state-of-the-art scheduler in a PD-colocated deployment. In PD-disaggregated deployments, it reduces mean TTFT by up to 18.1\\% and P99 TTFT by up to 29.0\\% at matched throughput.",
+          "authors": [
+            "Lancheng Zou",
+            "Bowen Li",
+            "Wei Mao",
+            "Wenbin Ye",
+            "Lecheng Li",
+            "Kai Liu",
+            "Chao Deng",
+            "Jianchen Zhu",
+            "Bei Yu"
+          ],
+          "primary_category": "cs.DC",
+          "categories": [
+            "cs.DC"
+          ],
+          "published": "2026-10-10T07:58:22+00:00",
+          "link": "https://arxiv.org/pdf/2610.14686v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Queueing-aware scheduler for distributed agentic LLM serving with cache locality and cluster load reasoning",
+          "llm_evidence_cn": "面向分布式智能体LLM服务的排队感知调度器，联合考虑缓存局部性与集群负载",
+          "llm_evidence": "面向分布式智能体LLM服务的排队感知调度器，联合考虑缓存局部性与集群负载",
+          "canonical_evidence": "面向分布式智能体LLM服务的排队感知调度器，联合考虑缓存局部性与集群负载",
+          "llm_tldr_en": "Agentic LLM applications produce multi-turn sessions whose KV caches are costly to move. Vesta is a queueing-aware scheduler that jointly reasons about cache locality, queueing and cluster load to place each session, improving distributed agentic LLM serving.",
+          "llm_tldr_cn": "智能体应用会产生多轮LLM请求序列，前缀缓存虽可复用KV缓存，但按缓存亲和路由会造成局部排队而集群空闲。本文提出Vesta，一种面向分布式智能体LLM服务的排队感知调度器，联合考虑缓存局部性、排队状态与集群负载来决定请求执行位置。实验表明该调度器能在真实负载下缓解局部拥塞并提升吞吐，为智能体式LLM服务提供了实用的调度方案。",
+          "llm_tldr": "智能体应用会产生多轮LLM请求序列，前缀缓存虽可复用KV缓存，但按缓存亲和路由会造成局部排队而集群空闲。本文提出Vesta，一种面向分布式智能体LLM服务的排队感知调度器，联合考虑缓存局部性、排队状态与集群负载来决定请求执行位置。实验表明该调度器能在真实负载下缓解局部拥塞并提升吞吐，为智能体式LLM服务提供了实用的调度方案。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "scheduling algorithms for distributed and real-time systems",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.14686v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.15886v1",
+          "source": "arxiv",
+          "title": "Learning based Scalable Multi-Objective Scheduling of Workflows across UD-IaaS-FaaS Systems",
+          "abstract": "Workflow scheduling in user device-centric edge-cloud computing has emerged as a challenging problem due to the need to jointly optimize execution performance, energy consumption, and monetary cost. Modern workflows consist of heterogeneous tasks, where compute-intensive components are well-suited for Infrastructure-as-a-Service (IaaS) resources, while fine-grained, event-driven tasks are more efficiently executed using the Function-as-a-Service (FaaS) model. We formulate this scheduling problem for application workflows over a hybrid User Device (UD)-IaaS-FaaS computing continuum as a multi-objective Mixed-Integer Linear Program (MILP). The formulation models the workflow execution mechanism by incorporating cumulative capacity constraints for IaaS resources and elastic resource provisioning for FaaS. To overcome the intractability of MILP, we propose a learning-based framework that combines graph neural networks, surrogate performance modeling, and a multi-sample REINFORCE approach. The proposed approach is workflow-aware, leveraging task pairing to improve data locality and structured task placement decisions. Agent training is organized into three stages: small-scale learning of UD-IaaS trade-offs, intermediate locality aware co-location, and large-scale handling of parallelism and aggregation bottlenecks in workflows. The proposed framework is validated through real-world experiments using the Pegasus Montage workflow on a custom UD-IaaS-FaaS testbed comprising a user device, multiple IaaS nodes, and serverless FaaS instances. Extensive experimental results demonstrate the improved trade-offs across makespan, energy consumption, and cost. Compared with the genetic algorithm and greedy scheduling approaches, the proposed approach reduces makespan by 10-17.5%, energy consumption by 3-9%, and cost by 4-10%, while remaining within 3.5-5.6% of the MILP optimum.",
+          "authors": [
+            "G Vasantha Reddy",
+            "Ram Bansal",
+            "Krashna",
+            "Suvarthi Sarkar",
+            "Aryabartta Sahu"
+          ],
+          "primary_category": "cs.DC",
+          "categories": [
+            "cs.DC",
+            "cs.PF"
+          ],
+          "published": "2026-10-11T20:04:20+00:00",
+          "link": "https://arxiv.org/pdf/2610.15886v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Multi-objective workflow scheduling across user-device, IaaS and FaaS systems formulated as MILP",
+          "llm_evidence_cn": "跨用户设备、IaaS与FaaS系统的多目标工作流调度，建模为混合整数线性规划",
+          "llm_evidence": "跨用户设备、IaaS与FaaS系统的多目标工作流调度，建模为混合整数线性规划",
+          "canonical_evidence": "跨用户设备、IaaS与FaaS系统的多目标工作流调度，建模为混合整数线性规划",
+          "llm_tldr_en": "Workflow scheduling across user-device, IaaS and FaaS resources must jointly optimize performance, energy and cost. The paper formulates this as a multi-objective MILP over a hybrid computing continuum and proposes a learning-based scalable scheduling method for heterogeneous tasks.",
+          "llm_tldr_cn": "面向用户设备、IaaS与FaaS混合计算连续体的工作流调度，需同时优化执行性能、能耗与费用，且任务异构性强。本文将问题建模为多目标混合整数线性规划，刻画工作流执行机制与累积容量约束，并提出基于学习的可扩展调度方法。研究为边缘-云协同下的复杂工作流提供了兼顾多目标的实用调度方案。",
+          "llm_tldr": "面向用户设备、IaaS与FaaS混合计算连续体的工作流调度，需同时优化执行性能、能耗与费用，且任务异构性强。本文将问题建模为多目标混合整数线性规划，刻画工作流执行机制与累积容量约束，并提出基于学习的可扩展调度方法。研究为边缘-云协同下的复杂工作流提供了兼顾多目标的实用调度方案。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "job scheduling algorithms and optimization methods",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.15886v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.25067v1",
+          "source": "arxiv",
+          "title": "Non-Monetary Mechanisms for Stochastic Scheduling via Sampled Pairwise Externality Compensation",
+          "abstract": "How can a shared resource be allocated without money when agents have private, stochastic demands that can be queued for a while, and may behave strategically, or even adversarially? We introduce a paradigm for non-monetary online resource allocation called Sampled Pairwise Externality Compensator (SPEC). Our objective is to guarantee each agent a large fraction of its ideal utility: an individual benchmark corresponding to serving the highest-valued fraction of its demand permitted by an equal share of capacity. We seek guarantees that hold regardless of other agents' behavior, including potentially adversarial and collusive behavior. Our approach builds on the idea of pairwise externality compensation, making it computationally efficient by replacing exact calculations of future externalities with sampled estimates. The central insight is that local mixing, exploited through coupled simulations, allows these estimates to be computed efficiently while preserving robust utility guarantees. In our main technical contribution, we instantiate SPEC in a stochastic scheduling model in which agents receive jobs with private values, unserved jobs persist across periods subject to random expiration, and a single server processes at most one job per period. Our mechanism gives each agent a simple strategy that achieves the optimal worst-case fraction of ideal utility available to a fully informed planner, up to a sublinear additive loss in total utility. We also show that this fraction approaches $1$ in the long-horizon limit as the expiration probability vanishes: sufficiently persistent jobs allow each agent to secure nearly its full ideal utility. The mechanism runs in $O(n^2)$ expected amortized time per period, where $n$ is the number of agents; significantly, the expected amortized computational overhead per period is independent of the time horizon $T$.",
+          "authors": [
+            "David X. Lin",
+            "Chido Onyeze",
+            "Giannis Fikioris",
+            "Siddhartha Banerjee",
+            "Éva Tardos"
+          ],
+          "primary_category": "cs.GT",
+          "categories": [
+            "cs.GT"
+          ],
+          "published": "2026-10-18T07:15:16+00:00",
+          "link": "https://arxiv.org/pdf/2610.25067v1",
+          "tags": [
+            "keyword:embodied-ai",
+            "query:embodied-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Non-monetary online resource allocation and scheduling with strategic, stochastic demands",
+          "llm_evidence_cn": "面向策略性随机需求的非货币在线资源分配与调度",
+          "llm_evidence": "面向策略性随机需求的非货币在线资源分配与调度",
+          "canonical_evidence": "面向策略性随机需求的非货币在线资源分配与调度",
+          "llm_tldr_en": "How to allocate a shared resource without money when agents have private stochastic demands and may act adversarially? The paper proposes Sampled Pairwise Externality Compensation, an online non-monetary allocation mechanism guaranteeing each agent a large fraction of its ideal utility benchmark.",
+          "llm_tldr_cn": "在无法使用货币的共享资源分配中，智能体具有私有随机需求、可排队等待且可能采取策略甚至对抗行为。本文提出采样成对外部性补偿机制SPEC，通过成对外部性补偿实现在线非货币分配，并为每个智能体提供相对其理想效用基准的强保证。该机制在对抗与合谋情形下仍能保证效用比例，拓展了在线资源分配的理论边界。",
+          "llm_tldr": "在无法使用货币的共享资源分配中，智能体具有私有随机需求、可排队等待且可能采取策略甚至对抗行为。本文提出采样成对外部性补偿机制SPEC，通过成对外部性补偿实现在线非货币分配，并为每个智能体提供相对其理想效用基准的强保证。该机制在对抗与合谋情形下仍能保证效用比例，拓展了在线资源分配的理论边界。",
+          "llm_tags": [
+            "query:embodied-ai"
+          ],
+          "matched_query_tag": "query:embodied-ai",
+          "matched_query_text": "Find articles about scheduling algorithms, job scheduling, and resource allocation.",
+          "matched_requirement_id": "req-10",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.25067v1",
+          "carry_days": 1
+        }
+      ]
+    }
+  }
 }

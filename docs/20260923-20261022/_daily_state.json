@@ -1,0 +1,745 @@
+{
+  "date": "20260923-20261022",
+  "date_label": "2026-09-23 ~ 2026-10-22",
+  "generated_at": "2026-10-22 15:48:15 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.18447v3",
+      "route": "20260923-20261022/2610.18447v3-thinker-wm-a-unified-world-model-with-shared-multimodal-representations-for-embodied-intelligence",
+      "title": "Thinker-WM: A Unified World Model with Shared Multimodal Representations for Embodied Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 10.0,
+      "evidence": "面向具身预测与规划的统一多模态世界模型",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.21171v1",
+      "route": "20260923-20261022/2610.21171v1-physical-ai-a-survey-of-models-learning-systems-and-open-challenges",
+      "title": "Physical AI: A Survey of Models, Learning, Systems, and Open Challenges",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 10.0,
+      "evidence": "综述在物理世界中感知、推理与行动的物理智能体",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.23334v1",
+      "route": "20260923-20261022/2610.23334v1-law-unifying-language-action-and-world-modeling-for-agentic-physical-intelligence",
+      "title": "LAW: Unifying Language, Action, and World Modeling for Agentic Physical Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 10.0,
+      "evidence": "融合语言推理、动作生成与世界建模的世界-动作模型",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.28429v1",
+      "route": "20260923-20261022/2609.28429v1-watch-recall-act-always-on-robots-in-concurrent-embodied-streams",
+      "title": "Watch, Recall, Act: Always-On Robots in Concurrent Embodied Streams",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向常开机器人的流式具身策略，融合感知与历史动作",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.29091v1",
+      "route": "20260923-20261022/2609.29091v1-from-passive-execution-to-active-exploration-agentic-embodied-manipulation-in-realistic-environments",
+      "title": "From Passive Execution to Active Exploration: Agentic Embodied Manipulation in Realistic Environments",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向具身操作的智能体主动探索框架，包含规划、感知与执行模块",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.30948v1",
+      "route": "20260923-20261022/2609.30948v1-porl-pretrained-offline-reinforcement-learning-for-the-job-shop-scheduling-problem",
+      "title": "PORL: Pretrained Offline Reinforcement Learning for the Job Shop Scheduling Problem",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向作业车间调度问题的预训练离线强化学习方法",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.37810v1",
+      "route": "20260923-20261022/2609.37810v1-explore-execute-evolve-a-skill-acquisition-and-reuse-loop-for-embodied-agents",
+      "title": "Explore, Execute, Evolve: A Skill Acquisition and Reuse Loop for Embodied Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向具身智能体的技能获取与复用闭环",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.39207v1",
+      "route": "20260923-20261022/2609.39207v1-asena-self-evolving-agents-for-embodied-navigation",
+      "title": "ASENA: Self-evolving Agents for Embodied Navigation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将编码智能体与机器人感知执行相连的具身导航智能体系统",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.39665v2",
+      "route": "20260923-20261022/2609.39665v2-chronograph-functional-4d-scene-graphs-with-vision-language-models-for-interaction-understanding-and-grounded-planning",
+      "title": "ChronoGraph: Functional 4D Scene Graphs with Vision-Language Models for Interaction Understanding and Grounded Planning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "支持具身预测与接地规划的4D场景图",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.00854v2",
+      "route": "20260923-20261022/2610.00854v2-are-frontier-vlm-agents-ready-to-be-robot-generalists-an-empirical-study-with-the-embodied-agent-arena",
+      "title": "Are Frontier VLM Agents Ready to Be Robot Generalists? An Empirical Study with the Embodied Agent Arena",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "评测视觉语言具身智能体的感知、规划与操作能力",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.01826v1",
+      "route": "20260923-20261022/2610.01826v1-token-communication-assisted-collaborative-embodied-artificial-intelligence-concepts-framework-and-opportunities",
+      "title": "Token Communication-Assisted Collaborative Embodied Artificial Intelligence: Concepts, Framework, and Opportunities",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "协同具身智能体在动态物理环境中协同感知、推理与行动",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.02717v1",
+      "route": "20260923-20261022/2610.02717v1-robobridge-a-self-evolving-embodied-agent-framework-for-sim-to-real-transfer",
+      "title": "RoboBridge: A Self-Evolving Embodied Agent Framework for Sim-to-Real Transfer",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向仿真到现实迁移的自进化具身智能体",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.10498v1",
+      "route": "20260923-20261022/2610.10498v1-embodiedrsi-active-continual-robot-learning-through-hypothesis-guided-co-evolution",
+      "title": "EmbodiedRSI: Active Continual Robot Learning Through Hypothesis-Guided Co-Evolution",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从物理交互中持续学习的自进化智能体框架",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.11480v1",
+      "route": "20260923-20261022/2610.11480v1-roboaware-learning-to-coordinate-embodied-skills-from-counterfactual-outcomes",
+      "title": "RoboAware: Learning to Coordinate Embodied Skills from Counterfactual Outcomes",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从反事实结果学习具身机器人技能的状态条件协调",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.11481v1",
+      "route": "20260923-20261022/2610.11481v1-a-qptas-for-stochastic-scheduling-of-bernoulli-jobs",
+      "title": "A QPTAS for Stochastic Scheduling of Bernoulli Jobs",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "同构机上随机作业调度的拟多项式近似方案",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.12069v2",
+      "route": "20260923-20261022/2610.12069v2-livin-benchmarking-spatial-and-embodied-intelligence-in-digital-twins-of-lived-in-homes",
+      "title": "LIVIN: Benchmarking Spatial and Embodied Intelligence in Digital Twins of Lived-In Homes",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于真实居住家庭数字孪生、面向机器人交互的空间与具身智能基准",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.13021v1",
+      "route": "20260923-20261022/2610.13021v1-embodiedclbench-evaluating-continual-learning-for-self-evolving-embodied-agents",
+      "title": "EmbodiedCLBench: Evaluating Continual Learning for Self-Evolving Embodied Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向自进化具身智能体持续学习的基准",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.14302v1",
+      "route": "20260923-20261022/2610.14302v1-learning-to-see-through-action-predictive-curiosity-for-robots",
+      "title": "Learning to See through Action: Predictive Curiosity for Robots",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "预测下一视觉潜状态的循环世界模型用于机器人主动学习",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.14749v1",
+      "route": "20260923-20261022/2610.14749v1-solving-distributed-flexible-job-shop-scheduling-problem-using-sat",
+      "title": "Solving Distributed Flexible Job Shop Scheduling Problem Using SAT",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于SAT精确求解分布式柔性作业车间调度",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.16068v1",
+      "route": "20260923-20261022/2610.16068v1-improved-approximations-for-coflow-scheduling-via-iterated-rounding-and-stable-matchings",
+      "title": "Improved Approximations for Coflow Scheduling via Iterated Rounding and Stable Matchings",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "改进的协同流调度近似算法",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.17657v1",
+      "route": "20260923-20261022/2610.17657v1-towards-a-systematic-study-of-embodied-system-2-over-full-task-execution-cycles",
+      "title": "Towards a Systematic Study of Embodied System 2 over Full Task Execution Cycles",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "具身系统2的观测驱动规划、执行与恢复",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.18355v2",
+      "route": "20260923-20261022/2610.18355v2-abot-er-unified-embodied-reasoning-through-agentic-data-model-co-evolution",
+      "title": "ABot-ER: Unified Embodied Reasoning through Agentic Data-Model Co-Evolution",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "覆盖感知、规划与执行的统一具身推理基础模型",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.18836v2",
+      "route": "20260923-20261022/2610.18836v2-plan-bench-can-existing-vlms-go-well-beyond-perception-to-reason-and-plan-in-embodied-worlds",
+      "title": "Plan-Bench: Can Existing VLMs Go Well Beyond Perception to Reason and Plan in Embodied Worlds?",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "评估视觉语言模型具身推理与多步规划的基准",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.18867v2",
+      "route": "20260923-20261022/2610.18867v2-embodiedevo-self-evolving-coding-agent-for-physical-intelligence",
+      "title": "EmbodiedEvo: Self-Evolving Coding Agent For Physical Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过程序化机器人接口充当闭环具身策略的自演化编码智能体",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.20312v1",
+      "route": "20260923-20261022/2610.20312v1-reflect-after-failure-brain-inspired-self-evolving-agents-for-embodied-spatial-intelligence",
+      "title": "Reflect After Failure: Brain-Inspired Self-Evolving Agents for Embodied Spatial Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向具身空间智能并具失败反思能力的自进化智能体",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.20442v1",
+      "route": "20260923-20261022/2610.20442v1-towards-agentic-robots-model-data-environment-and-harness",
+      "title": "Towards Agentic Robots: Model, Data, Environment, and Harness",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "涵盖模型、数据、环境与执行的智能体机器人统一综述",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.22433v1",
+      "route": "20260923-20261022/2610.22433v1-bolt-multi-bottleneck-bound-guided-learning-for-flexible-job-shop-scheduling-with-time-lags-and-resource-coupled-transport",
+      "title": "BOLT: Multi-Bottleneck Bound-Guided Learning for Flexible Job-Shop Scheduling with Time Lags and Resource-Coupled Transport",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "带资源耦合运输的柔性作业车间调度优化",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.22471v2",
+      "route": "20260923-20261022/2610.22471v2-has-gpt-6-astra-achieved-embodied-intelligence",
+      "title": "Has GPT-6-Astra Achieved Embodied Intelligence?",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "跨12个基准对具身操作与导航能力的大规模评测",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.22496v1",
+      "route": "20260923-20261022/2610.22496v1-scaling-online-exploration-for-robot-agents",
+      "title": "Scaling Online Exploration for Robot Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过在线探索与代码合成实现机器人智能体学习",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.23053v1",
+      "route": "20260923-20261022/2610.23053v1-unifying-embodied-foundation-models-via-a-model-to-policy-formulation",
+      "title": "Unifying Embodied Foundation Models via a Model-to-Policy Formulation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "统一视觉语言动作模型与世界动作模型的机器人学习框架",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.25959v1",
+      "route": "20260923-20261022/2610.25959v1-embodiedworld-200k-toward-embodied-world-agents-via-embodied-planning-dataset-and-interactive-world-models",
+      "title": "EmbodiedWorld-200K: Toward Embodied World Agents via Embodied-Planning Dataset and Interactive World Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "可感知、推理与行动的具身世界智能体，配套规划数据集与交互式世界模型",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.26239v1",
+      "route": "20260923-20261022/2610.26239v1-cors-fast-neural-flexible-job-shop-scheduling-via-composite-interval-state-reuse",
+      "title": "CoRS: Fast Neural Flexible Job-Shop Scheduling via Composite Interval State Reuse",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于区间状态复用的柔性作业车间调度神经求解器",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.27045v1",
+      "route": "20260923-20261022/2610.27045v1-physical-ai-concepts-techniques-and-challenges",
+      "title": "Physical AI: Concepts, Techniques, and Challenges",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将物理AI界定为在真实约束下感知、建模并作用于物理世界的人工系统",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.30043v1",
+      "route": "20260923-20261022/2610.30043v1-tarsphere-a-robot-oriented-full-stack-framework-for-long-horizon-embodied-agents-in-evolving-physical-and-social-environments",
+      "title": "TARSphere: A Robot-Oriented Full-Stack Framework for Long-Horizon Embodied Agents in Evolving Physical and Social Environments",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向物理与社会环境的长时程具身智能体全栈框架",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.30108v1",
+      "route": "20260923-20261022/2610.30108v1-multimodal-embodied-agents-a-unified-capability-centric-perspective-from-computer-use-to-robot-use",
+      "title": "Multimodal Embodied Agents: A Unified Capability-centric Perspective from Computer-Use to Robot-Use",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "具身智能体感知、预期、规划、执行与验证的能力框架",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.27308v2",
+      "route": "20260923-20261022/2609.27308v2-embodiedswe-coding-agents-for-long-horizon-dexterous-robotics",
+      "title": "EmbodiedSWE: Coding Agents for Long Horizon Dexterous Robotics",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "用编码智能体解决长时程灵巧机器人任务并提供可扩展监督",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.28085v1",
+      "route": "20260923-20261022/2609.28085v1-curriculum-learning-with-gnn-based-reinforcement-learning-for-job-shop-scheduling",
+      "title": "Curriculum Learning with GNN-based Reinforcement Learning for Job Shop Scheduling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向作业车间调度的图神经网络强化学习课程学习",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.28751v1",
+      "route": "20260923-20261022/2609.28751v1-strong-np-hardness-and-approximation-algorithm-for-weighted-tardiness-with-release-dates-and-identical-processing-times",
+      "title": "Strong NP-Hardness and Approximation Algorithm for Weighted Tardiness with Release Dates and Identical Processing Times",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "单机加权拖期调度的复杂度与近似算法",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.31011v1",
+      "route": "20260923-20261022/2609.31011v1-dynamic-task-and-resource-scheduling-towards-space-air-ground-sea-integrated-network",
+      "title": "Dynamic Task and Resource Scheduling Towards Space-Air-Ground-Sea Integrated Network",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "跨卫星、高空平台、基站与无人机的动态任务与资源调度",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.33474v1",
+      "route": "20260923-20261022/2609.33474v1-gaps-and-augmentations-in-bayesian-scheduling",
+      "title": "Gaps and Augmentations in Bayesian Scheduling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "贝叶斯激励相容调度机制的近似界",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.33493v2",
+      "route": "20260923-20261022/2609.33493v2-an-eptas-for-vector-scheduling-with-time-intervals",
+      "title": "An EPTAS for Vector Scheduling with Time Intervals",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "带时间区间与资源负载的向量调度",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.34254v1",
+      "route": "20260923-20261022/2609.34254v1-scheduling-with-mandatory-breaks-np-hardness-and-an-additive-one-approximation",
+      "title": "Scheduling with Mandatory Breaks: NP-Hardness and an Additive-One Approximation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "带强制休息约束的作业调度及其NP困难性与近似算法",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.28219v1",
+      "route": "20260923-20261022/2609.28219v1-load-balancing-with-partial-queue-information---threshold-optimality-and-indexability",
+      "title": "Load Balancing with Partial Queue Information - Threshold Optimality and Indexability",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "部分队列信息下的作业派发与负载均衡策略",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.33165v1",
+      "route": "20260923-20261022/2609.33165v1-beyond-tasks-a-vision-for-reproducing-an-animal-like-behavioral-substrate-using-modern-robot-learning-techniques",
+      "title": "Beyond Tasks: A Vision for Reproducing an Animal-like Behavioral Substrate Using Modern Robot Learning Techniques",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "机器人学习中具身智能体类动物行为基质的愿景",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.33592v2",
+      "route": "20260923-20261022/2609.33592v2-control-data-scheduling-over-shared-communication-channels-a-sparse-and-collision-free-mechanism",
+      "title": "Control Data Scheduling over Shared Communication Channels: A Sparse and Collision-Free Mechanism",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "基于ADMM优化的共享通信信道控制数据传输调度",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.35936v1",
+      "route": "20260923-20261022/2609.35936v1-embodied-semantic-communication-for-collective-autonomous-agents-a-tutorial-on-representation-wireless-delivery-and-closed-loop-coordination",
+      "title": "Embodied Semantic Communication for Collective Autonomous Agents: A Tutorial on Representation, Wireless Delivery, and Closed-Loop Coordination",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向物理世界中自主智能体群体的具身语义通信",
+      "first_seen_at": "2026-10-22 15:48:15 UTC",
+      "updated_at": "2026-10-22 15:48:15 UTC"
+    }
+  ]
+}

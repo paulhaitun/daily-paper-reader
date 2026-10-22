@@ -1,0 +1,321 @@
+Title: Curriculum Learning with GNN-based Reinforcement Learning for Job Shop Scheduling
+
+URL Source: https://arxiv.org/pdf/2609.28085v1
+
+Published Time: Thu, 24 Sep 2026 01:13:06 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# Curriculum Learning with GNN-based Reinforcement Learning for Job Shop Scheduling 
+
+1st Jayakrishnan K. Vasudevan 
+
+Dept. of Industrial Engineering Rosenheim University of Applied Sciences 
+
+Rosenheim, Germany jayakrishnan.k.vasudevan@gmail.com 
+
+2nd Jonathan Hoss 
+
+Dept. of Industrial Engineering Rosenheim University of Applied Sciences 
+
+Rosenheim, Germany jonathan.hoss@th-rosenheim.de 
+
+3rd Noah Klarmann 
+
+Dept. of Industrial Engineering Rosenheim University of Applied Sciences 
+
+Rosenheim, Germany noah.klarmann@th-rosenheim.de 
+
+Abstract —The job shop scheduling problem is a challenging combinatorial optimization problem, and recent reinforcement learning approaches using graph neural networks have shown promise for learning scheduling policies directly from problem instances. However, training on large instances remains com-putationally expensive, and generalization across instance sizes remains challenging. This paper studies curriculum learning for graph neural network-based reinforcement learning in the job shop scheduling problem by comparing it with single-size training across three target sizes: 20 × 20 , 25 × 25 , and 30 × 30 . In the curriculum setting, the policy is first trained on smaller instances and then progressively adapted to larger target sizes, allowing scheduling behavior learned in earlier stages to support learning on larger instances. Models are evaluated on unseen instances from 8 × 8 to 30 × 30 using the optimality gap, considering both generalization across all evaluation sizes and specialization on the target size. Results show that curriculum learning consistently reduces wall-clock training time, with larger benefits as the target size increases. The strongest advantage is observed at 30 × 30 ,where curriculum learning reduces the mean optimality gap across all evaluation sizes by approximately 8.1 percentage points, reduces the target-size mean optimality gap by approximately 8.6 percentage points, and saves approximately 50 hours of training time. 
+
+Index Terms —Job Shop Scheduling Problem, Reinforcement Learning, Graph Neural Networks, Curriculum Learning 
+
+I. I NTRODUCTION 
+
+The Job Shop Scheduling Problem (JSSP) is a classical combinatorial optimization problem (COP) with applications in scheduling and resource allocation [1]. Its difficulty arises from the rapidly growing number of feasible schedules as the number of jobs and machines increases. Since exact methods often become impractical for larger instances, a wide range of heuristic, metaheuristic, and learning-based approaches have been studied [2], [3]. Recently, reinforcement learning (RL) has gained attention as a way to learn scheduling policies directly through interaction with the environment, reducing the dependence on manually designed dispatching rules [4], [5]. Graph neural network (GNN)-based RL approaches are particularly suitable for JSSP because scheduling instances can 
+
+Supported by the Chips Joint Undertaking and its members, including top-up funding by National Authorities, within the Cynergy4MIE project (Grant Agreement No. 101140226). 
+
+be represented as graphs, allowing the model to capture opera-tion precedence, machine-resource dependencies, and broader scheduling structure. Such models have shown promise for learning dispatching policies that generalize across instance sizes. However, direct training on large JSSP instances remains computationally expensive because larger instances lead to longer scheduling episodes, larger graph representations, and more complex decision dependencies [5]–[7]. This makes training efficiency an important challenge for applying GNN-based RL to larger scheduling problems. Curriculum learning (CL) [8], [9] offers a potential strategy for addressing this challenge by organizing training from simpler to progressively harder tasks. In JSSP, instance size is a natural curriculum variable: smaller instances have shorter episodes, smaller graph representations, and lower per-step computational cost, making them suitable for early training stages. A policy can therefore first learn useful scheduling behavior on smaller instances before being exposed to larger and more expensive target instances. Despite growing interest in CL for COP and scheduling, several questions remain insufficiently explored. Existing JSSP curriculum studies either operate within a single problem size by ordering instances according to difficulty [10], or mainly focus on final solution quality as the primary evaluation criterion [11]. This leaves open how CL affects generalization 
+
+across unseen instance sizes, specialization on the target size, and convergence behavior, including how quickly a policy improves and whether stage transitions introduce instability. In addition, wall-clock training time is rarely reported as a primary metric, although training cost is a major bottleneck for GNN-based RL on large JSSP instances. This paper presents a controlled study of size-based CL for GNN-based RL in JSSP while focusing on the effect of progressively increasing instance size during training, with the aim of reducing computational cost without compromising solution quality. Size-based CL is compared against direct single-size training across different target sizes, and each strategy is evaluated along three axes: generalization across unseen instance sizes, specialization on the target size, and wall-clock training time. The central hypothesis is that, as the target instance size increases, the computational cost of direct arXiv:2609.28085v1 [cs.LG] 23 Sep 2026 training grows, making CL increasingly advantageous by shift-ing part of the learning process to earlier and computationally cheaper stages. Therefore, the main contributions are threefold: (1) a controlled study of single-size training versus size-based CL under identical model, evaluation, and hardware settings; (2) a separation of the evaluation into generalization across unseen instance sizes and specialization on the final target size, revealing trade-offs that would be hidden by a single aggregate metric; and (3) a joint analysis of wall-clock training-time savings and optimality-gap performance, showing how the advantage of CL changes as the target JSSP size increases. II. R ELATED WORK 
+
+A. GNN-based RL for Scheduling 
+
+Zhang et al. [5] formulated JSSP as a Markov Decision Process (MDP) over a disjunctive graph and showed that graph-based representations can support generalization across instance sizes, while Park et al. [7] combined RL with graph-based state encoding to capture global dependencies between operations. GNNs are well suited for JSSP because operations, precedence constraints, and machine-resource dependencies naturally form a graph structure. Through message passing, GNNs can learn representations that capture both local and global scheduling information [1], [12]. However, graph-based RL methods for JSSP become more computationally demand-ing as instance size increases, since larger instances lead to larger graph representations and more node-embeddings [7]. Therefore, scalability and wall-clock training cost remain important challenges for GNN-based RL scheduling methods. 
+
+B. CL for COP 
+
+CL, as formalized by Bengio et al. [8], is built on the principle that models learn more effectively when training examples are ordered from simple to complex, rather than pre-sented uniformly at random. This idea has since been extended to RL, where curricula organize the agent’s experience as a structured progression of tasks or task distributions, improving both learning stability and efficiency [13], [14]. Several studies have explored curriculum strategies for COP. Waubert de Puiseau et al. [10] order training by instance difficulty for JSSP instances within a fixed problem size, re-lying on hand-crafted difficulty measures based on heuristics-solutions to rank individual examples from easy to hard and vice versa. Lisicki et al. [15] investigated problem size as the curriculum dimension by progressively exposing an attention-based model to larger Traveling Salesman Problem instances. They introduced an adaptive staircase curriculum, in which the difficulty level is updated during training by allowing the model to move to an easier level, stay at the current level, or advance to a more difficult one based on its performance. Iklassov et al. [11] further explore this curriculum design by reinforcing the curriculum with problems where the model performs poorly, thereby focusing training on more challeng-ing cases. These two strategies in [10] and [11], [15] reflect different assumptions about what constitutes a useful learning progression. III. P RELIMINARIES 
+
+A. JSSP and RL Formulation 
+
+The JSSP consists of jobs J = {J1, . . . , J n} and machines 
+
+M = {M1, . . . , M m}. Each job Jj is composed of an ordered set of operations (Oj, 1, . . . , O j,k j ), where operation Oj,k must be processed on a specified machine for processing time pj,k .A schedule is feasible if every operation is assigned a start time 
+
+tstart  
+
+> j,k
+
+while respecting both job precedence, tstart  
+
+> j,k +1
+
+≥ tstart  
+
+> j,k
+
++
+
+pj,k , and machine-capacity constraints, such that no machine processes more than one operation simultaneously. The goal is to minimize the makespan Cmax = max j∈J (tstart  
+
+> j,k j
+
++ pj,k j ).In this study, the JSSP is modeled as an MDP 
+
+(S, A, P, R, γ ), where S denotes the state space, A the action space, P the transition dynamics, R the reward function, and γ the discount factor [16]. The agent constructs aschedule sequentially by selecting one eligible operation at each decision step. The state st ∈ S represents the current scheduling status, including completed operations, available operations, machine availability, and remaining work. The action at ∈ A(st) is selected from the feasible action set obtained through action masking. After an action is selected, the next state is determined by P according to precedence and machine availability constraints. The policy πθ (at|st) learns which operation to select next. To evaluate solution quality, this study uses the optimality gap (OG) with respect to the Flow Due Date/Most Work Re-maining (FDD/MWR) heuristic, which serves as the reference method for comparison and it is defined as 
+
+OG = Cmodel − CFDD/MWR 
+
+CFDD/MWR 
+
+,
+
+where Cmodel is the makespan produced by the learned policy and CFDD/MWR is the makespan obtained using the FDD/MWR heuristic. This metric quantifies the relative dif-ference between the learned policy and the reference heuristic. A lower OG indicates better solution quality, with values close to zero indicating performance similar to FDD/MWR. IV. M ETHODOLOGY 
+
+A. GNN-Based RL Framework and Graph Representation 
+
+This study adopts the linear-complexity graph-based RL scheduling architecture proposed by Hoss et al. [6] as the policy model πθ for the experiments. The model follows a constructive scheduling formulation, in which the schedule is built sequentially by selecting one operation at each decision step. The current shop-floor state is encoded as a graph, processed by a GNN backbone, and used by an actor head to select the next feasible operation. The actor–critic policy is trained using Proximal Policy Optimization (PPO) [17], with θ denoting the actor parameters and ϕ denoting the critic parameters. At each decision step t, the scheduling state is repre-sented as an operation–machine graph Gt = ( V, E ), where 
+
+V = Vops ∪ Vmch consists of operation nodes and machine nodes. The edge set E = Eprec ∪ Eassign contains directed TABLE I GNN B ACKBONE AND POLICY HEAD HYPERPARAMETERS                  
+
+> Parameter Value
+> Architecture
+> Hidden dimension 64 Number of GIN layers ( K)3Input feature dimension 5
+> Training
+> Learning rate 3×10 −4with linear decay Batch size 5×(|J| × | M|)transitions Discount factor ( γ)0.995 GAE parameter ( λ)1.0 Clip coefficient ( ϵ)0.2 Entropy coefficient ( cent )0.001
+
+precedence edges between consecutive operations of the same job and bidirectional assignment edges between operations and their required machines. Although the graph is structurally heterogeneous, feature-based homogenization maps operations and machine nodes into a shared feature space using node-type indicators and dynamic scheduling features. This allows the graph to be processed by a homogeneous Graph Isomorphism Network (GIN) [18] while preserving the distinction between operations and machines. The action masking ensures that only precedence-feasible operations are selected. The actor selects the next operation using action masking, while the critic estimates the value of the current scheduling state. For all experiments, a fixed GNN architecture is used based on the configuration adopted from [6]; the corresponding hyperparameters are summarized in Table I. 
+
+B. CL Training Strategies 
+
+This work investigates CL as a training strategy for GNN-based RL in JSSP. Instead of training directly on the final target size, CL exposes the policy to a sequence of pro-gressively larger instance sizes. In this study, the curriculum consists of three stages with instance sizes C = [ c1, c 2, c 3],where c1 < c2 < c3 and c3 is the target size. Here, ck
+
+denotes the JSSP instance size used at curriculum stage k.Each stage k is allocated a fixed budget of Tstage = 10 
+
+million (M) environment steps, giving a total training budget of Tmax = 3 · Tstage = 30M steps, equal to the single-size baseline. At curriculum stage k, the environment E is configured for instance size ck. The agent interacts with E by executing policy πθ to collect a batch of trajectories D = {τi} until the rollout buffer is filled. The policy parameters θ and value-function parameters ϕ are then updated via PPO. This collect– update cycle repeats until the per-stage step budget k ·Tstage is exhausted. At every ∆eval steps, πθ is evaluated on the fixed held-out evaluation dataset. When transitioning from stage k to k+1 , the environment E,rollout collector, and all size-dependent hyperparameters are reconfigured for ck+1 while the parameters (θ, ϕ ) are retained ,so the scheduling behavior learned at ck is transferred to the next stage. A three-stage curriculum is used because fewer stages may not provide sufficient transition from smaller to larger 
+
+Algorithm 1 Three-Stage CL for JSSP 
+
+Require: Curriculum stage sizes C = [ c1, c 2, c 3], stage budget 
+
+Tstage , total budget Tmax = 3 · Tstage , evaluation interval 
+
+∆eval 
+
+Ensure: Trained policy πθ 
+
+> 1:
+
+Initialize policy parameters θ, value-function parameters 
+
+ϕ, step counter t ← 0 
+
+> 2:
+
+for k = 1 to 3 do  
+
+> 3:
+
+Configure environment E, rollout collector, and size-dependent hyperparameters for instance size ck 
+
+> 4:
+
+while t < k · Tstage do  
+
+> 5:
+
+Collect trajectories D ← {τi} using πθ until rollout buffer is full  
+
+> 6:
+
+Update (θ, ϕ ) ← PPO( D, θ, ϕ ) 
+
+> 7:
+
+t ← t + |D|  
+
+> 8:
+
+if t mod ∆ eval = 0 then  
+
+> 9:
+
+Evaluate πθ on fixed held-out evaluation dataset  
+
+> 10:
+
+end if  
+
+> 11:
+
+end while  
+
+> 12:
+
+if k < 3 then  
+
+> 13:
+
+Adapt E and rollout collector to ck+1 ; retain θ and 
+
+ϕ 
+
+> 14:
+
+end if  
+
+> 15:
+
+end for 
+
+instances, while more stages would introduce additional design choices beyond the scope of this study. The equal allocation of Tstage = 10M steps per stage keeps the schedule symmetric across all target sizes. Overall, this design provides a simple and symmetric size progression while keeping the curriculum schedule directly comparable to the single-size baseline under the same total training budget. The full procedure is given in Algorithm 1. V. E XPERIMENTAL SETUP 
+
+A. Instance Sizes and Problem Setting 
+
+Instances with equal numbers of jobs and machines ( n = m,i.e., a job-to-machine ratio J/M = 1 ) are used throughout the study. This choice is motivated by prior scheduling studies suggesting that instances with J/M ≈ 1 tend to exhibit more difficult scheduling landscapes than other configurations [19]. It is also consistent with the structural saturation hypothesis proposed in our recent work [6], which suggests that schedul-ing difficulty is governed more strongly by problem topology and constraint density than by absolute instance size. In particular, the regime J/M = 1 represents a highly saturated setting in which machine contention is sufficiently pronounced to require robust conflict-resolution strategies. Moreover, re-stricting both training and evaluation to J/M = 1 provides a controlled setting for isolating the effect of increasing instance size. Therefore, observed learning behavior can be attributed mainly to problem size rather than changes in the job-to-machine ratio. The training instances follow the random JSSP generation protocol used in [6]: for each job, the machine TABLE II TRAINING CONFIGURATIONS                                                       
+
+> Target size Single-size CL Total steps
+> 20 ×20 20 ×20 10 ×10 →15 ×15 →20 ×20 30M
+> 25 ×25 25 ×25 10 ×10 →15 ×15 →25 ×25 30M
+> 30 ×30 30 ×30 10 ×10 →20 ×20 →30 ×30 30M
+
+route is sampled as a random permutation of the machines, and the operation processing times are drawn independently as pj,k ∼ U{ 1, 2, . . . , 99 }.Experiments are conducted for three target sizes: 20 × 20 ,
+
+25 × 25 , and 30 × 30 . The selection of 20 × 20 is motivated by the GNN-based RL architecture adopted in this study. In [6], the 20 ×20 configuration was identified as a structurally impor-tant training scale that supports strong zero-shot generalization across different instance sizes and shapes. Therefore, 20 × 20 
+
+is used as the base target size for comparing CL with direct single-size training. The larger target sizes, 25 × 25 and 30 × 30 , are selected to increase problem complexity. This allows the study to examine whether the benefits of CL remain consistent or become more critical as the target instance size grows. Since these target sizes make direct single-size training computationally expensive, they are suitable for evaluating training efficiency. 
+
+B. Training Procedure 
+
+For each target size, CL is compared against a correspond-ing single-size training baseline. In single-size training, the policy πθ is trained exclusively on the target instance size for the full budget of Tmax = 30M environment steps. In CL, the same total budget is divided into three stages of Tstage = 10M 
+
+steps, where the final curriculum stage corresponds to the same target size as the single-size baseline. Both strategies use the same model architecture, hyperpa-rameters, and hardware configuration, consisting of an AMD Ryzen 9 7950X3D 16-core processor with 32 CPU threads. They are also evaluated at the same intervals using the same fixed evaluation dataset described in Section V-C. This controlled setup ensures that observed differences can be attributed primarily to the training strategy and target instance size. The specific training configurations are shown in Table II. The curriculum model ending at 20 × 20 is compared to a model trained exclusively on 20 × 20 instances. Similarly, the 
+
+25 × 25 and 30 × 30 curriculum runs are compared against their corresponding single-size baselines. For the target size 
+
+20 × 20 , the curriculum proceeds through 10 × 10 , 15 × 15 ,and finally 20 × 20 instances. For the target size 25 × 25 , the model is first trained on 10 × 10 and 15 × 15 instances before moving to 25 × 25 . For the target size 30 × 30 , the curriculum uses 10 ×10 and 20 ×20 as intermediate stages before training on 30 ×30 . Thus, smaller problem sizes are used as curriculum stages intended to initialize learning before training on larger target instances. To reduce the effect of stochasticity inherent in RL training, each experimental setting is repeated over three independent                 
+
+> TABLE III EVALUATION METRICS
+> Metric Evaluated on Purpose
+> OG all Sizes from 8×8to 30 ×30 Generalization
+> OG target Target instance size only Specialization Wall-clock training time Full training process Training efficiency
+
+runs with different random seeds. The reported curves and final values correspond to the mean performance across these runs. The shaded regions in the learning curves indicate one standard deviation across the three independent runs, providing an estimate of run-to-run variability and the consistency of the observed trends. 
+
+C. Evaluation Dataset 
+
+Periodic evaluation is performed every ∆eval steps through-out training using a fixed held-out evaluation dataset. This dataset contains 20 instances for each evaluation size, 8 × 8,
+
+10 ×10 , 12 ×12 , 15 ×15 , 20 ×20 , 25 ×25 , and 30 ×30 , resulting in 140 evaluation instances in total. The evaluation instances are generated from the same distribution and using the same random JSSP generation procedure as the training instances. However, a different random seed is used for generating evaluation instances, ensuring that these instances are disjoint from the training instances. Evaluating at regular intervals rather than only at the end of training enables comparison of convergence behavior between single-size training and CL. 
+
+D. Evaluation Metrics 
+
+This study focuses on three primary evaluation metrics, as summarized in Table III.  
+
+> •
+
+Generalization performance: This is measured using the average optimality gap across all evaluation sizes, defined as OG all = 1
+
+> N
+
+PNi=1 OG i, where N is the total number of evaluation instances across all sizes. This metric re-flects how well the trained model performs across a broad range of unseen instance sizes.  
+
+> •
+
+Specialization performance: This is measured using the average optimality gap on the target training size, defined as OG target = 1
+
+> Ntarget
+
+PNtarget  
+
+> i=1
+
+OG i, where Ntarget is the number of evaluation instances of the target size. For example, in the 20 × 20 experiment, this metric is computed only on the 20 × 20 evaluation instances.  
+
+> •
+
+Training efficiency: This is measured using wall-clock time, defined as the actual elapsed time required to complete training. This includes environment interaction, policy optimization, logging, and periodic evaluation. The time saved by CL is computed relative to the correspond-ing single-size training baseline. VI. R ESULTS AND DISCUSSION 
+
+This section compares CL against single-size training for the three target sizes. The comparison focuses on two optimality-gap metrics and training time as discussed in the previous section. For each target size, four types of curves are used:  
+
+> •
+
+Mean OG across all evaluation sizes vs. training steps. Fig. 1. Generalization performance for the 20 × 20 target setting. Top: mean OG across all evaluation sizes versus training steps. Bottom: mean OG across all evaluation sizes versus wall-clock training time.  
+
+> •
+
+Mean OG across all evaluation sizes vs. wall-clock time.  
+
+> •
+
+Mean OG on the target size vs. training steps.  
+
+> •
+
+Mean OG on the target size vs. wall-clock time. These curves allow the comparison to capture both solution quality and training efficiency. 
+
+A. Results for 20 × 20 Target Size 
+
+For the 20 × 20 setting, CL provides a clear training-efficiency advantage while maintaining similar generalization performance. As shown in Fig. 1, CL reduces wall-clock training time by approximately 20 hours, corresponding to about a 34% reduction compared to single-size training. In terms of mean OG across all evaluation sizes, CL performs similarly to single-size training, indicating that training first on smaller instances does not substantially affect performance on the mixed evaluation set. When the evaluation is restricted to the target size, CL shows a small specialization loss, as shown in Fig. 2. Specifically, CL increases the target-size mean OG by approximately 1.2 percentage points compared to the single-size model. This suggests that direct training on 20 ×20 
+
+instances provides a slight advantage when specializing on that specific size. Overall, CL offers a favorable efficiency benefit and comparable generalization performance, at the cost of a small specialization trade-off. 
+
+B. Results for 25 × 25 Target Size 
+
+For the 25 × 25 setting, CL improves generalization while providing a substantial training-time reduction. As shown in Fig. 3, CL reduces the mean OG across all evaluation sizes              
+
+> Fig. 2. Specialization performance for the 20 ×20 target setting. Top: mean OG on 20 ×20 evaluation instances versus training steps. Bottom: mean OG on 20 ×20 evaluation instances versus wall-clock training time.
+
+by approximately 1.6 percentage points compared to single-size training, indicating improved performance over the mixed evaluation set. However, when the evaluation is restricted to the target size, CL shows a small specialization loss. As shown in Fig. 4, CL increases the target-size mean OG on 25 × 25 
+
+instances by approximately 1.3 percentage points compared to the single-size baseline. This suggests that, although CL improves cross-size generalization, direct training on 25 × 25 
+
+still provides a slight specialization advantage. In terms of efficiency, Fig. 3 shows that CL reduces wall-clock training time by approximately 40 hours, corresponding to about a 42% reduction compared to single-size training. Overall, the 25 ×25 
+
+results show that CL improves generalization and substantially reduces training time, while introducing a small specialization trade-off. 
+
+C. Results for 30 × 30 Target Size 
+
+The strongest training-efficiency benefit is observed in the 
+
+30 × 30 setting, where direct training is most computationally expensive. As shown in Fig. 5, CL saves approximately 50 hours of wall-clock training time, corresponding to about a 43% reduction compared to single-size training. This is the largest absolute time saving among the tested target sizes. In terms of solution quality, Fig. 5 shows that CL reduces the mean OG across all evaluation sizes by approximately 8.1 percentage points. When the evaluation is restricted to the target size, CL also reduces the target-size mean OG by approximately 8.6 percentage points compared to the single-size baseline, as shown in Fig. 6. Thus, unlike the smaller Fig. 3. Generalization performance for the 25 × 25 target setting. Top: mean OG across all evaluation sizes versus training steps. Bottom: mean OG across all evaluation sizes versus wall-clock training time. TABLE IV SUMMARY OF CL C OMPARED TO SINGLE -S IZE TRAINING                   
+
+> Target size Generalization Specialization Time saved
+> 20 ×20 Similar ∼1.2% higher OG ∼20 hours
+> 25 ×25 ∼1.6% lower OG ∼1.3% higher OG ∼40 hours
+> 30 ×30 ∼8.1% lower OG ∼8.6% lower OG ∼50 hours
+
+target settings where CL shows a small specialization loss, the 30 × 30 setting improves performance on the target size. Although the relative time reduction is only slightly higher than in the 25 × 25 setting, the absolute time saving is largest for 30 × 30 . A possible explanation is that the 30 × 30 
+
+curriculum uses 20 × 20 as an intermediate stage, which is already more expensive than the 15 × 15 intermediate stage used in the 20 × 20 and 25 × 25 curricula. Overall, the 
+
+30 × 30 results provide the strongest evidence for CL, as it achieves the largest absolute time saving while improving both generalization and specialization, supporting the hypothesis that CL becomes more beneficial as the target instance size increases. VII. C ONCLUSION 
+
+CL reduces training time for all target sizes, and the absolute time savings increase as the target size becomes larger. In terms of solution quality, CL mainly improves generalization performance, while specialization depends on the target size. For 20 × 20 , CL achieves similar generalization but shows a small specialization loss, with the target-size mean OG increasing by approximately 1.2 percentage points. For 25 ×25 ,CL reduces the mean OG across all evaluation sizes by approximately 1.6 percentage points, while the target-size              
+
+> Fig. 4. Specialization performance for the 25 ×25 target setting. Top: mean OG on 25 ×25 evaluation instances versus training steps. Bottom: mean OG on 25 ×25 evaluation instances versus wall-clock training time.
+
+mean OG increases by approximately 1.3 percentage points compared to single-size training. For 30 × 30 , CL provides the strongest overall result, reducing the mean OG across all evaluation sizes by approximately 8.1 percentage points and the target-size mean OG by approximately 8.6 percentage points. These observations suggest that CL is particularly useful when direct training on the target size becomes computa-tionally expensive. Smaller instances provide shorter episodes and more frequent learning opportunities, allowing the agent to learn useful scheduling behavior before adapting to larger instances. When training progresses to more complex target sizes, the previously learned policy can be refined instead of being learned from scratch. The results also indicate that CL may introduce a small specialization trade-off for smaller and medium target sizes, since the single-size model spends the full training budget on the target size, whereas the curriculum model only trains on the target size during the final stage. However, as the target size increases, the generalization, specialization, and training-efficiency benefits become more pronounced. This suggests that CL over instance size can improve computational efficiency and cross-size generalization in GNN-based RL for JSSP, especially for larger target sizes. Table IV summarizes the relative performance of CL compared to single-size training. Several limitations remain. The curriculum switch interval is fixed at 10 M steps, and the study is limited to JSSP instances with J/M = 1 . Future work should evaluate the approach on larger instances and different job-to-machine ratios. In Fig. 5. Generalization performance for the 30 × 30 target setting. Top: mean OG across all evaluation sizes versus training steps. Bottom: mean OG across all evaluation sizes versus wall-clock training time. 
+
+addition, adaptive curriculum schedules based on convergence behavior, performance thresholds, or instance difficulty should be investigated. Moreover, while this study focuses on com-paring size-based CL with direct single-size training, future work should include comparisons with adaptive curriculum strategies, difficulty-based curricula, and additional state-of-the-art scheduling methods to provide a broader evaluation. REFERENCES [1] I. G. Smit, J. Zhou, R. Reijnen, Y. Wu, J. Chen, C. Zhang, Z. Bukhsh, Y. Zhang, and W. Nuijten, “Graph neural networks for job shop scheduling problems: A survey,” Computers & Operations Research ,vol. 176, p. 106914, 2025. [2] K. Gao, Z. Cao, L. Zhang, Z. Chen, Y. Han, and Q. Pan, “A review on swarm intelligence and evolutionary algorithms for solving flexible job shop scheduling problems,” IEEE/CAA Journal of Automatica Sinica ,vol. 6, no. 4, pp. 904–916, 2019. [3] T. Van Ekeris, R. Meyes, and T. Meisen, “Discovering heuristics and metaheuristics for job shop scheduling from scratch via deep reinforce-ment learning,” in Proceedings of the Conference on Production Systems and Logistics: CPSL 2021 . Hannover: publish-Ing., 2021. [4] P. Tassel, M. Gebser, and K. Schekotihin, “A reinforcement learning environment for job-shop scheduling,” arXiv preprint arXiv:2104.03760 ,2021. [5] C. Zhang, W. Song, Z. Cao, J. Zhang, P. S. Tan, and X. Chi, “Learning to dispatch for job shop scheduling via deep reinforcement learning,” 
+
+Advances in neural information processing systems , vol. 33, pp. 1621– 1632, 2020. [6] J. Hoss, M. Link, and N. Klarmann, “Scalable production scheduling: Linear complexity via unified homogeneous graphs,” arXiv preprint arXiv:2604.23841 , 2026. [7] J. Park, J. Chun, S. H. Kim, Y. Kim, and J. Park, “Learning to schedule job-shop problems: representation and policy learning using graph neural network and reinforcement learning,” International journal of production research , vol. 59, no. 11, pp. 3360–3377, 2021. 
+
+Fig. 6. Specialization performance for the 30 × 30 target setting. Top: mean OG on 30 × 30 evaluation instances versus training steps. Bottom: mean OG on 30 × 30 evaluation instances versus wall-clock training time. [8] Y. Bengio, J. Louradour, R. Collobert, and J. Weston, “Curriculum learning,” in Proceedings of the 26th annual international conference on machine learning , 2009, pp. 41–48. [9] X. Wang, Y. Chen, and W. Zhu, “A survey on curriculum learning,” IEEE transactions on pattern analysis and machine intelligence , vol. 44, no. 9, pp. 4555–4576, 2021. [10] C. W. De Puiseau, H. Tercan, and T. Meisen, “Curriculum learning in job shop scheduling using reinforcement learning,” arXiv preprint arXiv:2305.10192 , 2023. [11] Z. Iklassov, D. Medvedev, R. Solozabal, and M. Takac, “Learning to generalize dispatching rules on the job shop scheduling,” arXiv preprint arXiv:2206.04423 , 2022. [12] P. W. Battaglia, J. B. Hamrick, V. Bapst, A. Sanchez-Gonzalez, V. Zam-baldi, M. Malinowski, A. Tacchetti, D. Raposo, A. Santoro, R. Faulkner 
+
+et al. , “Relational inductive biases, deep learning, and graph networks,” 
+
+arXiv preprint arXiv:1806.01261 , 2018. [13] S. Narvekar, B. Peng, M. Leonetti, J. Sinapov, M. E. Taylor, and P. Stone, “Curriculum learning for reinforcement learning domains: A framework and survey,” Journal of Machine Learning Research , vol. 21, no. 181, pp. 1–50, 2020. [14] P. Klink, H. Yang, C. D’Eramo, J. Peters, and J. Pajarinen, “Curriculum reinforcement learning via constrained optimal transport,” in Interna-tional Conference on Machine Learning . PMLR, 2022, pp. 11 341– 11 358. [15] M. Lisicki, A. Afkanpour, and G. W. Taylor, “Evaluating curriculum learning strategies in neural combinatorial optimization,” arXiv preprint arXiv:2011.06188 , 2020. [16] R. S. Sutton, A. G. Barto et al. , Reinforcement learning: An introduction .MIT press Cambridge, 1998, vol. 1, no. 1. [17] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, “Prox-imal policy optimization algorithms,” arXiv preprint arXiv:1707.06347 ,2017. [18] K. Xu, W. Hu, J. Leskovec, and S. Jegelka, “How powerful are graph neural networks?” arXiv preprint arXiv:1810.00826 , 2018. [19] M. J. Streeter and S. F. Smith, “How the landscape of random job shop scheduling instances depends on the ratio of jobs to machines,” Journal of Artificial Intelligence Research , vol. 26, pp. 247–287, 2006.

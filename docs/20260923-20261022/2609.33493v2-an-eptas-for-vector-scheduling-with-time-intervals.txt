@@ -1,0 +1,863 @@
+Title: An EPTAS for Vector Scheduling with Time Intervals
+
+URL Source: https://arxiv.org/pdf/2609.33493v2
+
+Published Time: Fri, 02 Oct 2026 01:59:38 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# An EPTAS for Vector Scheduling with Time Intervals 
+
+Junho Hwang Independent Researcher 
+
+Abstract 
+
+We study vector scheduling in which each job is active during a fixed time interval. A job uses several resources and stays on one machine for its entire interval; its resource requirements may depend on the machine. The objective is to minimize the largest resource load over all machines and times. For r machines and d resources, we give a deterministic (1+ ε)-approximation in f (r, d, 1/ε )N O(1) time, where N is the binary input length. This gives an efficient polynomial-time approximation scheme for fixed r and d, extending approximation schemes for scalar temporary tasks assignment. The algorithm merges jobs into blocks whose time intervals are fixed before any machine is chosen, and assigns the blocks by dynamic programming over a balanced recursive split of the time line. We also prove strong NP-hardness and an exponential lower bound in 1 /ε under the Exponential Time Hypothesis, already for two identical machines and one resource. 
+
+# 1 Introduction 
+
+Vector scheduling models jobs that use several resources, such as CPU and memory [6, 5]. When each job reserves those resources for a specified time interval, its contribution begins at arrival and ends at departure. We assign every job to one machine for its entire interval and minimize the largest load of any resource at any time. Resource requirements may depend on the machine, and jobs may have specified sets of eligible machines. Figure 1 gives a two-resource example. The single-resource case is offline temporary tasks assignment [3, 4, 2]. Azar, Regev, Sgall, and Woeginger (ARSW) [4, Theorem 4.4] gave a polynomial-time approximation scheme (PTAS) on r identical machines, with running time nO(r3 log r/ε 3) for n jobs. Armon et al. [2, Section 4.1] obtained a PTAS on a fixed number of unrelated machines. We give an efficient PTAS (EPTAS) for the multi-resource model: the exponent of the input length is independent of the machine count, the number of resources, and the accuracy. 
+
+Theorem 1.1. For every r, d ≥ 1 and rational 0 < ε ≤ 1, vector scheduling with fixed time intervals on r unrelated machines and d resources admits a deterministic (1 + ε)-approximation in f (r, d, 1/ε )N c0 bit operations. Here N is the binary input length, f is computable, and c0 is an absolute constant. Arbitrary nonnegative rational demands and nonempty eligibility sets are allowed. 
+
+Splitting the time line at all job endpoints turns an instance into ordinary vector scheduling with one coordinate for every resource and every piece of the time line. The number of pieces grows with the input, and Theorem 1.1 keeps it outside the parameter dependence. When all jobs share the same interval, the model is ordinary vector scheduling on unrelated machines. The scalar identical-machine case has a sharper dependence on the accuracy (Theorem 6.2). Even for two identical machines and one resource, we prove strong NP-hardness and an expo-nential lower bound in 1 /ε under the Exponential Time Hypothesis (Proposition C.1). 
+
+Approach. All main ideas already appear for identical machines and one resource; Sections 3–6 treat this case and prove Theorem 6.2. We split the time line recursively and collect at each 1arXiv:2609.33493v2 [cs.DS] 1 Oct 2026 split the jobs that are active there. Those jobs are merged into few blocks, each placed on a single machine. A block acts as one job whose interval is the union of the intervals of its jobs. The blocks are chosen so that this over-estimates the total load only slightly, and their intervals are known before any machine is chosen. Each split cuts the current part of the time line at its middle and at the median endpoint of the earlier blocks inside it, so few block intervals end inside any part. A dynamic program over the splits then assigns the blocks exactly: inside a part, it remembers only the machines of the blocks whose intervals end there and one constant load vector for the others. Section 7 extends the algorithm to several resources, machine-dependent demands, and eligibility sets, and proves Theorem 1.1. Each job gets a scalar weight, and its resource requirements are rounded into a bounded number of types; within a type, all requirements are fixed multiples of the scalar weight. Blocks are formed within each type, and one dynamic program assigns the blocks of all types together. 
+
+Related work. The blocks follow the rounding phase of ARSW [4, Section 3]. Over-estimating loads by step functions with few steps, and the cut at the median endpoint, follow Grandoni, Mömke, and Wiese [12, Sections 2.1–2.2]. Fixing the block intervals before choosing machines permits the stronger running-time bound here. Our rounding of resource requirements into types (Section 7) extends the minimum-weight normalization and grouping of Armon et al. [2, Section 4.1.2] to several resources. For ordinary vector scheduling on identical machines, Chekuri and Khanna [6] gave a PTAS in fixed dimension, and Bansal et al. [5] gave an EPTAS. Their dimension parameter counts all coordinates; here the number of time coordinates grows with the input. Temporal bin packing [9] and Round-UFP [14] minimize the number of capacity-feasible bins or copies. For scalar temporary tasks on identical machines, unit weights admit an optimal polynomial-time assignment [1], while variable weights rule out approximation ratios below 3 /2in polynomial time when r is part of the input [4, Theorem 5.1]. 
+
+# 2 The model 
+
+There are n jobs, r machines, and d resources. Job i has a fixed half-open interval Ii = [ ai, b i)with ai < b i, a nonempty eligibility set Ei ⊆ [r], and a vector pij = ( pij 1, . . . , p ijd ) ∈ Qd 
+
+> ≥0
+
+for each j ∈ Ei. An assignment x chooses xi ∈ Ei once for each job. Its load and peak are 
+
+Lx,jk (t) = ∑ 
+
+> i:t∈Ii
+> xi=j
+
+pijk , max  
+
+> t, j ∈[r], k ∈[d]
+
+Lx,jk (t). (1) We write OPT for the minimum peak. A resource with a positive capacity on machine j is handled by dividing its demands on j by that capacity. The intervals remain fixed for every eligible machine. All vector inequalities below are componentwise, and 1 is the all-ones vector. We assume that the 2 n endpoints are distinct. Otherwise, sort the endpoints by time, with departures before arrivals at equal times and remaining ties broken by job index, and replace every endpoint by its rank. Because departures come first, the jobs active between two consecutive ranks are active together at some time of the original instance. Conversely, the jobs active at an original time t are active together in the new instance right after the last endpoint at or before t. Hence every assignment keeps its peak. The endpoints divide the span from the first to the last endpoint into 2 n − 1 half-open intervals, called slabs and numbered 1 , . . . , 2n − 1from left to right; loads are constant on each slab. The arrival order lists jobs by increasing ai,and the reverse-departure order by decreasing bi.All numerical input is rational and encoded in binary. The input length N includes the demands, endpoints, eligibility sets, r, d , and ε. Running times count bit operations; every use of poly( N ) has an absolute degree. In Lemmas 3.1, 3.2, and 4.1, polynomial time refers to the length of the lemma’s input, including its rational tolerances. Logarithms are natural unless a base is specified. 2Jobs and resource demands                   
+
+> machine 1 machine 2
+> A(2 ,1) (1 ,3)
+> B(1 ,2) (2 ,1)
+> C(2 ,1) (1 ,2) 012345time (CPU, memory)
+
+Loads of one assignment       
+
+> 20machine 1 20machine 2 012345CPU memory
+
+Figure 1: Three interval jobs on two machines with two resources. Assigning A to machine 1 and 
+
+B, C to machine 2 gives peak load 2. The demand of each job depends on its assigned machine. The right panel shows both resource loads over time; B departs exactly when C arrives. 
+
+Identical machines and one resource. Sections 3–6 treat the case d = 1 in which every machine is eligible for every job and job i has the same demand wi ≥ 0, its weight , on every machine. This case contains all main ideas, and Section 7 extends the algorithm to the general model. A job of weight zero can be placed on any machine, so we remove it and restore it at the end; henceforth wi > 0. Empty instances and r = 1 are solved directly. The active weight at time t is 
+
+W (t) = ∑ 
+
+> i:t∈Ii
+
+wi.
+
+Every assignment of peak at most T has W (t) ≤ rT , since W (t) is the sum of the r loads at t;placing all jobs on one machine gives peak max t W (t). Hence LB = max 
+
+{
+
+max  
+
+> i
+
+wi, 1
+
+r max  
+
+> t
+
+W (t)
+
+}
+
+(2) satisfies LB ≤ OPT ≤ r LB. 
+
+# 3 Blocks for two job orders 
+
+A group is a set of jobs that are all active on a specified common slab [ t−, t +) and share a set E
+
+of eligible machines; E = [ r] until Section 7. Before t−, its active jobs form a prefix of its arrival order; from t+ on, they form a prefix of its reverse-departure order; on the common slab, all its jobs are active. We partition a group into blocks so that every assignment can be imitated by one that keeps each block on a single machine, simultaneously for all prefixes of both orders. The construction follows the rounding phase of ARSW [4, Section 3]. Let G be a set of jobs with weights wi > 0 and E ⊆ [r] a nonempty set of machines. For an assignment x ∈ EG, a machine j, and a set F ⊆ G, write 
+
+wxj (F ) = ∑
+
+> i∈Fxi=j
+
+wi, w(F ) = ∑
+
+> i∈F
+
+wi.
+
+Lemma 3.1 (One order) . For an order of G and a rational tolerance ξ > 0, one can compute in polynomial time a partition of G into at most 1 + 8 w(G)/ξ sets of consecutive jobs, each a single job or of weight less than ξ/ 2, with the following property. For every x ∈ EG there is an assignment y ∈ EG that is constant on every set and satisfies wyj (F ) < w xj (F ) + ξ for every prefix F and every j ∈ E.
+
+Jobs heavier than ξ/ 4 form sets of their own, and the other jobs are cut greedily into sets of weight about ξ/ 4. Appendix A gives the proof. 3Lemma 3.2 (Two orders) . For two orders of a nonempty G and a rational ξ > 0, one can compute in polynomial time a partition of G into at most (1 + 16 w(G)/ξ )2 blocks with the following two properties. (a) For every x ∈ EG there is an assignment y ∈ EG that is constant on every block and satisfies wyj (F ) < w xj (F ) + ξ for every prefix F of either order and every j ∈ E.(b) For every prefix F of either order, the blocks that meet F without being contained in F
+
+have total weight less than ξ/ 2.Proof. Apply Lemma 3.1 to the first order with tolerance ξ, and let G1, . . . , G μ be the resulting sets, where 1 ≤ μ ≤ 1 + 8 w(G)/ξ . Apply it again inside every Gh to the restriction of the second order, with tolerance ξ/ (2 μ); the resulting sets are the blocks. The set Gh yields at most 1 + 16 μ w (Gh)/ξ blocks, so there are at most μ(1 + 16 w(G)/ξ ) ≤ (1 + 16 w(G)/ξ )2 blocks. For (a), fix x, and let y agree on every Gh with the assignment that Lemma 3.1 gives for the restriction of x to Gh. A prefix F of the second order meets every Gh in a prefix of its restricted order, so wyj (F ) − wxj (F ) < μ · ξ/ (2 μ) = ξ/ 2. A prefix F of the first order contains some sets Gh
+
+completely, meets at most one other set Gh′ partially, and misses the rest. Each complete set Gh
+
+is a prefix of its own restricted order, so the complete sets contribute less than μ · ξ/ (2 μ) = ξ/ 2to wyj (F ) − wxj (F ). The set Gh′ is not a single job, so it contributes at most w(Gh′ ) < ξ/ 2. For (b), say that F splits a block if it meets the block without containing it. A prefix of the first order splits only blocks inside Gh′ , of total weight less than ξ/ 2. A prefix of the second order splits at most one block inside every Gh, since the blocks of Gh are consecutive in its restricted order. A split block is not a single job, so it weighs less than ξ/ (4 μ), and all split blocks together weigh less than ξ/ 4. 
+
+# 4 Merged jobs with fixed intervals 
+
+Let G be a group with common slab [ t−, t +) and common eligible machines E. For an assignment 
+
+x ∈ EG, a machine j, and a time t, write 
+
+gx,j (t) = ∑ 
+
+> i∈G:t∈Ii
+> xi=j
+
+wi, WG(t) = ∑ 
+
+> i∈G:t∈Ii
+
+wi.
+
+The intervals of the jobs of a block S ⊆ G all contain the common slab, so their union is the interval [ aS , b S ) with aS = min i∈S ai and bS = max i∈S bi. The merged job of S has this interval and a weight ̂ wS ≥ w(S). An assignment y of the merged jobs chooses a machine yS ∈ E for every block; we also write y for the assignment that places every job of S on yS . The merged load of y is ̂
+
+gy,j (t) = ∑    
+
+> S:t∈[aS,b S)
+> yS=ĵ
+
+wS .
+
+The interval of a merged job is determined by its block alone, before any machine is chosen. Figure 2 shows an example. 
+
+Lemma 4.1 (Merging a group) . Let G be a group, let 0 < η ≤ 1 and τ > 0 be rational, and let 
+
+Q be an integer with 
+
+Q ≥
+
+> ⌈
+
+(1 + 128 /η )2⌉ (1 + ⌊log 2(1 + ηw (G)/τ )⌋). (3) 
+
+One can compute in polynomial time a partition of G into at most Q blocks, and block weights ̂
+
+wS ≥ w(S) that are multiples of τ / (4 Q), with the following properties. 
+
+4Jobs and merged jobs                
+
+> common slab
+> A2
+> B1
+> C1
+> D2
+> {A, C }3
+> {B, D }30123456789
+
+Loads           
+
+> 30machine 1 30machine 2 0123456789jobs merged jobs
+
+Figure 2: Merging blocks. Jobs A, B, C, D have intervals [0 , 8) , [1 , 6) , [2 , 9) , [3 , 7) and weights 2, 1, 1, 2; all are active on the common slab [3 , 6). With tolerance ξ = 24 and the arrival order 
+
+A, B, C, D as the first order, Lemma 3.2 keeps all four jobs in one set and cuts the reverse-departure order C, A, D, B at weight 3. This gives the blocks {A, C } (black) and {B, D } (gray), whose merged jobs have intervals [0 , 9) and [1 , 7) and weight 3. On the right, the blocks are on machines 1 and 2. The merged load exceeds the load of the jobs only while a block is partly active. 
+
+(a) Every assignment y of the merged jobs satisfies, for all times t and all j ∈ E,
+
+gy,j (t) ≤̂ gy,j (t). (4) 
+
+(b) For every x ∈ EG, some assignment y of the merged jobs satisfies, for all times t and all 
+
+j ∈ E,̂
+
+gy,j (t) ≤ gx,j (t) + 2 (ηW G(t) + τ ). (5) The empty group has no blocks. The next three steps prove the lemma for a nonempty group. 
+
+Weight classes. The function WG is nondecreasing before the common slab and nonincreasing afterwards. For a job i ∈ G, let mi be the smaller of WG(ai) and the value of WG on the slab that ends at bi. These are the weights of the prefix of the arrival order that ends with i and of the prefix of the reverse-departure order that ends with i. Put 
+
+Cℓ = {i ∈ G : 2 ℓτ ≤ τ + ηm i < 2ℓ+1 τ }, σℓ = 2 ℓ−1τ. 
+
+Only the indices 0 ≤ ℓ ≤ log 2(1 + ηw (G)/τ ) occur. Call Cℓ a weight class ; it is active at t if one of its jobs is active at t. Then 
+
+w(Cℓ) < 2ℓ+2 τη , ∑   
+
+> ℓ:Cℓactive at t
+
+σℓ ≤ ηW G(t) + τ. (6) For the first bound, a job i ∈ C ℓ has mi < 2ℓ+1 τ /η , so the arrival prefix or the reverse-departure prefix that ends with i weighs less than 2 ℓ+1 τ /η . Hence Cℓ lies in the union of the longest such prefix of each order. For the second bound, a job i that is active at t has mi ≤ WG(t) by the monotonicity of WG. If ℓ∗ is the largest index of an active class, the geometric sum gives 
+
+∑ℓ∗ 
+
+> ℓ=0
+
+σℓ < 2ℓ∗
+
+τ ≤ τ + ηW G(t). With no active class, the sum is zero. 
+
+Blocks. For every nonempty class Cℓ, apply Lemma 3.2 with the arrival order of Cℓ as the first order, its reverse-departure order as the second, and tolerance ξ = σℓ. Since w(Cℓ)/σ ℓ < 8/η ,the class has at most (1 + 128 /η )2 blocks, so by (3) the group has at most Q blocks. Round the weight of every block of Cℓ up to a multiple of σℓ/(2 Q). This unit equals 2 ℓτ / (4 Q), a multiple of 
+
+τ / (4 Q). 5Loads. Fix a class Cℓ and a time t, and let F be the set of jobs of Cℓ active at t. The merged job of a block S of Cℓ is active at t exactly when S meets F . Indeed, if t < t −, then bS ≥ t+ > t ,and aS ≤ t says that some job of S has arrived. If t ≥ t+, then aS ≤ t− ≤ t, and bS > t says that some job of S has not departed. On the common slab, every block meets F = Cℓ.Let y be an assignment of the merged jobs. The active merged jobs of Cℓ on machine j have total weight at least wyj (F ); summing over the classes proves (4). They exceed wyj (F ) by at most the weight of the blocks that meet F without being contained in F , plus the rounding of at most Q blocks. The set F is empty, a prefix of the arrival order, all of Cℓ, or a prefix of the reverse-departure order. Hence Lemma 3.2(b) bounds the first excess by σℓ/2, and the rounding adds less than Q · σℓ/(2 Q) = σℓ/2. Given x ∈ EG, choose y on every class by Lemma 3.2(a) for the restriction of x; this one choice serves all times and machines. Then wyj (F ) < w xj (F ) + σℓ, so the merged jobs of 
+
+Cℓ contribute less than wxj (F ) + 2 σℓ to ̂ gy,j (t) when Cℓ is active at t, and nothing otherwise. Summing over the classes and using (6) proves (5). 
+
+# 5 A dynamic program on the time line 
+
+Fix a target T > 0. Divide all weights by T , and reuse their notation for the normalized weights. Reject the target if max t W (t) > r . Otherwise every group has total weight at most r, because all its jobs are active on its common slab. Set 
+
+D = 1 + ⌈log 2(2 n)⌉ , η = ε
+
+4r , τ = ε
+
+8D ,Q =
+
+> ⌈
+
+(1 + 128 /η )2⌉ (1 + ⌊log 2(1 + 2 D)⌋), λ = τ
+
+4Q . (7) Since ηw (G)/τ ≤ ηr/τ = 2 D for every group G, the integer Q satisfies (3). So Lemma 4.1 gives every group at most Q = O(η−2 log(2 + D)) merged jobs, whose weights are multiples of λ. The parameters split the error budget ε. Merging costs at most 2( ηW G(t) + τ ) for each group with an active job. These groups partition the active jobs, so the relative terms add up to at most 2ηr = ε/ 2. By Lemma 5.1, at most 2 D groups have an active job at any time, so the additive terms add up to at most 4 Dτ = ε/ 2. The algorithm builds a tree of groups with their merged jobs and then decides by dynamic programming whether all merged jobs can be assigned so that every load stays at most 1 + ε.
+
+5.1 The separator tree 
+
+A region P = [ l, u ] is a consecutive range of slab indices; its internal jobs are the jobs whose entire interval lies in these slabs. The separator tree has a region at each node, and its root contains all slabs and all jobs. Every node removes one or two of its slabs, forms groups from the internal jobs that meet them, and passes the other internal jobs to at most three children. The merged jobs of the groups at the ancestors of P are the ancestor merged jobs of P . Each of them contains the common slab of its group, which lies outside P . So its interval meets P in a proper nonempty prefix of P , a proper nonempty suffix of P , all of P , or nothing. In the first two cases it ends inside P , at a boundary ζ between slabs ζ − 1 and ζ of P , where l < ζ ≤ u. In the third case it covers P , and in the fourth it misses P .The node removes the middle slab ⌊(l + u)/2⌋ and the median slab ζ, where ζ is the lower median of the boundaries at which ancestor merged jobs end inside P , counted with multiplicity. If none ends inside P , the middle slab also serves as the median slab. The remaining slabs form at most three children. One group consists of the internal jobs that meet the median slab, and a second group of those that meet the middle slab but not the median slab. Discard empty groups, and let G(P ) be the at most two remaining ones. Every other internal job lies in one child, since an interval that meets two children crosses a removed slab. Compute the merged jobs of the 6new groups by Lemma 4.1, and recurse. The whole tree, with all merged jobs, is fixed before any machine is chosen. Figure 3 shows an example. 
+
+Lemma 5.1 (Tree bounds) . The tree has at most 2n − 1 nodes and at most D levels, and its groups partition the jobs. At any time at most 2D groups have an active job, all on one root-to-leaf path. At most 4Q ancestor merged jobs end inside any region. Proof. Removing the middle slab leaves at most half of the slabs of a region, rounded down, in each child. Every node removes at least one slab, and every slab is removed at exactly one node. This gives the depth and node bounds. Every internal job joins a group at its node or passes to exactly one child, so the groups partition the jobs. The jobs of a group lie inside its region, and the regions of one level are disjoint, which gives the bound on active groups. Suppose that M ancestor merged jobs end inside P , at boundaries with lower median ζ.A merged job that ends at boundary ζ or ζ + 1 has its endpoint at the left or right edge of the removed slab ζ, so it covers or misses every child. At most ⌊M/ 2⌋ of the others end at boundaries below ζ, and they can end inside only children left of slab ζ; at most ⌊M/ 2⌋ end at boundaries above ζ + 1, and they can end inside only children right of slab ζ. The at most two new groups add at most 2 Q merged jobs. Thus at most M/ 2 + 2 Q ancestor merged jobs end inside any child, and induction from zero at the root gives 4 Q.                           
+
+> root 12345678910 11 12 13 14 15 middle
+> P1356724median middle
+> S1
+> S2
+> S3
+> S4
+> children 13567
+> S4
+
+Figure 3: A separator tree on 15 slabs. The root has no ancestor merged jobs and removes only its middle slab. The merged jobs S1–S4 of its groups contain slab 8 and end inside its left child 
+
+P ; they are shown in black on machine 1 and in gray on machine 2. Counted with multiplicity, their boundaries 2 , 2, 2, 6 have lower median 2, so P removes slabs 2 and 4. Only S4 ends inside a child of P .
+
+5.2 States and reserved loads 
+
+At a region P , all ancestor merged jobs are known, with their blocks, weights, and intervals. A 
+
+state chooses a machine for every ancestor merged job that ends inside P , and stores a constant load vector κ ∈ λZr
+
+> ≥0
+
+. Its reserved load on machine j is 
+
+Rj (t) = κj + ∑      
+
+> Sends inside P, t ∈[aS,b S)
+> Son machine ĵ
+
+wS , (8) where S runs over the blocks of the ancestor groups. The vector κ accounts for the ancestor merged jobs that cover P . A state with 0 ≤ κ ≤ (1 + ε)1 and R(t) ≤ (1 + ε)1 on P is admissible .Its table entry records whether the merged jobs of the groups in the subtree of P can be assigned so that R plus their merged loads stays at most (1 + ε)1 on P . At the root we query the state 
+
+R = 0. 75.3 Transitions by exact restriction 
+
+For a state at P , try every assignment yG of the merged jobs of the groups G ∈ G (P ), and write ̂
+
+gyG (t) for the vector of merged loads ( ̂gyG,j (t)) j . Test on all slabs of P whether 
+
+R(t) + ∑ 
+
+> G∈G (P)̂
+
+gyG (t) ≤ (1 + ε)1. (9) For each child P ′, keep the machines of the merged jobs that end inside P ′, add the weight of every merged job that covers P ′ to κ on its machine, and drop the merged jobs that miss P ′.The ancestor merged jobs of P ′ are those of P and those of the groups in G(P ), so the child state represents exactly 
+
+R′ =
+
+> (
+
+R + ∑ 
+
+> G∈G (P)̂
+
+gyG  
+
+> )∣ ∣∣P′
+
+. (10) The new κ lies in λZr
+
+> ≥0
+
+, because all merged weights are multiples of λ. If (9) holds, then 
+
+R′ ≤ (1 + ε)1 on P ′ by (10), and the new κ is at most R′(t) at every slab t of P ′, so the child state is admissible. Accept the parent state if some tried assignment passes (9) and all its child entries are accepted; at a leaf, the capacity test decides. Store the choices and child pointers for reconstruction. In Figure 3, four ancestor merged jobs S1, . . . , S 4 end inside P = [1 , 7], at boundaries 2 , 2, 2, 6, and all four miss the child [1 , 1]. The state of [3 , 3] adds the weights of S1, S 2, S 3 to κ. The state of [5 , 7] adds them to κ as well and keeps the machine of S4, which ends inside [5 , 7]. 
+
+Lemma 5.2 (Table entries) . An admissible state at P is accepted if and only if the merged jobs of the groups in the subtree of P have an assignment, with merged loads ̂ gyG , such that 
+
+R(t) + ∑  
+
+> Gin the subtree of P̂
+
+gyG (t) ≤ (1 + ε)1 (t ∈ P ). (11) 
+
+Proof. Induct on the subtree. For an accepted state, the capacity test gives (11) on the removed slabs, where the merged jobs of descendant groups are inactive. On a child, the induction hypothesis and (10) give the same inequality. The removed slabs and the children partition P .Conversely, an assignment satisfying (11) passes the capacity test because all loads are nonnegative. Its restricted child states are admissible, and the remaining choices satisfy the child inequalities. Induction accepts every child and then the parent. At a leaf, the capacity test is the whole inequality. 
+
+# 6 Approximation and running time for one resource 
+
+6.1 The error bound 
+
+Lemma 6.1 (Target test) . Acceptance at target T returns an assignment of peak at most 
+
+(1 + ε)T . Every target T ≥ OPT is accepted. Proof. Use normalized units. For an accepted root, follow the stored choices to an assignment of all merged jobs. By Lemma 5.2, their merged loads are at most (1 + ε)1. Place every job on the machine of its merged job. By (4), its loads are at most the merged loads. The groups partition the jobs, which proves the first assertion. For the second assertion, suppose OPT ≤ 1, and let x be an assignment of peak at most 1. Then W (t) ≤ r, so the target is not rejected. In every group choose the assignment yG of its merged jobs that (5) gives for the restriction of x. Because the groups partition the jobs,  
+
+> ∑
+> G
+
+WG(t) = W (t) ≤ r, and by Lemma 5.1 at most 2 D groups have an active job at t; the 8merged jobs of the other groups are inactive at t. Writing Lx(t) for the vector of loads of x, we get 
+
+> ∑
+> Ĝ
+
+gyG (t) ≤ Lx(t) + 2 ∑ 
+
+> G:WG(t)>0
+
+(ηW G(t) + τ )1
+
+≤ (1 + 2 ηr + 4 Dτ )1 = (1 + ε)1. (12) By Lemma 5.2, the root is accepted. 
+
+6.2 Counting states and choices 
+
+A node has at most two new groups with at most Q merged jobs each, so it tries at most 
+
+r2Q assignments per state. By Lemma 5.1, at most 4 Q ancestor merged jobs end inside a region, which allows at most r4Q machine choices. Each of the r coordinates of κ has at most 1 + ⌊(1 + ε)/λ ⌋ values. Thus the number of states is at most 
+
+r4Q
+
+> (
+
+1 +  
+
+> ⌊
+
+1 + ελ
+
+> ⌋) r
+
+, λ = ε
+
+32 DQ . (13) Let A = η−2 log(2 r) + r. Since Q = O(η−2 log(2 + D)), the machine choices contribute at most 2O(A log(2+ D)) , and the coordinates of κ contribute at most a factor depending only on r and 
+
+ε times (2 + D)O(r). Each transition sweeps the slabs, performs at most three child lookups, and updates machines and constant loads by exact arithmetic. Even with linear table scans for lookups, only a fixed power of these bounds is needed. Over at most 2 n − 1 regions the target test therefore takes (2 + D)O(A) poly( N ) (14) bit operations, times a computable function of r and ε. Appendix B describes the exact arithmetic. For every real ω ≥ 1 and integer n ≥ 1, (1 + log n)ω ≤ ωωn. (15) Indeed, maximizing (1 + z)ωe−z over z ≥ 0 gives ωωe1−ω ≤ ωω. Since D = O(1 + log n), (15) absorbs the entire depth-dependent factor of (14) into a function of r and ε times n, so the polynomial degree is absolute. Here η−1 = 4 r/ε and A = O(( r/ε )2 log(2 r)), so this function is 2O(A log(2+ A)) = 2 O(( r/ε )2 log(2 r) log(2 r/ε )) .
+
+6.3 Choosing the target 
+
+Algorithm 1 summarizes the construction. 
+
+Theorem 6.2. Offline temporary tasks assignment on r ≥ 2 identical machines has a determin-istic (1 + ε)-approximation in 
+
+2O(( r/ε )2 log(2 r) log(2 r/ε )) N O(1) (16) 
+
+bit operations for rational 0 < ε ≤ 1.Proof. Test in increasing order 
+
+Tν = LB(1 + νε ), ν = 0 , . . . , ⌈(r − 1) /ε ⌉ . (17) The grid reaches r LB ≥ OPT. Its first target at least OPT is at most (1 + ε) OPT, because the spacing is ε LB ≤ ε OPT. That target is accepted by Lemma 6.1. Stop at the first acceptance and reconstruct the assignment. Its peak is at most (1 + ε)2 OPT ≤ (1 + 3 ε) OPT, so running Algorithm 1 with ε/ 3 in place of ε gives a (1 + ε)-approximation. There are O(r/ε ) targets, each with polynomial encoding length, and Section 6.2 bounds each target test by (16). 9Algorithm 1 Approximation scheme for identical machines and one resource 
+
+Require: Jobs ( Ii, w i), machine count r, accuracy ε 
+
+> 1:
+
+Make the endpoints distinct; remove zero-weight jobs; handle the empty instance and r = 1.  
+
+> 2:
+
+Compute LB.  
+
+> 3:
+
+for ν = 0 , . . . , ⌈(r − 1) /ε ⌉ do  
+
+> 4:
+
+Set T = LB(1 + νε ); use a fresh copy of the instance scaled by 1 /T . 
+
+> 5:
+
+if max t W (t) ≤ r then  
+
+> 6:
+
+Set the parameters (7); build the separator tree and the merged jobs.  
+
+> 7:
+
+for each region P in bottom-up order do  
+
+> 8:
+
+Enumerate admissible states and initialize their entries to false.  
+
+> 9:
+
+for each state and assignment of the merged jobs of G(P ) passing (9) do  
+
+> 10:
+
+Compute each child state by (10).  
+
+> 11:
+
+if all child entries are true then  
+
+> 12:
+
+Mark the state true and store its choices and child pointers.  
+
+> 13:
+
+if the root state R = 0 is true then  
+
+> 14:
+
+Reconstruct its assignment, restore zero-weight jobs, and return. 
+
+# 7 Several resources and unrelated machines 
+
+We now treat the general model and prove Theorem 1.1. Every job gets a scalar weight, and its machine-dependent resource vectors are rounded into a bounded number of types. Within a type, all resource requirements are fixed multiples of the scalar weight. Sections 3 and 4 therefore apply within each type, and the dynamic program of Sections 5 and 6 assigns the merged jobs of all types together, with the changes described below. 
+
+7.1 A scalar weight for each job 
+
+In the general model, the weight of job i and the active weight are 
+
+qij =
+
+> d∑
+> k=1
+
+pijk , wi = min 
+
+> j∈Ei
+
+qij , W (t) = ∑ 
+
+> i:t∈Ii
+
+wi. (18) For d = 1 and identical machines, they are the wi and W of Section 2. Fix a minimizing machine 
+
+j∗ 
+
+> i
+
+for every job. If wi = 0, assigning i to j∗ 
+
+> i
+
+contributes zero to every load, so remove it and restore that choice at the end. We henceforth have wi > 0. Empty instances and r = 1 are solved directly. For any assignment x of peak at most T ,
+
+W (t) ≤ ∑ 
+
+> i:t∈Ii
+
+qi,x i =
+
+> r∑
+> j=1
+> d∑
+> k=1
+
+Lx,jk (t) ≤ rdT. (19) Thus W depends only on the input, and max t W (t) ≤ rd OPT. In place of (2), we use the computable lower bound LB = max 
+
+> {
+
+max  
+
+> i
+
+min 
+
+> j∈Ei
+
+∥pij ∥∞, 1
+
+rd max  
+
+> t
+
+W (t)
+
+> }
+
+, (20) which satisfies LB ≤ OPT ≤ rd LB: the lower bound follows from one job and (19), and assigning every job to j∗ 
+
+> i
+
+gives each resource load at most W (t). 
+
+7.2 Rounding the coefficients 
+
+Fix a rational 0 < ε ≤ 1 and put 
+
+s = ⌈rd/ε ⌉ , E′ 
+
+> i
+
+= {j ∈ Ei : qij ≤ sw i}. (21) 10 Every E′ 
+
+> i
+
+contains j∗ 
+
+> i
+
+. For j ∈ E′ 
+
+> i
+
+define 
+
+αijk = 1
+
+s 
+
+> ⌈
+
+sp ijk 
+
+wi
+
+> ⌉
+
+,̂ pijk = wiαijk . (22) Each αijk belongs to {0, 1/s, . . . , s }, since pijk ≤ qij ≤ sw i. For bookkeeping, put αijk = 0 when 
+
+j / ∈ E′
+
+> i
+
+. The rounded instance has the eligibility sets E′ 
+
+> i
+
+and the demands ̂ pijk ; its loads are the 
+
+rounded loads .
+
+Lemma 7.1 (Coefficient reduction) . If the original instance admits an assignment of peak at most T , the rounded instance admits an assignment of peak at most (1 + 2 ε)T . Every assignment of the rounded instance has original loads at most its rounded loads. The jobs have at most 
+
+2r(s2 + 1) rd (23) 
+
+different pairs (E′
+
+> i
+
+, (αijk )j,k ).Proof. Fix an original assignment x of peak at most T . Move every job with xi /∈ E′ 
+
+> i
+
+to j∗ 
+
+> i
+
+,changing its machine for its whole interval. At time t, the sum of wi over the moved active jobs is at most 1
+
+s  
+
+> ∑
+> i:t∈Ii
+> xi/∈E′
+> i
+
+qi,x i ≤ rdT s ≤ εT. 
+
+For each moved job, every demand on its new machine is at most wi. Hence this change increases any resource load by at most εT . The resulting assignment uses E′
+
+> i
+
+.Rounding increases each demand by less than wi/s . By (19), it therefore adds at most 
+
+W (t)/s ≤ εT to any resource load of this assignment. This proves the first assertion. The second follows from ̂ pijk ≥ pijk on retained choices. There are at most 2 r eligibility sets and s2 + 1 possibilities for each of the rd coefficients, giving (23). Call each distinct pair in Lemma 7.1 a type , and let K be the number present. For a type 
+
+c, write Ec for its eligible machines and αcjk for its coefficients. A job of type c has rounded demand wiαcjk , so an assignment’s scalar load within one type determines all its resource loads by multiplication. The types are computed once and are unchanged by scaling all demands by a common target value. 
+
+7.3 Merged jobs of one type 
+
+A group now consists of jobs of one type c, with eligible machines E = Ec, and Lemma 4.1 applies to their scalar weights. A merged job of weight ̂ wS on machine j ∈ Ec has the resource vector ̂ wS (αcj 1, . . . , α cjd ) on that machine during its interval. For an assignment y of the merged jobs, let Hy(t) ∈ Qrd  
+
+> ≥0
+
+be their resource loads, and let ̂ Lx,G (t) be the rounded resource loads of an assignment x ∈ EGc . Since 0 ≤ αcjk ≤ s, Lemma 4.1 gives ̂
+
+Ly,G (t) ≤ Hy(t), (24) 
+
+∀x ∈ EGc ∃y : Hy(t) ≤̂ Lx,G (t) + 2 s(ηW G(t) + τ )1 (25) at all times, with the same y for all t.
+
+7.4 The dynamic program and its analysis 
+
+Fix a target T > 0, divide wi, pijk , and ̂ pijk by T , and reject the target if max t W (t) > rd ;otherwise every group has total weight at most rd . Keep D from (7) and replace its other parameters by 
+
+η = ε
+
+4s rd , τ = ε
+
+8sKD , Q =
+
+> ⌈
+
+(1 + 128 /η )2⌉ (1 + ⌊log 2(1 + 2 KD )⌋), λ = τ
+
+4Qs . (26) 11 Then ηw (G)/τ ≤ 2KD for every group, so Q satisfies (3). The separator tree is built as in Section 5, except that every node forms its two groups separately for each type, so a node has at most 2 K groups. The proof of Lemma 5.1 then shows that at most 2 KD groups have an active job at any time and that at most 4 KQ ancestor merged jobs end inside any region. A state chooses a machine in Ec for every ancestor merged job of type c that ends inside P , and stores a constant load vector κ ∈ λZrd 
+
+> ≥0
+
+. Its reserved load is 
+
+Rjk (t) = κjk + ∑      
+
+> Sends inside P, t ∈[aS,b S)
+> Son machine ĵ
+
+wS αc(S)jk , (27) where c(S) is the type of the block S. Every resource demand of a merged job is a multiple of 
+
+λ, because ̂ wS is a multiple of τ / (4 Q) and every coefficient is a multiple of 1 /s . Sections 5.2 and 5.3 and Lemma 5.2 carry over with three substitutions: the resource loads HyG replace the merged loads, a covering merged job S on machine j adds ̂ wS αc(S)jk to κjk for every k in place of its weight, and 1 + 3 ε replaces 1 + ε, also in the admissibility condition κ ≤ (1 + 3 ε)1.The error budget is now 3 ε. Rounding the coefficients costs 2 ε by Lemma 7.1. Merging costs at most 2 s(ηW G(t) + τ ) for each group with an active job; as in Section 5, these costs add up to at most 2 sη rd + 4 sKDτ = ε.
+
+Lemma 7.2 (Target test for several resources) . Acceptance at target T returns an original assignment of peak at most (1 + 3 ε)T . Every target T ≥ OPT is accepted. Proof. Use normalized units, and argue as for Lemma 6.1: the groups partition the jobs, the merged jobs of groups without an active job are inactive, at most 2 KD groups have one, and every chosen machine lies in Ec = E′ 
+
+> i
+
+⊆ Ei. For an accepted root, follow the stored choices and place every job on the machine of its merged job. By Lemma 5.2 and (24), its rounded loads are at most (1 + 3 ε)1, and by Lemma 7.1 its original loads are at most its rounded loads. For the second assertion, suppose OPT ≤ 1. Then W (t) ≤ rd by (19), so the target is not rejected, and Lemma 7.1 gives a rounded assignment x of peak at most 1 + 2 ε. Choosing yG by (25) in every group gives 
+
+> ∑
+> G
+
+HyG (t) ≤ ∑
+
+> Ĝ
+
+Lx,G (t) + 2 s ∑ 
+
+> G:WG(t)>0
+
+(ηW G(t) + τ )1
+
+≤ (1 + 2 ε + 2 sη rd + 4 sKDτ )1 = (1 + 3 ε)1, (28) so Lemma 5.2 accepts the root. A node now tries at most r2KQ assignments per state, and the number of states is at most 
+
+r4KQ 
+
+> (
+
+1 +  
+
+> ⌊
+
+1 + 3 ελ
+
+> ⌋) rd
+
+, λ = ε
+
+32 Qs 2KD .
+
+Let A now be Kη −2 log(2 r) + rd . Since Q = O(η−2 log(2 + KD )) and log(2 + KD ) ≤ log(2 + 
+
+K) + log(2 + D), the machine choices contribute at most 2 O(A log(2+ K)) (2 + D)O(A). The rest of the argument of Section 6.2 bounds a target test by (2 + D)O(A) poly( N ) bit operations times a computable function of r, d, and ε, and (15) absorbs the depth-dependent factor. For an explicit bound, s = O(rd/ε ), K ≤ 2r(s2 + 1) rd = ( rd/ε )O(rd ), and η−1 = O(( rd/ε )2). Hence 
+
+A = ( rd/ε )O(rd ), and one target test takes 2(rd/ε )O(rd )
+
+N O(1) (29) bit operations. 12 Proof of Theorem 1.1. Compute the types once. Then proceed as in Algorithm 1, but with LB from (20), the targets Tν = LB(1 + νε ) for ν = 0 , . . . , ⌈(rd − 1) /ε ⌉, rejection when max t W (t) >rd , and the parameters (26). The grid reaches rd LB ≥ OPT. So by Lemma 7.2, as in the proof of Theorem 6.2, the first accepted target gives peak at most (1 + 3 ε)(1 + ε) OPT ≤ (1 + 7 ε) OPT. Running the algorithm with ε/ 7 in place of ε gives a (1 + ε)-approximation. There are O(rd/ε )targets, and the tree and the merged jobs are rebuilt for each of them. So (29) gives the running time of Theorem 1.1 with f (r, d, 1/ε ) = 2 (rd/ε )O(rd )
+
+.
+
+Further directions. Theorem 6.2 and Proposition C.1 leave the dependence on the accuracy open. For several resources, reducing the number of coefficient types would improve the function 
+
+f of Theorem 1.1. Allowing a job to have several separate active intervals introduces a further coupling: one job may meet several child regions while avoiding their separating slabs. 
+
+# AI Usage Disclosure 
+
+AI agents were used for exploratory discussions during the development of the proofs and to assist with drafting and revising the manuscript. The author takes full responsibility for the paper’s contents and correctness. 
+
+# References 
+
+[1] Antonios Antoniadis, Falk Hüffner, Pascal Lenzner, Carsten Moldenhauer, and Alexander Souza. Balanced interval coloring. In 28th International Symposium on Theoretical Aspects of Computer Science (STACS 2011) , volume 9 of Leibniz International Proceedings in Informatics , pages 531–542. Schloss Dagstuhl–Leibniz-Zentrum für Informatik, 2011. URL: 
+
+https://arxiv.org/abs/1012.3932 , doi:10.4230/LIPIcs.STACS.2011.531 .[2] Amitai Armon, Yossi Azar, Leah Epstein, and Oded Regev. Temporary tasks assignment resolved. Algorithmica , 36(3):295–314, 2003. doi:10.1007/s00453-003-1017-6 .[3] Yossi Azar and Oded Regev. Off-line temporary tasks assignment. In Algorithms—ESA ’99 , volume 1643 of Lecture Notes in Computer Science , pages 163–171. Springer, 1999. 
+
+doi:10.1007/3-540-48481-7_15 .[4] Yossi Azar, Oded Regev, Jiří Sgall, and Gerhard J. Woeginger. Off-line temporary tasks assignment. Theoretical Computer Science , 287(2):419–428, 2002. URL: https://cims. nyu.edu/~regev/papers/off_task.pdf , doi:10.1016/S0304-3975(01)00254-7 .[5] Nikhil Bansal, Tim Oosterwijk, Tjark Vredeveld, and Ruben van der Zwaan. Approximating vector scheduling: Almost matching upper and lower bounds. Algorithmica , 76(4):1077–1096, 2016. doi:10.1007/s00453-016-0116-0 .[6] Chandra Chekuri and Sanjeev Khanna. On multidimensional packing problems. SIAM Journal on Computing , 33(4):837–851, 2004. doi:10.1137/S0097539799356265 .[7] Marek Cygan, Fedor V. Fomin, Alexander Golovnev, Alexander S. Kulikov, Ivan Mihajlin, Jakub Pachocki, and Arkadiusz Socała. Tight lower bounds on graph embedding problems. 
+
+Journal of the ACM , 64(3):18:1–18:22, 2017. doi:10.1145/3051094 .[8] Holger Dell, Thore Husfeldt, Dániel Marx, Nina Taslaman, and Martin Wahlén. Exponential time complexity of the permanent and the Tutte polynomial. ACM Transactions on Algorithms , 10(4):21:1–21:32, 2014. doi:10.1145/2635812 .13 [9] Mauro Dell’Amico, Fabio Furini, and Manuel Iori. A branch-and-price algorithm for the temporal bin packing problem. Computers & Operations Research , 114:104825, 2020. URL: 
+
+https://arxiv.org/abs/1902.04925 , doi:10.1016/j.cor.2019.104825 .[10] Michael R. Garey and David S. Johnson. “strong” NP-completeness results: Motivation, examples, and implications. Journal of the ACM , 25(3):499–508, 1978. doi:10.1145/ 322077.322090 .[11] Michael R. Garey, David S. Johnson, and Larry J. Stockmeyer. Some simplified NP-complete graph problems. Theoretical Computer Science , 1(3):237–267, 1976. doi:10. 1016/0304-3975(76)90059-1 .[12] Fabrizio Grandoni, Tobias Mömke, and Andreas Wiese. Faster (1 + ε)-approximation for unsplittable flow on a path via resource augmentation and back. In 29th Annual European Symposium on Algorithms (ESA 2021) , volume 204 of Leibniz International Proceedings in Informatics , pages 49:1–49:15. Schloss Dagstuhl–Leibniz-Zentrum für Informatik, 2021. 
+
+doi:10.4230/LIPIcs.ESA.2021.49 .[13] Russell Impagliazzo and Ramamohan Paturi. On the complexity of k-SAT. Journal of Computer and System Sciences , 62(2):367–375, 2001. doi:10.1006/jcss.2000.1727 .[14] Debajyoti Kar, Arindam Khan, and Andreas Wiese. Approximation algorithms for Round-UFP and Round-SAP. In 30th Annual European Symposium on Algorithms (ESA 2022) ,volume 244 of Leibniz International Proceedings in Informatics , pages 71:1–71:19. Schloss Dagstuhl–Leibniz-Zentrum für Informatik, 2022. doi:10.4230/LIPIcs.ESA.2022.71 .14 A The partition for one order 
+
+Proof of Lemma 3.1. Make every job of weight greater than ξ/ 4 a set of its own. In each maximal run of the other jobs, scan in order and close a set as soon as its weight reaches ξ/ 4; keep a nonempty unfinished last set of the run. A closed set weighs less than ξ/ 2, since it weighed less than ξ/ 4 before its last job, which weighs at most ξ/ 4; an unfinished set weighs less than ξ/ 4. The heavy jobs and the closed sets are disjoint and weigh at least ξ/ 4 each, so there are at most 4w(G)/ξ of them. There is at most one unfinished set per run and at most one more run than heavy jobs, so there are at most 1 + 8 w(G)/ξ sets. Fix x ∈ EG. We choose y set by set, in the order. At the end of each set, let Xj and Yj be the weights that x and y have assigned to j so far; we keep 
+
+Yj − Xj < ξ/ 2 (j ∈ E).
+
+This holds initially. A single job keeps its machine from x. For a set B with several jobs, of weight w(B) < ξ/ 2, let X+ 
+
+> j
+
+include the assignments of x through the end of B, while Yj still stops before B. Both assignments have placed the same weight before B, so 
+
+> ∑
+> j∈E
+
+(X+ 
+
+> j
+
+− Yj ) = w(B) > 0.
+
+Choose a machine j ∈ E with Yj < X + 
+
+> j
+
+and put all of B there. Its new difference is Yj + w(B) −
+
+X+ 
+
+> j
+
+< w (B) < ξ/ 2. On every other machine, Yj is unchanged and Xj does not decrease, so the bound holds at the end of B.A prefix that ends inside a set B with several jobs adds less than ξ/ 2 to the y-load of any machine after the end of the previous set, and a nonnegative amount to its x-load. So 
+
+wyj (F ) − wxj (F ) < ξ for every prefix F . The partition comes from one scan of exact prefix sums. 
+
+# B Exact arithmetic 
+
+All input rationals are written in binary, and the product of their denominators has O(N )bits. Every sum of input demands or scalar weights is therefore a polynomial-bit numerator over a shared denominator, and computing qij , wi, W , and LB takes polynomially many exact comparisons and additions. The integer s = ⌈rd/ε ⌉ has O(N ) bits. A retained coefficient is stored as the integer ⌈sp ijk /w i⌉ ∈ { 0, . . . , s 2}; comparing these integers and the sets E′ 
+
+> i
+
+identifies the types in polynomial time, and there are at most n of them. Every target Tν , in (17) and in the proof of Theorem 1.1, has polynomial bit length, and the definitions of η, τ , Q, λ, and the tolerances of Lemma 3.2 add products and quotients of polynomial-bit numbers. For a group, the values mi are slab values of WG, a class index follows from comparisons with powers of two, and the partitions of Lemmas 3.1 and 3.2 come from scans of exact prefix sums. A rounded block weight is an integer multiple of τ / (4 Q), and every demand of a merged job is an integer multiple of λ. The dynamic program thus stores every coordinate of κ as an integer of at most (1 + ε)/λ , or (1 + 3 ε)/λ for several resources, and restriction uses only integer addition. Capacity tests, restrictions, and comparisons of states take polynomially many operations on polynomial-bit numbers per slab, merged job, and coordinate. Stored choices and child pointers reconstruct one eligible machine for every job. 
+
+# C Lower bounds for fixed machines 
+
+Proposition C.1. For every fixed r ≥ 2, deciding whether the peak can be at most a given threshold is strongly NP-complete, even with integer endpoints and weights in {1, 2}. Hence 
+
+15 there is no FPTAS unless P =NP. Under the Exponential Time Hypothesis (ETH), there is no deterministic (1 + ε)-approximation in 2o(1 /ε ) poly( N ) time. The analogous statement holds for randomized algorithms with success probability at least 2/3 under randomized ETH. 
+
+The construction uses scalar weights on identical machines. Throughout this appendix θ
+
+denotes the threshold of the constructed instance. 
+
+C.1 Balanced networks become interval instances 
+
+A balanced network is a directed acyclic multigraph with vertices v0, . . . , v L in topological order, 
+
+L ≥ 1, and positive integer arc weights, such that every internal vertex v1, . . . , v L−1 has equal incoming and outgoing weight and the arcs leaving the source v0 weigh 2 θ in total. For r ≥ 2, its r-machine instance has, for each arc ( va, v b) of weight w, one job of weight w with interval [a, b ), and in addition ( r − 2) θ jobs of weight 1 with interval [0 , L ). 
+
+Lemma C.2 (Balanced networks) . In the r-machine instance of a balanced network, every slab 
+
+[k, k + 1) with 0 ≤ k < L has active weight rθ , so OPT ≥ θ. An assignment of peak θ exists if and only if the arcs have a coloring with r colors in which every internal vertex has, for every color, equal incoming and outgoing weight, and the arcs of each color leaving v0 weigh at most θ.If no such coloring exists, then OPT ≥ θ + 1 .Proof. The arcs active on [ k, k + 1) are the arcs ( va, v b) with a ≤ k < b , that is, the arcs crossing the cut after vk. Passing from the cut after vk−1 to the cut after vk removes the arcs entering 
+
+vk and adds those leaving it; with half-open intervals these are exactly the jobs that end and start at time k. By conservation every such cut weighs 2 θ, so together with the unit jobs every slab has active weight rθ , and no job is active outside [0 , L ). A peak of at most θ therefore puts exactly θ on every machine on every slab. Color each arc by the machine of its job. The unit jobs give each machine a constant load, so its arc load is constant as well: at time k it changes by the outgoing minus the incoming weight of its color at vk, which must vanish, and on [0 , 1) it is the weight of its color leaving v0, which is therefore at most θ. Conversely, given such a coloring, put the arcs of each color j on machine j. Their load is the constant weight fj ≤ θ that leaves v0
+
+in color j, and θ − fj unit jobs fill machine j to exactly θ; this uses ( r − 2) θ unit jobs, since the 
+
+fj sum to 2 θ. Integer weights give integer peaks, so without such a coloring OPT ≥ θ + 1. 
+
+C.2 Weight-two tracks and gadgets 
+
+All networks below have arc weights 1 and 2. A track is a directed path of weight-2 arcs through the network; its color at a point is the color of its current arc. A gadget is a constant number of consecutive vertices through which some tracks pass; every other track crosses a gadget on a single arc. In every coloring in which every vertex conserves the weight of each color, the following hold. (F1) Split and merge. At a vertex with one weight-2 arc on one side and two weight-1 arcs on the other, all three arcs have the same color, since the weight of any color on the weight-2 side is 0 or 2. (F2) Mixer. At a vertex with h ∈ { 2, 3} incoming and h outgoing weight-2 arcs, conservation says exactly that every color occurs equally often on both sides: the outgoing colors are an arbitrary permutation of the incoming ones. (F3) Equality Eq( A, B ) for two tracks A and B (Figure 4). Split A into unit arcs a1, a 2 and 
+
+B into b1, b 2; merge a2, b 1 into a weight-2 arc c; split c into c1, c 2; merge a1, c 1 into the continuation of A and c2, b 2 into the continuation of B. By (F1) the six vertices give 
+
+a1 and a2 the color of A, b1 and b2 the color of B, and a2, c, b 1 one common color. So the gadget can be colored if and only if A and B have the same color, and then both continuations keep it. 16 (F4) Matching Match( A1, . . . , A h; B1, . . . , B h) for distinct target tracks Ai and reference tracks 
+
+Bi outside them, h ∈ { 2, 3}; references may repeat. It is a mixer on the targets followed by Eq( A1, B 1), . . . , Eq( Ah, B h). By (F2) and (F3) it can be colored if and only if the targets carry the same multiset of colors as the references; afterwards each Ai has the color of Bi, and the references are unchanged.         
+
+> split both merge: u+v= 2 wsplit wmerge pairs
+> 2u
+> 2vuuvvu
+> 2wvuwwv
+> 2u
+> 2v
+
+Figure 4: The equality gadget Eq( A, B ). An arc labelled 2 u has weight 2 and color u. The unit arcs of the shaded merge come from different tracks, so conservation forces the colors u and v of 
+
+A and B to agree; the last two merges restore both tracks with their colors. 
+
+C.3 A track program for monotone 1-in-3 satisfiability 
+
+A monotone 1-in-3 formula φ has variables 1 , . . . , n φ and mφ clauses, each a set of three distinct variables; it is satisfied by a truth assignment in which every clause contains exactly one true variable. Its network has one track for each of 
+
+RT, R F; X0 
+
+> i
+
+, Y 0 
+
+> i
+
+(i ∈ [nφ]); Xγi , Y γi (γ a clause , i ∈ γ),
+
+so the number of tracks is 
+
+θ = 2 + 2 nφ + 6 mφ. (30) All tracks leave v0 on weight-2 arcs, so the source emits 2 θ and this θ is the threshold of Lemma C.2. The gadgets, which together form the track program , follow in three phases, after which every track enters the sink vL:(i) Eq( X0 
+
+> i
+
+, X γi ) and Eq( Y 0 
+
+> i
+
+, Y γi ) for every clause γ and every i ∈ γ;(ii) Match( X0 
+
+> i
+
+, Y 0 
+
+> i
+
+; RT, R F) for every i ∈ [nφ]; (iii) Match( Xγi , X γj , X γk ; RT, R F, R F) for every clause γ = {i, j, k }.Every vertex conserves weight, so this is a balanced network. It has 9 mφ + 2 nφ equality gadgets and nφ + mφ mixers, hence 13 nφ + 55 mφ + 2 vertices and 22 nφ + 90 mφ + 2 arcs, of weights 1 and 2. 
+
+Lemma C.3 (Track program) . For every r ≥ 2, the network of a monotone 1-in-3 formula has a coloring with r colors as in Lemma C.2 if and only if the formula is satisfiable. Proof. Suppose such a coloring exists, and compare colors with those in which the tracks leave 
+
+v0. Equality gadgets change no color. Phase (ii) is the only phase that changes X0 
+
+> i
+
+or Y 0 
+
+> i
+
+, and a clause copy Xγi is changed only by the matching of its own clause in phase (iii). So when phase (iii) tests Xγi , it still has its initial color, which by phase (i) is the initial color of X0 
+
+> i
+
+.Phase (ii) makes the initial colors of X0 
+
+> i
+
+, Y 0 
+
+> i
+
+the multiset of colors of RT, R F. If RT and RF had the same color, phases (i) and (ii) would give every track that color, and the arcs of that color leaving v0 would weigh 2 θ > θ . Hence they differ. Call variable i true when X0 
+
+> i
+
+starts with the color of RT. Phase (iii) then says that every clause contains exactly one true variable. Conversely, fix a satisfying assignment. Color RT red, RF blue, every copy of Xi red exactly when i is true, and every copy of Yi with the other of these two colors. One track of every pair 17 (X0 
+
+> i
+
+, Y 0 
+
+> i
+
+) or ( Xγi , Y γi ) is red, so 1 + nφ + 3 mφ = θ/ 2 tracks, of total weight θ, leave v0 red, and the other θ/ 2 leave blue. Every equality gadget compares equal colors. The pairs in phase (ii), and, since exactly one variable of each clause is true, the triples in phase (iii), carry the multisets of colors of their references. So every mixer can output the colors of its references in order, and every vertex conserves the weight of each color. 
+
+C.4 Three-coloring and the lower bounds 
+
+Three-coloring as a monotone 1-in-3 formula. For a graph H with nH vertices and mH edges, take variables Xu,q for every vertex u and color q ∈ { 0, 1, 2} and Zuv,q for every edge uv and color q, with the clauses 
+
+{Xu, 0, X u, 1, X u, 2} (u a vertex) , {Xu,q , X v,q , Z uv,q } (uv an edge , q ∈ { 0, 1, 2}).
+
+A proper coloring χ satisfies them with Xu,q true exactly when χ(u) = q, and Zuv,q true exactly when neither Xu,q nor Xv,q is. Conversely, the vertex clauses give every vertex one color and the edge clauses forbid equal colors at the ends of an edge. The formula φ has nφ = 3 nH + 3 mH
+
+variables and mφ = nH + 3 mH clauses. 
+
+Proof of Proposition C.1. Hardness. Three-coloring is NP-complete already for graphs of maxi-mum degree four [11]. For such a graph and fixed r ≥ 2, Lemmas C.2 and C.3 applied to its formula give, in polynomial time, an r-machine instance with integer endpoints in {0, . . . , L } and weights in {1, 2} whose optimum is θ if the graph is three-colorable and at least θ + 1 otherwise. An assignment is verified by an endpoint sweep, and all numbers are polynomially bounded, so the decision problem is strongly NP-complete [10]. 
+
+No FPTAS. An FPTAS run with ε = 1 /(2 θ) returns, on a three-colorable input, a peak at most θ + 1 /2, hence at most θ by integrality; on any other input every peak is at least θ + 1. Since 1 /ε = 2 θ is polynomial in the input, this would decide three-colorability in polynomial time, so no FPTAS exists unless P=NP. 
+
+The ETH bounds. Maximum degree four gives mH ≤ 2nH , hence nφ ≤ 9nH , mφ ≤ 7nH ,and θ ≤ 60 nH + 2 by (30). For fixed r the instance has O(nH ) jobs with integer endpoints and weights, so N = O(nH log nH ). With ε = 1 /(2 θ), a deterministic (1 + ε)-approximation in 2 o(1 /ε ) poly( N ) bit operations would decide three-colorability of graphs of maximum degree four in 2 o(nH ) poly( nH ) time. Under the Exponential Time Hypothesis [13] no such algorithm exists [7, Lemma 2.2]. The randomized Exponential Time Hypothesis excludes randomized algorithms that decide 3-SAT in time 2 o(n) with error probability at most 1 /3 [8]. The reductions behind [7, Lemma 2.2] are deterministic, so it excludes such algorithms for three-coloring graphs of maximum degree four as well. A randomized (1 + ε)-approximation that succeeds with probability at least 2 /3 would give one: on a three-colorable input it returns, with probability at least 2 /3, an assignment of peak at most θ + 1 /2 and hence θ, no other input has such an assignment, and a returned assignment is checked by an endpoint sweep. All of this holds for every fixed r ≥ 2. 18

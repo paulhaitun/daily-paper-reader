@@ -1,0 +1,343 @@
+Title: Scheduling with Mandatory Breaks: NP-Hardness and an Additive-One Approximation
+
+URL Source: https://arxiv.org/pdf/2609.34254v1
+
+Published Time: Tue, 29 Sep 2026 03:15:23 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+# Scheduling with Mandatory Breaks: NP-Hardness and an Additive-One Approximation 
+
+Shreyas Ghildiyal ∗ Muralidhara V.N. †
+
+Abstract 
+
+In classical fixed-interval scheduling, each job of a given set must be processed during a prescribed time interval. The goal is to assign each job to exactly one machine such that no two jobs assigned to the same machine overlap in their interiors, and the number of machines used is minimized. Without further constraints this is interval graph coloring and is solvable in polynomial time through greedy approaches. We study a variant in which every used machine must remain idle during a contiguous break of prescribed length 
+
+x somewhere in the scheduling horizon. We show that this additional constraint makes the problem hard, except when x ≤ 1. First, for every fixed x ≥ 2, deciding whether 
+
+k machines suffice for the assignment of a given set of jobs is NP-complete, even when all coordinates are bounded linearly in the number of jobs, so machine minimization is strongly NP-hard. Second, for x = 1, we give a polynomial-time algorithm that solves the problem exactly. Finally, we give a deterministic polynomial-time algorithm that, on every feasible instance, outputs a schedule using at most OPT +1 machines, where OPT is the true minimum. Unless P = NP, no polynomial-time algorithm guarantees OPT machines for any fixed x ≥ 2, so the additive guarantee of one is best possible. 
+
+# 1 Introduction 
+
+In classical fixed-interval scheduling, each job j from a given set of jobs must be processed during a given time interval [ lj , r j ]. The goal is to assign each job to exactly one machine (from an unlimited supply of identical machines) such that no two jobs assigned to the same machine conflict, and the number of machines used is minimized. Two jobs conflict precisely when their interiors intersect, so the minimum number of machines equals the chromatic number of the interval graph induced by the given set of jobs, which is simply the maximum number of jobs whose interiors contain a common point. An optimal schedule can be found using various greedy strategies in O(n log n) time [14]. The model and its many variants have been studied extensively [17]. This paper studies a variant in which every machine that processes at least one job must be completely idle during some contiguous interval of prescribed length x inside the scheduling horizon. The requirement models a mandatory rest. In railway crew rostering, for instance, a worker’s weekly duties are train journeys that run at fixed times, and every working crew member is entitled to an uninterrupted weekly rest period. Rest requirements of this kind are standard throughout crew and personnel rostering [4, 6, 15]. Such scenarios map cleanly onto our problem, with train journeys being analogous to jobs, workers to machines, and a week to the scheduling horizon. Note that for x = 0, the break requirement is vacuous and the problem reduces to classical interval scheduling.   
+
+> ∗International Institute of Information Technology Bangalore, India. shreyas.ghildiyal@iiitb.ac.in
+> †International Institute of Information Technology Bangalore, India. murali@iiitb.ac.in
+
+1arXiv:2609.34254v1 [cs.DS] 28 Sep 2026 Problem definition. Formally, a problem instance consists of • an integer break length x where x ≥ 0, • a scheduling horizon [0 , y ], where y ≥ x is an integer, and • a set of n jobs Jj = [ lj , r j ] with integer endpoints 0 ≤ lj < r j ≤ y.A schedule assigns every job to a machine so that jobs on the same machine have pairwise disjoint interiors. Formally, no two jobs Ja, J b (with a̸ = b) assigned to the same machine can satisfy ( la < r b) ∧ (lb < r a). Note that jobs on the same machine can touch at their boundaries (e.g., la < r a = lb < r b is an allowed configuration). A schedule is said to be 
+
+feasible if and only if for every used machine m, there exists an interval [ b, b + x] ⊆ [0 , y ] such that for every job Jj = [ lj , r j ] assigned to machine m, the condition ( rj ≤ b) ∨ (b + x ≤ lj )holds. The objective is to minimize the number of used machines in a feasible schedule. For a feasible instance, the minimum is denoted by OPT. The decision problem Scheduling with Mandatory Breaks asks, given additionally an integer k, whether k machines suffice. 
+
+Our results. A schedule has to balance two competing goals: using few machines, and leaving on every used machine an idle gap long enough for the break. Our first result shows that for every break length x ≥ 2 this makes the problem strongly NP-hard. 
+
+Theorem 1. For every fixed break length x ≥ 2, Scheduling with Mandatory Breaks 
+
+is NP-complete, even when restricted to instances in which all coordinates are bounded by a linear function of the number of jobs. In particular, minimizing the number of machines is strongly NP-hard. 
+
+The threshold in Theorem 1 is exact. For x = 0 the problem is classical interval scheduling, and our second result shows that the case x = 1, where any idle gap can host the break because all data are integral, is polynomial-time solvable as well: the problem becomes hard precisely at x = 2. 
+
+Theorem 2. There is an algorithm that, given a break length x ≤ 1, a horizon y, and a set of n jobs, either reports that no feasible schedule exists or computes an optimal schedule, in 
+
+O(n2 log n) time. 
+
+Together with Theorem 1, this settles the complexity of Scheduling with Mandatory Breaks for every fixed break length: it is solvable in polynomial time for x ≤ 1 and NP-complete for x ≥ 2. Our third result shows that the difficulty of Scheduling with Mandatory Breaks is nevertheless as small as it can be, because a feasible schedule that uses at most one more machine than the optimum can be computed efficiently. 
+
+Theorem 3. There is a deterministic polynomial-time algorithm that, given a break length 
+
+x, a horizon y, and a set of jobs, either reports that no feasible schedule exists or outputs a feasible schedule using at most OPT +1 machines. 
+
+A polynomial-time algorithm that always returns an optimal schedule would in particular decide Scheduling with Mandatory Breaks , which Theorem 1 rules out for every fixed 
+
+x ≥ 2 unless P = NP. Since the number of machines is an integer, the smallest additive guarantee still achievable in polynomial time is one, and Theorem 3 achieves it. 
+
+Corollary 1. Unless P = NP , the additive guarantee of Theorem 3 is the best possible: for every fixed x ≥ 2, no polynomial-time algorithm outputs a schedule using OPT machines on every feasible instance of Scheduling with Mandatory Breaks .
+
+21.1 Related work 
+
+Fixed-interval scheduling with machine minimization is solvable in polynomial time, and several weighted and cost-based variants, such as selecting a maximum-value subset of jobs for a given number of machines, are solvable in polynomial time as well [2, 17, 18]. Adding a per-machine resource constraint changes this: Fischetti, Martello, and Toth proved NP-hardness when each machine’s spread time — the span from its first start to its last finish — is bounded [7], and likewise when its total working time is bounded [8], later complementing both results with fast approximation algorithms and worst-case analyses [9]. In the same family, Osorio-Valenzuela et al. minimize the number of machines when each machine has a limited workload capacity [20], and the shift minimization personnel task scheduling problem assigns fixed tasks to a minimum number of workers who come with predetermined shifts and skills [19]. Our break constraint is of a different kind, as it demands a contiguous idle interval whose position is chosen by the schedule, separately on every used machine. The two models have one nontrivial point of coincidence. With integral data, a machine has an idle gap of length one precisely when its total working time is at most y − 1, so for x = 1 our problem is the working-time problem of Fischetti, Martello, and Toth [8] with per-machine limit y − 1, the largest limit that constrains anything. That problem is NP-hard for general limits, and Theorem 2 shows that this boundary case is polynomial. For x ≥ 2, in contrast, the feasibility of a machine is not determined by its total workload alone, as a machine may be idle for most of the horizon and still have no idle gap of length x.Breaks themselves have a long history in personnel scheduling, from implicit models of flexible meal breaks in shift scheduling [3] to the break scheduling problem of Widl and Musliu [23], in which breaks are inserted into an already fixed shift plan so that the number of employees on duty tracks a given staffing curve. In those models the demand is an aggregate headcount over time. In ours it is a set of indivisible fixed jobs, and the number of machines is the objective. A second adjacent line of work makes machines temporarily unavailable. In interval scheduling with machine availabilities [1], each machine’s availability interval is given in the input (in the flexible variant, only the assignment of the given intervals to machines is free), and the question is whether all jobs can be scheduled. Jaykrishnan and Levin [16] study machines that must go down after processing a prescribed number of jobs, including a variant that minimizes the number of machines, but their jobs are movable, so the problem is one of packing rather than of fixed intervals. In aircraft maintenance routing [13], a fleet of aircraft flies fixed flight legs and every aircraft must regularly reach a maintenance station, but the maintenance opportunities are tied to given locations and times, and the number of aircraft is given rather than minimized. Our model differs from all of these in the same way: the jobs are fixed intervals, the number of machines is the objective, and each machine’s idle interval is positioned freely by the schedule, subject only to having the prescribed length. To the best of our knowledge, this combination has not been studied before. The sensitivity of interval problems to seemingly small structural perturbations is well documented. A classical example is that coloring circular-arc graphs, unlike interval graphs, is NP-complete [12]. For general background on NP-completeness we refer to Garey and Johnson [11]. 
+
+1.2 Technical overview 
+
+Hardness. The reduction is from a restriction of satisfiability in which every variable occurs exactly three times, twice with one sign and once with the other, and every clause has two or three literals. It is NP-complete by a standard variable-splitting argument in the spirit of Tovey [22]. We first show NP-completeness for the case where the break length x is equal to 2. The 3reduction then extends to every fixed x ≥ 2 by scaling all coordinates. From an arbitrary instance of the aforementioned restriction of satisfiability with k literal occurrences in total, we construct an instance of Scheduling with Mandatory Breaks with x = 2 and three families of jobs — variable jobs , literal jobs , and clause jobs — with each family consisting of 
+
+k jobs that pairwise conflict within their family. These jobs are constructed in a manner such that a schedule on fewer than k machines is impossible, and a schedule on k machines exists if and only if a solution to the restricted satisfiability instance exists. 
+
+Break length one. For x = 1 the break constraint is volumetric: since all data are integral, a machine has an idle gap of length one precisely when its jobs do not tile the entire horizon, and the only way to tile the horizon is a sequence of jobs, each ending where the next one starts, all on one machine. Call it a handoff when two touching jobs are placed consecutively on one machine. A handoff saves a machine at the point where the two jobs touch, and a counting argument shows that a budget of K machines forces a prescribed number of handoffs at every point, while additional handoffs never help. What remains is to choose which ending job hands off to which starting job so that no sequence of handoffs runs from 0 to y. Following the jobs that start at 0 through the handoffs, this is a maximum-flow problem, and a binary search over K finds the optimum. 
+
+The additive-one algorithm. The algorithm rests on a normal form: we view the time horizon of every machine in terms of the prefix before its break, and the suffix after it. Every job on the machine accordingly receives a label : early if it lies in the prefix, late if it lies in the suffix. If we knew, for every job, whether it is early or late in some optimal schedule, then it is possible to recover an optimal schedule in polynomial time — one may construct a partial order on the jobs such that choosing a chain in this partial order corresponds to choosing a set of jobs that may all be assigned to a single machine. Finding the minimum number of machines then reduces to finding the minimum chain cover on this poset. The standard proof of Dilworth’s theorem in turn reduces minimum chain cover to bipartite matching, firmly placing the subproblem in P. The entire difficulty of the problem therefore lies in choosing the labels. Recording them as 0 /1 values, we show that the number of machines needed under a given labeling admits a closed formula: a maximum of O(n2) expressions, each linear in the labels. Minimizing this maximum over fractional labels is a linear program, and its optimum is at most OPT. Minimizing over integral labels is what makes the problem hard. We then exploit the structure of the constraints: the labels enter them only through their sums over elementary intervals, and the matrix of these sums has consecutive ones in every column. Such matrices are totally unimodular, and this allows an optimal fractional solution (which can be found in polynomial time) to be rounded to integral labels while changing every sum by less than one, and hence every constraint by less than two. Since machine counts are integers, at most one extra machine is incurred. 
+
+# 2 Preliminaries 
+
+Throughout, we assume x ≥ 1, since for x = 0 the problem is classical interval scheduling, which the greedy algorithm solves exactly. The number of jobs in an instance of Scheduling with Mandatory Breaks is denoted by n. A machine is used if at least one job is assigned to it. 
+
+Observation 1. Scheduling with Mandatory Breaks is in NP. Proof. A schedule is a polynomial-size certificate that can be verified in polynomial time: for each machine, sort its jobs by start time and check that consecutive jobs do not conflict and 4that the longest idle interval — including the gap before the first job and the gap after the last one — has length at least x.The following characterization shows that feasibility itself is easy to test, and the hardness of Scheduling with Mandatory Breaks lies entirely in the number of machines. 
+
+Observation 2. An instance admits a feasible schedule on some number of machines if and only if every job j satisfies rj ≤ y − x or lj ≥ x.Proof. A break has positive length, so every job of a machine lies entirely before or entirely after the break: jobs before it end by b ≤ y − x, and jobs after it start at b + x ≥ x. A job violating both conditions therefore fits on no machine. Conversely, if every job satisfies one of the conditions, placing each job on a private machine is feasible (a machine whose job ends by y − x takes the break [ y − x, y ], and any other machine takes [0 , x ]). Finally, sort the distinct job endpoints together with 0 and y. We define each open interval between consecutive values in this sorted order to be an elementary interval . There are at most 2 n + 1 of them. The depth d(P ) of an elementary interval P is the number of jobs j with 
+
+P ⊆ (lj , r j ). The maximum depth, denoted D, is the largest number of jobs whose interiors contain a common point, and also the minimum number of machines when no breaks are required (classical interval scheduling). 
+
+# 3 NP-completeness 
+
+In this section we prove Theorem 1. Membership in NP is Observation 1. We establish hardness by a reduction from the following restriction of satisfiability, which is NP-complete by a standard variable-splitting argument in the spirit of Tovey [22]. 
+
+Lemma 1. SAT remains NP-complete for formulas whose clauses contain two or three literal occurrences and in which every variable occurs exactly three times, twice with one sign and once with the other. Proof. Take the standard NP-complete restriction of 3-Sat in which every clause has exactly three literal occurrences [11]. For a variable z with occurrences 1 , . . . , t , replace the ith occurrence by a fresh variable zi of the same sign and add the clauses ( ¬zi ∨ zi+1 ) for 
+
+i = 1 , . . . , t , indices modulo t. These clauses form a cycle of implications, so in any satisfying assignment all copies of z take the same value, and satisfiability is preserved. Each copy zi
+
+occurs once in an original clause and once with each sign in the cycle, which is the required pattern. For t = 1 the added clause is the tautological ( ¬z1 ∨ z1), which is harmless, and variables without occurrences are discarded. A clause may then contain both signs of a variable, which the construction below, being defined per occurrence, tolerates. Fix such a formula φ with variables i = 0 , . . . , p − 1 and clauses c = 0 , . . . , q − 1, where clause c has sc ∈ { 2, 3} literals. Counting literal occurrences in two ways gives ∑ 
+
+> c
+
+sc = 3 p.
+
+3.1 The reduction 
+
+Given φ (we may assume p ≥ 1), we construct an instance of Scheduling with Mandatory Breaks with n = 9 p jobs. Set 
+
+x = 2 , k = 3 p, y = 6 p + 3 q. 
+
+We also define Sc = 6 p + 3 c (0 ≤ c < q ) as the station of clause c. The jobs for this instance will come in three families of 3 p jobs each. 5S0 S1 S2          
+
+> 036912 15 18 21
+> AuF0
+> BuF2
+> Nu
+> NvF1
+> Av
+> Bv
+> uv
+
+Figure 1: The instance produced from φ = ( u ∨ v) ∧ (¬u ∨ ¬ v) ∧ (u ∨ v), which satisfies the restriction of Lemma 1, with variables u, v and clauses 0 , 1, 2 in this order. Here p = 2, q = 3, 
+
+k = 6, y = 21, and the stations are S0 = 12, S1 = 15, S2 = 18 (dashed). Rows are the six machines of a feasible schedule realizing the satisfying assignment u = true, v = false. Gray jobs are variable jobs, blue jobs are literal jobs (subscripted by their variable), and orange jobs are clause jobs. The filters are labeled Fc, and the unlabeled clause jobs are the sinks. Hatched teal boxes are the breaks ( x = 2). • Variable jobs. Each variable i contributes the three jobs [0 , 6i + 1] , [0 , 6i + 3] , [0 , 6i + 4] .
+
+• Literal jobs. Consider variable i, and let its two occurrences of the repeated sign lie in clauses ai and bi and its remaining occurrence in clause ei. The variable contributes one job per occurrence, 
+
+Ai = [6 i + 3 , S ai ], Ni = [6 i + 4 , S ei ], Bi = [6 i + 5 , S bi ],
+
+so that Ai and Bi represent the repeated sign and Ni the opposite sign. Each literal job runs from its variable’s region to the station of its clause. • Clause jobs. Each clause c contributes one filter Fc = [ Sc + 1 , y ] and sc − 1 identical 
+
+sinks [Sc + 2 , y ]. The construction is clearly computable in polynomial time, and all coordinates are at most y = 6 p + 3 q ≤ 10 .5 p, since every clause has at least two literals. We claim that φ
+
+is satisfiable if and only if the constructed jobs can be feasibly scheduled on k machines. Further, it is impossible to create a feasible schedule with fewer than k machines. Before proving this, we outline the intended mechanism. Every machine works exactly one job from each family, and we will show that the three jobs on a machine are forced to be 
+
+compatible : the literal job belongs to the variable of the variable job, and the clause job to the clause of the literal job. A machine thus stands for one literal occurrence of φ. Every machine is busy at time 0 and at time y, so its only gaps lie between its variable job and its literal job, or between its literal job and its clause job, and the offsets in the construction decide which of these gaps are long enough for a break. This is what makes the value assignments of a variable consistent across its occurrences. Figure 1 illustrates the construction on a concrete formula. 63.2 Correctness 
+
+We begin with the structural claims of the outline above. 
+
+Lemma 2 (Structure) . In every schedule of the constructed instance on at most k machines, exactly k machines are used, and each machine works exactly three jobs: one variable job, one literal job, and one clause job, in this order. Moreover: (i) the three literal jobs of variable i are worked by the three machines that work the variable jobs of variable i;(ii) the sc clause jobs of clause c are worked by the machines that work the sc literal jobs of the literals of clause c.Proof. Every variable job contains the interval [0 , 1]. Every literal job contains [6 p − 1, 6p]: it starts at 6( p − 1) + 5 = 6 p − 1 or earlier and ends at a station, i.e., at 6 p or later. Every clause job contains [ y − 1, y ]. Each family is therefore a set of 3 p = k pairwise conflicting jobs and must occupy k distinct machines. Hence exactly k machines are used, and each works precisely one job from each family — three jobs in total, and non-conflict forces the order variable job, literal job, clause job. Next we prove (i). Since each machine works exactly one job from each family, it suffices to show that, for every i, the set of machines working the literal jobs of variables 0 , . . . , i 
+
+equals the set of machines working the variable jobs of variables 0 , . . . , i . Statement (i) then follows by taking differences for consecutive values of i. A variable job and a literal job on the same machine must not conflict, and variable jobs start at time 0, so a machine’s variable job must end no later than its literal job starts. Now consider any machine working a literal job of some variable j ≤ i. That literal job starts no later than 6 j + 5 ≤ 6i + 5, so the machine’s variable job ends at 6 i + 5 or earlier; since the variable jobs of variables 
+
+i + 1 , . . . , p − 1 end at 6( i + 1) + 1 = 6 i + 7 or later, the machine’s variable job belongs to one of the variables 0 , . . . , i . The 3( i + 1) literal jobs of variables 0 , . . . , i thus occupy 3( i + 1) distinct machines, each of whose variable jobs belongs to variables 0 , . . . , i — and there are exactly 3( i + 1) machines with the latter property, one per such variable job. The two sets of machines therefore coincide. The proof of (ii) is analogous: a machine’s literal job must end no later than its clause job starts; the clause jobs of clauses 0 , . . . , c start at Sc + 2 or earlier, while the literal jobs of clauses c + 1 , . . . , q − 1 (if any) end at Sc+1 = Sc + 3 or later; and the number of clause jobs of clauses 0 , . . . , c and the number of literal jobs of those clauses both equal ∑ 
+
+> c′≤c
+
+sc′ .By Lemma 2, each machine works a variable job, a literal job of the same variable, and a clause job of its literal’s clause, so machines correspond to the literal occurrences of φ. Since every machine is busy at time 0 and at time y, its idle time consists of exactly two (possibly empty) gaps: a gap g1 between its variable job and its literal job, and a gap g2 between its literal job and its clause job. A schedule on k machines is therefore feasible if and only if every machine has g1 ≥ 2 or g2 ≥ 2. Call a literal job safe (in a given schedule) if the machine working it has g1 ≥ 2. Consider variable i and any schedule on at most k machines. Denote by M1, M3, and 
+
+M4 the machines working the three variable jobs of variable i, indexed by those jobs’ right endpoints relative to 6 i. By Lemma 2(i), the machines M1, M 3, M 4 work exactly the literal jobs Ai, N i, B i, one each. Call the resulting assignment of literal jobs to these machines the 
+
+routing of the gadget. A routing is conflict-free if each of the three machines’ variable job ends no later than its literal job starts. 7Table 1: The first gap g1 for each pairing in the gadget of variable i, in coordinates relative to 6 i. Bold entries ( g1 ≥ 2) are the safe pairings. The variable job ending at 4 cannot be paired with Ai, as the two jobs conflict. 
+
+Ai (starts 3) Ni (starts 4) Bi (starts 5) variable job ending 1 2 3 4
+
+variable job ending 3 0 1 2
+
+variable job ending 4 — 0 1
+
+Lemma 3 (Variable gadget) . In every schedule of the constructed instance on at most k
+
+machines, the set of safe literal jobs of variable i is one of 
+
+{Ai}, {Bi}, {Ai, B i}, {Ni};
+
+that is, a nonempty set of occurrences of a single sign. Conversely, each of these four sets is the safe set of a conflict-free routing of the gadget. Proof. Work in coordinates relative to 6 i, so that the variable jobs of variable i end at 1, 3, and 4, and its literal jobs Ai, N i, B i start at 3, 4, and 5. Since variable jobs start at time 0, the only pairing that is not conflict-free is M4 working Ai. Every other pairing is legal, and its first gap g1 equals the start of the literal job minus the end of the variable job, as listed in Table 1. A pairing is safe exactly if this difference is at least 2 (the four entries (1 , A i), (1 , N i), (1 , B i), and (3 , B i), which are bold in Table 1). Of the six bijective assignments of Ai, N i, B i to M1, M 3, M 4, exactly two pair Ai with M4,so there are exactly four conflict-free routings. By Table 1, their safe pairings are as follows: • M1→Ai, M3→Ni, M4→Bi: only (1 , A i) is safe, and the safe set is {Ai};• M1→Ai, M3→Bi, M4→Ni: (1 , A i) and (3 , B i) are safe, and the safe set is {Ai, B i};• M1→Ni, M3→Ai, M4→Bi: only (1 , N i) is safe, and the safe set is {Ni};• M1→Bi, M3→Ai, M4→Ni: only (1 , B i) is safe, and the safe set is {Bi}.The set of safe literal jobs of variable i is therefore always one of the four claimed sets. Conversely, each of the four sets is the safe set of one of the four routings above, and these routings are conflict-free. We can now prove Theorem 1. 
+
+Proof of Theorem 1. Membership in NP is Observation 1. For hardness, consider first x = 2. Given a formula φ as in Lemma 1, the construction of Section 3.1 produces an instance of 
+
+Scheduling with Mandatory Breaks together with a target k, in polynomial time. We now prove that this instance admits a feasible schedule on at most k machines if and only if 
+
+φ is satisfiable. The construction is then a polynomial-time reduction from an NP-complete problem, and hardness follows. By Lemma 2(ii), the clause jobs of clause c are worked by the machines of its own sc
+
+literal jobs. Every literal job of clause c ends at the station Sc, the filter Fc starts at Sc + 1, and the sinks start at Sc + 2. Hence, the filter gives its machine g2 = 1 while each sink gives 
+
+g2 = 2. Suppose first that φ has a satisfying assignment. We construct a feasible schedule on 
+
+k machines. Consider a variable i. The assignment makes the literals of exactly one of its two signs true. Assign the three variable jobs and the three literal jobs of variable i to three 8machines according to the routing of Lemma 3 whose safe set is {Ai, B i} if the true sign is the repeated one, and {Ni} otherwise. This routing is conflict-free, and it makes a literal job safe if and only if its literal is true under the assignment. Next, consider a clause c. Its sc
+
+clause jobs must be worked by the machines that work the literal jobs of its sc literals, and any assignment between the two is conflict-free, since every literal job of clause c ends at Sc
+
+and every clause job of clause c starts at Sc + 1 or later. As the assignment satisfies φ, clause 
+
+c contains at least one true literal. Choose one, let the machine working its literal job work the filter Fc, and distribute the sinks among the remaining sc − 1 machines arbitrarily. In the resulting schedule, every machine working a sink has g2 = 2, and every machine working a filter has a safe literal job and hence g1 ≥ 2. Every machine therefore has an idle gap of length at least 2 in which to place its break, and the schedule is feasible on k machines. Conversely, suppose that a feasible schedule on at most k machines exists. We show how to construct a satisfying assignment for φ. By Lemma 3, the safe literal jobs of each variable form a nonempty set of occurrences of a single sign. Assign to each variable the value that makes the literals of this sign true. Now consider an arbitrary clause c and the machine working its filter Fc. This machine has g2 = 1, so, since the schedule is feasible, it has g1 ≥ 2, and its literal job is therefore safe. By Lemma 2(ii), this literal job belongs to a literal of clause c, and since it is safe, this literal is true under the constructed assignment. Hence every clause of φ contains a true literal, and φ is satisfiable. Moreover, the constructed instance has n = 9 p jobs with all coordinates at most 10 .5 p, so 
+
+Scheduling with Mandatory Breaks is NP-complete for x = 2 even in unary encoding, and machine minimization is strongly NP-hard. Finally, to show NP-hardness for an arbitrary fixed break length x ≥ 2, keep k, set the break length to x, and multiply the horizon and every job endpoint of the construction by x − 1. Idle gaps of length at most 1 become at most x − 1 < x , and idle gaps of length at least 2 become at least 2 x − 2 ≥ x. With safe 
+
+now meaning g1 ≥ x, the counting arguments are invariant under scaling and the proof goes through unchanged. All coordinates remain bounded by 10 .5 ( x − 1) p, which is linear in n
+
+for fixed x.
+
+# 4 A polynomial-time algorithm for break length one 
+
+In this section we prove Theorem 2. Throughout, x = 1. By Observation 2, the instance is infeasible precisely when some job equals [0 , y ]. The algorithm rejects this case first, and we assume from now on that no job equals [0 , y ]. Everything rests on the following observation. 
+
+Observation 3. For x = 1 , a machine has an idle interval of length 1 inside [0 , y ] if and only if the total length of its jobs is less than y, that is, if and only if its jobs do not cover all of [0 , y ].Proof. The jobs of a machine have pairwise disjoint interiors inside [0 , y ], so the idle time of the machine consists of finitely many gaps of integral length whose total length is y minus the total length of the jobs. Some gap has length at least 1 if and only if this total is positive. Jobs on one machine cover [0 , y ] only if, at the right endpoint of every one of them, either the horizon ends or another job begins. The decisions that matter are therefore which touching jobs share a machine. For an integer t with 0 ≤ t ≤ y, let Et and St be the sets of jobs ending and starting at t, and let δ(t) be the number of jobs j with lj ≤ t ≤ rj . Note that E0 = Sy = ∅.A handoff set is a set H of arcs i → j between jobs with ri = lj in which every job has at most one incoming and at most one outgoing arc. An arc i → j with ri = lj = t is a 
+
+handoff at t, and ht denotes the number of handoffs at t. Since rj > r i for every arc i → j,9the digraph with vertex set the jobs and arc set H is a union of vertex-disjoint directed paths, possibly consisting of a single job, which we call runs . The jobs of a run tile an interval, the 
+
+span of the run, and a run covers the horizon if its span is [0 , y ]. 
+
+Lemma 4 (Handoffs and machines) . The jobs can be feasibly scheduled on at most K machines if and only if there is a handoff set in which no run covers the horizon and δ(t) − ht ≤ K for every integer t ∈ [0 , y ].Proof. Given a feasible schedule on at most K machines, let H contain the arc i → j whenever 
+
+i and j are on the same machine and ri = lj . Every job has at most one such predecessor and at most one such successor, so H is a handoff set, and its runs are the maximal sequences of touching jobs on the machines. At an integer t, a machine carries at most two jobs whose closed intervals contain t, and if it carries two, then one of them ends and the other starts at t, so they form a handoff at t. Hence every machine contributes at most one to δ(t) − ht,and δ(t) − ht ≤ K. A run covering the horizon would be a machine whose jobs cover [0 , y ], contradicting Observation 3. Conversely, let H be a handoff set as in the statement. We assign runs to machines so that the spans of the runs on one machine are pairwise disjoint as closed intervals. Unlike jobs, two runs whose spans merely touch at a point are thus kept on different machines, since placing them on one machine would amount to an additional handoff. This is still interval graph coloring (since spans have integer endpoints, extending every span by 12 at its right end turns it into the usual convention in which only interiors must be disjoint), so the number of machines needed is the largest number of spans containing a common point, and the greedy left-to-right sweep achieves this bound [14]. The span of a run contains an integer 
+
+t if and only if the run contains a job whose closed interval contains t, and a run contains two such jobs exactly when it has a handoff at t. So exactly δ(t) − ht ≤ K spans contain t.A non-integer point is contained in no more spans than the next integer is, because spans have integer endpoints. Thus K machines suffice. Consecutive jobs of a run touch, and the spans of the runs on one machine are disjoint, so the jobs on every machine have pairwise disjoint interiors. Finally, a machine carrying two or more runs is idle between them, and a machine carrying a single run has a span other than [0 , y ]. So the jobs of no machine cover [0 , y ], and the schedule is feasible by Observation 3. A handoff lowers δ(t) − ht at one point and otherwise only lengthens a run. The next lemma shows that, for a budget K, it is optimal to hand off exactly as often as the budget forces. 
+
+Lemma 5 (Fewest handoffs) . If some handoff set satisfies the conditions of Lemma 4 for K,then so does one with ht = max(0 , δ (t) − K) for every integer t ∈ [0 , y ].Proof. Among the handoff sets satisfying the conditions, choose one, H, with the fewest arcs. The condition δ(t) − ht ≤ K gives ht ≥ δ(t) − K at every t. Suppose ht > max(0 , δ (t) − K)at some t, and remove one handoff at t from H. This changes δ(t′) − ht′ only at t′ = t, where the new value δ(t) − ht + 1 is at most K, and it splits one run into two runs with shorter spans. The result satisfies the conditions with fewer arcs, a contradiction. Fix a budget K ≥ D, where D is the maximum depth of Section 2, the minimum number of machines without breaks, and write ct = max(0 , δ (t) − K). Then ct ≤ min( |Et|, |St|) for every t. At t = 0 this holds because every job of S0 contains the first elementary interval, so 
+
+δ(0) = |S0| ≤ D ≤ K and c0 = 0, and symmetrically cy = 0. At an integer 0 < t < y , the 
+
+δ(t) − | St| jobs whose closed intervals contain t but that do not start at t all contain in their interiors the points immediately to the left of t, which lie in a common elementary interval, so δ(t) − | St| ≤ D ≤ K, and symmetrically δ(t) − | Et| ≤ K.10 After Lemma 5, what remains is to choose which job of Et hands off to which job of St, in such a way that no run covers the horizon. Only a run whose span starts at 0 can cover the horizon, and such a run starts with a job of S0. Whenever a job of such a run ends, at a point 
+
+t say, that job is either one of the |Et| − ct jobs of Et without an outgoing handoff, and the run ends, or one of the ct jobs of Et that hand off, and the run continues on a job of St. The run has to end at some t < y . This is captured by the following network NK . It has a source, a sink, and two nodes ut, v t for every right endpoint t < y of a job, and the following arcs: • source → urj of capacity 1 for every job j ∈ S0;• ut → sink of capacity |Et| − ct and ut → vt of capacity ct, for every right endpoint 
+
+t < y ;• vt → urj of capacity 1 for every job j ∈ St with rj < y .Parallel arcs are allowed. We call the arc introduced for a job j the arc of j. Every job has at most one arc, and a job ending at y has none, since a run starting at 0 must not continue on it. At an integer t at which no job ends, ct ≤ | Et| = 0 by the bound above, so no nodes are needed there, and NK has O(n) nodes and arcs. 
+
+Lemma 6 (Routing) . Let K ≥ D. A handoff set with ht = ct for every integer t ∈ [0 , y ] and no run covering the horizon exists if and only if NK admits a flow of value |S0|.Proof. Let H be such a handoff set. Every job of S0 starts a run j1 → j2 → · · · → jm,and rjm < y since the run does not cover the horizon. Route one unit of flow along source → urj1 → vrj1 → urj2 → · · · → urjm → sink. Distinct runs use distinct jobs, so the arcs of capacity 1 are respected. At a node ut, the units that continue to vt correspond to distinct handoffs at t, of which there are ct, and the units that enter the sink correspond to distinct jobs of Et without an outgoing handoff, of which there are |Et| − ct. So the flow is feasible, and its value is |S0|.Conversely, let NK admit a flow of value |S0|. Take it integral and, since NK is acyclic, decompose it into |S0| paths carrying one unit each, one through every source arc. A path enters a node ut on the arc of a job of Et and, if it continues, leaves vt on the arc of a job of St. We build H at every t in two steps. First, for every path that continues through vt,add the arc from the job on which it enters ut to the job on which it leaves vt. The arcs of capacity 1 make these jobs distinct. Second, add arcs from Et to St between jobs not used so far at t, excluding the jobs on which paths enter ut and stop, until there are ct arcs at t.This is possible: if a paths enter ut and f of them continue, then a − f ≤ | Et| − ct by the capacity of the sink arc, so at least |Et| − a ≥ ct − f jobs of Et are available, and at least 
+
+|St| − f ≥ ct − f jobs of St are available since ct ≤ | St|. Every job has at most one incoming and at most one outgoing arc, so H is a handoff set with ht = ct at every t. The run starting at a job j ∈ S0 follows the path through source → urj : at every node, the job on which the path arrives has an outgoing handoff exactly when the path continues, and then to the job on which the path leaves. Every path enters the sink from a node ut with t < y , so no run starting at 0 covers the horizon, and no other run can. 
+
+Proof of Theorem 2. For x = 0 the greedy algorithm computes an optimal schedule in 
+
+O(n log n) time [14], so let x = 1. We claim that OPT = min { K ≥ D : NK admits a flow of value |S0| } .
+
+If K machines suffice, then K ≥ D, and Lemmas 4 to 6 in turn yield a handoff set with the properties of Lemma 4, one with ht = ct at every t, and a flow of value |S0|. Conversely, for 11 K ≥ D a flow of value |S0| yields by Lemma 6 a handoff set with ht = ct and no run covering the horizon, and since δ(t) − ct = min( δ(t), K ) ≤ K, Lemma 4 turns it into a feasible schedule on K machines. So the displayed set consists of the budgets K for which K machines suffice. This set is upward closed, and it contains K = max t δ(t), where every ct is zero and every job of S0 simply ends its run at its right endpoint. Hence binary search over K ∈ [D, max t δ(t)] finds OPT with O(log n) maximum-flow computations. For the running time, the sets Et and St, the values δ(t) at the endpoints of jobs, and D
+
+are obtained in one sweep in O(n log n) time. The network NK has O(n) nodes and arcs, and its maximum flow value is at most |S0| ≤ n, so an augmenting-path algorithm, which needs at most n augmentations of O(n) time each, computes it in O(n2) time. Finally, a schedule is assembled from the flow for K = OPT in O(n log n) time: decompose the flow into paths, which use O(n) arcs in total since distinct paths use distinct arcs of jobs, build the handoff set of Lemma 6, and assign runs to machines by the greedy sweep of Lemma 4. 
+
+# 5 An additive-one approximation algorithm 
+
+In this section we prove Theorem 3. By Observation 2, which the algorithm checks first, every job satisfies rj ≤ y − x or lj ≥ x. Define the two eligibility classes 
+
+E = { j : rj ≤ y − x }, L = { j : lj ≥ x },
+
+so that E ∪ L contains all jobs. A job in E can be processed before a break, a job in L after one, and a job in E ∩ L either way. 
+
+5.1 A normal form and a chain cover 
+
+The break splits the timeline of each machine into a part before the break and a part after it, and every job on the machine lies entirely in one of the two parts. This gives feasible machines the following normal form. 
+
+Lemma 7 (Normal form) . A set of pairwise non-conflicting jobs, listed chronologically, can be feasibly scheduled on one machine if and only if it is the concatenation of a (possibly empty) prefix of jobs from E and a (possibly empty) suffix of jobs from L such that, if both parts are nonempty, the last prefix job i and the first suffix job j satisfy lj − ri ≥ x.Proof. Fix a break [ b, b + x] of the machine. Since x ≥ 1, every job lies entirely before or entirely after it. Jobs before it end by b ≤ y − x and belong to E. Jobs after it start at 
+
+b + x ≥ x and belong to L. If both groups are nonempty, the gap between them contains the break and has length at least x. Conversely, a set of jobs from E is feasible with the break [y − x, y ], a set of jobs from L with the break [0 , x ], and a mixed set as in the statement accommodates its break in the gap between the two parts. Guided by the normal form, we assign each job j a label zj ∈ { 0, 1}, where zj = 1 means that j is processed before its machine’s break ( early ) and zj = 0 that it is processed after (late ). A labeling z ∈ { 0, 1}n is legal if zj = 1 for every j ∈ E \ L and zj = 0 for every 
+
+j ∈ L \ E . We call these coordinates forced and the coordinates of jobs in E ∩ L free . For a legal labeling z, let i ≺z j if ri ≤ lj and either (a) zi = zj , or (b) zi = 1, zj = 0, and lj − ri ≥ x.12 The relation ≺z is irreflexive, and it is transitive: a chain i ≺z j ≺z h contains at most one early-to-late transition, and the gap between i and h contains the gap at that transition. Hence ≺z is a strict partial order, and Lemma 7 translates into the following statement. 
+
+Lemma 8. Let z be a legal labeling. A set of jobs can be feasibly scheduled on one machine with every job on the side of the break prescribed by z if and only if it is a chain of ≺z .Consequently, the minimum number of machines of a feasible schedule respecting z equals the width W (z) of the partial order ({1, . . . , n }, ≺z ), and a schedule attaining it can be computed in polynomial time. Proof. The first claim restates Lemma 7: consecutive jobs of a chain with the same label need only be non-conflicting, and the single early-to-late transition of a chain carries a gap of length at least x. The minimum number of chains covering a partial order equals its width by Dilworth’s theorem [5], and a minimum chain cover is computable in polynomial time by the standard reduction to bipartite matching. Conversely, every feasible schedule induces a legal labeling: set zj = 1 exactly for the jobs processed before their machine’s break. Legality follows from the proof of Lemma 7, and every machine of the schedule is a chain of ≺z . Therefore OPT = min { W (z) : z ∈ { 0, 1}n legal }. (1) The whole difficulty of the problem lies in this minimization over z, which, for every fixed 
+
+x ≥ 2, cannot be carried out exactly in polynomial time by Theorem 1 unless P = NP. The remaining two subsections show that it can be solved to within an additive one. 
+
+5.2 A formula for the width 
+
+Recall the elementary intervals of Section 2. Order them from left to right, and let A = ( aP j )be their incidence matrix with jobs: aP j = 1 if P ⊆ (lj , r j ) and aP j = 0 otherwise, so that the depth of P is d(P ) = ∑ 
+
+> j
+
+aP j . For a labeling z, define the early depth of P as 
+
+Zz (P ) = ∑
+
+> j
+
+aP j zj ;when z is integral, Zz (P ) counts the early jobs containing P and d(P ) − Zz (P ) the late ones. We call an ordered pair ( P, Q ) of elementary intervals admissible if the left endpoint of Q
+
+minus the right endpoint of P is less than x (in particular, whenever Q does not lie to the right of P ). Equivalently, ( P, Q ) is admissible if there are points s ∈ P and t ∈ Q with 
+
+t − s < x . The width of ≺z is then determined by the depths alone. 
+
+Lemma 9 (Width formula) . For every legal labeling z ∈ { 0, 1}n,
+
+W (z) = max 
+
+> (P,Q ) admissible
+> (
+
+Zz (P ) + d(Q) − Zz (Q)). (2) 
+
+Proof. We first show that every antichain is counted by some admissible pair (Figure 2). Let C be a nonempty antichain (for C = ∅ there is nothing to show). Two jobs with the same label are comparable as soon as their interiors are disjoint, so the early members of 
+
+C pairwise conflict, and by the Helly property of intervals their interiors have a nonempty common intersection. The same holds for the late members. If one of the two groups is empty, choose an elementary interval P inside the common intersection of the other group and set Q = P . The pair is admissible because the left endpoint of P precedes its right endpoint, and Zz (P ) + d(P ) − Zz (P ) = d(P ) ≥ | C|. If both groups are nonempty, let ρ be 13 P Q< x 
+
+early jobs late jobs Figure 2: An antichain of ≺z as counted by an admissible pair ( P, Q ): the early jobs (solid) pairwise conflict and contain P , the late jobs (dashed) pairwise conflict and contain Q, and the gap between P and Q is shorter than x, so no early job precedes a late one (schematic). the smallest right endpoint among the early members of C and λ the largest left endpoint among the late members. Let P be the elementary interval with right endpoint ρ and Q the elementary interval with left endpoint λ — then P lies in the common intersection of the early members, since each of them conflicts with the job ending at ρ and hence starts before 
+
+ρ, and likewise Q lies in that of the late members. If ρ ≤ λ, the early job ending at ρ and the late job starting at λ have disjoint interiors, so their incomparability forces λ − ρ < x ; if 
+
+λ < ρ , then λ − ρ < 0 < x . Thus ( P, Q ) is admissible, every early member of C is counted by 
+
+Zz (P ), and every late member by d(Q) − Zz (Q), so the right-hand side of (2) is at least |C|.For the converse, fix an admissible pair ( P, Q ) and points s ∈ P , t ∈ Q with t − s < x . Let 
+
+C consist of all early jobs whose interior contains s and all late jobs whose interior contains t.No job is counted twice, since each job is either early or late, so |C| = Zz (P ) + d(Q) − Zz (Q). Early members of C pairwise conflict and are therefore incomparable. The same is true for late members. A late job never precedes an early job in ≺z , and if an early member i
+
+preceded a late member j, then lj − ri < t − s < x , contradicting condition (b). So C is an antichain, and W (z) ≥ | C|.
+
+5.3 Relaxing and rounding 
+
+By (1) and Lemma 9, OPT is the optimal value of the integer program minimize K
+
+subject to Zz (P ) + d(Q) − Zz (Q) ≤ K for all admissible pairs ( P, Q ),zj ∈ { 0, 1} for all free j, 
+
+(3) where the forced coordinates of z are fixed to their legal values. The constraints are linear in 
+
+z, and there are O(n) variables and O(n2) constraints. The algorithm relaxes zj ∈ { 0, 1} to 0 ≤ zj ≤ 1 and solves the resulting linear program in polynomial time. Let ( z∗, K ∗) be an optimal solution. Every legal labeling is feasible for the relaxation, so 
+
+K∗ ≤ OPT .
+
+It remains to round z∗ to a legal labeling without losing more than one machine. Recall the incidence matrix A. The elementary intervals contained in a job are consecutive, so every column of A has its ones in consecutive positions, and A is totally unimodular [10, 21]. Consider the polytope of all z′ ∈ Rn with 
+
+⌊Az∗⌋ ≤ Az′ ≤ ⌈ Az∗⌉, 0 ≤ z′ ≤ 1, z′ 
+
+> j
+
+= z∗ 
+
+> j
+
+for all forced j. (4) Its constraint matrix consists of A, −A, and rows of the identity matrix and its negative, and is therefore again totally unimodular. All right-hand sides are integers, being floors and 14 ceilings, the bounds 0 and 1, and forced coordinates of z∗, which are 0 or 1; and the polytope is nonempty, as it contains z∗, and bounded. Hence every vertex of the polytope is integral, and a vertex z′ ∈ { 0, 1}n can be computed in polynomial time by linear programming [21]. The labeling z′ is legal, since its forced coordinates agree with z∗, and for every elementary interval P , either ( Az∗)P is an integer, in which case (4) forces ( Az′)P = ( Az∗)P , or ( Az′)P
+
+is its floor or its ceiling, and in both cases 
+
+> ∣∣
+
+(Az′)P − (Az∗)P 
+
+> ∣∣
+
+< 1 for every elementary interval P. 
+
+Consequently, for every admissible pair ( P, Q ), 
+
+Zz′ (P ) + d(Q) − Zz′ (Q) < Z z∗ (P ) + d(Q) − Zz∗ (Q) + 2 ≤ K∗ + 2 ≤ OPT +2 ,
+
+and since the left-hand side is an integer, it is at most OPT +1. By Lemma 9, W (z′) ≤
+
+OPT +1, and Lemma 8 converts a minimum chain cover of ≺z′ into a feasible schedule on at most OPT +1 machines. All steps run in polynomial time, which completes the proof of Theorem 3. In summary, the algorithm checks the condition of Observation 2, solves the linear relaxation of (3), computes a vertex of the polytope (4), and covers ≺z′ by chains via bipartite matching. It consists of two linear programs with O(n) variables, having O(n2) and 
+
+O(n) constraints respectively, and one matching computation. 
+
+# 6 Conclusion 
+
+We have shown that requiring a break of length x on every used machine leaves fixed-interval scheduling polynomial-time solvable for x ≤ 1 but turns it into a strongly NP-hard problem for every fixed x ≥ 2. Despite this hardness, a feasible schedule on at most OPT +1 machines can be computed in polynomial time, and this is the best guarantee possible unless P = NP. Several questions remain. First, the additive-one algorithm solves a linear program with Θ( n2) constraints, and it would be interesting to know whether a purely combinatorial algorithm achieves the same guarantee. Second, one may ask for a characterization of the instances on which the width linear program has an integral optimum, and for an explicit natural family of instances on which the rounding step incurs the additive loss. Finally, natural extensions such as breaks restricted to given time windows or machine-dependent costs contain the present problem as a special case and so inherit the hardness, but not obviously the additive-one guarantee. Moreover, the normal form of Section 5.1 breaks down as soon as a machine may rest twice. 
+
+# Acknowledgements 
+
+The authors used generative AI models (Claude Fable 5 and Claude Fable 5.1 by Anthropic in the Claude Code harness, and GPT 5.6 Sol by OpenAI in the Codex harness) in the preparation of this work. The models were used to simplify substantially an earlier version of the hardness proof and to search for simple numerical constants realizing the variable gadget, for literature search, and for assistance with the writing of the paper and the production of its figures. All results and proofs were verified by the authors, who take full responsibility for the content. 15 References 
+
+[1] Mariia Anapolska, Tabea Brandt, Christina Büsing, and Tobias Mömke. Multithread in-terval scheduling with flexible machine availabilities: Complexity and efficient algorithms. 
+
+Discrete Applied Mathematics , 358:230–253, 2024. doi:10.1016/j.dam.2024.06.031 .[2] Esther M. Arkin and Ellen B. Silverberg. Scheduling jobs with fixed start and end times. 
+
+Discrete Applied Mathematics , 18(1):1–8, 1987. doi:10.1016/0166-218X(87)90037-0 .[3] Stephen E. Bechtold and Larry W. Jacobs. Implicit modeling of flexible break assignments in optimal shift scheduling. Management Science , 36(11):1339–1351, 1990. doi:10.1287/ mnsc.36.11.1339 .[4] Alberto Caprara, Paolo Toth, Daniele Vigo, and Matteo Fischetti. Modeling and solving the crew rostering problem. Operations Research , 46(6):820–830, 1998. doi: 10.1287/opre.46.6.820 .[5] Robert P. Dilworth. A decomposition theorem for partially ordered sets. Annals of Mathematics , 51(1):161–166, 1950. doi:10.2307/1969503 .[6] Andreas T. Ernst, Houyuan Jiang, Mohan Krishnamoorthy, and David Sier. Staff scheduling and rostering: A review of applications, methods and models. European Journal of Operational Research , 153(1):3–27, 2004. doi:10.1016/S0377-2217(03) 00095-X .[7] Matteo Fischetti, Silvano Martello, and Paolo Toth. The fixed job schedule problem with spread-time constraints. Operations Research , 35(6):849–858, 1987. doi:10.1287/ opre.35.6.849 .[8] Matteo Fischetti, Silvano Martello, and Paolo Toth. The fixed job schedule problem with working-time constraints. Operations Research , 37(3):395–403, 1989. doi:10.1287/ opre.37.3.395 .[9] Matteo Fischetti, Silvano Martello, and Paolo Toth. Approximation algorithms for fixed job schedule problems. Operations Research , 40(S1):S96–S108, 1992. doi:10.1287/opre. 40.1.S96 .[10] Delbert R. Fulkerson and Oliver A. Gross. Incidence matrices and interval graphs. Pacific Journal of Mathematics , 15(3):835–855, 1965. doi:10.2140/pjm.1965.15.835 .[11] Michael R. Garey and David S. Johnson. Computers and Intractability: A Guide to the Theory of NP-Completeness . W. H. Freeman, 1979. [12] Michael R. Garey, David S. Johnson, Gary L. Miller, and Christos H. Papadimitriou. The complexity of coloring circular arcs and chords. SIAM Journal on Algebraic and Discrete Methods , 1(2):216–227, 1980. doi:10.1137/0601025 .[13] Ram Gopalan and Kalyan T. Talluri. The aircraft maintenance routing problem. Opera-tions Research , 46(2):260–271, 1998. doi:10.1287/opre.46.2.260 .[14] Udaiprakash I. Gupta, Der-Tsai Lee, and Joseph Y.-T. Leung. An optimal solution for the channel-assignment problem. IEEE Transactions on Computers , C-28(11):807–810, 1979. doi:10.1109/TC.1979.1675260 .16 [15] Julia Heil, Kirsten Hoffmann, and Udo Buscher. Railway crew scheduling: Models, methods and applications. European Journal of Operational Research , 283(2):405–425, 2020. doi:10.1016/j.ejor.2019.06.016 .[16] G. Jaykrishnan and Asaf Levin. Scheduling with cardinality dependent unavailability periods. European Journal of Operational Research , 316(2):443–458, 2024. doi:10.1016/ j.ejor.2024.02.038 .[17] Antoon W. J. Kolen, Jan Karel Lenstra, Christos H. Papadimitriou, and Frits C. R. Spieksma. Interval scheduling: A survey. Naval Research Logistics , 54(5):530–543, 2007. 
+
+doi:10.1002/nav.20231 .[18] Mikhail Y. Kovalyov, Chi To Ng, and T. C. Edwin Cheng. Fixed interval scheduling: Models, applications, computational complexity and algorithms. European Journal of Operational Research , 178(2):331–342, 2007. doi:10.1016/j.ejor.2006.01.049 .[19] Mohan Krishnamoorthy, Andreas T. Ernst, and Davaatseren Baatar. Algorithms for large scale shift minimisation personnel task scheduling problems. European Journal of Operational Research , 219(1):34–48, 2012. doi:10.1016/j.ejor.2011.11.034 .[20] Luis Osorio-Valenzuela, Jordi Pereira, Franco Quezada, and Óscar C. Vásquez. Min-imizing the number of machines with limited workload capacity for scheduling jobs with interval constraints. Applied Mathematical Modelling , 74:512–527, 2019. doi: 10.1016/j.apm.2019.05.007 .[21] Alexander Schrijver. Theory of Linear and Integer Programming . Wiley, Chichester, 1986. [22] Craig A. Tovey. A simplified NP-complete satisfiability problem. Discrete Applied Mathematics , 8(1):85–89, 1984. doi:10.1016/0166-218X(84)90081-7 .[23] Magdalena Widl and Nysret Musliu. The break scheduling problem: Complexity results and practical algorithms. Memetic Computing , 6(2):97–112, 2014. doi:10.1007/ s12293-014-0131-0 .17

@@ -1,0 +1,1194 @@
+Title: A QPTAS for Stochastic Scheduling of Bernoulli Jobs
+
+URL Source: https://arxiv.org/pdf/2610.11481v1
+
+Published Time: Fri, 09 Oct 2026 01:01:33 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# A QPTAS for Stochastic Scheduling of Bernoulli Jobs 
+
+Junho Hwang 
+
+Abstract 
+
+We study the classical problem of scheduling jobs with random processing times on 
+
+m identical machines to minimize the expected sum of completion times, for Bernoulli jobs: job j takes time pj with probability qj and time 0 otherwise, and its outcome is revealed when it starts. The benchmark is an optimal adaptive policy. We give a quasi-polynomial-time approximation scheme for every number of machines. Previously, quasi-polynomial time was known to give an O(log N )-approximation, and approximation schemes were known only for a constant number of distinct sizes. The scheme rests on a simple observation: it suffices to round the times at which machines become free, rather than the times at which jobs start, to a grid whose width is proportional to the job size, and an optimal policy stretched by a factor close to one already respects such grids. We also show that every policy that fixes the order of the jobs in advance loses a factor Ω(log N ), already on two machines, so a constant factor requires adapting the order to the observed outcomes. Further results include a polynomial-time adaptive rule with ratio min {m, 1 + ∑ 
+
+> j
+
+qj }, a simpler approximation scheme for a constant number of sizes, and #P-hardness of computing the optimal expected cost on two machines. arXiv:2610.11481v1 [cs.DS] 8 Oct 2026 Contents 
+
+1 Introduction 3
+
+1.1 Our results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31.2 Techniques . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+
+2 Model and preliminaries 63 An approximation-preserving size reduction 94 A dynamic program over rounded release times 10 
+
+4.1 The reuse rule . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10 4.2 Stretching and compressing an optimal policy . . . . . . . . . . . . . . . . . . . . . . 11 4.3 The dynamic program . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11 4.4 Counting the states . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 4.5 Proof of Theorem 1.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13 
+
+5 A polynomial-time m-approximation 14 
+
+5.1 The greedy rule minimizes H . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14 5.2 Proof of Theorem 5.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16 
+
+6 Exact evaluation is hard, approximate evaluation is easy 17 
+
+6.1 SEPT for stochastically ordered Bernoulli jobs . . . . . . . . . . . . . . . . . . . . . 17 6.2 Hardness of exact computation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 6.3 Approximate evaluation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 
+
+7 List policies lose a logarithmic factor 20 8 Open problems 21 AI usage disclosure 22 
+
+21 Introduction 
+
+Scheduling jobs on identical parallel machines to minimize the sum of completion times is one of the most basic problems in scheduling. With deterministic processing times it is solved by the shortest-processing-time rule [Smi56, BCS74]. When processing times are random and only their distributions are known in advance, the scheduler is a policy : it decides which job to start next based on what it has observed so far. The benchmark is the best such policy, which may adapt its decisions to the observed processing times. The problem has been studied for decades [Rot66, WP80, MRW84, WVW86], and approximation algorithms are known for broad classes of distributions [MSU99, SU05, MUV06, SSU16, GMUX20, GMUX21]. Their guarantees depend on an upper bound ∆ on the squared coefficient of variation of the processing times, and they become weak when processing times have high variance. A clean way to isolate the difficulty of high variance is to consider Bernoulli jobs . Job j has processing time pj with probability qj and 0 otherwise, and the outcome becomes known when the job starts. Such a job either finishes immediately or blocks its machine for a long time, and a good policy has to decide when to risk such a blocking. Even for Bernoulli jobs, constant-factor approximations have been elusive. For general distributions, Im, Moseley, and Pruhs [IMP15] gave a list policy with ratio O(log 2 N + m log N ), and a constant factor with (1 + ε)m machines when 
+
+m = Ω(log N ). Eberle, Fischer, Matuschke, and Megow [EFMM19] showed that index policies lose a factor Ω(∆ 1/4), and gave an O(m)-approximation when the instance consists of identical deterministic jobs and identical Bernoulli jobs. Gupta, Moseley, and Zhou [GMZ23] gave a list policy whose ratio is ˜O(√m), where ˜O hides factors polylogarithmic in N . Recently, Antoniadis, Hoeksma, Schewior, and Uetz [AHSU25] gave a polynomial-time approximation scheme (PTAS) when the number of distinct sizes pj is a constant. They also gave a quasi-polynomial-time O(log N )-approximation for arbitrary sizes, and left open whether constant factors are possible. On the complexity side, Moseley, Pruhs, Uetz, and Zhou [MPUZ26] showed that computing the optimal expected cost, deciding whether it is at most a given value, and computing the expected cost of SEPT are #P-hard for jobs with two-point distributions. 
+
+1.1 Our results 
+
+Throughout, N is the number of jobs, m < N the number of machines, L the input length, 
+
+P = ∑ 
+
+> j
+
+qj pj the expected total processing time, and OPT the expected sum of completion times of an optimal adaptive policy. Our main result is an approximation scheme in quasi-polynomial time for every number of machines. 
+
+Theorem 1.1. For Bernoulli jobs on m identical machines and every η ∈ (0 , 1] , a policy with expected sum of completion times at most (1 + η)OPT can be computed in time 2O(η−2 log 2(N/η )) · poly( L).Each decision of the policy is a table lookup. 
+
+This improves the quasi-polynomial O(log N )-approximation of [AHSU25] to a ratio of 1 + η.The same dynamic program, without the size reduction, gives a short proof of the PTAS of [AHSU25] for a constant number of sizes, with a running time whose exponent is linear in 1 /η .
+
+Theorem 1.2. If the jobs have n distinct sizes, a (1 + η)-approximation can be computed in time 
+
+(N m )O(n/η ) · poly( L) for fixed n and η.
+
+In polynomial time, we obtain a ratio that does not depend on N .
+
+Theorem 1.3. A simple adaptive priority rule runs in polynomial time and has expected cost at most min {m, 1 + ∑ 
+
+> j
+
+qj } · OPT .
+
+3Earlier polynomial-time guarantees for Bernoulli jobs with arbitrary sizes grow with N [IMP15, GMZ23]. Theorem 1.3 gives a constant factor for every fixed number of machines, and the factor 2 for two machines. The second bound is useful when few jobs are expected to be positive. Exact computation is hard already for two machines, while approximate evaluation of a given policy is easy. 
+
+Theorem 1.4. For Bernoulli jobs on two machines, computing OPT , deciding whether OPT ≤ x,and computing the expected cost of the shortest-expected-processing-time rule (SEPT) are #P-hard. On the other hand, the expected cost of any given non-idling policy can be approximated within a factor 1 ± ρ with probability 1 − δ from O(N ρ −2 log(2 /δ )) simulations. 
+
+The hardness part adapts the construction of [MPUZ26], which uses jobs with two-point distributions on m = N/ 2 machines, to Bernoulli jobs on two machines. Finally, we show that list policies cannot reach a constant factor. 
+
+Theorem 1.5. There are instances on two machines in which every policy that fixes the job order in advance costs Ω(log N ) · OPT .
+
+So the guarantees of [IMP15, GMZ23] for list policies must depend on N , and the bound 
+
+O(log 2 N ) of [IMP15] for two machines is tight up to a factor O(log N ). 
+
+1.2 Techniques 
+
+Rounding release times instead of start times. A dynamic program over states of an optimal policy must record when each machine becomes free and which jobs remain. Antoniadis, Hoeksma, Schewior, and Uetz [AHSU25] keep the number of states polynomial by transforming an optimal policy into a stratified policy that starts the jobs of each type only at the points of a type-specific grid. Their transformation loses a factor 1 + O(nε ) for n types [AHSU25, Theorem 4.23]. The number of states of their dynamic program grows as mnε −2z
+
+for some 1 ≤ z ≤ n, so the approach needs n to be a constant. We round only the times at which machines become free. Fix an integer K and let γ = 1 + 1 /K .A positive job of size p started at time s completes at s + p, and under our reuse rule its machine becomes available again at the first point of the grid ( p/K )Z that is at least s + p:
+
+Rp(s) = pK 
+
+> (⌈
+
+sK p
+
+> ⌉
+
++ K
+
+> )
+
+∈ [s + p, s + γp ).
+
+The key observation is that an optimal policy stretched by the factor γ already obeys this rule. If the stretched policy starts the job at γs , then the next job on the same machine starts at least at 
+
+γ(s + p) > R p(γs ). Compressing the stretched policy back, by starting the same jobs in the same order as early as the rule allows, can only move start times earlier. So the loss is the factor γ on the expected sum of start times, for any number of sizes (Lemma 4.2). Start times remain unconstrained, which is why no delays accumulate. Figure 1 shows the three policies in one realization. The remaining work is to count the states of the dynamic program, which consist of the sorted vector of release times and the number of remaining jobs of each size class. For the latter, it is enough to know how many jobs of each class remain: by an exchange argument of Gupta, Moseley, and Zhou [GMZ23], some optimal policy starts the jobs of each size class in non-decreasing order of qj (Lemma 2.4). Two counting facts control the release times. At a decision time t, every release time is one of the K + 1 grid points of its class in [ t, R p(t)], so the vector of release times is a multiset of m values drawn from n(K + 1) candidates. The decision times themselves are compositions 40 1 2 3 4 5 6 7 8 9 10 
+
+Π∗
+
+> M1
+> M2
+
+Πγ
+
+> M1
+> M2
+
+Π
+
+> M1
+> M2
+
+a c eb da c eb da cb d e
+
+Figure 1: Stretching and compressing (Lemma 4.2) for K = 2, so that γ = 3 /2, in a realization in which all five jobs are positive. Jobs a and e have size 1, jobs b and c have size 5, and job d
+
+has size 2. Top: a non-idling policy Π ∗ on two machines. Middle: the stretched policy Π γ , which multiplies every start time by γ and keeps the machines; a job of size p started at time s releases its machine at Rp(s), before the next start on that machine. Bottom: the compressed policy Π, which starts the jobs in the same order, each at the current minimum release time. Hatched intervals are reserved by the reuse rule after a job has completed. In Π, job c starts at time 1, which is not a multiple of 5 /2, so its machine stays reserved until R5(1) = 15 /2. Job e therefore starts at time 7 instead of 6, on the other machine, and still before its stretched start time 9. The sums of the start times are 12, 18 and 13. of at most N maps Rp, and a block encoding of such compositions shows that there are at most   
+
+> ((K+1) N+n−1
+> n
+> )
+
+of them (Lemma 4.4). For a constant number of sizes this gives Theorem 1.2. For arbitrary sizes we first reduce to the case that all sizes lie within a polynomial ratio. We build on the reduction of [GMZ23, AHSU25], which tests very large jobs first and runs very small jobs at the start, but which loses a constant factor. Our version keeps the approximation ratio up to an additive 2 ε (Theorem 3.1). It compares with the optimum through the inequality OPT ≥ OPT( U ) + ∑ 
+
+> j / ∈U
+
+qj pj for every set U of jobs. It bounds the cost of the rare event that a very large job is positive by Lemma 2.3, which bounds start times in terms of processed volume. After rounding the sizes to powers of 1 + ε, the dynamic program has n = O(ε−1 log( N/ε )) size classes, which gives Theorem 1.1. After the reduction the number of decision times is polynomial, so the quasi-polynomial running time comes from two sources: the vectors of remaining counts over these n classes, and the multisets of release times. 
+
+A greedy rule that minimizes a surrogate of the cost. For a set S of started jobs, let 
+
+Wm−1(S) be their total realized processing time minus the m − 1 largest realized values. For non-idling policies, the start time of the ( k + 1)-st job lies between Wm−1(Sk)/m and Wm−1(Sk), where Sk is the set of the first k jobs. So the sum of Wm−1(Sk) over k approximates the cost within a factor m. This sum can be minimized exactly by an adaptive greedy rule. Adding a realized value x
+
+increases Wm−1 by min {x, θ }, where θ is the ( m − 1)-st largest realized value so far. The rule starts a job of minimum expected increment qj min {pj , θ }, breaking ties by qj , and an exchange argument proves its optimality (Lemma 5.2). The bound 1 + ∑ 
+
+> j
+
+qj comes from a different comparison between 5the sum and the start times. It uses the fact that the ( m − 1)-st largest realized value never exceeds the second earliest time at which a machine becomes free. 
+
+Hardness and the list lower bound. The hardness proof follows the construction of [MPUZ26]. It adds a job with a tiny probability whose size differs by 1 /4 between two instances, together with jobs of probability 1 /2 that encode the items of a #Knapsack instance. On these instances SEPT is optimal, by the theorem of Weber, Varaiya, and Walrand [WVW86], which we extend to Bernoulli jobs by a smoothing argument (Lemma 6.1). The difference of the two optimal costs then reveals the number of subsets of large weight. The list lower bound uses types with piq2 
+
+> i
+
+constant. In every prefix of a list, pairs of positive jobs of the same type force a delay that is the same for each type, so every list accumulates delay Ω(log N ) per job. A policy that tests jobs until the first positive one and then reorders the rest avoids this. 
+
+Organization. Section 2 defines the model and collects basic facts. Section 3 gives the size reduction, and Section 4 gives the dynamic program and proves Theorems 1.1 and 1.2. Section 5 proves Theorem 1.3, Section 6 proves Theorem 1.4, and Section 7 proves Theorem 1.5. Section 8 discusses open problems, including relaxations over start-time distributions. 
+
+# 2 Model and preliminaries 
+
+Jobs and policies. There are N jobs and m identical machines, all available at time 0. Job j has an independent random processing time Xj with Pr[ Xj = pj ] = qj and Pr[ Xj = 0] = 1 − qj , where 
+
+pj > 0 and qj ∈ (0 , 1] are rationals. We call pj the size of j, and we call the outcome of j positive if 
+
+Xj = pj and zero otherwise. We write μj = E[Xj ] = qj pj , P = ∑ 
+
+> j
+
+μj and Λ = ∑ 
+
+> j
+
+qj . Jobs of equal size form a size class , and n denotes the number of size classes. The outcome of a job becomes known when the job starts: a positive job then occupies its machine for pj time units, and a zero job completes at once. A policy starts the jobs one at a time and without preemption. Each decision chooses a remaining job, a machine, and a start time that is not earlier than the previous start time and at which the machine is not occupied. The decision may depend on the outcomes of the jobs started before and on independent random coins, but not on the outcome of the chosen job. In particular, several jobs may start at the same time, one after another, and each of these decisions sees the outcomes of the earlier ones. Policies may leave machines idle on purpose. For a policy Π, let SΠ 
+
+> j
+
+and CΠ 
+
+> j
+
+= SΠ 
+
+> j
+
++ Xj be the start and completion times of job j. The cost of Π is cost(Π) = ∑
+
+> j
+
+E[CΠ 
+
+> j
+> ]
+
+= P + ∑
+
+> j
+
+E[SΠ
+
+> j
+> ]
+
+,
+
+and OPT is the infimum of the cost over all policies. A policy is an α-approximation if its cost is at most α · OPT. For a set U of jobs, OPT( U ) denotes the optimum of the instance consisting of the jobs in U alone on the same m machines, and P (U ) = ∑ 
+
+> j∈U
+
+μj .More generally, a state consists of a set U of remaining jobs, a current time τ , and the times 
+
+ℓ1, . . . , ℓ m at which the machines become free. Only the sorted vector of the times max {ℓi, τ }
+
+matters, and we call it the release vector of the state. The outcomes of the remaining jobs are independent of the past. The cost of a policy from a state is the expected sum of the completion times of the jobs in U .6Non-idling policies. A policy is non-idling if it starts a job whenever a machine is free and jobs remain. Equivalently, it starts every job at the minimum entry of the current release vector, on a machine that is free at that time. Since the outcome of a job is known at its start, waiting reveals no information. Hence an optimal policy need not idle [AHSU25, Lemma 2.1]; we include the short argument. 
+
+Lemma 2.1. From every state, some optimal policy is deterministic and non-idling. In particular, 
+
+OPT is a minimum over finitely many decision trees. Proof. Let V (ℓ, U ) be the infimum of the cost from a state with release vector ℓ and remaining jobs U , with V (ℓ, ∅) = 0. If ℓ ≤ ℓ′ coordinatewise, then V (ℓ, U ) ≤ V (ℓ′, U ): a policy for ℓ′ can be run from ℓ with the same start times, using the machine of rank i in ℓ for the machine of rank i in ℓ′.We show by induction on |U | that V (ℓ, U ) is attained by a deterministic non-idling policy. Consider any policy and fix the outcome of its coins. Its first decision starts a job x at some time s ≥ ℓ1 on a machine that is free at time s. Afterwards its release vector is obtained from the sorted vector of the values max {ℓi, s }, whose minimum entry is s, by replacing that minimum entry by s + Xx.Starting x at time ℓ1 instead, on a machine with release time ℓ1, gives x a completion time that is not larger, and the release vector is then obtained from ℓ by replacing its minimum entry ℓ1 by 
+
+ℓ1 + Xx. We have ℓi ≤ max {ℓi, s } for every i and ℓ1 + Xx ≤ s + Xx. Replacing the minimum entries of two coordinatewise dominated sorted vectors by values x′ ≤ y′ and sorting again preserves the domination. So the release vector after the shifted start is dominated by the one after the original start. By monotonicity and induction, continuing with a deterministic non-idling optimal policy is no worse than the original continuation. Averaging over the coins and choosing the best first job proves the claim for U . There are finitely many deterministic non-idling decision trees, which gives the second statement. 
+
+Basic bounds. The following two inequalities are used throughout. 
+
+Lemma 2.2. (a) P ≤ OPT .(b) OPT ≥ OPT( U ) + P (J \ U ) for every set U of jobs, where J is the set of all jobs. Proof. Part (a) holds because Cj ≥ Xj for every job. For part (b), let Π be an optimal policy for J. Define a policy Π U for the jobs in U as follows. It simulates Π; whenever Π starts a job 
+
+j / ∈ U on some machine, Π U draws an independent virtual outcome distributed as Xj and keeps that machine idle for the virtual processing time. This is a valid policy for U , and the joint distribution of the start times and outcomes of the jobs in U is the same under Π U as under Π. Hence OPT( U ) ≤ ∑ 
+
+> j∈U
+
+E[CΠ 
+
+> j
+
+]. The jobs outside U contribute ∑ 
+
+> j / ∈U
+
+E[CΠ 
+
+> j
+
+] ≥ P (J \ U ), and adding the two bounds gives (b). 
+
+Free times. Fix a policy and a realization of the outcomes. For 0 ≤ k < N , let Sk be the set of the first k jobs started and let Fk be the start time of the ( k + 1)-st job. For a set S of started jobs and an integer r ≥ 0, let Wr(S) be the total realized processing time of S minus the sum of the r
+
+largest realized processing times in S, with Wr(S) = 0 if |S| ≤ r. Adding a job to S never decreases 
+
+Wr(S): the sum gains the new value if it is not among the r largest, and otherwise it gains the value that leaves the r largest. Also, Wr(S) is non-increasing in r. Gupta, Moseley, and Zhou [GMZ23] measure the progress of a policy by its free times; the following lemma relates them to Wm−1.7Lemma 2.3. Let all machines be free at time 0, and consider a realization in which every job starts at the earliest time at which some machine is free. This holds on every realization of a non-idling policy. Then for every 0 ≤ k < N ,
+
+Fk ≤ Wm−1(Sk) ≤ m F k.
+
+Proof. On such a realization every machine is busy without gaps from time 0 until it becomes free. So after k starts, the time at which machine i becomes free equals its load Li, the total realized processing time of the jobs started on it, and Fk = f := min i Li.The m − 1 jobs with the largest realized processing times in Sk lie on at most m − 1 machines. Some machine holds none of them, so its load is at most Wm−1(Sk), and f is at most that load. For the second inequality, consider a machine with Li > f and let Ji be the last job started on it. The job Ji is positive. It started at the earliest free time of that moment, which is at most f , since the earliest free time never decreases. Hence Li −f ≤ XJi . At most m−1 machines have Li > f , and their last jobs are distinct. So the total realized processing time of Sk is ∑ 
+
+> i
+
+Li ≤ mf + ∑ 
+
+> i:Li>f
+
+XJi ,which is at most mf plus the sum of the m − 1 largest realized processing times in Sk. This gives 
+
+Wm−1(Sk) ≤ mf .
+
+Ordering within a size class. Fix an order of the jobs of each size class by non-decreasing qj ,breaking ties by index. A policy respects the class orders if, whenever it starts a job of some class, it starts the first remaining job of that class in this order. Gupta, Moseley, and Zhou [GMZ23, Lemma 2.2] state that an optimal policy starts the jobs of each size class in increasing order of qj .Their proof in [GMZ23, Appendix B] is an exchange that moves a job with smaller qj before an equal-size job with larger qj , using an independent coin, without increasing the cost. We need the following existential form, with the tie-breaking used by our dynamic program, and we include the computation for the exchange. 
+
+Lemma 2.4. From every state, some optimal policy is deterministic, non-idling, and respects the class orders. Proof. We use induction on the number of remaining jobs; the case of at most one job is trivial. By Lemma 2.1, take a deterministic non-idling optimal policy T , let x be its first job, and let t0 be its start time, the minimum entry of the release vector. Let a be the first remaining job of the class of 
+
+x, so that qa ≤ qx, and let p be their common size. It suffices to find an optimal non-idling policy that starts a first. Indeed, after the outcome of a is revealed we can then replace the continuation by a deterministic non-idling optimal policy for the resulting state that respects the class orders, which exists by induction. If a = x there is nothing to do, and if qa = qx, exchanging the names of 
+
+a and x gives such a policy. So let qa < q x. The policy T starts a on every path. Let T0 and T1 be its continuations after x is zero and positive, and let σ0 and σ1 be the times at which they start a. These random times do not depend on the outcome of a, and σ0, σ 1 ≥ t0 since the minimum release time never decreases. Let 
+
+ϑ = ( qx − qa)/((1 − qa)qx) ∈ (0 , 1]. The policy T ′ starts a at time t0 on the machine used by T for x.If a is positive, it continues as T1, with x started in place of a. If a is zero, then with probability 1 − ϑ it continues as T0, with x started in place of a. With probability ϑ it instead starts x at time 
+
+t0 and continues as T0 or T1, according to the outcome of x, treating the node of a as a zero job. The policy T ′ is non-idling, and it continues as a copy of T1 with probability qa + (1 − qa)ϑq x = qx
+
+and as a copy of T0 with probability 1 − qx. Each copy is entered with the same release vector as in T ,because a and x have the same size. In a copy of T1, the job run at the node of a is positive with probability qaqx/q x = qa. In a copy of T0, it is positive with probability (1 −qa)(1 −ϑ)qx/(1 −qx) = qa.8In both cases this outcome is independent of all other jobs. So every job other than a and x has the same expected completion time in T and T ′. For a and x, a direct computation from the branch probabilities above gives 
+
+ET [Ca + Cx] − ET ′ [Ca + Cx] = (1 − qx)( qx − qa)
+
+qx
+
+> (
+
+E[σ0] − t0 
+
+> )
+
++ ( qx − qa)(E[σ1] − t0 
+
+> )
+
+≥ 0,
+
+where the terms with the factor p cancel. So T ′ is an optimal non-idling policy that starts a first. The stronger statement that reordering the jobs of each size class by qj never increases the cost of a given policy, as stated in [AHSU25, Lemma 2.2], does not hold in general. For instance, let 
+
+m = 1 and take jobs a and b of size 1 with qa = 1 /10 and qb = 9 /10, and a deterministic job d of size 100. The policy that starts b first, then d and a if b is zero, and a and d if b is positive, costs 112 .89. Its reordered version starts a first and continues with the same tree, and costs 191 .29. We use only the existential form. 
+
+# 3 An approximation-preserving size reduction 
+
+This section reduces the problem to instances whose sizes lie within a polynomial ratio, at a loss of 2ε in the approximation ratio. We build on the reduction of Gupta, Moseley, and Zhou [GMZ23, Lemma 3.3 and Appendix C], which tests very large jobs first and runs very small jobs at the start, at the cost of a constant factor. Antoniadis, Hoeksma, Schewior, and Uetz [AHSU25, Lemma A.1] adapt it to turn an α-approximation for instances whose sizes are powers of c ≥ 2 into a ( c2 + cα )-approximation. The version below keeps the ratio α up to an additive 2 ε. It uses Lemma 2.2(b) to compare with the optimum, and Lemma 2.3 to bound the cost of the rare event that a very large job is positive. If m ≥ N , starting every job at time 0 is optimal. If m = 1, the policy that starts the jobs in non-decreasing order of μj (SEPT) is optimal [Rot66]; Section 5 recalls the argument for adaptive policies. We therefore assume 2 ≤ m < N . Fix ε ∈ (0 , 1] and set 
+
+T = N P ε , σ = εP N 2 , D = N σ = εP N .
+
+Call a job large if pj ≥ T , small if pj < σ , and medium otherwise, and let L, Q and M be the sets of large, small and medium jobs. The sizes of the medium jobs lie in [ σ, T ), so their ratio is less than N 3/ε 2.Given a policy A for the instance consisting of the medium jobs alone, the policy Π A for the whole instance works as follows. 1. At time 0, start the large jobs one after another on one machine, as long as their outcomes are zero. 2. If a large job is positive, schedule all remaining jobs from that moment on by list scheduling in any fixed order: whenever a machine is free, start the next job of the list on it. 3. Otherwise all large jobs are zero and have completed at time 0. List-schedule the small jobs from time 0, wait until time D, and then run A on the medium jobs with every start time shifted by D.
+
+Theorem 3.1. If cost( A) ≤ α · OPT( M ) for some α ≥ 1, then cost(Π A) ≤ (α + 2 ε) · OPT .
+
+9Proof. Let E be the event that some large job is positive. 
+
+The event E. On E, all decisions before the first positive large job occur at time 0, and the rest is list scheduling. So on every realization in E, every job starts at the earliest time at which some machine is free, and Lemma 2.3 bounds every start time by Wm−1(Sk) ≤ W1(Sk) ≤ W1(J), using 
+
+m ≥ 2 and the monotonicity of Wr. If ℓ is a positive large job, then W1(J) is at most the total realized processing time minus Xℓ. Summing over all large jobs therefore gives, on every realization, 
+
+1E W1(J) ≤ ∑
+
+> ℓ∈L
+
+1[Xℓ > 0] ∑
+
+> i̸=ℓ
+
+Xi.
+
+By independence, E[1[Xℓ > 0] Xi] = qℓμi for i̸ = ℓ. Moreover ∑ 
+
+> ℓ∈L
+
+qℓ ≤ ∑ 
+
+> ℓ∈L
+
+μℓ/T ≤ P/T . Hence 
+
+E[1E W1(J)] ≤ P 2/T , and 
+
+E
+
+> [
+
+1E
+
+> ∑
+> j
+
+Sj
+
+> ]
+
+≤ N · P 2
+
+T = εP. 
+
+The complement of E. On the complement, every large job starts at time 0. The small jobs have total realized processing time at most |Q|σ ≤ D, so every machine has completed its small jobs by time D, and all machines are free when A starts. Every medium job starts at time D plus its start time under A. The event E depends only on the large jobs, so conditioning on its complement does not change the distribution of the other outcomes. Therefore 
+
+E
+
+> [
+
+1E
+
+> ∑
+> j / ∈L
+
+Sj
+
+> ]
+
+≤ (|Q| + |M |) D + ∑
+
+> j∈M
+
+E[SAj 
+
+> ]
+
+≤ εP + cost( A) − P (M ).
+
+Combining. Adding the two bounds, cost(Π A) = P + E
+
+> [∑
+> j
+
+Sj
+
+> ]
+
+≤ P (L) + P (Q) + cost( A) + 2 εP ≤ P (L ∪ Q) + α OPT( M ) + 2 εP. 
+
+By Lemma 2.2(b) with U = M we have OPT( M ) + P (L ∪ Q) ≤ OPT, and by Lemma 2.2(a) we have P ≤ OPT. Since α ≥ 1, the right-hand side is at most α OPT + 2 ε OPT. 
+
+# 4 A dynamic program over rounded release times 
+
+In this section the instance is arbitrary, with n size classes and all machines free at time 0. We fix an integer K ≥ 1 and set γ = 1 + 1 /K . The dynamic program optimizes over policies whose machines are released only at points of size-dependent grids. The main point is that stretching an optimal policy by the factor γ already makes it respect these grids, so the loss is a factor γ on OPT − P regardless of the number of size classes. 
+
+4.1 The reuse rule 
+
+For a size p, let gp = p/K and define 
+
+Rp(s) = gp 
+
+> (⌈
+
+sgp
+
+> ⌉
+
++ K
+
+> )
+
+(s ≥ 0) .
+
+Lemma 4.1. For every size p and every s ≥ 0: (a) s + p ≤ Rp(s) < s + γp ; (b) Rp is non-decreasing; (c) Rp(s) is an integer multiple of gp.Proof. We have gp⌈s/g p⌉ ∈ [s, s + gp) and Kg p = p, so Rp(s) ∈ [s + p, s + p + gp) = [ s + p, s + γp ). Parts (b) and (c) are immediate. 10 A reuse-rule policy is a policy in which a positive job of size p started at time s keeps its machine unavailable until time Rp(s). The job itself completes at time s + p, and the machine stays idle during [ s + p, R p(s)). A zero job leaves its machine available at once. The time from which a machine may be used again is its release time . A reuse-rule policy is grid-non-idling if it always starts the next job at the current minimum release time, on a machine attaining it. 
+
+4.2 Stretching and compressing an optimal policy 
+
+Lemma 4.2. There is a grid-non-idling reuse-rule policy Π that respects the class orders and satisfies SΠ 
+
+> j
+
+≤ γ S Π∗ 
+
+> j
+
+for every job j and every realization, where Π∗ is a deterministic optimal policy as in Lemma 2.4 and both policies see the same outcomes. In particular, cost(Π) ≤ P + γ (OPT − P ).Proof. Figure 1 illustrates the proof in one realization. 
+
+Stretching. Let Π γ start every job on the same machine as Π ∗ at γ times its start time in Π ∗.At time γt , the policy Π γ has observed exactly the outcomes that Π ∗ has observed at time t, so it can make the same decisions. Suppose a job i of size p is positive, starts at time s on some machine in Π ∗, and the next job on that machine starts at time s′ ≥ s + p. In Π γ the machine is released at 
+
+Rp(γs ) < γs + γp ≤ γs ′ by Lemma 4.1(a). After a zero job, the next start on the machine is at 
+
+γs ′ ≥ γs . So Π γ is a reuse-rule policy, possibly with idle time, with SΠγ 
+
+> j
+
+= γS Π∗ 
+
+> j
+
+.
+
+Compressing. The policy Π ∗ makes its decisions in non-decreasing order of start time, so Π γ
+
+starts the jobs in the same order. The policy Π starts the jobs in this order, each at its own current minimum release time and on a machine attaining it. This is possible online: the k-th job of the order is determined by the outcomes of the first k − 1 jobs, which Π has already observed. The order within each size class is that of Π ∗, so Π respects the class orders. For vectors b ∈ Rm and τ ≥ 0, let b ∨ τ be the vector (max {b1, τ }, . . . , max {bm, τ }) sorted increasingly. Let a and b be the sorted release vectors of Π and Π γ just before the k-th start, and let τk be the start time of the k-th job in Π γ . We show by induction that a ≤ b ∨ τk coordinatewise. Initially a = b = 0. The policy Π γ starts the k-th job at τk on a machine released by τk, so the corresponding entry of b ∨ τk equals τk, the minimum of b ∨ τk. Hence Π starts the job at time 
+
+sk = a1 ≤ τk. If the job is zero, neither release vector changes. If it is positive with size p, the new release vector of Π is obtained from a by replacing its minimum entry by Rp(sk) and sorting. Likewise, since Rp(τk) ≥ τk, the vector b′ ∨ τk for the new release vector b′ of Π γ is obtained from 
+
+b ∨ τk by replacing the entry τk of the used machine by Rp(τk) and sorting. Since Rp(sk) ≤ Rp(τk)by Lemma 4.1(b), the new vectors satisfy the same coordinatewise domination: replacing the minimum entries of two dominated sorted vectors by values x ≤ y and sorting again preserves domination. Finally τk+1 ≥ τk, so b′ ∨ τk+1 ≥ b′ ∨ τk coordinatewise. This completes the induction, and SΠ 
+
+> j
+
+= sk ≤ τk = γS Π∗ 
+
+> j
+
+for the k-th job j.Summing over the jobs, cost(Π) = P + ∑ 
+
+> j
+
+E[SΠ 
+
+> j
+
+] ≤ P + γ ∑ 
+
+> j
+
+E[SΠ∗ 
+
+> j
+
+] = P + γ(OPT − P ). 
+
+4.3 The dynamic program 
+
+Number the size classes 1 , . . . , n , let pc be the size of class c, and let Nc be the number of jobs in it. We optimize over grid-non-idling reuse-rule policies that respect the class orders of Section 2, which sort each class by qj and break ties by index. A state is a pair ( ℓ, ν ). Here ℓ = ( ℓ1 ≤ · · · ≤ ℓm) is the sorted vector of release times, in absolute time. The vector ν = ( ν1, . . . , ν n) counts the remaining jobs of each class; the remaining jobs of class c are the last νc jobs of its order. For νc > 0, let jc(ν)be the first remaining job of class c, and let ℓ(c) be the vector obtained from ℓ by replacing ℓ1 by 11 Rpc (ℓ1) and sorting. Let ec denote the c-th unit vector. Define V (ℓ, 0) = 0 and, for ν̸ = 0, 
+
+V (ℓ, ν ) = min  
+
+> c:νc>0
+> [
+
+ℓ1 + qj pc + (1 − qj ) V (ℓ, ν − ec) + qj V (ℓ(c), ν − ec
+
+> )]
+
+, j = jc(ν).
+
+Lemma 4.3. V ((0 , . . . , 0) , (N1, . . . , N n)) is the minimum cost of a grid-non-idling reuse-rule policy that respects the class orders. A policy attaining it chooses, in each state, a class c attaining the minimum and starts jc(ν).Proof. In such a policy, the next job starts at time ℓ1, so the expected completion time of the job started in state ( ℓ, ν ) is ℓ1 + qj pc. After the start, the state is ( ℓ, ν − ec) if the job is zero and (ℓ(c), ν − ec) if it is positive. The outcomes of the remaining jobs are independent of the past, the costs add up, and the machines are identical. So the minimum expected cost of the remaining jobs depends only on the state and satisfies the recursion. The recursion is acyclic because ∑ 
+
+> c
+
+νc
+
+decreases. 
+
+4.4 Counting the states 
+
+Lemma 4.4. All release times that occur in the dynamic program lie in a set of size at most ((K+1) N +n−1
+
+> n
+> )
+
+.Proof. Write gc = gpc and Rc = Rpc . A release time is either 0 or equal to Rc(t) for a decision time 
+
+t at which a positive job of class c starts. The time t is itself 0 or an earlier release time. Following this chain backwards shows that every release time has the form v = Rck ◦ · · · ◦ Rc1 (0), where k ≤ N
+
+because the maps correspond to distinct positive jobs. We encode such a composition by a vector in 
+
+Zn
+
+> ≥0
+
+.Split the sequence c1, . . . , c k into blocks. The first block ends at the last occurrence of the class with the largest grid width in the sequence, and the remaining suffix is split in the same way. The largest grid widths of successive blocks strictly decrease. Consider a block of length r whose largest grid width is g, which maps the value u to the value v. Each map Rc′ in the block has 
+
+gc′ ≤ g and increases its argument by an amount in [ Kg c′ , (K + 1) gc′ ), by Lemma 4.1(a). Hence 
+
+Kg ≤ v − u < (K + 1) rg . The last map of the block has grid width g, so v is a multiple of g, and we can write v = g(⌈u/g ⌉ + a) for an integer a. Since g⌈u/g ⌉ ∈ [u, u + g), the two bounds on v − u
+
+give K ≤ a ≤ (K + 1) r − 1. The encoding records the value a of each block at the coordinate of the block’s largest class, and 0 at every other coordinate. Processing the nonzero coordinates in decreasing order of grid width, starting from u = 0, reconstructs v. With κ ≥ 1 blocks, the coordinates sum to at most (K +1) k −κ ≤ (K +1) N −1. The number of vectors in Zn 
+
+> ≥0
+
+with coordinate sum at most ( K +1) N −1is ((K+1) N +n−1
+
+> n
+> )
+
+.For example, let K = 1, so that Rp(s) = p(⌈s/p ⌉ + 1) and the grid width of each size is the size itself, and let the sizes be 4, 2 and 1. Applying the maps R1, R 4, R 2, R 4, R 1, R 1 in this order to 0 produces the values 1 , 8, 10 , 16 , 17 , 18. The first block R1, R 4, R 2, R 4 ends at the last occurrence of the largest size and maps 0 to 16 = 4( ⌈0/4⌉ + 4), so its value of a is 4. The second block R1, R 1
+
+maps 16 to 18 = 1 · (⌈16 /1⌉ + 2), so its value of a is 2. With the coordinates ordered by decreasing size, the encoding is (4 , 0, 2), and its coordinate sum 6 is at most ( K + 1) k − κ = 10. Decoding computes 16 and then 18 by the same two formulas, without the intermediate values 1, 8, 10 and 17. The maps R4, R 4, R 4, R 4, R 1, R 1 have the same encoding and the same value. 
+
+Lemma 4.5. For every decision time t, the number of sorted release vectors ℓ with ℓ1 = t that occur in the dynamic program is at most (m+d−1
+
+> d−1
+> )
+
+, where d = n(K + 1) .
+
+12 Proof. Consider a machine whose last positive job belongs to class c and started at time s ≤ t. Its release time satisfies t ≤ ℓi = Rc(s) ≤ Rc(t) = gc(⌈t/g c⌉ + K), and ℓi is a multiple of gc. Hence 
+
+ℓi ∈ { gc(⌈t/g c⌉ + a) : 0 ≤ a ≤ K}. A machine without a positive job has release time 0, which happens only if t = 0 and is then contained in this set with a = 0. So every entry of ℓ takes one of at most d values, and a sorted vector of m such entries is a multiset of size m drawn from d values. 
+
+Theorem 4.6. For every instance with n size classes and every integer K ≥ 1, a policy Π with 
+
+cost(Π) ≤ P +
+
+> (
+
+1 + 1
+
+K
+
+> )
+
+(OPT − P )
+
+can be computed in time 
+
+> (
+
+(K + 1) N + n − 1
+
+n
+
+> )(
+
+m + n(K + 1) − 1
+
+n(K + 1) − 1 
+
+> )n∏
+> c=1
+
+(Nc + 1) · poly( N, m, L),
+
+where L is the input length. Each decision of Π is then a table lookup. Proof. By Lemma 4.2, some policy in the class optimized by the dynamic program has cost at most 
+
+P + γ(OPT − P ). By Lemma 4.3, the dynamic program finds a policy in this class of minimum cost. By Lemmas 4.4 and 4.5, the number of states is at most the product of the three factors. Each transition takes O(n + m) arithmetic operations. All release times are multiples of 1 /(K · lcm), where lcm is the least common multiple of the size denominators. All values of V are rationals whose denominators divide the product of K · lcm and the denominators of all qj . So the numbers have polynomial bit length. 
+
+Corollary 4.7. For every fixed number n of size classes and every fixed η ∈ (0 , 1] , a (1 + η)-approximation can be computed in time (N m )O(n/η )poly( L).Proof. Take K = ⌈1/η ⌉ in Theorem 4.6, so that cost(Π) ≤ P + (1 + η)(OPT − P ) ≤ (1 + η)OPT. The three factors are at most (( K + 1) N + n)n, ( m + n(K + 1)) n(K+1) and ( N + 1) n, and their product is ( N m )O(n/η ) for fixed n and η. This proves Theorem 1.2. For comparison, the dynamic program of Antoniadis, Hoeksma, Schewior, and Uetz has 
+
+O(N 2nε−2nmnε −2z
+
+) states, where 1 ≤ z ≤ n depends on how the sizes group [AHSU25, Lemma 6.8]. 
+
+4.5 Proof of Theorem 1.1 
+
+Let η ∈ (0 , 1]. Replacing η by 1 /⌈1/η ⌉ ≥ η/ 2, we may assume that 1 /η is an integer; then all rounded sizes below have bit length polynomial in L and 1 /η . Let ε = η/ 5. If m = 1 or m ≥ N , an optimal policy is known (Section 3), so assume 2 ≤ m < N . Define the medium jobs as in Section 3. Round the size of every medium job j up to p′ 
+
+> j
+
+= σ(1 + ε)⌈log 1+ ε(pj /σ )⌉, so that pj ≤ p′ 
+
+> j
+
+< (1 + ε)pj ,and keep qj . Call the result the rounded medium instance. Its sizes lie in [ σ, (1 + ε)T ), so it has 
+
+n ≤ log 1+ ε(N 3/ε 2) + 2 = O(ε−1 log( N/ε )) size classes. 
+
+Rounding loses a factor 1 + ε. Take an optimal policy for the medium jobs and run it on the rounded medium instance with all start times multiplied by 1 + ε. A positive job that occupies [ s, s + pj ) in the original policy occupies [(1 + ε)s, (1 + ε)s + p′ 
+
+> j
+
+), which is contained in [(1 + ε)s, (1 + ε)( s + pj )). So the stretched policy is valid, and each of its completion times is at most 1 + ε times the original one. Hence the optimum of the rounded medium instance is at most (1 + ε)OPT( M ). 
+
+The dynamic program. Apply Theorem 4.6 to the rounded medium instance with K = ⌈1/ε ⌉.This gives a policy A whose cost on the rounded instance is at most (1 + 1 /K ) times its optimum, 13 which is at most (1 + ε)2OPT( M ). Run A on the original medium jobs and keep each machine unavailable until the release time computed from the rounded size. The start times are the same as on the rounded instance, and every completion time is at most the corresponding one there, since 
+
+pj ≤ p′ 
+
+> j
+
+. So the cost of A on the medium jobs is at most (1 + ε)2OPT( M ). 
+
+The ratio. By Theorem 3.1 with α = (1+ ε)2, the policy Π A has cost at most ((1+ ε)2 +2 ε)OPT ≤
+
+(1 + 5 ε)OPT = (1 + η)OPT, using ε ≤ 1. 
+
+The running time. We have K + 1 ≤ 2/ε + 1 and d = n(K + 1) = O(ε−2 log( N/ε )). After the size reduction, the number of possible release times is polynomial. Every release time is a multiple of some gc = p′
+
+> c
+
+/K and at most γN p ′
+
+> max
+
+, and p′
+
+> max
+
+/p ′ 
+
+> c
+
+< (1 + ε)N 3/ε 2. So there are at most 1 + ∑
+
+> c
+
+(γN Kp ′
+
+> max
+
+/p ′ 
+
+> c
+
++ 1) = O(nKN 4/ε 2) release times, and this bound can replace the first factor in Theorem 4.6. The second factor is at most ( m + d)d ≤ (N + d)d = exp( O(ε−2 log 2(N/ε ))), since m < N . The third is at most ( N + 1) n = exp( O(ε−1 log N log( N/ε ))). The rounding and the reduction take polynomial time. So the total running time is 2 O(η−2 log 2(N/η )) poly( L). 
+
+# 5 A polynomial-time m-approximation 
+
+This section analyzes a simple adaptive priority rule. Fix distinct ranks ρ(j) for the jobs. For m ≥ 2, the policy G maintains the multiset A of the m − 1 largest realized processing times among the jobs started so far, padded with zeros, and its minimum θ = min A. Whenever a machine is free, G
+
+starts a remaining job that minimizes, in lexicographic order, 
+
+> (
+
+qj min {pj , θ }, q j , ρ (j)).
+
+After each start G updates A. The policy is non-idling: whenever a machine is free, for instance right after a zero outcome, it starts the next job. For m = 1, G is SEPT. Initially θ = 0, so G first tries the jobs with the smallest qj . Each decision scans the remaining jobs, so G runs in O(N 2)arithmetic operations. 
+
+Theorem 5.1. For every instance, cost( G) − P ≤ min {m, 1 + Λ } · (OPT − P ), where Λ = ∑ 
+
+> j
+
+qj .In particular, cost( G) ≤ min {m, 1 + Λ } · OPT .
+
+For m = 1, consider a non-idling policy that starts the jobs J1, . . . , J N in this order, where 
+
+Jk may depend on earlier outcomes. The processing time of Jk adds to its own completion time and to those of all later jobs, and Jk is chosen before its outcome is revealed. So the cost is 
+
+> ∑
+> k
+
+(N − k + 1) E[μJk ], which SEPT minimizes [Rot66]; by Lemma 2.1 this proves the theorem for 
+
+m = 1. From now on assume m ≥ 2 and write r = m − 1. The analysis compares policies through the quantity 
+
+H(Π) = E 
+
+> [N−1∑
+> k=0
+
+Wr(Sk)
+
+> ]
+
+,
+
+which depends only on the adaptive order in which Π starts the jobs. For every policy ∑ 
+
+> j
+
+Sj = ∑ 
+
+> k
+
+Fk,and for a non-idling policy Lemma 2.3 applies on every realization. So for every non-idling policy Π, 
+
+> ∑
+> j
+
+E[SΠ 
+
+> j
+> ]
+
+≤ H(Π) ≤ m ∑
+
+> j
+
+E[SΠ
+
+> j
+> ]
+
+. (1) 
+
+5.1 The greedy rule minimizes H
+
+Consider the increments Dk = Wr(Sk+1 ) − Wr(Sk). If the multiset of the r largest realized processing times so far has minimum θ, then a new realized value x changes Wr by min {x, θ }. So the 14 expected increment of job j is dj (θ) = qj min {pj , θ }. Since Wr(S0) = 0, we have ∑N −1 
+
+> k=0
+
+Wr(Sk) =   
+
+> ∑N−1
+> k=0
+
+(N − 1 − k)Dk. For the remaining decisions, the relevant state is the set R of remaining jobs together with the multiset A. If |R| = s and the next s increments are D′
+
+> 1
+
+, . . . , D ′
+
+> s
+
+, the future part of the objective is ∑si=1 (s − i)D′
+
+> i
+
+.
+
+Lemma 5.2. For every multiset A and every set R of remaining jobs, the greedy rule minimizes 
+
+E[∑si=1 (s − i)D′
+
+> i
+
+] over all adaptive orders. Proof. We use induction on s = |R|; the case s ≤ 1 is trivial. The objective equals ( s − 1) D′ 
+
+> 1
+
+plus the future part of the objective from the state after the first decision, which has s − 1 remaining jobs. So by induction, every order may continue greedily after its first decision without becoming worse. Let a be the job chosen by the greedy rule, let θ = min A, and write μb = qbpb. Take an optimal order that is greedy after its first decision, and suppose it starts with a job j̸ = a. We construct an order that starts with a and is no worse. 
+
+Case 1: pa ≤ θ. Then da(θ′) = μa for every θ′ ≥ θ, while db(θ′) is non-decreasing in θ′ for every other job b. The threshold never decreases, so after j the job a is still the greedy choice. The optimal order thus starts with j, a . Swap them to a, j . In both orders, a contributes the increment Xa,because pa ≤ θ is at most the threshold at any later time, and j contributes min {Xj , θ }, because a
+
+does not change A. Both orders end in the same state, and the swap changes the expected objective by μa − dj (θ) ≤ 0. 
+
+Case 2: pa > θ and pj ≤ θ. Now j does not change A, so after j the job a is again the greedy choice. Swapping j, a to a, j leads to the same state and changes the expected objective by 
+
+qaθ − μj = da(θ) − dj (θ) ≤ 0. 
+
+Case 3: pa > θ and pj > θ . First, qa = min b qb and qaθ ≤ μb for every remaining job b. If θ > 0, a job b with qb < q a would have db(θ) ≤ qbθ < q aθ = da(θ), contradicting the choice of a; if θ = 0, the second key selects a job of minimum q. Moreover qaθ = da(θ) ≤ db(θ) ≤ μb.Let θ2 be the second smallest element of A, with θ2 = ∞ if r = 1. After a positive outcome of a, the new threshold is θa = min {pa, θ 2}; after a positive outcome of j it is θj = min {pj , θ 2}. Let 
+
+u = min {pa, p j , θ 2} and 
+
+B = {b ∈ R \ { a, j } : μb < q au}.
+
+Every b ∈ B has qb ≥ qa and therefore pb = μb/q b < u . So after a or j is positive, the jobs of B do not change A, and each of them contributes the increment Xb.We first determine the optimal order, which is greedy after j. If j is positive, the threshold is 
+
+θj ≥ u. Every b ∈ B then has key db(θj ) = μb < q au, and a has key qa min {pa, θ j } = qau. Every other job c has key min {μc, q cθj } ≥ qau. If a job c / ∈ B has key exactly qau and qc = qa, then 
+
+μc ≥ qau ≥ qaθ, so c and a had equal first and second keys at the start, and the rank favours a. So the order processes B in the order of the keys ( μb, q b, ρ (b)), during which A does not change, and then a. If j is zero, the order starts a next. If a is then positive, the same argument with θa ≥ u
+
+shows that it processes B next, in the same order. The new order starts with a. If a is positive, it processes B in the same order and then starts j.If a is zero, it starts j, and if j is positive it then processes B in the same order. In each case it then continues as the optimal order does from the same state. Writing XB for the sequence of outcomes of the jobs in B in this order, the increments are as follows. outcomes of a and j optimal order new order both zero 0, 0 0, 0
+
+a positive, j zero 0, θ, X B θ, X B, 0
+
+a zero, j positive θ, X B, 0 0, θ, X B
+
+both positive θ, X B, u θ, X B, u 
+
+15 In every row the two segments have the same length and end in the same state, because the final multiset A does not depend on the order of insertion. The weights of consecutive positions differ by exactly one. So the new order is worse by θ + ∑ 
+
+> b∈B
+
+Xb in the second row and better by the same amount in the third row. The outcomes of the jobs in B are independent of those of a and j. So the expected change is 
+
+> (
+
+qa(1 − qj ) − (1 − qa)qj
+
+> )(
+
+θ + ∑
+
+> b∈B
+
+μb
+
+> )
+
+= ( qa − qj )
+
+> (
+
+θ + ∑
+
+> b∈B
+
+μb
+
+> )
+
+≤ 0.
+
+5.2 Proof of Theorem 5.1 
+
+The bound with factor m follows from Lemma 5.2 and (1). Let Π ∗ be a non-idling optimal policy (Lemma 2.1). Then cost( G) − P = ∑ 
+
+> j
+
+E[SGj ] ≤ H(G) ≤ H(Π ∗) ≤ m(OPT − P ). For the factor 1 + Λ it suffices, by the same chain, to show that H(Π) ≤ (1 + Λ) ∑ 
+
+> j
+
+E[SΠ 
+
+> j
+
+] for every non-idling policy Π. Fix such a policy and a realization. Before the ( k + 1)-st start, let 
+
+ℓ1(k) ≤ ℓ2(k) be the two smallest times at which machines become free. Then Fk = ℓ1(k). Let Jk
+
+be the job started at that position, χk ∈ { 0, 1} its outcome indicator, and θk the ( m − 1)-st largest realized processing time among the first k started jobs, or 0 if there are fewer than m − 1 positive ones. We first show that θk ≤ ℓ2(k). Each of the first k jobs started at a time at most Fk−1 ≤ ℓ1(k) ≤
+
+ℓ2(k). So a started job with realized processing time x > ℓ 2(k) is still running at time ℓ2(k), since it started at a nonnegative time. It therefore occupies a machine that becomes free only after time 
+
+ℓ2(k). Jobs running at the same time occupy distinct machines, and at most m − 2 machines become free after time ℓ2(k). So at most m − 2 realized processing times exceed ℓ2(k), which gives the claim. If Jk is zero, neither Wr nor the earliest free time changes. If it is positive with size p, then 
+
+Wr(Sk+1 ) − Wr(Sk) = min {p, θ k} and Fk+1 − Fk = min {p, ℓ 2(k) − ℓ1(k)}. Since θk ≤ ℓ2(k) = 
+
+ℓ1(k) + ( ℓ2(k) − ℓ1(k)) and ℓ1(k) ≥ 0, in both cases 
+
+Wr(Sk+1 ) − Wr(Sk) ≤ Fk+1 − Fk + χkFk.
+
+Here FN denotes the earliest free time after the last start; it receives weight zero below. Both 
+
+Wr(S0) and F0 are zero. Multiplying the inequality by N − 1 − k and summing over k gives  
+
+> N−1∑
+> k=0
+
+Wr(Sk) ≤ 
+
+> N−1∑
+> k=0
+
+Fk + 
+
+> N−1∑
+> k=0
+
+(N − 1 − k)χkFk.
+
+The choice of Jk and the value Fk are determined before the outcome of Jk is revealed, so E[χk |
+
+history] = qJk . On every realization Fl ≥ Fk for l > k , hence 
+
+> ∑
+> k
+
+qJk (N − 1 − k)Fk ≤ ∑
+
+> k
+
+qJk
+
+> ∑
+> l>k
+
+Fl = ∑
+
+> l
+
+Fl
+
+> ∑
+> k<l
+
+qJk ≤ Λ ∑
+
+> l
+
+Fl.
+
+Taking expectations, H(Π) ≤ (1 + Λ) E[∑ 
+
+> k
+
+Fk] = (1 + Λ) ∑ 
+
+> j
+
+E[SΠ 
+
+> j
+
+]. Finally, cost( G) − P ≤
+
+min {m, 1 + Λ }(OPT − P ) ≤ min {m, 1 + Λ }OPT − P , which gives the second claim. 
+
+The factor m is tight for G. Take m − 1 jobs of size K with q = 1 − K−3 and K deterministic jobs of size 1. The rule G starts the long jobs first, since θ = 0 and they have the smaller q. With probability close to one they occupy m − 1 machines until time K, while the unit jobs run on the remaining machine. So cost( G) ≥ (1 − o(1)) K2/2, whereas running the unit jobs first on all machines costs K2/(2 m) + O(mK ). 16 6 Exact evaluation is hard, approximate evaluation is easy 
+
+Moseley, Pruhs, Uetz, and Zhou [MPUZ26] show that computing the optimal expected cost, deciding whether it is at most a given value, and computing the expected cost of SEPT (and of its weighted version) are #P-hard for processing times with two-point distributions. Their instances have one machine for each of the n items of the knapsack instance and 2 n jobs, so m = N/ 2. They combine jobs that encode the items of a knapsack instance with blocker jobs that are positive with small probability, show that an optimal policy starts the blockers first, and then use the theorem of Weber, Varaiya, and Walrand [WVW86]. We adapt this construction to Bernoulli jobs on two machines. We also show that the expected cost of a given non-idling policy can nevertheless be approximated efficiently. 
+
+6.1 SEPT for stochastically ordered Bernoulli jobs 
+
+Recall that X ≤st Y means Pr[ X > x ] ≤ Pr[ Y > x ] for all x. Weber, Varaiya, and Wal-rand [WVW86] prove that if the processing times are stochastically ordered, then SEPT minimizes the expected sum of completion times on identical machines that become available at arbitrary given times. They assume, for convenience, that the processing times have densities, and their induction considers strategies that start a job whenever a machine becomes available. The next lemma states the version we need, for Bernoulli jobs, in the model of Section 2 with machine i unavailable before a given time ti. We take from [WVW86] only an exchange inequality for list policies and redo the induction, using Lemma 2.1. 
+
+Lemma 6.1. Let X1 ≤st · · · ≤ st XN be Bernoulli jobs, and let the machines become available at given times t1, . . . , t m ≥ 0. The list policy that starts the jobs in the order 1, . . . , N , each at the earliest time at which some machine is available, minimizes ∑ 
+
+> j
+
+E[Cj ] among all policies. Proof. For a list λ of jobs and a vector τ of availability times, let c(τ ; λ) be the expected cost of the list policy λ from τ . For k > 1, let L∗ 
+
+> k
+
+be the list of the jobs in {2, . . . , N } \ { k} in increasing order. 
+
+An exchange inequality. For every τ and every k > 1, 
+
+c(τ ; ( k, 1) + L∗ 
+
+> k
+> )
+
+≥ c(τ ; (1 , k ) + L∗
+
+> k
+> )
+
+, (2) where + denotes concatenation. Weber, Varaiya, and Walrand prove (2) for stochastically ordered processing times with densities and every vector of availability times, in the proof of their theo-rem [WVW86, pp. 845–846]. In their notation the inequality reads R(τ ; L1,k ) ≥ R(τ ; Lk, 1) for the reward r(t) = −t, and its proof uses only their Lemmas 1–3. For Bernoulli jobs, let δ > 0, let 
+
+U1, . . . , U N be independent and uniform on [0 , 1], and let Yj = Xj + δU j . The variables Yj have densities, and Y1 ≤st · · · ≤ st YN , because adding independent copies of the same variable preserves the stochastic order. So (2) holds for the processing times Yj . For a fixed list, couple the two runs through Yj = Xj + δU j . At each start, the coordinatewise distance between the two sorted vectors of availability times grows by at most δ, since sorting is 1-Lipschitz in the maximum norm. So every start time changes by at most N δ , and every list cost changes by at most N (N + 1) δ. Letting δ → 0proves (2) for the jobs Xj .
+
+Optimality. We show by induction on N that, for every τ , the list (1 , . . . , N ) is optimal from τ ;the case N = 1 is trivial. By Lemma 2.1, some optimal policy from τ is deterministic and non-idling; let k be its first job, started at the minimum entry of τ . After the outcome of k is revealed, the continuation is a policy for the other jobs from the resulting availability times. All of them are at least the start time of k, so the continuation problem is an instance of the lemma with fewer jobs, and by induction the list of the other jobs in increasing order is optimal there. So the list ( k)17 followed by the other jobs in increasing order is optimal from τ . If k = 1, this is the list (1 , . . . , N ). Otherwise it is ( k, 1) + L∗
+
+> k
+
+, which by (2) is no better than (1 , k ) + L∗
+
+> k
+
+. After job 1 starts, the list (k) + L∗ 
+
+> k
+
+is a policy for the jobs 2 , . . . , N , so by induction the list (2 , . . . , N ) is no worse. Hence (1 , . . . , N ) is optimal. 
+
+6.2 Hardness of exact computation 
+
+Theorem 6.2. For Bernoulli jobs on m = 2 machines, each of the following problems is #P-hard under polynomial-time Turing reductions: computing OPT ; deciding whether OPT ≤ x for a given rational x; and computing the expected cost of SEPT. This holds even when one job has small q,one job is deterministic, all other jobs have q = 1 /2, and all sizes are integers. 
+
+We reduce from #Knapsack: given positive integers a1, . . . , a k and an integer B0 with 0 ≤
+
+B0 < S = ∑ 
+
+> i
+
+ai, count the subsets I ⊆ [k] with ∑ 
+
+> i∈I
+
+ai ≤ B0. Counting the subsets with sum exactly B0 is #P-hard, because the NP-hardness reduction for this problem [Kar72] can be made parsimonious [Sim77]. That count is the number of subsets with sum at most B0 minus the number with sum at most B0 − 1, where the latter is 0 if B0 = 0. So #Knapsack is #P-hard as well. Let 
+
+KNO be the number of subsets with sum larger than B0; the answer is 2 k − KNO . Set ¯k = k + 1 , h = 2 S, B = h + B0, Q = 64 ¯k2B, q = 1
+
+Q .
+
+For L ∈ { L−, L +} with L− = B + 14 and L+ = B + 12 , the instance IL has two machines and the following k + 3 jobs: • for each i ∈ [k], a job of size ai with probability 1 /2; • a job H of size h with probability 1 /2; • a job b of size L with probability q;• a deterministic job d of size B + 1. The job b has mean qL < 1/2, which is smaller than every other mean. So SEPT starts b, then the jobs ai in increasing order of size, then H, then d.
+
+Lemma 6.3. In the instances IL± , consider a state at time 0 in which b has not started and a machine is free at time 0. Some optimal continuation from this state is non-idling and starts b next, at time 0.Proof. We use induction on the number of remaining jobs; the case of one job is trivial. By Lemma 2.1, some optimal continuation is deterministic and non-idling, so it starts its first job at time 0. Every job other than b is positive with probability at least 1 /2, and every positive processing time is at least 1. Suppose exactly one machine is free at time 0, and a non-idling optimal continuation starts a job i̸ = b there. The other machine runs a job that started at time 0 and has at least one time unit left. So if i is positive, both machines are busy until time 1, and E[Sb] ≥ 1/2. Let c0 be the minimum expected sum of start times for the remaining jobs other than b from the current state, allowing idle time. Simulating b with an independent virtual outcome, as in Lemma 2.2(b), shows that the continuation’s start times of the jobs other than b sum to at least c0 in expectation. So its expected sum of start times is at least c0 + 1 /2. Now start b instead. If b is zero, continue optimally, with expected sum of start times c0. If b is positive, which happens with probability q, run the 18 remaining jobs one after another. At most k + 3 ≤ 2¯k jobs remain, each of size at most B + 1 ≤ 2B.So every start time is at most 4 ¯kB , and the sum of start times is at most 8 ¯k2B. This alternative has expected sum of start times at most c0 + q · 8¯k2B = c0 + 1 /8 < c 0 + 1 /2, a contradiction. So every non-idling optimal continuation starts b at time 0. Suppose both machines are free at time 0, and a non-idling optimal continuation starts i̸ = b
+
+at time 0. After i starts, a machine is still free at time 0, so by induction we may replace the continuation by one that starts b next, at time 0. Exchanging the order of i and b leaves both start times equal to 0. It also leads to the same remaining jobs and the same multiset of machine release times in every realization, so the cost is unchanged. 
+
+Proof of Theorem 6.2. By Lemma 6.3, some optimal policy starts b at time 0. Afterwards the machines become available at times (0 , 0) if b is zero and (0 , L ) if b is positive. The remaining jobs are stochastically ordered. A job of size ai with probability 1 /2 is dominated by one of size ai′ ≥ ai
+
+with the same probability. The job H dominates all of them because h = 2 S > a i. The job d
+
+dominates H because B + 1 > h . By Lemma 6.1, SEPT is optimal from either state, so SEPT is optimal for IL− and IL+ . So computing OPT and computing the cost of SEPT coincide on these instances. We compare the two instances under SEPT, with the same outcomes for all jobs. If b is zero, the two schedules are identical. Suppose b is positive, and let W = ∑ 
+
+> i
+
+aiZi be the total realized processing time of the jobs a1, . . . , a k, where Zi are their outcome indicators. Since W ≤ S < B < L −, all these jobs run on the free machine before time L, and H starts there at time W . If H is zero, d starts at time W . If H is positive and W ≤ B0, then H completes at W + h ≤ B < L −, and d starts at time W + h. If H is positive and W > B 0, then W ≥ B0 + 1, so H runs until W + h ≥ B + 1 > L +,and d starts at time L on the other machine. Only in the last case do the start times differ, by 
+
+L+ − L− = 1 /4. The completion time of b itself also differs by 1 /4 when b is positive. Hence OPT( IL+ ) − OPT( IL− ) = q
+
+4
+
+> (
+
+1 + 12 · KNO 
+
+2k
+
+> )
+
+= q
+
+4
+
+> (
+
+1 + KNO 
+
+2¯k
+
+> )
+
+,
+
+and two exact evaluations determine KNO . All numbers have bit length polynomial in the input. Multiplying all sizes by 4 makes them integers and does not change the argument. For the decision version, note that all processing times are multiples of 1 /4 and the probability of every joint outcome is a multiple of 1 /(Q2¯k). So OPT is a multiple of 1 /(4 Q2¯k). It is also at most 8 ¯k2B + ( k + 3)( B + 1). Binary search with polynomially many threshold queries therefore recovers OPT exactly. 
+
+6.3 Approximate evaluation 
+
+Theorem 6.4. Let Π be a non-idling policy whose decisions can be simulated in polynomial time. For ρ, δ ∈ (0 , 1) , an estimate ˆC with (1 − ρ) cost(Π) ≤ ˆC ≤ (1 + ρ) cost(Π) with probability at least 
+
+1 − δ can be computed from ⌈3N ρ −2 ln(2 /δ )⌉ simulations of Π.Proof. For a realization ω, let V (ω) = ∑ 
+
+> j
+
+Xj (ω) and C(ω) = ∑ 
+
+> j
+
+CΠ 
+
+> j
+
+(ω). A non-idling policy completes every job by time V (ω), so 0 ≤ C(ω) ≤ N V (ω), and C(ω) = 0 if V (ω) = 0. Sample realizations from the following distribution Q. Choose a job i with probability μi/P , set Xi = pi, and draw all other outcomes from their own distributions. The policy sees only the outcomes it observes when starting jobs. Under Q, the density of a realization with respect to the true distribution is 
+
+> ∑
+> i
+
+μi
+
+P · 1[Xi = pi]
+
+qi
+
+= V (ω)
+
+P .
+
+19 Hence the estimator Z = P C/V satisfies EQ[Z] = cost(Π). It takes values in [0 , N P ], and its mean is at least P . The multiplicative Chernoff bound for the average of ⌈3N ρ −2 ln(2 /δ )⌉ independent copies of Z/ (N P ) ∈ [0 , 1], whose mean is at least 1 /N , gives the claim. The same argument applies to every policy whose realized sum of completion times is at most 
+
+βN V (ω) for a constant β, with the number of simulations multiplied by β. For instance, β = γ for the grid-non-idling reuse-rule policies of Section 4. 
+
+# 7 List policies lose a logarithmic factor 
+
+A list policy fixes an order of the jobs before any outcome is observed and starts the jobs in this order. The order may depend on the instance and on random coins. Eberle, Fischer, Matuschke, and Megow [EFMM19] show that index policies, which rank each job by its own distribution, are not constant-factor approximations. Im, Moseley, and Pruhs [IMP15] give a list policy with ratio 
+
+O(log 2 N + m log N ), which is O(log 2 N ) on two machines. Gupta, Moseley, and Zhou [GMZ23] compute a list policy whose ratio is ˜O(√m), where ˜O hides factors polylogarithmic in N . The following theorem shows that a dependence on N is necessary for every list policy, even on two machines and even if the policy may idle. So the bound of [IMP15] for two machines is tight up to a factor O(log N ). 
+
+Theorem 7.1. For every integer b ≥ 2, let M = 2 b and consider two machines with M jobs of each type i = 0 , . . . , b − 1, where a job of type i has 
+
+pi = M 2
+
+4i and qi = 2i
+
+M 2 .
+
+Let N = bM . Every list policy costs at least M b 2/128 , whereas OPT ≤ 6M b . Hence every list policy has ratio at least b/ 768 ≥ log 2 N/ 1536 .
+
+The sizes are the distinct integers 4 b−i ≥ 4, and M q i ≤ 1/2. The means μi = 2 −i decrease rapidly with the type, while piq2 
+
+> i
+
+= M −2 does not depend on the type. Every policy has P = 
+
+> ∑
+> i
+
+M 2−i = 2 M − 2. 
+
+Proof of the lower bound. Fix a deterministic list; for a random list, the bound follows by averaging over the coins. For 0 ≤ k < N , let Fk be the start time of the ( k + 1)-st job of the list, let ki be the number of type-i jobs among the first k, and let Bi ∼ Bin( ki, q i) be the number of positive ones among them. At time Fk all these k jobs have started and a machine is free, so at most one of them is still running. So at least ( Bi − 1) + positive jobs of type i have completed for each i, and since two machines process at most 2 Fk units of work by time Fk,2Fk ≥
+
+> b−1∑
+> i=0
+
+pi(Bi − 1) +.
+
+For ki ≥ 2, keeping only the event that exactly two jobs are positive gives 
+
+E[(Bi − 1) + 
+
+> ]
+
+≥
+
+> (
+
+ki
+
+2
+
+> )
+
+q2 
+
+> i
+
+(1 − qi)ki−2 ≥ 14 ki(ki − 1) q2 
+
+> i
+
+,
+
+because (1 − qi)ki−2 ≥ 1 − M q i ≥ 1/2. The bound also holds for ki ≤ 1, as both sides are then zero. Using piq2 
+
+> i
+
+= M −2 and ∑
+
+> i
+
+(ki − k/b )2 ≥ 0, 
+
+E[Fk] ≥ 18M 2
+
+> ∑
+> i
+
+ki(ki − 1) ≥ 18M 2 
+
+> (
+
+k2
+
+b − k
+
+> )
+
+.
+
+20 For N/ 2 ≤ k < N we have k ≥ bM/ 2 ≥ 2b, so k2/b − k ≥ k2/(2 b) ≥ bM 2/8 and E[Fk] ≥ b/ 64. There are N/ 2 such values of k, so the cost is at least P + ( N/ 2)( b/ 64) ≥ M b 2/128. 
+
+Proof of the upper bound. Consider the following policy. On machine 1, start jobs in increasing order of type until the first positive outcome; all earlier jobs are zero and complete at time 0. If all jobs are zero, every job completes at time 0. Otherwise, let i be the type of the first positive job. Leave that job on machine 1, and process all remaining jobs one after another on machine 2, starting at time 0, in decreasing order of type. Let Ei be the event that the first positive job has type i. It requires a positive job among the M
+
+jobs of type i, so Pr[ Ei] ≤ M q i = 2 i/M . Condition on the history up to the first positive job. The types below i are exhausted, and the remaining jobs keep their original distributions. On a single machine, the processing time of a job is added to the start time of each later job. In decreasing order of type, a job of type j ≥ i has at most M (j − i + 1) later jobs, and there are at most M jobs of type j, each of mean 2 −j . So the conditional expected sum of start times is at most 
+
+M 2 ∑
+
+> j≥i
+
+(j − i + 1)2 −j ≤ M 22−i ∑
+
+> t≥0
+
+(t + 1)2 −t = 4 M 22−i.
+
+Averaging over the disjoint events Ei, the expected sum of start times is at most ∑
+
+> i
+
+(2 i/M )·4M 22−i =4M b . So the cost is at most P + 4 M b ≤ 6M b .The ratio follows from OPT ≤ 6M b and log 2 N = b + log 2 b ≤ 2b. The adaptive policy above changes its order after the first positive outcome. 
+
+# 8 Open problems 
+
+The main open question is whether Bernoulli jobs admit a polynomial-time approximation scheme, or at least a polynomial-time constant-factor approximation, when m is part of the input. After the size reduction, the dynamic program of Section 4 is quasi-polynomial for two reasons. It records the number of remaining jobs in each of the O(ε−1 log( N/ε )) size classes, and it records the release times as a multiset over O(ε−2 log( N/ε )) candidate values. A polynomial-time scheme needs a more compact description of both, and by Theorem 7.1 it must be adaptive. A natural alternative is to round a relaxation over start-time distributions. For Bernoulli jobs, such a relaxation can include, for every deadline u, the expected-rank constraints of the laminar matroid that allows at most m(⌊u/h ⌋ + 1) positive jobs of size at least h to start by time u.Constraints that act on one deadline at a time are not enough. On one machine, take jobs with 
+
+pi = 2 N −i+1 and qi = 1 /p i for i = 1 , . . . , N , so that OPT = N (N + 1) /2. Start job i at time 0 with the probability that no larger job is positive, and at time pi otherwise. This satisfies every such rank constraint, because the first positive job of size larger than u together with all positive smaller jobs forms an independent set. It also keeps the expected processing in every interval below the length of the interval, because ∑ 
+
+> i
+
+qi < 1. Its objective is below 2 N . On one machine, the inequality  
+
+> ∑
+> j
+
+μj E[Sj ] ≥ ∑ 
+
+> i<j
+
+μiμj of Möhring, Schulz, and Uetz [MSU99] closes this gap, but its analog for 
+
+m machines contains a term proportional to ∆. Whether a relaxation that combines both kinds of constraints has a constant integrality gap for Bernoulli jobs is open. Two intermediate questions seem natural. The first is a polynomial-time approximation scheme for every fixed number of machines, that is, in time N f (m,ε ) ·poly( L). The second is a polynomial-time approximation whose ratio is o(m) and independent of N .21 AI usage disclosure 
+
+AI agents were used for exploratory discussions during the development of the proofs and to assist with drafting and revising the manuscript. The author takes full responsibility for the paper’s contents and correctness. 
+
+# References 
+
+[AHSU25] Antonios Antoniadis, Ruben Hoeksma, Kevin Schewior, and Marc Uetz. Stochastic scheduling with Bernoulli-type jobs through policy stratification. In Proceedings of the 66th IEEE Annual Symposium on Foundations of Computer Science (FOCS) , pages 2446–2469, 2025. Full version: arXiv:2505.03349. [BCS74] John Bruno, Edward G. Coffman, Jr., and Ravi Sethi. Scheduling independent tasks to reduce mean finishing time. Communications of the ACM , 17(7):382–387, 1974. [EFMM19] Franziska Eberle, Felix Fischer, Jannik Matuschke, and Nicole Megow. On index policies for stochastic minsum scheduling. Operations Research Letters , 47(3):213–218, 2019. [GMUX20] Varun Gupta, Benjamin Moseley, Marc Uetz, and Qiaomin Xie. Greed works—online algorithms for unrelated machine stochastic scheduling. Mathematics of Operations Research , 45(2):497–516, 2020. [GMUX21] Varun Gupta, Benjamin Moseley, Marc Uetz, and Qiaomin Xie. Corrigendum: Greed works—online algorithms for unrelated machine stochastic scheduling. Mathematics of Operations Research , 46(3):1230–1234, 2021. [GMZ23] Anupam Gupta, Benjamin Moseley, and Rudy Zhou. Minimizing completion times for stochastic jobs via batched free times. In Proceedings of the 2023 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA) , pages 1905–1930, 2023. Full version: arXiv:2208.13696. [IMP15] Sungjin Im, Benjamin Moseley, and Kirk Pruhs. Stochastic scheduling of heavy-tailed jobs. In Proceedings of the 32nd International Symposium on Theoretical Aspects of Computer Science (STACS) , volume 30 of LIPIcs , pages 474–486, 2015. [Kar72] Richard M. Karp. Reducibility among combinatorial problems. In Raymond E. Miller and James W. Thatcher, editors, Complexity of Computer Computations , pages 85–103. Plenum Press, 1972. [MPUZ26] Benjamin Moseley, Kirk Pruhs, Marc Uetz, and Rudy Zhou. Minimizing completion times of stochastic jobs on parallel machines is hard. arXiv:2601.17425, 2026. [MRW84] Rolf H. Möhring, Franz J. Radermacher, and Gideon Weiss. Stochastic scheduling problems I: General strategies. Zeitschrift für Operations Research , 28(7):193–260, 1984. [MSU99] Rolf H. Möhring, Andreas S. Schulz, and Marc Uetz. Approximation in stochastic scheduling: The power of LP-based priority policies. Journal of the ACM , 46(6):924–942, 1999. [MUV06] Nicole Megow, Marc Uetz, and Tjark Vredeveld. Models and algorithms for stochastic online scheduling. Mathematics of Operations Research , 31(3):513–525, 2006. 22 [Rot66] Michael H. Rothkopf. Scheduling with random service times. Management Science ,12(9):707–713, 1966. [Sim77] Janos Simon. On the difference between one and many. In Proceedings of the 4th Inter-national Colloquium on Automata, Languages and Programming (ICALP) , volume 52 of Lecture Notes in Computer Science , pages 480–491, 1977. [Smi56] Wayne E. Smith. Various optimizers for single-stage production. Naval Research Logistics Quarterly , 3(1–2):59–66, 1956. [SSU16] Martin Skutella, Maxim Sviridenko, and Marc Uetz. Unrelated machine scheduling with stochastic processing times. Mathematics of Operations Research , 41(3):851–864, 2016. [SU05] Martin Skutella and Marc Uetz. Stochastic machine scheduling with precedence con-straints. SIAM Journal on Computing , 34(4):788–802, 2005. [WP80] Gideon Weiss and Michael Pinedo. Scheduling tasks with exponential service times on non-identical processors to minimize various cost functions. Journal of Applied Probability , 17(1):187–202, 1980. [WVW86] Richard R. Weber, Pravin Varaiya, and Jean Walrand. Scheduling jobs with stochas-tically ordered processing times on parallel machines to minimize expected flowtime. 
+
+Journal of Applied Probability , 23(3):841–847, 1986. 23

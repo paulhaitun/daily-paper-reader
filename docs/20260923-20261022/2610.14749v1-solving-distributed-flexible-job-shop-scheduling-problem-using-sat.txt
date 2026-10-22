@@ -1,0 +1,513 @@
+Title: Solving Distributed Flexible Job Shop Scheduling Problem Using SAT
+
+URL Source: https://arxiv.org/pdf/2610.14749v1
+
+Published Time: Wed, 14 Oct 2026 00:49:39 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+> Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam
+
+# Solving Distributed Flexible Job Shop Scheduling Problem Using SAT 
+
+# Phuong Dang Anh 
+
+Faculty of Information Technology, VNU University of Engineering and Technology Hanoi, Vietnam 24020277@vnu.edu.vn 
+
+# Duc Nguyen Kim Trung 
+
+Faculty of Information Technology, VNU University of Engineering and Technology Hanoi, Vietnam 23021533@vnu.edu.vn 
+
+# To Van Khanh ✉
+
+Faculty of Information Technology, VNU University of Engineering and Technology Hanoi, Vietnam khanhtv@vnu.edu.vn 
+
+## Abstract 
+
+The Distributed Flexible Job Shop Scheduling Problem (DFJSP) requires the joint determination of factory assignment, machine se-lection, and operation sequencing to minimize the makespan. This paper presents an exact SAT-based approach built on an efficient SAT formulation that exploits problem structure through propaga-tion, symmetry breaking, and incremental SAT solving to effectively address these coupled decisions. The proposed method is evaluated on 76 standard benchmark instances from the Fattahi, Brandimarte, and rdata datasets under two- and three-factory configurations. To-gether with previously established results, the new SAT optimality certificates bring the total number of proven-optimal instances to 72 out of 76, including three newly certified instances; for two of these instances, SAT also improves the previous best-known makespans. Across the benchmark configurations, SAT achieves the best results on four of the five configurations and remains competitive with strong exact approaches such as CP and LBBD1_CPIL, as well as existing metaheuristic methods. These results demonstrate that the proposed SAT framework is an effective exact approach for the DFJSP, combining strong solution quality with rigorous optimality certification and offering a complementary exact method for future DFJSP studies and evaluations on additional benchmark instances. 
+
+## Keywords 
+
+Distributed flexible job shop scheduling problem, exact approach, SAT solving 
+
+ACM Reference Format: 
+
+Phuong Dang Anh, Duc Nguyen Kim Trung, and To Van Khanh. 2027. Solving Distributed Flexible Job Shop Scheduling Problem Using SAT. In Proc. of the 26th International Conference on Autonomous Agents and Multiagent Systems (AAMAS 2027), Hanoi, Vietnam, 3–7 May 2027 , IFAAMAS, 8 pages. 
+
+## 1 Introduction 
+
+Production scheduling determines how operations are assigned to manufacturing resources and ordered over time while satisfying technological and capacity constraints. As manufacturing systems become more flexible, these decisions become more difficult because an operation may be processed by different eligible resources rather than by a single predefined machine [7]. 
+
+> This work is licensed under a Creative Commons Attribution Inter-national 4.0 License.
+> Proc. of the 26th International Conference on Autonomous Agents and Multiagent Systems (AAMAS 2027), M. Baldoni, F. Fang, W. Yeoh, N. Yorke-Smith (eds.), 3–7 May 2027, Hanoi, Vietnam . © 2027 International Foundation for Autonomous Agents and Multiagent Systems (www.ifaamas.org).
+
+The Job Shop Scheduling Problem (JSSP) [10] represents the clas-sical setting in which each operation must be processed on a prede-fined machine. The Flexible Job Shop Scheduling Problem (FJSP) [4] extends this setting by allowing each operation to be processed on one of several eligible machines. Solving the FJSP therefore requires machine selection to be considered together with opera-tion sequencing, which increases the difficulty of the scheduling problem [3, 9, 12, 17]. The Distributed Flexible Job Shop Schedul-ing Problem (DFJSP), introduced by De Giovanni and Pezzella [8], further extends the FJSP to a multi-factory setting. In the DFJSP, each job is assigned to a single factory, and all of its operations are processed within that factory. A feasible schedule must therefore determine the factory assigned to each job, select an eligible ma-chine for each operation, and determine the processing order of operations competing for the same machine [8, 18]. A wide range of heuristic and metaheuristic methods has been proposed for the DFJSP, including genetic algorithms, chemical reaction optimization, and hybrid metaheuristics [5, 8, 15, 16, 19]. These methods can produce high-quality schedules for relatively large instances and have improved existing benchmark solutions. However, they do not in general provide certificates of optimality or rigorous lower bounds. Consequently, when a good feasible solution is obtained, it may remain unknown whether a better schedule exists. Exact methods address this limitation by providing optimality guarantees. Meng et al. [18] developed several Mixed-Integer Linear Programming (MILP) formulations and a Constraint Programming (CP) model for the DFJSP, while Xiong and Liu [20] later proposed Logic-based Benders Decomposition approaches that separate factory assignment from scheduling decisions. These methods have substantially advanced the exact solution of DFJSP benchmark instances. Nevertheless, proving optimality remains difficult for some medium- and large-scale cases within practical computational limits [18, 20]. These observations motivate the investigation of alternative ex-act approaches with two complementary capabilities. First, an exact method should be able to determine whether a known solution is optimal and, when possible, provide a proof of optimality. Second, it should remain effective in searching for improved feasible solutions when the current best-known makespan has not yet been certified. A method combining these capabilities is particularly valuable for benchmark-driven research because it can both enlarge the set of in-stances with proven optimal solutions and improve the best-known results for unresolved cases. Boolean Satisfiability (SAT) provides an alternative exact frame-work for discrete optimization. Modern Conflict-Driven Clause arXiv:2610.14749v1 [cs.LO] 10 Oct 2026 Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam 
+
+Learning SAT solvers combine Boolean propagation, clause learn-ing, conflict analysis, and adaptive search strategies to efficiently solve large combinatorial problems [2]. SAT-based formulations have also been successfully investigated for scheduling and related optimization problems [6, 11, 14]. In particular, previous studies on the classical JSSP have shown that SAT can effectively repre-sent temporal and machine-conflict decisions while supporting makespan minimization through repeated feasibility tests [11, 14]. The DFJSP, however, introduces additional decisions that are ab-sent from the classical JSSP, most notably job-to-factory assignment and alternative machine selection. These decisions interact with operation timing and resource conflicts and introduce additional symmetry when factories are identical. To the best of our knowl-edge, a dedicated SAT-based exact formulation for the DFJSP has not previously been studied. This work addresses this gap by de-veloping a SAT-based approach for the minimum-makespan DFJSP and evaluating its ability both to certify optimality and to improve previously reported benchmark solutions. The main contributions of this work are as follows: 
+
+• We propose an exact SAT-based approach for the DFJSP that exploits problem structure through an efficient formulation, problem-specific propagation, symmetry breaking, and in-cremental SAT solving. 
+
+• We provide a systematic computational evaluation on 76 stan-dard benchmark instances from the Fattahi, Brandimarte [3], and rdata [12] datasets. The results establish three new opti-mality certificates, two of which correspond to instances for which SAT improves the previous best-known makespans, and, together with previously established results, show that 72 of the 76 instances have now been proven optimal. 
+
+• We provide an additional exact approach for the DFJSP that offers competitive solution quality and rigorous optimality certification, serving as a reference for future studies and evaluations on additional benchmark instances. The remainder of this paper is organized as follows. Section 2 defines the DFJSP and reviews related work. Section 3 presents the proposed SAT formulation and the incremental optimization proce-dure. Section 4 describes the benchmark instances, experimental setup, and computational results. Finally, Section 5 concludes the paper and outlines directions for future research. 
+
+## 2 Problem Definition and Related Work 2.1 Problem Definition 
+
+The Distributed Flexible Job Shop Scheduling Problem (DFJSP) consists of a set of independent jobs 𝐽 = {1, 2, . . . , 𝑛 } to be processed in a set of factories 𝐹 = {1, 2, . . . , 𝑓 }. All factories are assumed to be identical, meaning that they have the same machine configuration and that the eligibility and processing time of an operation on a given machine do not depend on the factory. Each factory contains the same set of machines 𝑀 = {1, 2, . . . , 𝑚 }, and its production environment can therefore be viewed as a flexible job shop. Each job 𝑗 ∈ 𝐽 consists of an ordered sequence of 𝑛 𝑗 operations, 
+
+𝑂 𝑗 = {𝑂 𝑗, 1, 𝑂 𝑗, 2, . . . , 𝑂 𝑗,𝑛 𝑗 }, which must be processed according to a predefined technological order. Operation 𝑂 𝑗,𝑟 must therefore be completed before operation 𝑂 𝑗,𝑟 +1 can start. Each operation 𝑂 𝑗,𝑟 
+
+can be processed on one machine selected from a predefined set of eligible machines 𝑀 𝑗,𝑟 ⊆ 𝑀 . The processing time of operation 𝑂 𝑗,𝑟 
+
+on an eligible machine 𝑘 ∈ 𝑀 𝑗,𝑟 is denoted by 𝑝 𝑗,𝑟,𝑘 .Each job is assigned to exactly one factory, and all operations belonging to that job must be processed within the assigned factory. Within each factory, every operation is assigned to exactly one eligible machine, and operations assigned to the same machine must be processed without overlap. The DFJSP considered in this work is defined under deterministic scheduling assumptions. All jobs, factories, and machines are avail-able at time zero. Each machine can process at most one operation at a time, and operation processing is non-preemptive. Processing times are deterministic and known in advance. Machine break-downs and setup times are not considered. The objective is to minimize the makespan, defined as the comple-tion time of the last finished job in the schedule 𝐶 max = max 𝑗 ∈ 𝐽 𝐶 𝑗 ,where 𝐶 𝑗 denotes the completion time of job 𝑗 . The optimal makespan is subsequently denoted by 𝐶 ∗ 
+
+> max
+
+= min 𝐶 max .Table 1 presents a small DFJSP instance consisting of three jobs, two identical factories, and three machines in each factory. Job 𝐽 1
+
+and job 𝐽 2 each contain three operations, whereas job 𝐽 3 contains two operations. Each operation can be processed only on its eligible machines, with the corresponding processing times given in the table. Since the factories are identical, the eligibility and processing times shown in the table apply equally to every factory. Figure 1 illustrates the optimal schedule with 𝐶 ∗ 
+
+> max
+
+= 8. 
+
+Table 1: Illustrative DFJSP instance. 
+
+Job Operation Machine processing time 
+
+𝑀 1 𝑀 2 𝑀 3
+
+𝐽 1
+
+𝑂 11 3 4 –
+
+𝑂 12 – 2 3
+
+𝑂 13 4 3 5
+
+𝐽 2
+
+𝑂 21 2 3 –
+
+𝑂 22 4 – 3
+
+𝑂 23 – 3 2
+
+𝐽 3
+
+𝑂 31 3 2 4
+
+𝑂 32 4 3 –                
+
+> 𝑂 11
+> 𝑂 12 𝑂 13
+> (Idle)
+> 𝑂 21
+> 𝑂 31 𝑂 32
+> 𝑂 22 𝑂 23
+> Time
+> 0123456789
+> 𝑀 1,1
+> 𝑀 1,2
+> 𝑀 1,3
+> 𝑀 2,1
+> 𝑀 2,2
+> 𝑀 2,3
+> Factory 1 Factory 2
+> 𝐶 ∗
+> max =8Job 1 Job 2 Job 3
+
+Figure 1: Optimal DFJSP schedule. Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam 
+
+## 2.2 Related Work 
+
+Research on the DFJSP has mainly focused on two broad classes of solution approaches: heuristic and metaheuristic methods for efficiently obtaining feasible schedules, and exact methods aimed at providing optimality guarantees. More recently, advances in exact optimization have also led to decomposition-based approaches that exploit the hierarchical structure of factory assignment and shop-level scheduling. Heuristic and metaheuristic approaches have been extensively investigated for the DFJSP because of the large search space aris-ing from factory assignment, machine selection, and operation sequencing. Representative approaches include genetic algorithms, chemical reaction optimization, and other problem-specific search procedures [5, 8, 15, 16]. More recently, Xie et al. [19] proposed a Hybrid Genetic Tabu Search Algorithm (HGTSA) that combines genetic operators with critical-path-based tabu search and reported 13 new upper bounds on 69 benchmark instances. These approaches have played an important role in the search for competitive feasi-ble schedules and in improving known benchmark upper bounds. However, heuristic and metaheuristic methods do not generally provide valid lower bounds or certificates of optimality. Exact approaches complement heuristic search by providing mechanisms for establishing optimality. Meng et al. [18] developed four Mixed-Integer Linear Programming (MILP) formulations and a Constraint Programming (CP) model for the DFJSP. Their compu-tational results showed that the CP model scales more effectively than the MILP formulations on larger instances. The study estab-lished optimal solutions for 62 benchmark instances and reported 11 new best solutions, showing that exact methods can contribute both to optimality certification and to the improvement of known upper bounds. More recently, Xiong and Liu [20] proposed Logic-based Benders Decomposition (LBBD) approaches that separate job-to-factory assignment from the scheduling subproblems as-sociated with individual factories. Their best-performing variant, LBBD1_CPIL, combines a master assignment problem with CP-based scheduling and reported an average optimality gap below 1.2% over 286 benchmark instances. These results substantially ex-tended the range of DFJSP instances that can be addressed within an exact optimization framework, although proving optimality re-mains difficult for some medium- and large-scale instances. Boolean Satisfiability (SAT) provides another exact paradigm for combinatorial scheduling and has previously been investigated for the classical Job Shop Scheduling Problem. Koshimura et al. [14] formulated makespan minimization as a sequence of SAT fea-sibility problems using Boolean variables to represent temporal and machine-ordering decisions. Their approach proved optimal makespans for previously unresolved benchmark instances and im-proved several known bounds. Huang and Zhou [11] subsequently developed a more compact SAT formulation by restricting tempo-ral variables and clauses to feasible time ranges and introducing precedence variables only for operations that can compete for the same machine. These studies indicate that SAT can be effective for exact scheduling when the Boolean formulation exploits problem-specific structure to strengthen propagation and avoid unnecessary variables and clauses. However, SAT formulations developed for the classical JSSP do not directly capture the additional decisions introduced by the DFJSP. In the JSSP, each operation is assigned to a predefined ma-chine and all operations are processed within a single shop. In the DFJSP, each job must additionally be assigned to a factory, while each operation must select one of several eligible machines. Conse-quently, machine-capacity conflicts are conditional on both factory and machine assignments: two operations compete for the same physical resource only when their jobs are assigned to the same fac-tory and both operations select the same machine. Moreover, identi-cal factories introduce symmetries associated with interchangeable factory labels. These characteristics require factory assignment, machine selection, temporal decisions, and conditional resource conflicts to be represented jointly within the Boolean formulation. Existing exact approaches for the DFJSP have primarily relied on MILP, CP, and decomposition-based methods, while SAT-based scheduling studies have addressed various scheduling settings. The proposed SAT formulation jointly models factory assignment, machine selection, timing, precedence, and conditional machine-capacity constraints, supported by temporal preprocessing, propa-gation, symmetry breaking, and incremental SAT solving. 
+
+## 3 SAT Solving for the Distributed Flexible Job Shop Scheduling Problem 
+
+For the formulation, all operations are indexed globally by 𝑖 ∈ 𝑂 ,and 𝐽 (𝑖 ) denotes the job containing operation 𝑖 . Let 𝐸 denote the set of direct precedence relations, 𝑀 𝑖 the set of eligible machines for operation 𝑖 , and 𝑝 𝑖,𝑘 its processing time on machine 𝑘 ∈ 𝑀 𝑖 .
+
+## 3.1 Upper-Bound Construction and Preprocessing 
+
+A finite makespan bound is required to construct the time-indexed SAT encoding because it determines the temporal range over which start-time variables are instantiated. A smaller valid upper bound therefore reduces the number of Boolean variables and clauses and provides the initial bound for the subsequent makespan optimiza-tion. Before constructing the SAT model, we compute an initial feasi-ble schedule to obtain an upper bound 𝑈 𝐵 on the makespan. Let 
+
+𝑝 min  
+
+> 𝑖
+
+= min 𝑘 ∈𝑀 𝑖 𝑝 𝑖,𝑘 denote the minimum processing time of oper-ation 𝑖 . Since the operations of each job form a linear precedence chain, let pred (𝑖 ) and succ (𝑖 ) denote the immediate predecessor and successor of operation 𝑖 , respectively, whenever they exist. The workload of job 𝑗 is estimated as 
+
+𝑊 𝑗 =∑︁   
+
+> 𝑖 :𝐽 (𝑖 )=𝑗
+
+𝑝 min  
+
+> 𝑖
+
+. (1) Jobs are first sorted in non-increasing order of 𝑊 𝑗 and assigned sequentially to the factory with the smallest accumulated work-load. Once the factory assignments are fixed, the operations are scheduled greedily. A tail length is computed for each operation according to 
+
+𝐿 𝑖 =
+
+(
+
+𝑝 min  
+
+> 𝑖
+
+, if 𝑖 has no successor ,𝑝 min  
+
+> 𝑖
+
++ 𝐿 succ (𝑖 ) , otherwise . (2) Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam 
+
+Among the currently available operations, the operation with the largest tail length is selected. For each eligible machine 𝑘 in the assigned factory, the operation is scheduled at the maximum of its precedence-based ready time and the current availability time of machine 𝑘 . The machine yielding the smallest resulting completion time is selected. The makespan of the resulting feasible schedule is used as 𝑈 𝐵 .Using 𝑈 𝐵 , precedence-based temporal bounds are then computed for each operation. The earliest start times are obtained by forward propagation: 
+
+𝐸𝑆 𝑖 =
+
+(0, if 𝑖 is the first operation of its job ,𝐸𝑆 pred (𝑖 ) + 𝑝 min pred (𝑖 ) , otherwise .
+
+(3) The latest start times are initialized from 𝑈 𝐵 and tightened by backward propagation: 
+
+𝐿𝑆 𝑖 =
+
+(
+
+𝑈 𝐵 − 𝑝 min  
+
+> 𝑖
+
+, if 𝑖 is the last operation of its job ,𝐿𝑆 succ (𝑖 ) − 𝑝 min  
+
+> 𝑖
+
+, otherwise . (4) The resulting interval [𝐸𝑆 𝑖 , 𝐿𝑆 𝑖 ] defines the temporal domain of operation 𝑖 and is used to restrict the time-indexed variables in the SAT formulation. 
+
+## 3.2 SAT Formulation 
+
+Using the temporal domains obtained above, we construct the SAT formulation. The eligible machines of each operation are ordered by non-decreasing processing time. Let 𝑀 ′ 
+
+> 𝑖
+
+= (𝑘 𝑖, 1, 𝑘 𝑖, 2, . . . , 𝑘 𝑖, |𝑀 𝑖 | )
+
+denote this ordering, such that 𝑝 𝑖,𝑘 𝑖, 1 ≤ 𝑝 𝑖,𝑘 𝑖, 2 ≤ · · · ≤ 𝑝 𝑖,𝑘 𝑖, |𝑀 𝑖 | .
+
+Boolean variables. The Boolean variables used in the formulation are summarized in Table 2. 
+
+Table 2: Boolean variables used in the SAT formulation. 
+
+Variable Meaning 
+
+𝑓 𝑗,𝑞 True iff job 𝑗 is assigned to factory 𝑞 .
+
+𝑠 𝑓 𝑗,ℓ True iff jobs 𝑗 and ℓ are assigned to the same factory. 
+
+𝑚 𝑖,𝑘 True iff operation 𝑖 is processed on machine 𝑘 .
+
+𝑥𝑚 𝑖,𝑟 True iff the machine selected for operation 𝑖 is at position 𝑟 or later in the processing-time-ordered list 𝑀 ′ 
+
+> 𝑖
+
+.
+
+𝑠 𝑖,𝑡 True iff operation 𝑖 starts at time 𝑡 .
+
+𝑥 𝑖,𝑡 True iff operation 𝑖 starts at or after time 𝑡 .
+
+𝑠𝑚 𝑖,ℎ,𝑘 True iff operations 𝑖 and ℎ both select machine 𝑘 .
+
+𝑠 𝑓 𝑚 𝑖,ℎ,𝑘 True iff operations 𝑖 and ℎ use machine 
+
+𝑘 in the same factory. 
+
+Factory assignment constraints. Since all factories are identical, permuting their indices does not change the feasibility or makespan of a schedule. We therefore restrict the factories available to job 𝑗 
+
+to 𝐹 𝑗 = {1, . . . , min ( 𝑗, 𝑓 )} . Thus, the first job can only be assigned to factory 1, the second job can use factories 1 and 2, and so on. Under this restricted domain, each job is assigned to exactly one factory: ∑︁  
+
+> 𝑞 ∈𝐹 𝑗
+
+𝑓 𝑗,𝑞 = 1, ∀𝑗 ∈ 𝐽 . (5) 
+
+Machine assignment constraints. The machine-selection variables are encoded using the processing-time ordering of 𝑀 ′ 
+
+> 𝑖
+
+. Specifically, the order variables form a monotone sequence, and the selected machine is identified by the unique transition from true to false in this sequence: 
+
+𝑥𝑚 𝑖, 1 = True ,𝑥𝑚 𝑖,𝑟 +1 → 𝑥𝑚 𝑖,𝑟 , 𝑟 = 1, . . . , |𝑀 𝑖 | − 1,𝑚 𝑖,𝑘 𝑖,𝑟 ↔  𝑥𝑚 𝑖,𝑟 ∧ ¬ 𝑥𝑚 𝑖,𝑟 +1
+
+ , 𝑟 = 1, . . . , |𝑀 𝑖 | − 1,𝑚 𝑖,𝑘 𝑖, |𝑀 𝑖 | ↔ 𝑥𝑚 𝑖, |𝑀 𝑖 | .
+
+(6) 
+
+Start-time encoding constraints. Similarly to the machine-assignment encoding, the start time of each operation 𝑖 is encoded over its tem-poral domain [𝐸𝑆 𝑖 , 𝐿𝑆 𝑖 ] using order variables: 
+
+𝑥 𝑖,𝐸𝑆 𝑖 = True ,𝑥 𝑖,𝑡 +1 → 𝑥 𝑖,𝑡 , 𝑡 = 𝐸𝑆 𝑖 , . . . , 𝐿𝑆 𝑖 − 1,𝑠 𝑖,𝑡 ↔  𝑥 𝑖,𝑡 ∧ ¬ 𝑥 𝑖,𝑡 +1
+
+ , 𝑡 = 𝐸𝑆 𝑖 , . . . , 𝐿𝑆 𝑖 − 1,𝑠 𝑖,𝐿𝑆 𝑖 ↔ 𝑥 𝑖,𝐿𝑆 𝑖 .
+
+(7) 
+
+Direct precedence constraints. For each precedence relation (𝑖, ℎ ) ∈ 
+
+𝐸 and start time 𝑡 ∈ [ 𝐸𝑆 𝑖 , 𝐿𝑆 𝑖 ], we first establish a separation based on the minimum processing time 𝑝 min  
+
+> 𝑖
+
+:
+
+𝑠 𝑖,𝑡 → 𝑥 ℎ,𝑡 +𝑝 min  
+
+> 𝑖
+
+, 𝐸𝑆 ℎ < 𝑡 + 𝑝 min  
+
+> 𝑖
+
+≤ 𝐿𝑆 ℎ,
+
+¬𝑠 𝑖,𝑡 , 𝑡 + 𝑝 min  
+
+> 𝑖
+
+> 𝐿𝑆 ℎ . (8) To account for slower machine alternatives, this separation is conditionally tightened for each position 𝑟 = 2, . . . , |𝑀 𝑖 | satisfying 
+
+𝑝 𝑖,𝑘 𝑖,𝑟 > 𝑝 𝑖,𝑘 𝑖,𝑟 −1 :
+
+𝑠 𝑖,𝑡 ∧ 𝑥𝑚 𝑖,𝑟 → 𝑥 ℎ,𝑡 +𝑝 𝑖,𝑘 𝑖,𝑟 , 𝐸𝑆 ℎ < 𝑡 + 𝑝 𝑖,𝑘 𝑖,𝑟 ≤ 𝐿𝑆 ℎ,𝑠 𝑖,𝑡 → ¬ 𝑥𝑚 𝑖,𝑟 , 𝑡 + 𝑝 𝑖,𝑘 𝑖,𝑟 > 𝐿𝑆 ℎ . (9) In both cases, instances with 𝑡 + 𝑝 ≤ 𝐸𝑆 ℎ are trivially satisfied by the time window of ℎ and omitted. 
+
+Transitive precedence constraints. Let 𝐸 ∗ denote the transitive closure of 𝐸 . Because the operations of each job form a linear chain, there exists a unique precedence path 𝑃 (𝑖, ℎ ) from operation 𝑖 to any downstream operation ℎ, with a cumulative minimum processing time 𝑤 𝑖,ℎ = Í𝑣 ∈𝑃 (𝑖,ℎ )\{ ℎ} 𝑝 min  
+
+> 𝑣
+
+. For each non-direct relation (𝑖, ℎ ) ∈ 
+
+𝐸 ∗ \ 𝐸 and each start time 𝑡 ∈ [ 𝐸𝑆 𝑖 , 𝐿𝑆 𝑖 ], we enforce: 
+
+𝑠 𝑖,𝑡 → 𝑥 ℎ,𝑡 +𝑤 𝑖,ℎ , 𝐸𝑆 ℎ < 𝑡 + 𝑤 𝑖,ℎ ≤ 𝐿𝑆 ℎ,
+
+¬𝑠 𝑖,𝑡 , 𝑡 + 𝑤 𝑖,ℎ > 𝐿𝑆 ℎ . (10) Cases where 𝑡 + 𝑤 𝑖,ℎ ≤ 𝐸𝑆 ℎ are inherently satisfied by the temporal domain of ℎ and omitted. While these constraints do not alter the set of feasible schedules, they enable the temporal implications of composite precedence chains to be propagated directly via unit propagation. Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam 
+
+Machine-capacity constraints. Because each machine can process at most one operation at a time, machine-capacity constraints must ensure that operations sharing the same machine within the same factory do not overlap in time. These constraints are required only for unordered pairs of operations {𝑖, ℎ } ⊆ 𝑂 with (𝑖, ℎ ), (ℎ, 𝑖 ) ∉ 𝐸 ∗
+
+that share an eligible machine 𝑘 ∈ 𝑀 𝑖 ∩ 𝑀 ℎ .Let 𝑗 = min {𝐽 (𝑖 ), 𝐽 (ℎ)} and ℓ = max {𝐽 (𝑖 ), 𝐽 (ℎ)} . Given that 𝐹 𝑗 ⊆
+
+𝐹 ℓ for 𝑗 < ℓ, the conditions that the two operations are assigned to the same factory, select the same machine, and consequently use the same physical resource are formulated as: 
+
+𝑓 𝑗,𝑞 ∧ 𝑓 ℓ,𝑞 → 𝑠 𝑓 𝑗,ℓ , 𝑞 ∈ 𝐹 𝑗 ,𝑠 𝑓 𝑗,ℓ ∧ 𝑓 𝑗,𝑞 → 𝑓 ℓ,𝑞 , 𝑞 ∈ 𝐹 𝑗 ,𝑠𝑚 𝑖,ℎ,𝑘 ↔  𝑚 𝑖,𝑘 ∧ 𝑚 ℎ,𝑘 
+
+ ,𝑠 𝑓 𝑚 𝑖,ℎ,𝑘 ↔  𝑠𝑚 𝑖,ℎ,𝑘 ∧ 𝑠 𝑓 𝑗,ℓ 
+
+ .
+
+(11) The machine capacity limit dictates that operations 𝑖 and ℎ can-not be executed concurrently on machine 𝑘 . We enforce this ca-pacity constraint by requiring that if both operations are assigned to machine 𝑘 and operation 𝑖 starts at time 𝑡 , operation ℎ must either complete before 𝑖 starts or start after 𝑖 completes. For each 
+
+𝑡 ∈ [ 𝐸𝑆 𝑖 , 𝐿𝑆 𝑖 ], letting 𝐴 = 𝑡 − 𝑝 ℎ,𝑘 and 𝐵 = 𝑡 + 𝑝 𝑖,𝑘 , this requirement is encoded as: 
+
+𝑠 𝑓 𝑚 𝑖,ℎ,𝑘 ∧ 𝑠 𝑖,𝑡 → (¬ 𝑥 ℎ,𝐴 +1 ∨ 𝑥 ℎ,𝐵 ), (12) where literal ¬𝑥 ℎ,𝐴 +1 is included only when 𝐴 ≥ 𝐸𝑆 ℎ , and 𝑥 ℎ,𝐵 
+
+is included only when 𝐵 ≤ 𝐿𝑆 ℎ . Instances of Equation (12) with 
+
+𝐴 ≥ 𝐿𝑆 ℎ or 𝐵 ≤ 𝐸𝑆 ℎ are trivially satisfied, and thus no clause is generated. Conversely, when both 𝐴 < 𝐸𝑆 ℎ and 𝐵 > 𝐿𝑆 ℎ , neither literal is included on the right-hand side, resulting in a 2-literal clause ¬𝑠 𝑓 𝑚 𝑖,ℎ,𝑘 ∨ ¬ 𝑠 𝑖,𝑡 (i.e., 𝑠 𝑓 𝑚 𝑖,ℎ,𝑘 ∧ 𝑠 𝑖,𝑡 → ⊥ ), which forbids operation 𝑖 from starting at time 𝑡 whenever the two operations share machine 𝑘 in the same factory. 
+
+Symmetry breaking. The restricted factory domains 𝐹 𝑗 eliminate some permutations of identical factories but do not remove all equivalent assignments. To break the remaining symmetries, we impose the condition that factory 𝑞 can be used only if factory 𝑞 − 1has already been assigned to an earlier job: 
+
+𝑓 𝑗,𝑞 → 
+
+> 𝑗 −1
+
+Ü
+
+> ℎ=𝑞 −1
+
+𝑓 ℎ,𝑞 −1, 𝑗 = 2, . . . , |𝐽 |, 𝑞 ∈ 𝐹 𝑗 \ { 1}. (13) 
+
+## 3.3 Incremental SAT Solving 
+
+Because SAT is fundamentally a decision problem, SAT solvers cannot directly optimize an objective function. Therefore, makespan minimization must be achieved by solving a sequence of decision problems, each querying whether a feasible schedule exists within a candidate makespan bound 𝑈 .To enforce a specific candidate bound 𝑈 in the SAT formulation, it is sufficient to restrict the completion times of the last operations of all jobs. Let 𝑂 last denote the set of these final operations. For each 𝑖 ∈ 𝑂 last and each eligible machine 𝑘 ∈ 𝑀 𝑖 , we define the machine-dependent latest start time: 
+
+𝜏 𝑖,𝑘 (𝑈 ) = 𝑈 − 𝑝 𝑖,𝑘 . (14) If operation 𝑖 is assigned to machine 𝑘 , it must start no later than 𝜏 𝑖,𝑘 (𝑈 ) to ensure the entire job completes within the current makespan bound. The corresponding constraints are: 
+
+¬𝑚 𝑖,𝑘 , 𝜏 𝑖,𝑘 (𝑈 ) < 𝐸𝑆 𝑖 ,𝑚 𝑖,𝑘 → ¬ 𝑥 𝑖,𝜏 𝑖,𝑘 (𝑈 )+ 1, 𝐸𝑆 𝑖 ≤ 𝜏 𝑖,𝑘 (𝑈 ) < 𝐿𝑆 𝑖 . (15) When 𝜏 𝑖,𝑘 (𝑈 ) ≥ 𝐿𝑆 𝑖 , no additional clause is required because the temporal domain of operation 𝑖 already guarantees its completion within 𝑈 when machine 𝑘 is selected. Algorithm 1 summarizes the incremental optimization procedure. The base SAT formulation is constructed once using the temporal domains derived from the initial upper bound 𝑈 𝐵 . Starting from 𝑈 𝐵 ,makespan clauses corresponding to the current candidate bound are incrementally added to the same solver instance. Whenever a feasible solution is obtained, its actual makespan is used to tighten the next bound directly. 
+
+Algorithm 1 Incremental makespan optimization 
+
+Require: SAT solver 𝑆 containing the base formulation, initial upper bound 𝑈 𝐵 
+
+Ensure: Optimal schedule and optimal makespan 𝐶 ∗ 
+
+> max
+> 1:
+
+𝑈 ← 𝑈 𝐵  
+
+> 2:
+
+bestSchedule ← ∅  
+
+> 3:
+
+𝐶 ∗ 
+
+> max
+
+← 𝑈 𝐵  
+
+> 4:
+
+while true do  
+
+> 5:
+
+Add the makespan constraints of Eq. (15) for bound 𝑈 to 𝑆  
+
+> 6:
+
+(status , schedule ) ← Solve (𝑆 ) 
+
+> 7:
+
+if status = UNSAT then  
+
+> 8:
+
+return (bestSchedule , 𝐶 ∗
+
+> max
+
+) 
+
+> 9:
+
+end if  
+
+> 10:
+
+𝐶 max ← Makespan (schedule ) 
+
+> 11:
+
+bestSchedule ← schedule  
+
+> 12:
+
+𝐶 ∗ 
+
+> max
+
+← 𝐶 max  
+
+> 13:
+
+𝑈 ← 𝐶 max − 1 
+
+> 14:
+
+end while 
+
+The same solver instance is retained throughout the optimization process, so all previously added clauses and learned information remain available in subsequent iterations. After obtaining a feasible schedule with makespan 𝐶 max , the next bound is set directly to 
+
+𝐶 max − 1. Because makespan constraints are added monotonically, all previously imposed upper bounds remain valid and are implied by the tighter bound. When the formulation becomes unsatisfiable, no feasible schedule exists with a makespan smaller than the last feasible 𝐶 max . Therefore, the last feasible schedule is optimal and its makespan is 𝐶 ∗
+
+> max
+
+.
+
+## 4 Computational Experiments 4.1 Benchmark Instances 
+
+We evaluate the proposed SAT method on three widely used FJSP benchmark suites: Brandimarte [3], Fattahi et al. [9], and the rdata 
+
+subset of Hurink et al. [12]. Since these benchmarks were originally designed for single-factory production, we use the distributed ver-sions adopted in previous DFJSP studies [18, 19], in which identical factories share the same machine configurations and processing capabilities. The Fattahi set contains 10 instances and is evalu-ated with two factories, while the Brandimarte set contains 10 instances and is tested with both two and three factories. The rdata Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam 
+
+set contains 23 instances and is also evaluated with two and three factories. We omit the four-factory rdata setting because previous studies [18, 19] show that almost all instances already attain their theoretical lower bounds with three factories, while the four-factory configuration becomes nearly trivial and therefore provides limited discriminatory value. 
+
+## 4.2 Experimental Setup and Metrics 
+
+All SAT experiments are conducted on a Google Cloud Compute En-gine c4-standard-4 virtual machine. The proposed encoding is imple-mented in Python using PySAT [13], with CaDiCaL version 1.9.5 [1] as the underlying solver. Each instance is evaluated under 600 s and 1800 s time limits, including preprocessing, encoding construction, and solving. The 1800 s run is omitted when the corresponding instance has already been proven optimal within 600 s. The proposed method is compared with the MILP and CP models of Meng et al. [18], HGTSA [19], and LBBD1_CPIL [20]. For the CP model of Meng et al., two sets of results are reported separately, namely the original 600 s results from Meng et al. [18] and the 1800 s results obtained by Xiong et al. [20] using the same model. All baseline results are taken from the corresponding publications or publicly released experimental data, whereas only the proposed SAT method is executed on the platform described above. HGTSA [19] is run for up to 4000 iterations rather than un-der a fixed time limit. As a metaheuristic, it does not itself prove optimality; therefore, a reported HGTSA solution is regarded as optimal when its makespan matches the corresponding reported lower bound. To ensure consistency with previous literature, we consider only the 20 two-factory rdata instances reported by Xiong and Liu [20] (for LBBD1_CPIL and CP) that match the benchmark set used in earlier studies. The aggregate metrics for LBBD1_CPIL and the CP rerun are therefore computed over these 20 common instances 1.For reproducibility, both the source code of the proposed SAT method and the detailed per-instance experimental results are pro-vided in the Supplementary Material accompanying this paper. We use the following metrics to evaluate solution quality and computational effectiveness: 
+
+• #Optimal : The number of instances for which the reported makespan is established as optimal. For HGTSA, optimality is inferred when its reported best makespan matches the reported lower bound. 
+
+• #Best : The number of instances for which a method obtains the lowest makespan among all compared approaches. Ties are credited to all corresponding methods. 
+
+• #New : The number of instances for which SAT obtains a makespan strictly smaller than the previously best-known published value. 
+
+• Avg. Dev. (%) : The average percentage deviation from the best-found makespan over the evaluated instance set 𝐼 :Avg. Dev. (%) = 1
+
+|𝐼 |∑︁ 𝑖 ∈𝐼 
+
+𝐶 max ,𝑖 − 𝐶 best max ,𝑖 
+
+𝐶 best max ,𝑖 
+
+× 100% .
+
+> 1The corresponding data and results are publicly available at https://github.com/ FuliXiong/Instances-and-Results-for-DFJSP
+
+Here, 𝐶 max ,𝑖 denotes the makespan obtained by the evaluated method for instance 𝑖 , while 𝐶 best max ,𝑖 denotes the minimum makespan reported among all compared methods for that instance. 
+
+## 4.3 Results and Analysis 
+
+Table 3 summarizes the computational results across the five bench-mark configurations. Within 600 s, SAT obtains the best makespan among the compared methods on 68 of the 76 instances and proves optimality for 66 instances. Extending the unresolved runs to 1800 s increases these numbers to 69 and 67, respectively. SAT proves all Fattahi instances optimal, matching the complete result previously reported for MILP, and also solves all three-factory Brandimarte and 
+
+rdata instances to proven optimality within 600 s. The remaining unresolved cases are concentrated in the two-factory Brandimarte and rdata configurations, where the smaller number of factories leads to stronger competition for machine resources and more re-strictive scheduling decisions. Across the five benchmark configura-tions, SAT achieves or matches the strongest overall performance in four of them: two-factory Brandimarte, three-factory Brandimarte, two-factory Fattahi, and three-factory rdata . The exception is the two-factory rdata configuration, where HGTSA obtains the best makespan on all 23 instances, although SAT still proves 17 instances optimal and remains competitive in solution quality. The two-factory configurations provide the most informative comparison among the exact approaches. On Brandimarte, SAT and the CP rerun of Xiong et al. [20] both prove seven instances optimal within 1800 s. However, SAT obtains the best makespan on nine instances, compared with seven for CP, and achieves an average de-viation of 0.11%, compared with 0.88% for CP. LBBD1_CPIL obtains the best makespan on eight instances but proves four instances optimal. On the two-factory rdata configuration, the original CP results of Meng et al. [18] and SAT each prove 17 of the 23 in-stances optimal. HGTSA obtains the best reported makespan on all 23 instances, while SAT achieves 17 best solutions and an average deviation of 0.24% after 1800 s. LBBD1_CPIL proves 15 of the 20 reported instances optimal and obtains the best makespan on 16 of them. These results indicate that SAT is competitive not only in op-timality certification but also in solution quality on the unresolved instances. The difference between the two- and three-factory configura-tions is noticeable for Brandimarte and rdata . With three factories, SAT proves all 10 Brandimarte and all 23 rdata instances optimal within 600 s. For Brandimarte, the CP rerun reaches the same best makespan on all 10 instances but certifies only eight within 1800 s, while LBBD1_CPIL certifies five. For rdata , the previously reported results for CP and HGTSA attain the corresponding best values on 22 of the 23 instances, whereas SAT proves all 23 optimal. These results suggest that increasing the number of factories substantially reduces the difficulty associated with machine-resource conflicts, despite enlarging the factory-assignment decision space. Figure 2 complements the configuration-level comparison above by showing how the optimality certificates of SAT, CP, and LBBD1_CPIL overlap at the instance level across the Brandimarte and rdata bench-marks. The comparison covers 66 instances from the two- and three-factory configurations, excluding Fattahi because corresponding CP Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam 
+
+Table 3: Comparison of experimental results across different datasets and methods. 
+
+Dataset #Factories #Instances Metric MILP [18] (600s) CP [18] (600s) HGTSA [19] LBBD1_CPIL [20] (1800s) CP [20] (1800s) SAT (600s) SAT (1800s) 
+
+Brandimarte [3] 2 10 #Optimal 3 – – 4 7 6 7
+
+#Best 3 – – 8 7 8 9
+
+#New – – – – – 1 1
+
+Avg. Dev. (%) 50.17 – – 0.58 0.88 0.31 0.11 
+
+3 10 #Optimal – – – 5 8 10 –#Best – – – 5 10 10 –#New – – – – – 0 –Avg. Dev. (%) – – – 1.79 0.00 0.00 –Fattahi [9] 2 10 #Optimal 10 – – – – 10 –#Best 10 – – – – 10 –#New – – – – – 0 –Avg. Dev. (%) 0.00 – – – – 0.00 –
+
+rdata [12] 2 23 #Optimal 13 17 14 15/20 * 14/20 * 17 17 
+
+#Best 13 17 23 16/20 * 14/20 * 17 17 #New – – – – – 0 0Avg. Dev. (%) 1.45 0.35 0.00 0.12 * 0.27 * 0.39 0.24 3 23 #Optimal 20 22 22 – – 23 –#Best 20 22 22 – – 23 –#New – – – – – 1 –Avg. Dev. (%) 0.55 0.01 0.09 – – 0.00 –   
+
+> “–” denotes not applicable, unreported results, or omitted runs where SAT (600s) already solved all instances to optimality.
+> *Values are computed over the 20 common two-factory rdata instances reported by Xiong et al. [20].
+
+LBBD1_CPIL CP SAT 4 0311 35 18 
+
+Figure 2: Venn diagram of instances proven optimal by LBBD1_CPIL [20], CP [18, 20], and SAT across the two- and three-factory Brandimarte and rdata configurations. 
+
+and LBBD1_CPIL results are unavailable. 2 SAT extends the optimal-ity coverage beyond that established by CP, proving four instances 
+
+> 2For this figure, the CP set is the union of the original optimality results reported by Meng et al. [18] and the CP rerun reported by Xiong and Liu [20], with duplicate
+
+that are not certified by CP, including three SAT-only instances and one instance also certified by LBBD1_CPIL. At the same time, the overlap between the two approaches is substantial, with 53 of the 54 instances proven optimal by CP also being certified by SAT. Thus, SAT adds new optimality certificates while covering nearly the entire set previously established by CP. LBBD1_CPIL provides further complementary optimality cer-tificates. Five of its reported certificates lie outside the SAT set, including four unique to LBBD1_CPIL and one shared with CP. Considering the union of the three exact approaches, optimality is established for 62 of the 66 Brandimarte and rdata instances, leaving only four without a certificate among the available results. Together with the 10 Fattahi instances already proven optimal, 72 of the 76 benchmark instances considered in this study now have established optimal makespans. 
+
+Table 4: Benchmark instances for which SAT improves the previously best-known makespan or proves optimality. 
+
+Instance #Factories BKV SAT Improvement Makespan 𝑡 (s) 
+
+MK10 2 130 125 ∗ 722 .8 5MK08 3 184 184 ∗ 84 .0 0la15 3 388 387 ∗ 127 .9 1
+
+> BKV denotes the best-known makespan previously reported in the literature. An asterisk ( ∗) indicates that the corresponding makespan is proven optimal. instances counted only once. Instances not evaluated by LBBD1_CPIL remain in the 66-instance benchmark set but are not counted in the LBBD1_CPIL set.
+
+Research Paper Track AAMAS 2027, 3–7 May 2027, Hanoi, Vietnam 
+
+SAT also improves previously reported benchmark results, as summarized in Table 4. For MK10 with two factories, the previously best-known makespan of 130 is reduced to 125, and the improved value is proven optimal. For la15 with three factories, the best-known makespan is reduced from 388 to 387 and is likewise certi-fied optimal. In addition, SAT proves that the previously reported makespan of 184 for MK08 with three factories is optimal. These re-sults demonstrate that SAT can not only match existing benchmark results but also advance the state of the art by improving known bounds and establishing new optimality certificates. The additional computational budget mainly affects the diffi-cult two-factory cases. On Brandimarte, increasing the time limit from 600 s to 1800 s yields one additional optimality proof and one additional best makespan, including the improvement and cer-tification of MK10 . For the two-factory rdata configuration, the numbers of best and proven-optimal solutions remain unchanged, but the average deviation decreases from 0.39% to 0.24%, indicat-ing that the longer runs improve incumbent solutions on some unresolved instances. Thus, the additional computational budget primarily strengthens solution quality and optimality certification on the remaining difficult cases rather than changing the overall performance pattern. 
+
+## 5 Conclusion 
+
+This paper has presented an exact SAT-based approach for the Distributed Flexible Job Shop Scheduling Problem (DFJSP) as a complementary alternative to existing exact methods. The pro-posed formulation jointly captures factory assignment, machine selection, operation timing, precedence relations, and conditional machine-capacity conflicts, while exploiting problem structure through temporal-domain reduction, propagation, symmetry break-ing, and incremental SAT solving. The resulting framework enables both effective search for feasible schedules and rigorous certifica-tion of optimality, as demonstrated by the computational results on standard DFJSP benchmarks. Computational results demonstrate the effectiveness of the pro-posed approach across 76 standard benchmark instances. Together with previously established results, the new SAT optimality cer-tificates bring the total number of proven-optimal instances to 72 out of 76, including three newly certified instances. Moreover, SAT improves the previous best-known makespans for two of these instances: MK10 with two factories, from 130 to 125, and la15 with three factories, from 388 to 387, with both improved makespans proven optimal. For MK08 with three factories, SAT also proves the incumbent best-known makespan of 184 to be optimal. Across the benchmark configurations, SAT achieves the best results on four of the five configurations and remains competitive with strong exact approaches, including CP and LBBD1_CPIL, as well as existing metaheuristic methods. Future work will investigate stronger propagation mechanisms and more compact resource-conflict encodings for larger instances. Integrating SAT with heuristic warm-start strategies and tighter lower bounds is another promising direction. The framework can also be extended to more complex DFJSP variants, including se-quencing flexibility, heterogeneous factories, and transportation times, and evaluated on additional benchmark instances. 
+
+## References 
+
+[1] Armin Biere, Katalin Fazekas, Mathias Fleury, and Maximillian Heisinger. 2020. CaDiCaL, Kissat, Paracooba, Plingeling and Treengeling Entering the SAT Compe-tition 2020. In Proc. of SAT Competition 2020 – Solver and Benchmark Descriptions (Department of Computer Science Report Series B, Vol. B-2020-1) , Tomas Balyo, Nils Froleyks, Marijn Heule, Markus Iser, Matti Järvisalo, and Martin Suda (Eds.). University of Helsinki, 51–53. [2] Armin Biere, Hans van Maaren, and Toby Walsh. 2009. Handbook of satisfiability .SAGE Publications Limited. [3] Paolo Brandimarte. 1993. Routing and scheduling in a flexible job shop by tabu search. Annals of Operations Research 41, 3 (1993), 157–183. doi:10.1007/ BF02023073 [4] Peter Brucker and Rainer Schlie. 1990. Job-shop scheduling with multi-purpose machines. Computing 45, 4 (1990), 369–375. [5] H. C. Chang and T. K. Liu. 2017. Optimisation of distributed manufacturing flexible job shop scheduling by using hybrid genetic algorithms. Journal of Intelligent Manufacturing 28 (2017), 1973–1986. doi:10.1007/s10845-015-1084-y [6] José Coelho and Mario Vanhoucke. 2025. Comparing and extending satisfiabil-ity solution methods for the resource-constrained project scheduling problem. 
+
+Computers & Operations Research (2025), 107308. [7] Stéphane Dauzère-Pérès, Junwen Ding, Liji Shen, and Karim Tamssaouet. 2024. The Flexible Job Shop Scheduling Problem: A Review. European Journal of Operational Research 314, 2 (2024), 409–432. doi:10.1016/j.ejor.2023.05.017 [8] L. De Giovanni and F. Pezzella. 2010. An Improved Genetic Algorithm for the Distributed and Flexible Job-shop Scheduling Problem. European Journal of Operational Research 200, 2 (2010), 395–408. doi:10.1016/j.ejor.2009.01.008 [9] Parviz Fattahi, Mohammad Saidi Mehrabad, and Fariborz Jolai. 2007. Mathemati-cal modeling and heuristic approaches to flexible job shop scheduling problems. 
+
+Journal of Intelligent Manufacturing 18, 3 (2007), 331–342. doi:10.1007/s10845-007-0026-8 [10] Ronald L Graham. 1966. Bounds for certain multiprocessing anomalies. Bell system technical journal 45, 9 (1966), 1563–1581. [11] Hong Huang and Shaohua Zhou. 2018. An efficient sat algorithm for complex job-shop scheduling. In 2018 8th International Conference on Manufacturing Science and Engineering (ICMSE 2018) . Atlantis Press, 683–688. [12] Johann Hurink, Bernd Jurisch, and Monika Thole. 1994. Tabu search for the job-shop scheduling problem with multi-purpose machines. OR Spectrum 15, 4 (1994), 205–215. doi:10.1007/BF01719451 [13] Alexey Ignatiev, Zi Li Tan, and Christos Karamanos. 2024. Towards Universally Accessible SAT Technology. In SAT . 4:1–4:11. doi:10.4230/LIPICS.SAT.2024.16 [14] Miyuki Koshimura, Hidetomo Nabeshima, Hiroshi Fujita, and Ryuzo Hasegawa. 2010. Solving open job-shop scheduling problems by SAT encoding. IEICE TRANSACTIONS on Information and Systems 93, 8 (2010), 2316–2318. [15] P. H. Lu, M. C. Wu, H. Tan, Y. H. Peng, and C. F. Chen. 2018. A genetic algorithm embedded with a concise chromosome representation for distributed and flexible job-shop scheduling problems. Journal of Intelligent Manufacturing 29 (2018), 19–34. doi:10.1007/s10845-015-1083-z [16] B. Marzouki, O. B. Driss, and K. Ghedira. 2018. Solving distributed and flexible job shop scheduling problem using a chemical reaction optimization metaheuristic. 
+
+Procedia Computer Science 126 (2018), 1424–1433. doi:10.1016/j.procs.2018.08.114 [17] Monaldo Mastrolilli and Luca Maria Gambardella. 2000. Effective Neighborhood Functions for the Flexible Job Shop Problem. Journal of Scheduling - SCHEDULING 
+
+3 (01 2000). doi:10.1002/(SICI)1099-1425(200001/02)3:1<3::AID-JOS32>3.0.CO;2-Y [18] Leilei Meng, Chaoyong Zhang, Yaping Ren, Biao Zhang, and Changyang Lv. 2020. Mixed-integer linear programming and constraint programming formulations for solving distributed flexible job shop scheduling problem. Computers & Industrial Engineering 142 (2020), 106347. doi:10.1016/j.cie.2020.106347 [19] Jin Xie, Xinyu Li, Liang Gao, and Lin Gui. 2023. A hybrid genetic tabu search algorithm for distributed flexible job shop scheduling problems. Journal of Manufacturing Systems 71 (2023), 82–94. doi:10.1016/j.jmsy.2023.09.002 [20] Fuli Xiong and Hengchong Liu. 2026. Logic-based Benders decomposition meth-ods for the distributed flexible job shop scheduling problem. European Journal of Operational Research 329, 3 (2026), 778–797. doi:10.1016/j.ejor.2025.08.039

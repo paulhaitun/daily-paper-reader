@@ -1,0 +1,1288 @@
+Title: Load Balancing with Partial Queue Information - Threshold Optimality and Indexability
+
+URL Source: https://arxiv.org/pdf/2609.28219v1
+
+Published Time: Thu, 24 Sep 2026 01:20:39 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Load Balancing with Partial Queue Information: Threshold Optimality and Indexability 
+
+Sathwik Chadaga and Eytan Modiano 
+
+Laboratory for Information and Decision Systems, Massachusetts Institute of Technology, Cambridge, MA 
+
+Abstract —We consider the problem of load balancing in a sys-tem with one dispatcher and N parallel servers. The dispatcher must select one server to dispatch new jobs at every time-step and each server buffers incoming jobs in a queue. However, the dispatcher does not know the servers’ backlogs and must make dispatching decisions based on previous observations. The dispatcher’s objective is to dispatch jobs to the shortest queue. This problem can be formulated as a restless multi-arm bandit (RMAB) problem where each arm’s state is its corresponding belief vector. Our goal is to verify Whittle indexability for this problem and derive a low complexity Whittle index policy. Previous Whittle indexability results cannot be directly applied due to the multi-dimensional nature of the belief vector. To overcome this issue, we define the RMAB state as the tuple of the most recent backlog observation and the time since this observation. We consider two model variations, a standard finite queue model and a blocking queue model. We show that the single-arm decoupled problems of both these models have threshold optimal solutions under some assumptions. For the standard finite queue model, we prove indexability and derive the Whittle index policy in closed form. For the blocking queue model, we derive a sufficient condition for indexability under threshold optimality and use it to show indexability for some special cases. 
+
+Index Terms —Load balancing, Restless Multi-Arm Bandits, Whittle indexability 
+
+I. I NTRODUCTION 
+
+The task of job dispatching and load balancing plays a central role in modern communication systems and is critical to ensure good delay and throughput performance. The simple model of a central dispatcher and N parallel servers captures many practical systems like data centers, web server farms, and content delivery systems. One of the most fundamental load balancing policies is the join-the-shortest-queue (JSQ) policy. The JSQ policy selects the least backlogged server at any time and is known to be delay optimal under certain assumptions on service times and homogeneity of servers [1]. However, the JSQ policy requires the dispatcher to know the backlogs of all servers at all times. In most practical systems, server backlogs are not readily available to the dispatcher and it must probe the servers individually to reveal their backlogs. Aggregating the back-log information this way adds a significant communication overhead. This motivates the study of scalable load balancing policies with low control overhead. Consequently, the JSQ-d
+
+policy was proposed in [2] that probes d randomly selected 
+
+> This work was supported by NSF grants CNS-2148183, CNS-2106268, and CNS-2148128.
+
+servers instead of probing all the servers. It then selects the shortest of the d randomly selected servers. This reduces the control overhead significantly since d < N . Further, the join-the-idle-queue (JIQ) policy which introduced memory at the dispatcher was proposed in [3]. In the JIQ policy, the servers send a token back to the dispatcher whenever they become idle. This way, the dispatcher keeps track of the idle servers and can dispatch new jobs to one of the idle servers. This allows further reduction in the communication overhead. Building upon the JIQ policy’s idea of dispatcher having memory, we consider a system in which the dispatcher keeps track of observed server backlogs and makes its dispatching decisions based on past observations. Specifically, whenever the dispatcher selects a server and dispatches new jobs to it, the selected server sends back its current backlog information as part of the acknowledgment. This setup has a very low control overhead since only the single selected server sends its backlog information. Our objective is to design efficient load balancing strategies for this partially observed system. We focus on finite queues with maximum backlog K and model each server as a K+1 state Markov chain. This problem can be formulated as a Restless Multi-Arm Bandit (RMAB) problem where each server corresponds to a restless arm. Notice that the arms are restless since they evolve even when they are not selected due to random departures. The optimal solution to the RMAB problem involves dy-namic programming and suffers from the curse of dimen-sionality. Therefore, Whittle [4] considered the Lagrangian relaxation of RMAB and proposed a heuristic policy called the Whittle index policy. The Whittle index policy is compu-tationally efficient and is shown to be asymptotically optimal [5] under some conditions. However, this low complexity index solution exists only when a special condition called Indexability is satisfied. Whittle index policies have been used in various fields like age of information, spectrum sharing, and machine maintenance [6]–[9]. Further, in [10], a Whittle index based job dispatcher was proposed when the queue backlogs are known. However, this policy cannot be applied to partially observed systems since backlogs are unknown. A standard approach to deal with partially observed RMABs is to convert them to fully observed processes by working with beliefs rather than the exact underlying state. For example, such techniques are widely applied in the literature of spectrum sharing [7], [8] where, a controller must select from N on/off channels whose true states are unknown. Since the channel states are unknown, the controller makes its decision based arXiv:2609.28219v1 [cs.NI] 23 Sep 2026 on the beliefs or conditional probabilities that the channels are on. Using this technique, Whittle index policies have been proposed for spectrum sharing in [7], [8]. However, in these works, the belief is a scalar (probability that a channel is active), and admits a closed form solution to the relaxed Bellman equations, which can be used to show indexability and derive the Whittle index policy. Unfortunately, the belief in our system is a K + 1 dimensional vector since each queue can take values in {0, ..., K }. This makes it difficult to derive closed-form solutions. In [11], a sufficient condition called Partial Conservation Law (PCL) was derived to verify indexability of RMAB problems with general multi-dimensional state vectors. Even this condition is hard to verify due to the complex nature of our problem. In [12], a sufficient condition was derived that ensures indexability of resetting processes in which the state resets to a fixed state whenever the controller performs an ac-tive action. However, the load balancing problem we consider is not a resetting process without additional assumptions. In this paper, we consider the problem of load balancing in a system with one dispatcher and N parallel servers. The dispatcher must select one server at each time-step, but does not know the queue backlogs and must rely on past observations. It receives a reward depending on the selected server’s backlog, and its objective is to maximize the total discounted reward with a discount factor β. Optimal solution to this problem involves dynamic programming and is com-putationally infeasible. Therefore, we seek to verify Whittle indexability and design a low complexity Whittle index policy. We summarize our contributions below.  
+
+> •
+
+We model our job dispatching problem as a RMAB problem where each arm’s state is defined as the tuple of most recent observation and the age of that observation. We consider the following two server models.  
+
+> •
+
+The finite queue model: We derive the closed-form so-lution to this model’s single-arm decoupled problem and show that it has a threshold structure. We then prove its indexability and derive its Whittle index in closed form.  
+
+> •
+
+The blocking queue model: We show that the optimal solution to this model’s decoupled problem also has a threshold structure. We derive a sufficient condition for indexability of such problems with threshold optimality. We then use this condition to verify indexability for two special cases: K ≤ 2 and β ≤ 0.5.The rest of the paper is organized as follows. We describe our model and formulate the RMAB problem in Section II. We consider the RMAB’s Lagrange relaxation and derive the decoupled single-arm problem in Section III. We study the finite queues model in Section IV and the blocking queues model in Section V. Finally, we present our numerical results in Section VI and conclusions in Section VII. II. P ROBLEM FORMULATION 
+
+We consider a job dispatching system with one job dis-patcher and N parallel servers. The system operates at discrete time-slots t ∈ { 0, 1, ... }. Each server has a first-in-first-out finite queue to buffer incoming jobs and its maximum buffer capacity is K. We denote by Qi(t) ∈ { 0, 1, ..., K } the queue backlog at server i ∈ { 1, ..., N } at time t. The queue service rates are denoted by μi, i ∈ { 1, ..., N }, and we model the number of jobs departing server i at time t by Di(t), a Poisson random variable with rate μi and independent across time. Apart from the jobs sent by the dispatcher, our model also allows exogenous arrivals but we later make a zero exogenous arrival assumption to show threshold optimality. At each time t, the dispatcher chooses exactly one server to dispatch new jobs. We denote the dispatching action at time t
+
+by π(t) := ( π1(t), π 2(t), ..., π N (t)) , where πi(t) ∈ { 0, 1} ∀ i
+
+and PNi=1 πi(t) = 1 . Also, we denote the server chosen by dispatcher at time t by iπ (t) ∈ { 1, ..., N } so that πi(t)(t) = 1 .To ease our analysis, we assume that there are at least K jobs available at the dispatcher at all times. We denote by Ai,π i (t)
+
+the number of new jobs dispatched to server i at time t under action πi(t).We study two variations of the server model. In the first variation, we consider a standard finite queues model for each server. The dispatcher’s objective is to find the shortest queue and maximize the number of jobs served. Hence it sends as many jobs as possible to the selected server. However, since the selected server has a finite capacity K, it only accepts 
+
+K − Qi(t), where Qi(t) is its current backlog. Therefore, we have Ai,π i (t) = πi(t) ( K − Qi(t)) for this model. In the second variation, we consider a finite blocking queue model for each server. In this model, each server accepts new jobs only if its backlog is zero. Therefore, we have 
+
+Ai,π i (t) = Kπ i(t) I[Qi(t) = 0] for this model, where I[·]
+
+is the indicator function. We will discuss the two variations in detail in Sections IV and V. In summary, including the depar-tures Di(t) and dispatched jobs Ai,π i (t), we can express the queue backlog evolution as ∀i = 1 , ..., N , and ∀t = 0 , 1, ... ,
+
+Qi(t + 1) = max {Qi(t) + Ai,π i (t) − Di(t), 0}. (1) The dispatcher does not have knowledge of the queue back-logs and makes its decision based on previous observations. Further, the dispatcher observes the backlog Qiπ (t)(t) only for the selected server iπ (t) at each time t. Given server i’s history of observations and actions, denoted by Hi, we define its belief vector ωi(t) as its conditional distribution given the history. Formally, ∀i ∈ { 1, ..., N }, we define 
+
+ωi(t) := ( P[Qi(t) = q | H i]) Kq=0 .
+
+Let Pi be server i’s probability transition matrix when it is not selected by the dispatcher πi(t) = 0 . Specifically, ∀(q, j ) ∈{0, ..., K }2, the (q, j )-th element of Pi is 
+
+(Pi)qj := P[Qi(t + 1) = j | Qi(t) = q, π i(t) = 0] .
+
+In other words, Pi captures server i’s restless evolution due to departures and exogenous arrivals (if any) when server i
+
+is not selected by the dispatcher. Therefore, Pi is dependent only on the distribution of server i’s departures and exogenous arrivals. Now, we can express the future belief ωi(t + 1) recursively in terms of current belief ωi(t) and action πi(t)
+
+using the probability transition matrix as follows. If server i
+
+is not selected ( πi(t) = 0 ), we can update the belief vector as ωi(t + 1) = ωi(t) · Pi. Whereas, if server i is selected (πi(t) = 1 ), the dispatcher observes the backlog Qi(t) and sends an additional Ai,π i (t) jobs to the queue. At this point, we can temporarily set the belief vector to δ (Qi(t) + Ai,π i (t)) 
+
+where δ(q) is a one-hot vector with one at the q-th index. However, we also need to account for the departures and ex-ogenous arrivals. Accounting for those, we can write the final belief vector update as ωi(t + 1) = δ (Qi(t) + Ai,π i (t)) · Pi
+
+if πi(t) = 1 . In summary, we have 
+
+ωi(t + 1) = 
+
+(
+
+ωi(t) · Pi if πi(t) = 0 ,
+
+δ (Qi(t) + Ai,π i (t)) · Pi if πi(t) = 1 . (2) It has been previously shown [13] that the collection of belief vectors {ωi(t), i ∈ { 1, ..., N }} is a sufficient statistic for this problem. Hence, we focus on policies that take action 
+
+π(t) only as a function of the belief vectors ωi(t). However, each ωi(t) is a K + 1 dimensional vector, and there are N
+
+such vectors corresponding to i = 1 , ..., N . To simplify this, we consider the following alternate representation of the belief vector. For each server i, we keep track of the most recent backlog observation qi(t) and the time since this observation 
+
+τi(t). Notice that the belief vector can be recovered from these variables at any time using ωi(t) = δ(qi(t)) · P τi(t) 
+
+> i
+
+. Further, we can update qi(t) and τi(t) recursively as 
+
+τi(t + 1) = 
+
+(
+
+τi(t) + 1 if πi(t) = 0 ,
+
+1 if πi(t) = 1 . (3) 
+
+qi(t + 1) = 
+
+(
+
+qi(t) if πi(t) = 0 ,Qi(t) + Ai,π i (t) if πi(t) = 1 . (4) Therefore, we define the state Si(t) of server i at time t as the tuple of most recent observation and the time since that observation, Si(t) := ( qi(t), τ i(t)) . Also, we denote the state of the entire system by S(t) := ( S1(t), ..., S N (t)) . Again, notice that the server states evolve even when they are not selected πi(t) = 0 . In other words, the servers are restless and hence, this is a restless multi-arm bandit (RMAB) problem. At each time t, the dispatcher receives a reward equal to the number of new jobs dispatched, 
+
+Rπ (t) := 
+
+> N
+
+X
+
+> i=1
+
+Ai,π i (t) = 
+
+> N
+
+X
+
+> i=1
+
+πi(t)Ai,π i (t).
+
+where, we explicitly show the dependency on πi(t) ∈ { 0, 1} to highlight that the dispatcher selects only one server. Notice that the dispatcher must select the shortest queue to maximize this reward, since selecting the shortest queue allows it to dispatch the maximum number of jobs. Our objective is to design a dispatcher that maximizes the expected total discounted reward given the initial state S(0) . Formally, let Π be the collection of all policies and β ∈ (0 , 1) be the discount factor, our objective is 
+
+max  
+
+> π∈Π
+
+Eπ
+
+" ∞X
+
+> t=0
+
+βtNX
+
+> i=1
+
+πi(t)Ai,π i (t) S(0) 
+
+#
+
+such that 
+
+> N
+
+X
+
+> i=1
+
+πi(t) = 1 , ∀t = 0 , 1, ... 
+
+III. L AGRANGIAN RELAXATION AND THE SINGLE -A RM 
+
+DECOUPLED PROBLEM 
+
+Obtaining the optimal solution to the above RMAB op-timization problem involves dynamic programming and is computationally infeasible. Whittle [4] considered the La-grangian relaxation of the RMAB problem and decoupled the arms resulting in N independent optimization problems. We consider the following relaxation of our problem. 
+
+max  
+
+> π∈Π
+
+Eπ
+
+" ∞X
+
+> t=0
+
+βtNX
+
+> i=1
+
+πi(t)Ai,π i (t) | S(0) 
+
+#
+
+such that Eπ
+
+" ∞X
+
+> t=0
+
+βtNX
+
+> i=1
+
+(1 − πi(t)) | S(0) 
+
+#
+
+= N − 11 − β
+
+Using Lagrange multiplier γ, we have 
+
+max  
+
+> π∈Π
+
+Eπ
+
+" ∞X
+
+> t=0
+
+βtNX
+
+> i=1
+
+[πi(t)Ai,π i (t) + γ (1 − πi(t))] | S(0) 
+
+#
+
+We can decouple the above optimization into N independent single-arm problems. Dropping the subscript i, we can write the single-arm decoupled problem as 
+
+max  
+
+> π∈Π
+
+Eπ
+
+" ∞X
+
+> t=0
+
+βt [π(t)Aπ (Q(t)) + γ (1 − π(t))] | S(0) 
+
+#
+
+where, we write the number of dispatched jobs as Aπ (Q(t)) 
+
+to emphasize its dependency on the current backlog Q(t).We can interpret this single arm decoupled problem as fol-lows. Given the single-arm state S(t) = (q, τ ), the dis-patcher can either probe the server π(t) = 1 or stay idle 
+
+π(t) = 0 . If the dispatcher probes, it observes the current backlog Q(t), sends Aπ (Q(t)) packets, updates its state to 
+
+S(t + 1) = (Q(t) + Aπ (Q(t)) , 1) , and receives a reward 
+
+Aπ (Q(t)) . Whereas if the dispatcher stays idle, it does not observe the backlog, updates its state to S(t + 1) = ( q, τ + 1) ,and receives a constant subsidy γ. Let Vγ (q, τ ) be the value function for state (q, τ ) i.e. the optimal expected discounted reward received starting from an initial state S(0) = ( q, τ ).Using Bellman equations, we can express the value function as, ∀q ∈ { 0, ..., K } and ∀τ ∈ { 1, 2, ... },
+
+Vγ (q, τ ) = max 
+
+(
+
+γ + βV γ (q, τ + 1) ,
+
+> K
+
+X
+
+> q′=0
+
+Pqq ′ (τ ) ( Aπ (q′) + βV γ (q′ + Aπ (q′), 1)) 
+
+)
+
+(5) where, Pqq ′ (τ ) is the probability that the current backlog is q′ given that the backlog was q some τ time-steps ago. This can be obtained from the probability transition matrix as Pqq ′ (τ ) := ( P τ )qq ′ . Notice that the value function is given by the maximum of the values received by idling and probing. When the dispatcher idles, it receives a constant subsidy γ, and updates its state to (q, τ + 1) . Whereas when it probes, it finds the backlog at q′ with probability Pqq ′ (τ ), receives a reward 
+
+Aπ (q′), and updates its state to (q′ + Aπ (q′), 1) .After relaxing the RMAB problem and decoupling the arms, Whittle [4] proposed the heuristic Whittle Index policy whenever the problem is indexable . The indexability property states that as the subsidy γ increases from 0 to ∞, the set of states for which it is optimal to idle increases monotonically from the empty set ϕ to the entire state space. Further, given indexability, the Whittle index for state S is defined as the lowest subsidy γ that makes it equally desirable to activate and idle in state S. In the next two sections, we consider two queueing models and study their indexability. Our approach involves showing that the optimal solution to the single-arm decoupled problem has a threshold structure and then verifying that the threshold values are monotonic with the subsidy. However, to show threshold optimality, we require the transition matrix P to be lower triangular. Hence, we assume that there are no exogenous arrivals to the servers, and the only arrivals to the server are sent from the dispatcher. 
+
+Assumption 1: The transition matrix P is lower triangular. IV. M ODEL 1: F INITE QUEUES 
+
+In this model, the server has a finite queue with maximum backlog capacity K. Since the dispatcher’s objective is to find the shortest queue and maximize the number of jobs served, it sends as many jobs to the selected server as possible. However, since the server is finite with capacity K, the number of new jobs dispatched is 
+
+Aπ (Q(t)) = π(t) ( K − Q(t)) .
+
+In other words, whenever the dispatcher probes the server, it dispatches K − Q(t) new jobs, thereby filling up the queue to K. This is possible due to our assumption that there are at least K jobs available at the dispatcher at all times. Further, since the dispatcher always fills up the selected queue, the last seen backlog is always q(t) = K. Hence, the system state is always S(t) = ( K, τ (t)) at all times t, where τ (t) is the time since last filled. Since q(t) = K is always fixed, it suffices to keep track of only τ (t). This essentially makes the system state one-dimensional and allows us to solve the Bellman equation in closed-form. We start by simplifying the value function (5) by plugging in this model’s Aπ (Q(t)) as, ∀τ ∈ { 1, 2, ... },
+
+Vγ (τ ) = max 
+
+(
+
+γ + βV γ (τ + 1) ,
+
+> K
+
+X
+
+> q′=0
+
+PKq ′ (τ ) ( K − q′ + βV γ (1)) 
+
+)
+
+(6) where, we have dropped the value function’s dependency on 
+
+q since q(t) = K for all t. We now show that the optimal solution π∗(τ ) to this value function has a threshold structure in τ . We denote the conditional expected queue backlog given 
+
+τ (the time since last filled) by E(τ ) := PKq=0 q ·PKq (τ ) with 
+
+E(0) = K. This expectation has the following properties. 
+
+Lemma 1: For all τ = 1 , 2, ... , E(τ ) is non-increasing in τ
+
+and E(τ ) − E(τ − 1) is non-increasing in τ .This lemma can be proven using the fact that the expected backlog E(τ ) is convex in τ since the departures are non-negative. We show the proof in Appendix A. Notice that since the activation reward K −Q(t) ∈ [0 , K ], if the subsidy γ > K ,it is optimal to always idle and similarly if the subsidy γ < 0,it is optimal to always probe. Therefore, we focus on the non-trivial case γ ∈ [0 , K ] for the rest of the analysis. We now present the threshold optimality result. 
+
+Theorem 1: For any τ ∈ { 1, 2, ... }, the optimal action is 
+
+π∗(τ ) = 
+
+(
+
+1 for τ ≥ τ ∗,
+
+0 for τ < τ ∗
+
+where, τ ∗ ∈ { 1, 2, ... } is such that W (τ ∗) ≤ γ ≤ W (τ ∗ + 1) 
+
+and W : {1, 2, ... } → [0 , K ] is defined as 
+
+W (τ ) := K −
+
+ 1 − βτ
+
+1 − β
+
+
+
+E(τ − 1) + β
+
+ 1 − βτ −1
+
+1 − β
+
+
+
+E(τ ).
+
+The proof involves showing that the value function under the policy π∗(τ ) given in theorem’s statement satisfies the Bellman equations (6). We show the proof in Appendix B. This theorem states that, once we probe the server, it is optimal to wait a fixed τ ∗ amount of time before probing it again. Next, we present the Whittle indexability for this model. 
+
+Theorem 2: The job dispatching problem under the standard finite queues model (Model 1) is indexable. 
+
+Proof: We start by showing that W (τ ) is non-decreasing in τ ∈ { 1, 2, ... }. Evaluating W (τ + 1) − W (τ ) from W (τ )’s definition, simplifying it, and using Lemma 1, we have ∀τ ,
+
+W (τ + 1) − W (τ )= 1 − βτ
+
+1 − β [{E(τ − 1) − E(τ )} − β{E(τ ) − E(τ + 1) }]
+
+≥ (1 − βτ )[ E(τ ) − E(τ + 1)] ≥ 0.
+
+Now, from Theorem 1, we know that τ ∗ ∈ { 1, 2, ... } and 
+
+W (τ ∗) ≤ γ ≤ W (τ ∗ + 1) . Hence, due to W ’s monotonicity, we have that the threshold τ ∗ is non-decreasing in γ. This implies Whittle indexability due to threshold optimality. Finally, notice that model 1’s process is resetting i.e. under the active action (dispatcher probes the server), the state always resets to (K, 1) . Therefore, previous techniques [12] can be applied to verify indexability alternatively. However, our method above derives the Whittle index in closed form and expresses it in terms of the expected values. V. M ODEL 2: B LOCKING FINITE QUEUES 
+
+In this model, the server is blocking which means it accepts new jobs only if it is empty. Therefore, the number of new jobs dispatched is 
+
+Aπ (Q(t)) := K I[Q(t) = 0] .
+
+At time t, if the dispatcher probes the server and finds it empty, it sends K new jobs, receives a reward of K, and updates its state to (K, 1) . Whereas if it finds the server non-empty, it does not receive any reward, but still gets to observe the current backlog (say q′), and updates its state to (q′, 1) .Plugging in this model’s Aπ (Q(t)) , we can simplify the value function (5) as, ∀q ∈ { 0, ..., K } and ∀τ ∈ { 1, 2, ... },
+
+Vγ (q, τ ) = max 
+
+γ + βV γ (q, τ + 1) ,
+
+> K
+
+X
+
+> q′=0
+
+Pqq ′ (τ ) eVγ (q′)
+
+
+
+(7) where, we use the following notation for convenience 
+
+eVγ (q′) := 
+
+(
+
+βV γ (q′, 1) for q′ ∈ { 1, ..., K },K + βV γ (K, 1) for q′ = 0 .
+
+In the rest of this section, we show that the optimal solution to this problem is a threshold policy in τ and derive indexability of this model for some special cases. 
+
+A. Threshold Optimality 
+
+Models similar to the single-arm version of the blocking queues model have been studied previously in the machine repair literature. [14], [15] study the optimal policy to maintain a deteriorating machine under available actions: idle, inspect, and repair. [16] studies a similar problem under idle and terminate actions for finite time horizon. It has been shown that the optimal policy is switch-type in terms of the time since last observation. We use some results from these works to show threshold optimality of the blocking queues model. Specifically, we use the following lemmas from [14], [16]. 
+
+Lemma 2 (Single Crossing [14]): Consider a sequence xj ,
+
+j = 0 , ..., K such that xj crosses zero only once and it does so from above (i.e., ∃ j′ such that xj > 0 for j ≤ j′ and 
+
+xj < 0 for j > j ′). Denote G(q, τ ) := PKq′=0 Pqq ′ (τ )xq′ .Under Assumption 1 on P , for any (q, τ ),1) if G(q, τ ) > 0, then G(q, τ ′) > 0 for all τ ′ ≥ τ ,2) if G(q, τ ) < 0, then G(q′, τ ) < 0 for all q′ ≥ q.This lemma is due to the total positivity property of the Poisson probability transition matrix. See [14] for proof. 
+
+Lemma 3 (Information Inequality [16]): ∀q ∈ { 0, ..., K },
+
+Vγ (q, 2) ≤
+
+> K
+
+X
+
+> q′=0
+
+Pqq ′ (1) Vγ (q′, 1) 
+
+This lemma has a rather intuitive interpretation. Consider a situation where the backlog was observed to be q two time-steps ago. The lemma says that the total value obtained can only improve if an oracle were to reveal the intermediate backlog one time-step ago. See [16] (Lemma 3.2.1) for proof. We now proceed to show threshold optimality. Recall that when the action is idle, the state has a fixed transition from 
+
+(q, τ ) to (q, τ + 1) since there is no observation involved. This allows us to reinterpret the action as the number of time-steps to wait before probing again. Denote by L(q,τ )(l) the total reward obtained starting from state (q, τ ), if we idle for the first l time-steps, probe at (l + 1) -th time-step, and continue optimally. We have ∀q, ∀τ , and ∀l ∈ { 0, 1, ... },
+
+L(q,τ )(l) := γ
+
+ 1 − βl
+
+1 − β
+
+
+
++ βlKX
+
+> q′=0
+
+Pqq ′ (τ + l) eVγ (q′)
+
+The optimal value function V (q, τ ) and the optimal action 
+
+π∗(q, τ ) can be recovered from L(q,τ )(l) as 
+
+V (q, τ ) = max  
+
+> l≥0
+
+L(q,τ )(l)
+
+π∗(q, τ ) = I
+
+
+
+arg max  
+
+> l≥0
+
+L(q,τ )(l) = 0 
+
+
+
+where, we break ties by selecting the smallest index. We now show an important structural property of L(q,τ )(l).
+
+Proposition 1: If L(q,τ )(l) > L (q,τ )(l + 1) for some l ∈{0, 1... }, then ∀k ≥ l, we have L(q,τ )(k) > L (q,τ )(k + 1) .Further, if L(q,τ )(l) < L (q,τ )(l + 1) for some q ∈ { 1..., K },then ∀q′ ≥ q, we have L(q′,τ )(l) < L (q′,τ )(l + 1) 
+
+We prove this in Appendix C. This proposition states that once L(q,τ )(l) starts decreasing, it will continue to decrease. In other words, if we have already waited long enough (say 
+
+l0 time-steps) such that L(q,τ )(l0) is decreasing, then we are better off probing immediately, since waiting more will only reduce the value. This in turn implies that there is an optimal amount of time-steps to wait after which probing is optimal. We now show this formally in the following theorem. 
+
+Theorem 3: There is an optimal threshold value τ ∗ 
+
+> q
+
+≥ 1 for each observation q ∈ { 0, ..., K } such that ∀τ ∈ { 1, 2, ... }, the optimal action is given by 
+
+π∗(q, τ ) = 
+
+(
+
+1 for τ ≥ τ ∗ 
+
+> q
+
+,
+
+0 for τ < τ ∗ 
+
+> q
+
+.
+
+Further, the optimal thresholds are such that τ ∗ 
+
+> 1
+
+≤ τ ∗ 
+
+> 2
+
+... ≤ τ ∗ 
+
+> K
+
+.We prove this in Appendix D. Theorem 3 states that once we observe the queue backlog to be at q, we must idle for τ ∗
+
+> q
+
+time-steps before probing again. Further, we must wait longer if the observed backlog is higher τ ∗ 
+
+> q
+
+≤ τ ∗ 
+
+> q′
+
+if q ≤ q′. This is as expected because more pending jobs in the queue implies longer time to empty, hence we must wait longer before we send our next probe. Finally, even though we have shown threshold optimality, we are unable to derive the threshold values in closed-form due to the two-dimensional nature of the state. 
+
+B. Indexability for special cases 
+
+Since the optimal policy has a threshold structure, we can show indexability by verifying that the thresholds τ ∗ 
+
+> q
+
+’s are non-decreasing with γ. However, since we were unable to derive the threshold values in closed-form, proving indexability for this model is more difficult than the standard queue model. In [7], a sufficient condition for indexability was derived in terms of total discounted passive time. However, this condition was derived for the case of scalar beliefs. We now extend this result to our two-dimensional (q, τ ) state-space. We define the total discounted active time of a policy π given initial state 
+
+S(0) = ( q, τ ) as 
+
+Aπ (q, τ ) := Eπ
+
+" ∞X
+
+> t=0
+
+βtπ(t) | S(0) = ( q, τ )
+
+#
+
+In the following proposition, we derive a sufficient condition for indexability in terms of the active time Aπ (q, τ ). Let π0
+
+be a policy that probes at t = 0 and continues optimally. Similarly, let π1 be a policy that idles at t = 0 and continues optimally. In the proposition, we highlight the dependency of threshold values τ ∗ 
+
+> q
+
+on subsidy γ by explicitly writing τ ∗ 
+
+> q
+
+(γ).
+
+Proposition 2: The optimal threshold values τ ∗ 
+
+> q
+
+(γ) are non-decreasing in γ if ∀q ∈ { 0, ..., K }, Aπ1 (q, τ ∗ 
+
+> q
+
+) ≥ Aπ0 (q, τ ∗ 
+
+> q
+
+).See proof in Appendix E. Notice that this condition is similar to the total discounted passive time condition in [7]. We have extended this condition to our two-dimensional and discrete state (q, τ ). A similar condition was also derived in [17] which needs verifying for a sub-class of policies but for all states. Our condition is different in that it needs verifying specifically for our threshold optimal policy, but only at the decision boundaries (q, τ ∗ 
+
+> q
+
+). Next, we use Proposition 2’s condition to check indexability. However, since we do not have a closed-form expressions for this model, checking this condition is also difficult. Moreover, this model is not resetting i.e. the active action does not reset the state to a fixed state. Therefore, previously developed techniques for verifying in-dexability of resetting processes cannot be used. Consequently, verifying general indexability is difficult. Therefore, we show indexability for two special cases: K ≤ 2 and β ≤ 0.5. And for general values of K and β, we show some numerical trends that support indexability in Section VI. Notice that our first special case K ≤ 2 is the first step towards a general indexability result since K = 2 is the smallest value of K
+
+such that the belief is a vector. 
+
+Theorem 4: The job dispatching problem under the blocking queues model (Model 2) is indexable for K ≤ 2.See proof in Appendix F. The second special case β ≤
+
+0.5 corresponds to settings where instantaneous rewards carry more weight than future rewards. 
+
+Theorem 5: The job dispatching problem under the blocking queues model (Model 2) is indexable for β ≤ 0.5.
+
+Proof: Since policy π1’s action at t = 0 is probe, we have 
+
+Aπ1 (q, τ ∗ 
+
+> q
+
+) = 1 + Eπ1 [P∞ 
+
+> t=1
+
+βtπ1(t) | S(0) = ( q, τ )] ≥ 1.
+
+Similarly, since policy π0 idles at t = 0 , we have Aπ0 (q, τ ∗ 
+
+> q
+
+) = 
+
+Eπ0 [P∞ 
+
+> t=1
+
+βtπ0(t) | S(0) = ( q, τ )] ≤ β/ (1 − β). Therefore, 
+
+Aπ1 (q, τ ∗ 
+
+> q
+
+)−Aπ0 (q, τ ∗ 
+
+> q
+
+) ≥ (1 −2β)/(1 −β) ≥ 0 using β ≤ 0.5.Hence, we have indexability due to Proposition 2. In Theorems 4 and 5, we showed indexability for two spe-cial cases. In Section VI-B, we conduct numerical simulations for a general case and show evidence of general indexability. VI. S IMULATIONS 
+
+A. Model 1: Finite Queues Model 
+
+We simulate the finite queues model with discount factor 
+
+β = 0.99 , N = 10 parallel servers each with capac-ity K = 6. Fig. 1a shows the total reward Rπ (T ) := PTt=0 βt E[Rπ (t)] of the three policies as a function of T .Fig. 1b shows the performance gap of the policies relative to oracle (RJSQ (T ) − R π (T )) /RJSQ (T ). We pick the follow-400 500 600 700 800 900 1000       
+
+> Time horizon
+> 1.50 1.52 1.54 1.56 1.58
+> Average reward
+> JSQ (oracle) Whittle index Myopic policy
+> (a) Average reward. 400 500 600 700 800 900 1000
+> Time horizon
+> 2.6 2.7 2.8 2.9 3.0 3.1 3.2
+> Performance gap (%)
+> Whittle index Myopic policy
+> (b) Performance gap.
+
+Fig. 1: Reward performance for the finite queues model. ing variable server rates, μi = 0 .05 for i = 1 , ... 4, μi = 0 .1
+
+for i = 5 , ..., 8, and μi = 0 .5 for i = 9 , 10 . We simulate the Whittle index policy, myopic policy, and the oracle JSQ policy. The myopic policy greedily picks the queue with least expected backlog at every time-step. The oracle JSQ policy has knowledge of the backlogs and picks the shortest queue. As can be seen, the Whittle index policy has higher reward than the myopic policy, and its performance is comparable to the oracle JSQ. 
+
+B. Model 2: Blocking Queues Model 
+
+We first conduct numerical analysis of the single-arm decou-pled problem for this model. For a given subsidy γ ∈ [0 , K ],we obtain the optimal thresholds τ ∗ 
+
+> q
+
+(γ)’s numerically from value iteration on Bellman equations in (7). We repeat this calculation for various values of γ ∈ [0 , K ] and plot the 0 1 2 3 4     
+
+> Subsidy °
+> 0510 15 20 25 30
+> Optimal threshold  ¿ ¤
+> q (°)
+> ¿¤
+> 1
+> ¿¤
+> 2
+> ¿¤
+> 3
+> ¿¤
+> 4
+
+(a) Optimal thresholds τ ∗ 
+
+> q
+
+(γ) for K = 4 .0 1 2 3 4 5 6        
+
+> Subsidy °
+> 0510 15 20 25 30 35
+> Optimal threshold  ¿ ¤
+> q (°)
+> ¿¤
+> 1
+> ¿¤
+> 2
+> ¿¤
+> 3
+> ¿¤
+> 4
+> ¿¤
+> 5
+> ¿¤
+> 6
+
+(b) Optimal thresholds τ ∗ 
+
+> q
+
+(γ) for K = 6 .0 2 4 6 8 10             
+
+> Subsidy °
+> 010 20 30 40 50
+> Optimal threshold  ¿ ¤
+> q (°)
+> ¿¤
+> 1
+> ¿¤
+> 2
+> ¿¤
+> 3
+> ¿¤
+> 4
+> ¿¤
+> 5
+> ¿¤
+> 6
+> ¿¤
+> 7
+> ¿¤
+> 8
+> ¿¤
+> 9
+> ¿¤
+> 10
+
+(c) Optimal thresholds τ ∗ 
+
+> q
+
+(γ) for K = 10 .
+
+Fig. 2: Optimal thresholds τ ∗ 
+
+> q
+
+(γ) as a function of γ for the blocking queues model’s single-arm decoupled problem. optimal thresholds τ ∗ 
+
+> q
+
+(γ) as a function of γ. Fig. 2 shows the plots of thresholds τ ∗ 
+
+> q
+
+(γ) against subsidy γ. The figure contains the plot for three values of K = 4 , 6, and 10 . We use β = 0 .99 and μ = 0 .5. As can be seen, for all values of 
+
+q ∈ { 1, ..., K }, the optimal threshold τ ∗ 
+
+> q
+
+(γ) starts from 1 and monotonically increases to ∞ as subsidy γ increases. This shows that the passive set is monotonically non-decreasing with subsidy indicating indexability for general values of K
+
+and β. Moreover, we can see that the threshold values τ ∗ 
+
+> q
+
+are non-decreasing in q as expected since it is optimal to wait longer if the observed backlog is larger and vice-versa. Next, we simulate the Whittle index, myopic, and the oracle JSQ policies with discount factor β = 0 .99 and N = 10 
+
+parallel servers each with K = 6 . We pick variable server rates, μi = 0 .05 for i = 1 , ... 5, μi = 0 .1 for i = 6 , ..., 9,and μi = 0.5 for i = 10 . We compute the approximate Whittle index of each state using the numerical analysis of the single-arm problem described above. However, notice that algorithms like the adaptive greedy algorithm from [12], [17] can be used to compute Whittle index exactly. The myopic policy picks the queue that is most likely to be empty, and the oracle JSQ policy knows the exact backlogs and picks the shortest queue. Fig. 3a shows the total dis-counted reward Rπ (T ) := PTt=0 βt E[Rπ (t)] as a function of T . Fig. 3b shows the performance gap relative to oracle 
+
+(RJSQ (T ) − R π (T )) /RJSQ (T ). As can be seen, the Whittle index policy beats the myopic policy and is competitive with the oracle JSQ policy. VII. C ONCLUSION 
+
+We considered the load balancing problem when the server backlogs are partially observed. We formulated this problem as RMAB with arm state defined as the tuple of most recent observation and the time since the recent observation. For the standard finite queues model, we showed threshold optimality and indexability by deriving closed-form expressions. For the blocking queues model, we showed threshold optimality and proved indexability for some special cases. Some potential future directions to make the model more practical is allowing random arrivals to the dispatcher and allowing exogenous arrivals to the servers. We believe these extensions will be 400 500 600 700 800 900 1000 
+
+> Time horizon
+> 1.37 1.38 1.39 1.40 1.41
+> Average reward
+> JSQ (oracle) Whittle index Myopic policy
+
+(a) Average reward. 400 500 600 700 800 900 1000 
+
+> Time horizon
+> 1.7 1.8 1.9 2.0 2.1
+> Performance gap (%)
+> Whittle index Myopic policy
+
+(b) Performance gap. 
+
+Fig. 3: Reward performance for the blocking queues model. more difficult since the transition matrix is not lower triangular and the value function may not be well behaved. APPENDIX APROOF OF LEMMA 1Recall that E(τ ) is the conditional expected queue backlog given that the time since last filled is τ . Hence, we have 
+
+E(τ ) := E[Q(t) | Q(t − τ ) = K and zero new arrivals ]. De-note the offered service at time t by D(t) ∼ i.i.d. Poisson (μ).Therefore, we have E(τ ) − E(τ + 1) = ˜E[min {Q(t), D (t)}]
+
+where ˜E[·] := E[·| Q(t − τ ) = K]. Since Q(t) ≥ 0 and D(t) ≥ 0, we have E(τ ) − E(τ + 1) ≥ 0. Moreover, since 
+
+D(t) is i.i.d. across t and since Q(t − 1) ≥ Q(t), we have 
+
+E[min {Q(t−1) , D (t−1) }] ≥ E[min {Q(t), D (t)}]. Therefore, we have E(τ − 1) − E(τ ) ≥ E(τ ) − E(τ + 1) for all τ .APPENDIX BPROOF OF THEOREM 1We start by calculating the value function under the theo-rem’s policy π∗(τ ) = I[τ ≥ τ ∗]. For notational convenience, we define f (τ ) := PKq′=0 PKq ′ (τ ) ( K − q′) = K − E(τ ).Since π∗’s action is to probe immediately for τ ≥ τ ∗,
+
+Vγ (τ ) = K − E(τ ) + βV γ (1) = f (τ ) + βV γ (1) .
+
+Similarly, for τ < τ ∗, since π∗’s action is to idle, we have 
+
+Vγ (τ ) = γ + βV γ (τ + 1) = γ + βγ + β2Vγ (τ + 2) = ... 
+
+= γ 1 − βτ ∗−τ
+
+1 − β + βτ ∗−τ Vγ (τ ∗)= γ 1 − βτ ∗−τ
+
+1 − β + βτ ∗−τ f (τ ∗) + βτ ∗−τ +1 Vγ (1) .
+
+Plugging in τ = 1 , we can solve for Vγ (1) and express the value function under the theorem’s policy π∗ as follows 
+
+Vγ (τ ) = 
+
+ 
+
+> γ
+> 1−β
+
+− βτ ∗−τ  
+
+> 1−βτ∗
+
+γ + βτ ∗−τ  
+
+> 1−βτ∗
+
+f (τ ∗) for τ < τ ∗,f (τ ) + β(1 −βτ ∗−1)(1 −β)(1 −βτ ∗ ) γ + βτ ∗  
+
+> 1−βτ∗
+
+f (τ ∗) for τ ≥ τ ∗.
+
+Next, we will show that π∗’s value function calculated above indeed satisfies the Bellman equation (6). Let ∆π (τ ) := 
+
+Vγ (τ ; π(τ ) = 1) − Vγ (τ ; π(τ ) = 0) be the difference in values of probing and idling at any τ . To verify that π∗ satisfies Bellman equations, we must show that ∆π∗
+
+(τ ) ≥ 0 for τ ≥ τ ∗
+
+and ∆π∗
+
+(τ ) < 0 for τ < τ ∗. Indeed, evaluating ∆π∗
+
+(τ ) for 
+
+τ < τ ∗, we have 
+
+∆π∗
+
+(τ ) = f (τ ) − f (τ ∗) + 1 − βτ ∗−τ
+
+1 − βτ ∗ [f (τ ∗) − γ]
+
+Now, recall that the policy π∗’s choice of threshold τ ∗
+
+satisfies W (τ ∗) ≤ γ ≤ W (τ ∗ + 1) . Plugging in the definition of W (τ ) and rearranging, we have f (τ ∗)−γ ≤ 1−βτ ∗ 
+
+> 1−β
+
+[f (τ ∗ −
+
+1) − f (τ ∗)] . Using this inequality in ∆π∗
+
+(τ ), we get 
+
+∆π∗
+
+(τ ) ≤ f (τ ) − f (τ ∗) + 1 − βτ ∗−τ
+
+1 − β [f (τ ∗ − 1) − f (τ ∗)] = E(τ ∗) − E(τ ) + 1 − βτ ∗−τ
+
+1 − β [E(τ ∗) − E(τ ∗ − 1)] ≤ 0
+
+where, the last inequality is due to Lemma 1. Similarly, evaluating ∆π∗
+
+(τ ) for τ ≥ τ ∗, we have 
+
+∆π∗
+
+(τ ) = f (τ ) − βf (τ + 1) + 1 − β
+
+1 − βτ ∗ [βτ ∗
+
+f (τ ∗) − γ].
+
+Again, using the fact that π∗’s choice of threshold τ ∗
+
+satisfies W (τ ∗) ≤ γ ≤ W (τ ∗ + 1) , we have f (τ ∗ + 1) − γ ≥  
+
+> 1−βτ∗+1
+> 1−β
+
+[f (τ ∗ + 1) − f (τ ∗)] . Using this in ∆π∗
+
+(τ ), we have after some rearrangements 
+
+∆π∗
+
+(τ ) ≥ f (τ ) − βf (τ + 1) − f (τ ∗) + βf (τ ∗ + 1) = [ E(τ ∗) − E(τ ∗ + 1)] − [E(τ ) − E(τ + 1)] + (1 − β)[ E(τ ∗ + 1) − E(τ + 1)] ≥ 0
+
+where, the last inequality is due to Lemma 1. This shows that the value function under π∗ satisfies the Bellman equation hence we conclude that π∗ is an optimal policy to model 1’s single-arm decoupled problem. APPENDIX CPROOF OF PROPOSITION 1Evaluating the drift ∆L(q,τ )(l), we have 
+
+∆L(q,τ )(l) := L(q,τ )(l) − L(q,τ )(l + 1) = βl
+
+−γ +
+
+> K
+
+X
+
+> q′=0
+
+(Pqq ′ (τ + l) − βP qq ′ (τ + l + 1)) eVγ (q′)
+
+
+
+= βlKX
+
+> q′=0
+
+Pqq ′ (τ + l)xq′ .
+
+where, xq′ := −γ + eVγ (q′) − β PKq′′ =0 Pq′q′′ (1) eVγ (q′′ ).
+
+For q′ = 0 , we have x0 = (1 − β)( K + βV (K, 1)) − γ. 
+
+Now, since the optimal reward is lower bounded by an always-idle policy’s reward, we have V (K, 1) ≥ γ/ (1 − β), therefore 
+
+x0 ≥ 0. Further, for q′ > 0, we investigate xq′ under two cases. Case 1, the optimal action at (q′, 1) is idle: Here we have xq′ = −(1 −β)γ+β[βV γ (q′, 2) −PKq′′ =0 Pq′q′′ (1) eVγ (K)] 
+
+by plugging in idle action into eVγ (q′). Now using Lemma 3, we have xq′ < 0. Case 2, the optimal action at (q′, 1) is probe: Here we have xq′ = −γ by plugging in probe action into eVγ (q′). In summary, we have x0 > 0 and xq′ < 0 for 
+
+q′ > 0. Hence, due to Lemma 2, we have ∆(q,τ )(l) crosses zero only once in l and q which concludes the proof. APPENDIX DPROOF OF THEOREM 3Define l∗(q, τ ) := arg max l≥0 L(q,τ )(l) as the optimal number of time-steps to wait starting from state (q, τ ). Here, ties are broken by selecting the smallest index. Notice that the optimal policy is now given by π∗(q, τ ) = I[l∗(q, τ ) = 0] 
+
+where I[·] is the indicator function. The following lemma shows an important property of l∗(q, τ ).
+
+Lemma 4: l∗(q, τ + 1) = [ l∗(q, τ ) − 1] + for all ∀τ = 1 , 2, ... 
+
+where [·]+ := max {· , 0}.
+
+Proof: Writing the expression for L(q,τ +1) (l) and ex-pressing in terms of L(q,τ )(l), we get L(q,τ +1) (l) = [ L(q,τ )(l+1) −γ]/β . Therefore, l∗(q, τ +1) = arg max l≥0 L(q,τ +1) (l) = arg max l≥0[L(q,τ )(l+1) −γ]/β = arg max l≥0 L(q,τ )(l+1) = arg max l≥1 L(q,τ )(l) − 1. In summary, we have 
+
+l∗(q, τ + 1) = arg max  
+
+> l≥1
+
+L(q,τ )(l) − 1 (8) Case (i) l∗(q, τ ) > 0: By definition, arg max l≥0 L(q,τ )(l) = 
+
+l∗(q, τ ) > 0. Therefore, we can write arg max l≥1 L(q,τ )(l) = arg max l≥0 L(q,τ )(l). Plugging this in (8), we have l∗(q, τ +1) = arg max l≥0 L(q,τ )(l) − 1 = l∗(q, τ ) − 1.
+
+Case (ii-a) l∗(q, τ ) = 0 and L(q,τ )(0) > L (q,τ )(1) : Since 
+
+L(q,τ )(0) > L(q,τ )(1) , we know from Proposition 1 that 
+
+L(q,τ )(l) > L(q,τ )(l + 1) for all l ≥ 1. Therefore, we get arg max l≥1 L(q,τ )(l) = 1 . Plugging this in (8), we get 
+
+l∗(q, τ + 1) = arg max l≥1 L(q,τ )(l) − 1 = 0 .Case (ii-b) l∗(q, τ ) = 0 and L(q,τ )(0) = L(q,τ )(1) : Since 
+
+arg max l≥0 L(q,τ )(l) = l∗(q, τ ) = 0 by definition, for all 
+
+l = 1, 2, ... , we have L(q,τ )(l) ≤ L(q,τ )(0) = L(q,τ )(1) .Therefore, arg max l≥1 L(q,τ )(l) = 1 . Plugging this in (8), we get l∗(q, τ + 1) = arg max l≥1 L(q,τ )(l) − 1 = 0 .Combining these cases, we have l∗(q, τ + 1) = [ l∗(q, τ ) −
+
+1] +. This concludes proof of Lemma 4. Using Lemma 4, we can now show that the optimal policy is a threshold policy with thresholds τ ∗ 
+
+> q
+
+:= l∗(q, 1)+1 . Indeed, using l∗(q, τ + 1) = [l∗(q, τ ) − 1] + recursively, we have 
+
+π∗(q, τ ) = I[l∗(q, τ ) = 0] = I[( l∗(q, 1) − τ + 1) + = 0] = 
+
+I[( τ ∗ 
+
+> q
+
+− τ )+ = 0] = I[τ ≥ τ ∗ 
+
+> q
+
+]. This shows that a threshold policy with thresholds τ ∗ 
+
+> q
+
+:= l∗(q, 1) + 1 is optimal. We now prove the theorem’s second part i.e., τ ∗ 
+
+> q
+
+≤ τ ∗ 
+
+> q′
+
+for 
+
+q ≤ q′. From above, we know τ ∗ 
+
+> q
+
+= l∗(q, 1)+1 . If l∗(q, 1) = 0 ,then τ ∗ 
+
+> q
+
+= 1 and τ ∗ 
+
+> q′
+
+= l∗(q′, 1) + 1 ≥ 1 = τ ∗ 
+
+> q
+
+is trivially true. So, assume l∗(q, 1) > 0. Since l∗(q, 1) = arg max l≥0 L(q, 1) (l)
+
+with ties broken by selecting the smallest index, we have 
+
+L(q, 1) (l∗(q, 1) − 1) < L (q, 1) (l∗(q, 1)) . Hence, due to Proposi-tion 1’s second part, ∀q′ ≥ q we have 
+
+L(q′,1) (l∗(q, 1) − 1) < L (q′,1) (l∗(q, 1)) . (9) Now assume that τ ∗ 
+
+> q
+
+> τ ∗ 
+
+> q′
+
+for some q′ ≥ q. In other words, 
+
+τ ∗ 
+
+> q
+
+− 1 ≥ τ ∗ 
+
+> q′
+
+. Since τ ∗ 
+
+> q
+
+= l∗(q, 1) + 1 , we can now write 
+
+l∗(q, 1) − 1 ≥ l∗(q′, 1) = arg max l≥0 L(q′,1) (l). Hence, from Proposition 1’s first part, we have L(q′,1) (l) ≥ L(q′,1) (l + 1) 
+
+for all l ≥ l∗(q, 1) − 1. However this contradicts (9) hence proving that τ ∗ 
+
+> q
+
+≤ τ ∗ 
+
+> q′
+
+for all q ≤ q′.APPENDIX EPROOF OF PROPOSITION 2We prove this by contradiction similar to the proof of the total discounted passive time condition in [7]. Assume contradiction that ∃ γ0, q 0 such that optimal threshold τ ∗ 
+
+> q0
+
+(γ)
+
+is decreasing at γ = γ0. Since τ ∗ 
+
+> q0
+
+(γ) is the threshold, we have V π1 
+
+> γ0
+
+(q = q0, τ = τ ∗ 
+
+> q0
+
+(γ0)) ≥ V π0 
+
+> γ0
+
+(q = q0, τ = τ ∗ 
+
+> q0
+
+(γ0)) 
+
+where, the superscripts π1 and π0 indicate the policies used. Since threshold τ ∗ 
+
+> q0
+
+(γ) is decreasing at γ = γ0, there exists some ϵ > 0 such that τ ∗ 
+
+> q0
+
+(γ0) < τ ∗ 
+
+> q0
+
+(γ0 − ϵ). Therefore, for a problem with subsidy γ = γ0 − ϵ, it is optimal to idle when (q, τ ) = ( q0, τ q0 (γ0)) . In other words, we have 
+
+V π1
+
+> γ0−ϵ
+
+(q = q0, τ = τ ∗ 
+
+> q0
+
+(γ0)) < V π0
+
+> γ0−ϵ
+
+(q = q0, τ = τ ∗ 
+
+> q0
+
+(γ0)) .Combining the two value function inequalities obtained above, we have ∂V π1 
+
+> γ
+
+(q0, τ ∗ 
+
+> q0
+
+)/∂γ > ∂V π0 
+
+> γ
+
+(q0, τ ∗ 
+
+> q0
+
+)/∂γ at γ = γ0.Using the fact that the partial derivative of optimal value w.r.t. subsidy is equal to the total discounted passive time, this inequality can be rewritten as Aπ1 (q0, τ ∗ 
+
+> q0
+
+) < A π0 (q0, τ ∗ 
+
+> q0
+
+).However, this contradicts the Proposition’s statement. APPENDIX FPROOF OF THEOREM 4The blocking queues model and the standard queues mod-els are equivalent when K = 1. Since we have already shown indexability for the standard queue model, we focus on K = 2 . Let eAq be the active time under the optimal policy given that an observation of q was just made. After observing a backlog q, the optimal policy waits τ ∗ 
+
+> q
+
+time-steps and probes again, hence we have ∀q ∈ {1..., K },
+
+eAq = 1 + βτ ∗
+
+> q
+
+PKq′=0 Pqq ′ (τ ∗ 
+
+> q
+
+) eAq′ + βτ ∗ 
+
+> q
+
+Pq0(τ ∗ 
+
+> q
+
+) eAK where, we used eA0 = eAK since after seeing zero backlog, the dispatcher fills the queue to K and from then the system behaves exactly the same as observing K. Setting K = 2 
+
+in the above equations and rearranging, we have 
+
+eA1 − eA2 = (1 − (1 − βτ ∗ 
+
+> 1
+
+)) eA2
+
+1 − βτ ∗ 
+
+> 1
+
+P11 (τ ∗ 
+
+> 1
+
+) = −(1 − (1 − βτ ∗ 
+
+> 2
+
+) eA2)
+
+βτ ∗ 
+
+> 2
+
+P21 (τ ∗ 
+
+> 2
+
+) .
+
+(10) Further, under the optimal policy, the waiting time between any two probes is one of {τ ∗ 
+
+> 1
+
+, ..., τ ∗ 
+
+> K
+
+}. Further, since τ ∗ 
+
+> 1
+
+≤ τ ∗ 
+
+> 2
+
+... ≤
+
+τ ∗ 
+
+> K
+
+, the sparsest possible activation pattern is all probes being separated by τ ∗ 
+
+> K
+
+time-steps. Similarly, the densest possible activation pattern is all probes being separated by τ ∗ 
+
+> 1
+
+time-steps. Therefore, ∀q we have 
+
+11 − βτ ∗
+
+> K
+
+≤ eAq ≤ 11 − βτ ∗
+
+> 1
+
+. (11) Now, since π1 probes immediately, we have Aπ1 (q, τ ∗ 
+
+> q
+
+) = 
+
+PKq′=0 Pqq ′ (τ ∗ 
+
+> q
+
+)Aq′ . And since π0 idles initially, in the next time-step its state is (q, τ ∗ 
+
+> q
+
++ 1) and since it acts optimally at this time-step, it must probe and hence Aπ0 (q, τ ∗ 
+
+> q
+
+) =
+
+β PKq′=0 Pqq ′ (τ ∗ 
+
+> q
+
++1) Aq′ . Plugging in K = 2 and simplifying, 
+
+∆A(q, τ ∗ 
+
+> q
+
+) := Aπ1 (q, τ ∗ 
+
+> q
+
+) − Aπ0 (q, τ ∗ 
+
+> q
+
+)= (1 − β) eA2 + ( Pq1(τ ∗ 
+
+> q
+
+) − βP q1(τ ∗ 
+
+> q
+
++ 1))( eA1 − eA2).
+
+For q = 1 , since departures are Poisson, P11 (τ ) = e−μτ .Therefore, ∆A(1 , τ ∗ 
+
+> 1
+
+) = (1 − β) eA2 + e−μτ ∗ 
+
+> 1
+
+(1 − βe −μ)( eA1 −
+
+eA2). Using (10) and (11), it can be seen that ∆A(1 , τ ∗ 
+
+> 1
+
+) ≥
+
+0. For q = 2 , using Poisson departures, P21 (τ ) = μτ e −μτ .Plugging this in and using (10), ∆A(2 , τ ∗ 
+
+> 2
+
+) = (1 − β) eA2 −
+
+β−τ ∗ 
+
+> 2
+
+(1 − (1 + 1 /τ ∗ 
+
+> 2
+
+)βe −μ)(1 − (1 − βτ ∗ 
+
+> 2
+
+) eA2). Now, using (11), e−μ ≤ 1, and βτ ∗ 
+
+> 2
+
+≥ 1 − τ ∗ 
+
+> 2
+
+(β−1 − 1) , we can show that 
+
+∆A(2 , τ ∗ 
+
+> 2
+
+) ≥ (1 − β)/(1 − βτ ∗ 
+
+> 2
+
+) ≥ 0. Combining these, we have Aπ1 (q, τ ∗ 
+
+> q
+
+) ≥ Aπ0 (q, τ ∗ 
+
+> q
+
+) for both q = 1 , 2. Hence, we have indexability due to Proposition 2. REFERENCES [1] R. R. Weber, “On the optimal assignment of customers to parallel servers,” Journal of Applied Probability , vol. 15, no. 2, pp. 406–413, 1978. [2] M. Mitzenmacher, “The power of two choices in randomized load balancing,” IEEE Transactions on Parallel and Distributed Systems , vol. 12, no. 10, pp. 1094–1104, Oct. 2001, doi: 10.1109/71.963420. [3] R. Badonnel and M. Burgess, “Dynamic pull-based load balancing for autonomic servers,” in NOMS 2008 IEEE Network Operations and Management Symposium , 2008, pp. 751–754. [4] P. Whittle, “Restless bandits: Activity allocation in a changing world,” 
+
+> Journal of applied probability , vol. 25, no. A, pp. 287–298, 1988.
+
+[5] R. R. Weber and G. Weiss, “On an index policy for restless bandits,” 
+
+Journal of applied probability , vol. 27, no. 3, pp. 637–648, 1990. [6] V. Tripathi and E. Modiano, “A whittle index approach to minimizing functions of age of information,” IEEE/ACM Transactions on Network-ing , vol. 32, no. 6, pp. 5144–5158, 2024. [7] K. Liu and Q. Zhao, “Indexability of restless bandit problems and optimality of whittle index for dynamic multichannel access,” IEEE Transactions on Information Theory , vol. 56, no. 11, pp. 5547–5567, 2010. [8] K. Liu, R. Weber, and Q. Zhao, “Indexability and whittle index for restless bandit problems involving reset processes,” in 2011 50th IEEE Conference on Decision and Control and European Control Conference .IEEE, 2011, pp. 7690–7696. [9] N. Akbarzadeh and A. Mahajan, “Maintenance of a collection of machines under partial observability: Indexability and computation of whittle index,” Les Cahiers du GERAD ISSN , vol. 711, p. 2440, 2021. [10] K. D. Glazebrook, C. Kirkbride, and J. Ouenniche, “Index policies for the admission control and routing of impatient customers to heteroge-neous service stations,” Operations Research , vol. 57, no. 4, pp. 975– 989, 2009. [11] J. Nino-Mora, “Restless bandits, partial conservation laws and indexa-bility,” Advances in Applied Probability , vol. 33, no. 1, pp. 76–98, 2001. [12] N. Akbarzadeh and A. Mahajan, “Conditions for indexability of restless bandits and an algorithm to compute whittle index,” Advances in Applied Probability , vol. 54, no. 4, pp. 1164–1192, 2022. [13] R. D. Smallwood and E. J. Sondik, “The optimal control of partially observable markov processes over a finite horizon,” Operations research ,vol. 21, no. 5, pp. 1071–1088, 1973. [14] D. Rosenfield, “Markovian deterioration with uncertain information,” 
+
+Operations Research , vol. 24, no. 1, pp. 141–155, 1976. [15] ——, “Markovian deterioration with uncertain information—a more general model,” Naval Research Logistics Quarterly , vol. 23, no. 3, pp. 389–405, 1976. [16] R. D. Levin, “Optimal inspection policies for deteriorating markov processes.” Tech. Rep., 1977. [17] S. Zhou and X. Lin, “An easier-to-verify sufficient condition for whittle indexability and application to aoi minimization,” in IEEE INFOCOM 2024-IEEE Conference on Computer Communications . IEEE, 2024, pp. 1741–1750.
