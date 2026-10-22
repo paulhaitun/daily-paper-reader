@@ -25,3 +25,82 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: embodied-ai
+      description: 查找具身智能与调度相关的文章。
+      enabled: true
+      paper_sources:
+        - arxiv
+        - biorxiv
+      keywords:
+        - keyword: embodied artificial intelligence
+          keyword_cn: 具身人工智能
+          query: research on embodied artificial intelligence systems that perceive and act in physical environments
+        - keyword: world models
+          keyword_cn: 世界模型
+          query: research on world models that support embodied prediction, planning, and decision making
+        - keyword: embodied intelligence
+          keyword_cn: 具身智能
+          query: research on embodied intelligence and physically grounded intelligent systems
+        - keyword: job scheduling
+          keyword_cn: 作业调度
+          query: job scheduling algorithms and optimization methods
+        - keyword: resource scheduling
+          keyword_cn: 资源调度
+          query: resource scheduling and allocation for computing and robotic systems
+        - keyword: scheduling algorithms
+          keyword_cn: 调度算法
+          query: scheduling algorithms for distributed and real-time systems
+      intent_queries:
+        - query: >-
+            Find articles about embodied artificial intelligence systems that perceive, reason, plan, and act in
+            physical environments.
+          query_cn: 查找关于具身人工智能系统的文章，这些系统能在物理环境中感知、推理、规划和行动。
+          enabled: true
+          source: manual
+          note: ''
+        - query: >-
+            Find research on robot learning and embodied agents that connect perception, planning, and control for real
+            world tasks.
+          query_cn: 查找关于机器人学习和具身智能体的研究，这些研究将感知、规划和控制连接起来以完成现实世界任务。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Find articles about embodied intelligence, embodied agents, and robot learning.
+          query_cn: 查找关于具身智能、具身智能体和机器人学习的文章。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Find articles about scheduling algorithms, job scheduling, and resource allocation.
+          query_cn: 查找关于调度算法、作业调度和资源分配的文章。
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-10-22T15:24:38.002Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
+  biorxiv:
+    papers_table: biorxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_biorxiv_papers_exact
+    vector_rpc_exact: match_biorxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_biorxiv_papers_bm25
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
