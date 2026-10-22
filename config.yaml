@@ -77,6 +77,53 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-10-22T15:24:38.002Z'
+    - tag: ev-forecast
+      description: 查找关于电动汽车预测与调度的文章
+      enabled: true
+      paper_sources:
+        - arxiv
+        - biorxiv
+      keywords:
+        - keyword: electric vehicle scheduling
+          keyword_cn: 电动汽车调度
+          query: scheduling methods for electric vehicle charging and operations
+        - keyword: charging scheduling optimization
+          keyword_cn: 充电调度优化
+          query: optimization approaches for scheduling electric vehicle charging sessions
+        - keyword: electric vehicle fleet scheduling
+          keyword_cn: 电动汽车车队调度
+          query: scheduling electric vehicle fleets and charging operations
+        - keyword: demand response scheduling
+          keyword_cn: 需求响应调度
+          query: demand response scheduling involving electric vehicle charging flexibility
+        - keyword: vehicle-to-grid scheduling
+          keyword_cn: 车网互动调度
+          query: scheduling vehicle-to-grid services and electric vehicle energy exchange
+        - keyword: charging demand prediction
+          keyword_cn: 充电需求预测
+          query: prediction models for electric vehicle charging demand
+      intent_queries:
+        - query: Find articles about forecasting electric vehicle charging demand and scheduling charging operations.
+          query_cn: 查找关于电动汽车充电需求预测和充电调度操作的文章。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Research on optimization methods for electric vehicle scheduling and load prediction.
+          query_cn: 关于电动汽车调度与负荷预测优化方法的研究。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Studies on smart charging coordination and demand forecasting for electric vehicles.
+          query_cn: 关于电动汽车智能充电协调与需求预测的研究。
+          enabled: true
+          source: manual
+          note: ''
+        - query: Papers on electric vehicle fleet scheduling, charging management, and energy forecasting.
+          query_cn: 关于电动汽车车队调度、充电管理和能源预测的论文。
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-10-22T16:09:45.559Z'
 source_backends:
   arxiv:
     papers_table: arxiv_papers
