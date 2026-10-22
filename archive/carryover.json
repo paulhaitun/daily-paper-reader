@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-22T15:34:18.198008+00:00",
+  "generated_at": "2026-10-22T16:18:37.852797+00:00",
   "updated_date": "20260923-20261022",
   "carryover_days": 9,
   "tag_states": {
@@ -1791,6 +1791,11 @@
           "carry_days": 1
         }
       ]
+    },
+    "ev-forecast": {
+      "updated_date": "20260923-20261022",
+      "carryover_days": 9,
+      "items": []
     }
   }
 }

@@ -1,0 +1,272 @@
+Title: Predictive Rerouting of Connected and Automated Vehicles Using Traffic and Charging Demand Forecasts
+
+URL Source: https://arxiv.org/pdf/2610.10532v1
+
+Published Time: Thu, 08 Oct 2026 01:53:47 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Predictive Rerouting of Connected and Automated Vehicles Using Traffic and Charging Demand Forecasts 
+
+Tony Kinchen, Ting Bai, and Andreas A. Malikopoulos, Senior Member, IEEE 
+
+Abstract — In this paper, we consider the problem of pre-dictive rerouting of connected and automated vehicles (CAVs) in mixed traffic with electric vehicle charging demand. We provide a framework that combines a diffusion convolutional recurrent neural network (DCRNN) with a routing policy that accounts for congestion, CO 2 emissions, route length, and charging demand. The DCRNN uses historical network observations to forecast traffic conditions and charging demand. These forecasts are then used to evaluate feasible alternative routes for eligible CAVs. A route change is accepted when the alternative preserves connectivity to the original destination and improves the prescribed route cost. We evaluate the proposed framework in SUMO under controlled traffic disruptions at five CAV penetration levels, ranging from 5% to 45%. We compare its performance with K-shortest-path routing, predictive-density routing, V2X proactive routing, and a reference scenario without rerouting. In the considered scenarios, the proposed framework reduces the average travel-time index by approx-imately 1.8% relative to the reference scenario and achieves the lowest average travel-time index, highest average speed, and lowest aggregate CO 2 emissions among the active routing methods. Across all five penetration levels, it accepts 41 route changes, compared with 146 for K-shortest-path routing and 153 for V2X proactive routing. The reference scenario retains lower aggregate emissions and distance traveled, illustrating the tradeoff between congestion reduction and the additional travel associated with rerouting. 
+
+I. Introduction 
+
+A. Motivation 
+
+Connected and automated vehicles (CAVs) provide an opportunity to improve transportation network performance by incorporating shared information into routing decisions. In mixed traffic, however, only a subset of vehicles can respond to a prescribed routing policy. The effectiveness of such a policy depends on the information available when a decision is made, the availability of alternative routes, and the interactions between rerouted vehicles and the surround-ing traffic. These interactions impose significant challenges since a route change that benefits an individual vehicle may increase congestion on other roadway segments. Transportation electrification introduces additional inter-actions between routing decisions and electric vehicle (EV)  
+
+> This research was supported in part by NSF under Grants CNS-2401007, CMMI-2348381, IIS-2415478, and in part by MathWorks. Tony Kinchen is with the Systems Engineering Program, Cornell University, Ithaca, NY 14853, USA. Email:
+
+tjk238@cornell.edu                   
+
+> Ting Bai is with the School of Automation and Intelligent Sens-ing, Shanghai Jiao Tong University, Shanghai, 200240, China. Email:
+
+tingbai@sjtu.edu.cn  
+
+> Andreas A. Malikopoulos is with the Applied Mathematics, Systems Engineering, Robotics, Mechanical Engineering, Electrical and Computer Engineering, and Civil & Environmental Engineering, Cornell University, Ithaca, NY, USA. (email: amaliko@cornell.edu
+
+charging demand. Vehicles traveling to charging stations contribute to traffic on the surrounding roadway segments, while congestion affects travel time, energy consumption, and access to charging infrastructure. Thus, predicted traffic con-ditions and charging demand can provide useful information for selecting alternative routes before a vehicle reaches an affected area. Incorporating this information into a routing policy requires evaluating the anticipated benefit of a route change together with its implications for emissions, distance traveled, and subsequent traffic conditions. 
+
+B. Related Work 
+
+Several research efforts have been reported in the liter-ature toward developing routing approaches for connected vehicles. Distributed routing through intelligent intersections has been investigated as a means of improving throughput and reducing travel time [1]. System-centric routing has also been considered in mixed traffic, where CAV rout-ing decisions account for network travel and energy costs while human-driven vehicles retain individual routing objec-tives [2], [3]. Other efforts have developed multi-objective routing approaches that account for travel time, emissions, fuel consumption, and energy use [4]–[8]. These approaches establish the importance of considering the effects of routing decisions beyond the travel time of an individual vehicle. Traffic forecasting provides a means of incorporating an-ticipated network conditions into routing decisions. Graph-based models represent the spatial relationships between roadway segments together with the temporal evolution of traffic observations. Spatio-temporal graph convolutional net-works, Graph WaveNet, and adaptive graph convolutional recurrent networks have been developed for this purpose [9]– [11]. The diffusion convolutional recurrent neural network (DCRNN) combines diffusion convolution over a directed graph with recurrent temporal modeling [12]. Extensions using graph partitioning have also been investigated for traffic forecasting [13]. These models provide a basis for estimat-ing conditions on downstream roadway segments before a vehicle reaches them. However, forecasting accuracy alone does not establish the effectiveness of the resulting routing decisions, since rerouting changes the traffic conditions that the forecasting model seeks to predict. EV charging introduces another consideration in the rout-ing problem. Charging decisions depend on battery state of charge, travel conditions, station availability, and the time required to reach and use a charging station. Research efforts on charging assignment, reinforcement learning, coordinated charging stops, and integrated transportation and power net-arXiv:2610.10532v1 [cs.NI] 7 Oct 2026 works have examined these interactions [14]–[19]. This body of work motivates accounting for charging demand when evaluating routes through roadway segments that contain or provide access to charging stations. Microscopic traffic simulation provides an environment for evaluating the effects of these decisions on individual vehicles and the surrounding network. The Simulation of Urban MObility (SUMO) platform supports the simulation of traffic operations, vehicle routing, emissions, and EV energy use [20]. Through its Traffic Control Interface (TraCI), net-work observations can be supplied to forecasting algorithms and routing decisions can be applied during a simulation. Prior studies have used SUMO to examine the effects of CAV penetration on traffic performance, fuel consumption, and emissions [21], [22], and to evaluate rerouting based on connected-vehicle information [23]. The above research efforts motivate the integration of traffic forecasting, charging-demand prediction, and CAV rerouting. A central question is how predicted conditions can be used to select route changes that improve traffic performance when only a subset of vehicles is controllable. Addressing this question requires evaluating both the in-formation used to select a route and the realized network performance after the routing decisions are applied. The present study differs from purely macroscopic as-signment methods because the route decision is applied to individual vehicles during a microscopic simulation. This distinction is important for two reasons. First, the feasibility of an alternative path is determined by the current SUMO edge, the original destination, and the set of permitted downstream connections, rather than by an aggregate origin– destination flow alone. Second, the effect of a rerouting action is realized only after the vehicle interacts with the surrounding mixed traffic. Consequently, the quality of a candidate route cannot be judged solely by its standalone length or free-flow travel time. A route that appears attractive for a single vehicle may place additional demand on another corridor, alter queue formation near a disruption, or expose the vehicle to edges with elevated charging-related demand. These considerations motivate a routing policy that uses predicted local conditions while still evaluating the final outcome through the microscopic simulation outputs. The no-reroute reference is also essential for interpreting the results. Active rerouting can reduce congestion severity by moving controlled vehicles away from blocked or con-gested roadway segments, but it may also increase route length and therefore total distance and emissions. For this reason, we compare the proposed method both with active routing benchmarks and with the no-reroute reference. The active-method comparison isolates the relative quality of the routing logic when interventions are allowed, whereas the no-reroute comparison identifies the tradeoff introduced by intervention itself. This separation avoids interpreting a method as universally superior when it improves one metric, such as TTI, while not improving all aggregate quantities relative to the original routes. 
+
+C. Contributions of This Paper 
+
+In this paper, we provide a predictive CAV rerouting framework that combines DCRNN forecasts with a routing policy implemented in SUMO. The forecasts are used to evaluate alternative routes through a cost that accounts for congestion, CO 2 emissions, route length, and exposure to charging demand. For each eligible CAV, the policy evaluates a finite set of feasible alternatives to the original destination and applies a route change when the acceptance conditions are satisfied. Vehicles that are not eligible for rerouting retain their assigned routes. The contributions of this paper are: 1) An integration of directed graph-based traffic forecasting and charging-demand prediction with CAV rerouting in a microscopic traffic simulation environment. 2) A routing procedure that uses predicted conditions to rank feasible alternatives and applies connectivity, route-cost improvement, and route-change checks when accepting a rerouting decision. 3) A comparative evaluation with K-shortest-path routing, predictive-density routing, V2X proactive routing, and a reference scenario without rerouting under matched traffic demand and disruption schedules at five CAV penetration levels. The evaluation examines the trade-offs among travel-time index, average speed, emissions, distance traveled, recorded charging energy, and the number of accepted route changes. The remainder of the paper is organized as follows. Sec-tion II presents the simulation setting, forecasting and routing methods, and performance measures. Section III presents and discusses the simulation results. Finally, Section IV provides concluding remarks and directions for future research. II. Modeling Framework and Predictive Routing This section describes the SUMO network, the controlled disruption scenarios, the routing policies, and the performance measures used in this study. 
+
+A. Transportation Network and Simulation Setup 
+
+We consider an urban New York City network in SUMO represented by a directed graph 𝐺 = (𝐽, 𝐸 ), where 𝐽 is the set of junctions and 𝐸 is the set of directed road edges. A feasible route is an ordered sequence 𝑅 = (𝑒 1, . . . , 𝑒 𝑛 )
+
+whose consecutive edges satisfy SUMO connectivity. The NYC-6 network contains 638 SUMO edges, including 368 non-internal road edges, and 254 junctions, including 211 non-internal junctions. The CAV penetration cases use demand files with 589, 582, 573, 567, and 558 vehicle or trip entries for the 5%, 15%, 25%, 35%, and 45% cases, respectively. The same demand, disruption schedule, and charging-station configuration are used by all active methods at a given penetration level. The SUMO configuration files use start time 0 s and step length 1 s; no explicit end time is specified, so runs end according to trip completion and route-file termination conditions. Each penetration case uses four charging stations on four station edges.              
+
+> TABLE I: Simulation setup for the NYC-6 scenarios.
+> Item Value Network 638 edges; 368 non-internal road edges Junctions 254 total; 211 non-internal CAV penetration 5%, 15%, 25%, 35%, 45% Demand entries 589, 582, 573, 567, 558 SUMO timing Start 0 s; step length 1 s; no explicit end time Charging stations 4 stations on 4 station edges Compared policies No-reroute, K-shortest, predictive density, V2X, DCRNN
+
+Let 𝑉 be the vehicle set and 𝑉 𝐶 ⊆ 𝑉 the CAVs eligible for rerouting. The penetration rate is 𝑝 = |𝑉 𝐶 |/| 𝑉 |. The traffic population contains passenger vehicles and buses. EV membership 𝑉 𝐸 ⊆ 𝑉 is a separate powertrain attribute, so an EV can also be a CAV. CAV membership controls rerouting eligibility; EV membership controls battery and charging variables. 
+
+B. Disruptions and Reference Conditions 
+
+For each penetration level, scheduled disruption events are indexed by 𝑞 ∈ Q and specified by (𝐸 𝑞 , 𝑡 𝑠 𝑞 , 𝑡 𝑓 𝑞 , 𝑉 𝑞 ), where 
+
+𝐸 𝑞 is the set of affected edges, 𝑡 𝑠 𝑞 and 𝑡 𝑓 𝑞 are the start and finish times, and 𝑉 𝑞 contains the vehicles used to create the disruption. Intersection disruptions are generated by stopping selected vehicles in junction areas, and rear-end disruptions are generated by placing a vehicle behind a stopped lead vehicle. The no-reroute reference uses the same mixed traffic and disruptions but applies no CAV route intervention. Travel-time index (TTI) is normalized using an isolated-vehicle reference in which forced disruption stops are removed and each vehicle is simulated independently on its assigned route. Let 𝑇 0 
+
+> 𝑖,𝑒
+
+> 0 be the isolated reference travel time for vehicle 𝑖 on edge 𝑒 . In the extraction code, disrupted-run traversal records are inner-merged with the isolated reference by vehicle identifier and edge identifier before TTI is computed. Therefore, an edge introduced by rerouting contributes to reported TTI only when that same vehicle–edge pair has a positive isolated-reference traversal time; unmatched records are not assigned artificial reference times. 
+
+C. Common Routing Procedure 
+
+At a decision time 𝑡 , an eligible CAV 𝑖 has current edge 
+
+𝑜 𝑖 (𝑡 ), original destination edge 𝑑 𝑖 , and remaining route 𝑅 𝑖 (𝑡 ).For method 𝑚 , candidate routes are 
+
+𝐴 𝑚 𝑖 (𝑡 ) = 𝑃 𝐾 (𝑜 𝑖 (𝑡 ), 𝑑 𝑖 ; 𝐺 𝑚 (𝑡 )) \ { 𝑅 𝑖 (𝑡 )} , (1) where 𝑃 𝐾 returns at most 𝐾 loop-free SUMO-connected routes. Each candidate 𝑅 = (𝑒 1, . . . , 𝑒 𝑛 ) receives cost 
+
+𝐽 𝑚 (𝑅, 𝑡 ) =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑤 𝑚 (𝑒 𝑗 , 𝑡 ). (2) The selected route minimizes this cost over the feasible set 
+
+𝐹 𝑚 𝑖 (𝑡 ) ⊆ 𝐴 𝑚 𝑖 (𝑡 ),
+
+𝑅 𝑚, ∗ 
+
+> 𝑖
+
+(𝑡 ) ∈ arg min    
+
+> 𝑅 ∈𝐹 𝑚 𝑖 (𝑡 )
+
+𝐽 𝑚 (𝑅, 𝑡 ), (3) and is accepted only if Δ𝐽 𝑚 𝑖 (𝑡 ) = 𝐽 𝑚 (𝑅 𝑖 (𝑡 ), 𝑡 ) −
+
+𝐽 𝑚 (𝑅 𝑚, ∗ 
+
+> 𝑖
+
+(𝑡 ), 𝑡 ) > 0 and the cooldown, route-change limit, duplicate-route, and feasibility checks pass. Ties follow the deterministic order returned by the candidate-search routine. All active methods use a one-second decision clock. The K-shortest-path candidate generator uses 𝐾 = 3. The K-shortest-path, predictive-density, and V2X baselines share TTI trigger 1.10, relative improvement threshold 0.20, absolute cost-drop threshold 1.50, 60 s cooldown, and at most six non-forced route changes per CAV. DCRNN uses TTI trigger 1.03, 1 s decision interval, 4 s cooldown, and at most three route changes per CAV; accepted non-forced DCRNN reroutes must also pass the DCRNN route-cost, CO 2-improvement, and length gates. Generic SUMO fallback rerouting is disabled for DCRNN. 
+
+D. Forecasting and Routing Policies 1) DCRNN-Based Predictive Routing: The proposed method uses a DCRNN to predict edge-level conditions from historical observations. Let 𝑋 𝑡 ∈ R|𝐸 | × 𝑛 𝑥 be the edge-feature matrix and 𝑊 ∈ R|𝐸 | × | 𝐸 | the directed adjacency matrix built from permitted downstream SUMO connections after filtering to the retained road edges. The forecast is 
+
+bY𝑡 = 𝑓 𝜃 (𝑋 𝑡 − ( 𝐻 −1) 𝛿 𝑓 , . . . , 𝑋 𝑡 ; 𝑊 ), (4) where 𝐻 = 5, 𝑃 = 2, and 𝛿 𝑓 = 60 s, yielding a 120 s nominal forecast horizon. Vertices correspond to the filtered SUMO road edges and therefore to the rows of 𝑋 𝑡 and of 𝑊 . The edge features include TTI, CO 2, average speed, collision/spike indicators, EV count, EV need-charge count and ratio, minimum and mean state of charge, EV driving energy, nearby EV need-charge count, station indicators, and a need-charge spike flag. Required targets are TTI and total CO 2 mass; EV need-charge quantities are appended when available. The DCRNN uses diffusion order 2 and hidden dimension 64 and is trained for up to 450 epochs with Adam, learning rate 7 ×10 −4, patience 25, and an 80/20 chronological train/validation split. The live routing run uses only feature history available up to the current decision time. The edge graph is constructed from the SUMO network topology after removing internal movements, so the graph nodes, feature rows, and routing-cost edge identifiers use the same filtered edge set. The chronological split and live-history restriction are used to avoid training or preprocessing choices that would expose the routing policy to future observations from the evaluation run. DCRNN assigns edge cost 
+
+𝑤 DCRNN (𝑒, 𝑡 ) = 𝑎𝑇 ′ 
+
+> 𝑒
+
+(𝑡 ) + 𝑏𝐶 ′ 
+
+> 𝑒
+
+(𝑡 ) + 𝑐𝑙 ′ 
+
+> 𝑒
+
++ 𝑑𝑄 𝑒 (𝑡 ), (5) with 𝑎 = 0.95, 𝑏 = 3.1, 𝑐 = 0.90, and 𝑑 = 2.5. The TTI term is the DCRNN-predicted TTI at the forecast horizon, normalized by high value 5.0. The CO 2 term is the current edge CO 2 value, or a length-based proxy when unavailable, min–max normalized over candidate-edge values. The length term is normalized edge length. The charging term 𝑄 𝑒 (𝑡 ) is a dimensionless EV charge-need risk from the nearest predicted time bin or, when a time-indexed risk is unavailable, 
+
+𝑄 𝑒 (𝑡 ) = 𝜙 𝑒 (𝑡 ) max 
+
+ 𝑛 𝑒 (𝑡 ) + ˜𝑛 𝑒 (𝑡 )
+
+max 𝑒 ′ (𝑛 𝑒 ′ (𝑡 ) + ˜𝑛 𝑒 ′ (𝑡 )) , 𝑠 𝑒 (𝑡 )
+
+
+
+, (6) where 𝑛 𝑒 is predicted EV need-charge count, ˜ 𝑛 𝑒 is nearby need-charge count, 𝑠 𝑒 is the spike flag, and 𝜙 𝑒 (𝑡 ) downweights bins far from the estimated arrival time. Thus, the TTI and EV-risk terms are forecast-based, while CO 2 uses current or proxy information. For accepted DCRNN reroutes, Table III uses raw old-route minus new-route component differences: predicted TTI component, CO 2 route-score proxy, dimensionless EV-risk exposure, and physical route length in meters. These values explain the route choices at decision time and are not independent counterfactual measurements of realized network performance. The implementation records every accepted route change together with the old and new candidate routes, the score components used at the decision time, and the vehicle associated with the decision. These logs provide an audit trail that is separate from the network-level performance measures. The audit trail is used to verify that the DCRNN policy is not merely producing more route changes, but is selecting alternatives that satisfy the route-score improvement and feasibility requirements. At the same time, the recorded route-score reductions are not used as substitutes for realized traffic outcomes. Realized outcomes are computed only from SUMO output files after the simulation run has completed. The battery-output quantities are treated more cautiously. The recorded EV battery fields are retained as diagnostic indicators of charging-demand exposure, but they are not used as the primary evidence for energy-efficiency conclusions. This distinction is important because some SUMO battery-output fields can behave as cumulative quantities over time. If such a cumulative field is summed at every time step, the resulting aggregate can overstate delivered energy. Therefore, EV battery-output values are reported as recorded diagnostic aggregates, while the main performance claims are based on TTI, speed, CO 2, distance, and rerouting volume. 
+
+2) Benchmark Routing Policies: The K-shortest-path benchmark evaluates up to 𝐾 = 3 loop-free candidate routes using 
+
+𝑤 KSP (𝑒, 𝑡 ) = 1.2𝑇 ′ 
+
+> 𝑒
+
+(𝑡 ) + 1.0𝐶 ′ 
+
+> 𝑒
+
+(𝑡 ) + 0.6𝑙 ′
+
+> 𝑒
+
+, (7) where the terms are normalized current congestion, current or proxy CO 2, and edge length. Predictive-density routing uses density 𝜌 𝑒 (𝑡 ) = 𝑁 𝑒 (𝑡 )/ 𝑙 𝑒 in vehicles/km and the recent density growth rate 𝑟 𝑒 (𝑡 ) = (𝜌 𝑒 (𝑡 ) − 𝜌 𝑒 (𝑡 − Δ𝑡 𝜌 ))/ Δ𝑡 𝜌 , with 
+
+Δ𝑡 𝜌 normally 1 s. With critical density 𝜌 𝑐 = 80 vehicles/km, threshold time 𝑇 𝑐 = 30 s, penalty gain 𝛾 𝜌 = 0.10, and free-flow edge time 𝑤 0
+
+> 𝑒
+
+, the score is 
+
+𝑆 PD  
+
+> 𝑒
+
+(𝑡 ) =
+
+(
+
+𝑤 0
+
+> 𝑒
+
+, 𝜏 𝑒 (𝑡 ) > 𝑇 𝑐 ,𝑤 0 
+
+> 𝑒
+
++ 𝛾 𝜌 (𝑇 𝑐 − max {0, 𝜏 𝑒 (𝑡 )}) , 𝜏 𝑒 (𝑡 ) ≤ 𝑇 𝑐 , (8) where 𝜏 𝑒 (𝑡 ) is the predicted time to critical density. The same baseline weights 1.2, 1.0, and 0.6 are then applied to congestion, CO 2, and length terms. The V2X benchmark uses the prescribed disruption sched-ule with warning horizon Δ𝑡 V2X = 180 s and an eight-edge lookahead. Let 𝐵 (𝑡 ) = ∪𝑞 :𝑡 𝑠 𝑞 −Δ𝑡 V2X ≤𝑡 ≤𝑡 𝑓 𝑞 𝐸 𝑞 be the warning-edge set. A route is considered for proactive rerouting when its remaining edge set intersects 𝐵 (𝑡 ), and admissible bypass candidates must avoid 𝐵 (𝑡 ). V2X uses 𝑤 V2X (𝑒, 𝑡 ) = 1.2𝑇 ′ 
+
+> 𝑒
+
+(𝑡 ) + 
+
+1.0𝐶 ′ 
+
+> 𝑒
+
+(𝑡 ) + 0.6𝑙 ′
+
+> 𝑒
+
+. If no warning-free bypass exists or the best bypass fails the common acceptance checks, the vehicle keeps its current route, except for the hard collision-window fallback used to prevent a CAV from entering an active scripted incident zone. 
+
+E. Performance Measures 
+
+Let Ω𝑚, 𝑝 be the retained traversal records for method 𝑚 
+
+and penetration 𝑝 after removing internal movements, staging-vehicle records, and unmatched reference records. For record 
+
+𝑟 , with duration 𝑇 𝑟 , distance 𝑑 𝑟 , CO 2 mass 𝑐 𝑟 , and reference time 𝑇 0    
+
+> 𝑖 (𝑟 ),𝑒 (𝑟 )
+
+, the speed and TTI are 
+
+𝑣 𝑟 = 𝑑 𝑟 
+
+𝑇 𝑟 
+
+, TTI 𝑟 = 𝑇 𝑟 
+
+𝑇 0   
+
+> 𝑖 (𝑟 ),𝑒 (𝑟 )
+
+. (9) Average TTI and average speed are arithmetic averages over retained traversals, while total distance and CO 2 are summed over retained traversals. Speeds are reported in km/h, distances in km, and CO 2 in kg after converting SUMO milligrams by 10 6.Accepted route changes are 
+
+𝑁 rr  
+
+> 𝑚, 𝑝
+
+=∑︁ 
+
+> 𝑖 ∈𝑉 𝐶
+
+∑︁ 𝑡 ∈T 𝑚, 𝑝 𝑖 
+
+1{𝑅 𝑖 (𝑡 +) ≠ 𝑅 𝑖 (𝑡 − )} . (10) For the no-reroute reference 𝑚 = 0, the percentage TTI reduction is 
+
+𝜂 𝑚, 𝑝 = 100 TTI 0, 𝑝 − TTI 𝑚, 𝑝 
+
+TTI 0, 𝑝 
+
+. (11) In Table II, reroutes, CO 2, distance, and diagnostic EV kWh are summed over the five penetration scenarios, while average reroutes, average TTI, speed, and safety rows are arithmetic averages over the five scenarios. The reported 1.8% TTI improvement is computed from scenario-averaged TTIs. The EV kWh value is retained only as a diagnostic battery-output aggregate because the audit indicated that sampled SUMO battery fields may be cumulative or monotonic; it is not used as an independent energy-efficiency claim. III. Results This section compares K-shortest-path routing, predictive-density routing, V2X proactive routing, and the proposed DCRNN method at CAV penetration levels of 5%, 15%, 25%, 35%, and 45%. The no-reroute reference uses the same disrupted traffic conditions without CAV route intervention. Results are single deterministic runs for each case and method; no random-seed confidence intervals are reported. Collision outputs are used only as safety diagnostics. Fig. 1: Average TTI across CAV penetration levels with the no-reroute reference. 
+
+A. Aggregate Method Comparison                                       
+
+> TABLE II: Aggregate method comparison across all CAV penetration levels.
+> Metric K-Short. Pred. V2X DCRNN Reroutes 146 5153 41 Avg. reroutes 29.20 1.00 30.60 8.20 Avg. TTI 3.570 3.591 3.582 3.520 Speed (km/h) 27.387 27.393 27.333 27.618 CO 2(kg) 773.127 781.528 779.992 770.928 Distance (km) 1566.946 1565.129 1562.558 1563.430 Diag. EV (kWh) 13470.055 13333.564 13355.986 13367.567 Safety rows 73.20 72.80 72.40 65.60
+
+Table II shows that DCRNN achieves the lowest average TTI, highest average speed, and lowest total CO 2 emissions among the four active routing methods. It accepts 41 route changes across all penetration levels, compared with 146 for K-shortest-path routing and 153 for V2X. Predictive-density routing is the most conservative method, with five reroutes and the lowest diagnostic EV kWh value, but it has the highest average TTI and CO 2 among active methods. V2X yields the lowest active-method distance but requires the largest rerouting volume. These results indicate that DCRNN improves the congestion–rerouting tradeoff among active methods without using high-volume route intervention. 
+
+B. No-Reroute Reference Comparison 
+
+Figure 1 shows the average TTI trends across penetration levels. Averaged across the five penetration levels, DCRNN reduces average TTI by approximately 1.8% relative to the no-reroute reference. Thus, the proposed predictive routing method improves the main congestion-severity metric under the tested disruptions while remaining selective in the number of accepted route changes. Figure 2 reports the accepted route changes. The no-reroute reference has zero route changes by definition. K-shortest and V2X increase their intervention volume as penetration grows, while DCRNN maintains a small and stable number of accepted reroutes. This selectivity is important because each unnecessary route change can add route instability and can move congestion to other parts of the network. The comparison therefore separates two effects: how often a method intervenes    
+
+> Fig. 2: Accepted reroute counts across CAV penetration levels with the no-reroute reference.
+> Fig. 3: CO 2emissions across CAV penetration levels with the no-reroute reference.
+
+and whether those interventions improve the realized traffic state. Figure 3 shows that DCRNN has the lowest aggregate CO 2 emissions among active routing methods. However, the no-reroute reference has lower aggregate CO 2 emissions and distance because vehicles do not deviate from their original routes. Therefore, the supported CO 2 claim is limited to comparisons among active routing methods, while the strongest no-reroute benefit is the TTI reduction. Figure 4 gives the corresponding distance comparison. The no-reroute reference has the lowest aggregate distance, which is expected because vehicles remain on their original routes. Among active methods, V2X has the lowest total distance, while DCRNN is close to V2X and applies many fewer route changes. These results show that the proposed method is not a distance-only policy. Instead, DCRNN balances route length with predicted congestion, CO 2, and charging-risk terms, so the accepted route can be longer when the route score indicates a congestion benefit. Figure 5 reports percentage TTI reduction relative to no-reroute. The results show clearer positive DCRNN improve-ments at higher CAV penetration levels, where more control-lable vehicles are available. Across methods, rerouting volume alone is not sufficient: predictive-density routing changes Fig. 4: Total distance traveled across CAV penetration levels with the no-reroute reference.  
+
+> Fig. 5: TTI reduction relative to the no-reroute reference. Positive values indicate improvement.
+
+very few routes but does not achieve the best congestion or emissions outcomes, whereas K-shortest-path and V2X reroute many more vehicles without matching DCRNN’s average TTI or speed. The higher-penetration cases are also useful for interpreting the role of controllability. As the CAV share increases, the routing policy has more opportunities to intervene before vehicles reach the affected areas. However, the results do not show that more control authority should automatically be converted into more route changes. Instead, the strongest outcomes occur when the policy uses the larger eligible vehicle set to choose a small number of higher-value interventions. This observation is consistent with the accepted-reroute records in Table III, where DCRNN maintains a similar number of accepted reroutes across the 15–45% cases while the aggregate route-score reductions increase substantially. 
+
+C. Average Multi-Objective Radar Comparison 
+
+The average radar plot in Fig. 6 provides a compact summary of active-method tradeoffs. Each spoke is normalized across the active methods so that 1 denotes the best method on that metric and 0 denotes the weakest method. Lower raw values are preferred for reroutes, TTI, CO 2, distance, and the diagnostic EV battery-output aggregate, while higher raw speed is preferred. The radar plot is therefore a relative visualization, not a replacement for the raw values in Table II and the line plots. 
+
+D. Average Multi-Objective Radar Comparison  
+
+> Fig. 6: Average normalized radar comparison.
+
+DCRNN has the strongest normalized performance for TTI, speed, and CO 2 among the active methods, while retaining better rerouting selectivity than K-shortest and V2X. Predictive-density dominates the selectivity and diagnostic EV-kWh spokes because it reroutes very few vehicles, but its weaker TTI and CO 2 outcomes show that low intervention alone is not sufficient. V2X has the strongest distance score but requires the highest rerouting volume. This visualization is consistent with the raw aggregate results: DCRNN provides the most balanced active-method congestion–rerouting tradeoff, while the no-reroute reference remains the lower-distance and lower-CO 2 case. 
+
+E. DCRNN Accepted-Reroute Benefits                                  
+
+> TABLE III: DCRNN accepted-reroute objective benefits. Values are com-puted from accepted DCRNN reroutes using the old-route and new-route objective fields.
+> Case Reroutes TTI red. CO 2obj. red. EV-risk red. Length red. (m) CAV 5% 99.288 449.550 1.009 449.360 CAV 15% 837.037 11897.873 1.222 374.620 CAV 25% 8120.841 36600.540 3.984 187.770 CAV 35% 8115.650 34075.739 2.062 187.770 CAV 45% 8120.859 30251.793 1.942 187.770 Total 41 403.675 113275.495 10.219 1387.290
+
+Table III provides an internal analysis of the accepted DCRNN reroutes. Across all penetration levels, DCRNN ac-cepted 41 reroutes. Within the DCRNN route-scoring records, these accepted reroutes were associated with cumulative reductions of 403.675 in the TTI objective, 113275.495 in the CO 2 objective, 10.219 in EV charging-risk exposure, and 1387.290 m in route length. The internal reroute records there-fore indicate that the accepted DCRNN route changes were consistent with the objective components used by the proposed routing policy. These values should be interpreted as route-score and candidate-route evidence rather than as independent counterfactual measurements of the network state. The realized network comparison is provided by the no-reroute and active-method results above, whereas Table III explains why the DCRNN policy accepted the specific route changes that it applied. The largest objective reductions occur in the higher penetration cases, where more eligible CAVs are available and the same disruption schedule creates more opportunities for prediction-informed bypasses. The 5% case has more accepted DCRNN route changes because two vehicles receive repeated accepted updates, but the total objective reduction is smaller than in the higher-penetration cases. This reinforces the interpretation that reroute count alone is not the key measure; the route-score change associated with each accepted reroute also matters. The aggregate results should therefore be read as a set of coupled tradeoffs rather than as a single scalar ranking. Predictive-density routing is useful as a low-intervention refer-ence: it changes few routes, but its conservative behavior leaves more vehicles exposed to the disruption-induced congestion. K-shortest-path routing and V2X proactive routing represent higher-intervention alternatives. They create many more route changes, but additional route changes do not necessarily improve network-level outcomes once the new routes interact with the same mixed-traffic demand. DCRNN occupies an in-termediate regime. It performs more reroutes than predictive-density routing but far fewer than K-shortest-path and V2X, while achieving the strongest aggregate TTI and speed among the active methods. This pattern is consistent with the intended role of prediction: it is most useful when it supports selective acceptance rather than unrestricted rerouting. The comparison with no-reroute clarifies the scope of the benefit. Since the no-reroute reference does not deviate vehicles from their originally assigned paths, it can retain lower total distance and lower aggregate emissions. This is not contradictory to the active-method result. The proposed method is intended to reduce congestion severity under disruptions while limiting unnecessary intervention. In the reported runs, this is reflected by the 1.8% average TTI improvement relative to no-reroute and by the lower TTI, higher speed, and lower CO 2 among active methods. The results do not support a claim that rerouting strictly dominates the original routes on every aggregate measure. The safety diagnostic outputs also indicate that CAV rerouting did not introduce CAV involvement in the scripted disruption incidents. These diagnostics are useful for verifying that the routing logic avoided unsafe CAV behavior, but they are not interpreted as the primary performance objective. The main contribution of the proposed method is its ability to improve the congestion–rerouting tradeoff through selective predictive rerouting. The diagnostic nature of these safety rows is important because the scripted disruption events are imposed to create controlled congestion and conflict conditions, not to estimate a network-wide crash rate. Thus, the safety outputs are used to check that the routing logic does not place CAVs into the constructed incident windows, while the mobility and emissions metrics are used to evaluate network performance. Overall, the results support the conclusion that DCRNN provides the strongest congestion–rerouting tradeoff among the evaluated routing methods. DCRNN achieves the lowest average TTI, improves average TTI by approximately 1.8% relative to no-reroute, and uses substantially fewer route changes than K-shortest-path and V2X routing. Among the active routing methods, DCRNN also achieves the lowest aggregate CO 2 emissions and the highest average speed. The no-reroute reference remains lower in aggregate CO 2 and total distance, so the proposed method is not interpreted as improving every metric relative to the uncontrolled case. IV. Conclusion In this paper, we presented a predictive routing framework for CAVs in mixed traffic with EV charging demand. The framework combines DCRNN forecasts with a routing proce-dure that evaluates feasible alternatives using congestion, CO 2
+
+emissions, route length, and charging-demand terms. We eval-uated the framework in SUMO under controlled disruptions at five CAV penetration levels. Across the considered scenarios, DCRNN yielded the lowest average TTI, highest average speed, and lowest aggregate CO 2 emissions among the active routing methods, while accepting fewer route changes than K-shortest-path and V2X routing. The comparison with the no-reroute reference showed an aggregate TTI improvement, although the benefit varied across penetration levels. The reference retained lower aggregate emissions and distance traveled, illustrating the trade-offs associated with routing intervention. Future work will extend the evaluation to larger networks and repeated demand and disruption realizations. We will also examine the individual contributions of traffic forecasting and charging-demand information through controlled compar-isons, and incorporate explicit charging queues and station availability to evaluate the effects of routing decisions on charging service. Additional work should also separate predic-tion quality from routing-policy quality by replaying matched candidate route sets under alternative forecast sources. Such ablations would clarify when the observed benefits are caused by improved congestion prediction, by the multi-objective acceptance rule, or by the interaction between the two. Finally, future experiments should replace the diagnostic EV battery-output aggregate with a verified incremental charging-energy measure so that EV energy and charging service can be evaluated with the same confidence as TTI, speed, CO 2, and distance. References                 
+
+> [1] L. Alfaseeh, S. Djavadian, and B. Farooq, “Impact of distributed routing of intelligent vehicles on urban traffic,” in 2018 IEEE International Smart Cities Conference (ISC2) .IEEE, 2018, pp. 1–7. [2] A. Houshmand, S. Wollenstein-Betech, and C. G. Cassandras, “The pen-etration rate effect of connected and automated vehicles in mixed traffic routing,” in 2019 IEEE Intelligent Transportation Systems Conference (ITSC) .IEEE, 2019, pp. 1755–1760. [3] H. Bang and A. A. Malikopoulos, “Optimal trajectory planning meets network-level routing: Integrated control framework for emerging mobility systems,” Automatica , vol. 179, p. 112389, 2025. [4] S. Djavadian, R. Tu, B. Farooq, and M. Hatzopoulou, “Multi-objective eco-routing for dynamic control of connected & automated vehicles,”
+> Transportation Research Part D: Transport and Environment , vol. 87, p. 102513, 2020. [5] L. Alfaseeh and B. Farooq, “Deep learning based proactive multi-objective eco-routing strategies for connected and automated vehicles,”
+> Frontiers in Future Transportation , vol. 1, p. 594608, 2020.
+
+[6] K. Ahn, Y. Bichiou, M. Farag, and H. A. Rakha, “Multi-objective eco-routing model development and evaluation for battery electric vehicles,” 
+
+Transportation Research Record , vol. 2675, no. 12, pp. 867–879, 2021. [7] V.-A. Le and A. A. Malikopoulos, “Distributed optimization for traffic light control and connected automated vehicle coordination in mixed-traffic intersections,” IEEE Control Systems Letters , vol. 8, pp. 2721– 2726, 2024. [8] V.-A. Le, B. Chalaki, F. N. Tzortzoglou, and A. A. Malikopoulos, “Stochastic time-optimal trajectory planning for connected and auto-mated vehicles in mixed-traffic merging scenarios,” IEEE Transactions on Control Systems Technology , vol. 33, no. 4, pp. 1403–1417, 2025. [9] B. Yu, H. Yin, and Z. Zhu, “Spatio-temporal graph convolutional networks: A deep learning framework for traffic forecasting,” in 
+
+Proceedings of the Twenty-Seventh International Joint Conference on Artificial Intelligence , 2018, pp. 3634–3640. [10] Z. Wu, S. Pan, G. Long, J. Jiang, and C. Zhang, “Graph wavenet for deep spatial-temporal graph modeling,” in Proceedings of the Twenty-Eighth International Joint Conference on Artificial Intelligence . International Joint Conferences on Artificial Intelligence Organization, 2019, pp. 1907–1913. [11] L. Bai, L. Yao, C. Li, X. Wang, and C. Wang, “Adaptive graph convolutional recurrent network for traffic forecasting,” in Advances in Neural Information Processing Systems , vol. 33. Curran Associates, Inc., 2020, pp. 17 804–17 815. [12] Y. Li, R. Yu, C. Shahabi, and Y. Liu, “Diffusion convolutional recur-rent neural network: Data-driven traffic forecasting,” in International Conference on Learning Representations , 2018. [13] T. Mallick, P. Balaprakash, E. Rask, and J. Macfarlane, “Graph-partitioning-based diffusion convolutional recurrent neural network for large-scale traffic forecasting,” Transportation Research Record , vol. 2674, no. 9, pp. 473–488, 2020. [14] R. Farhani, Y. El Hillali, A. Rivenq, Y. Boughaleb, and A. Hajjaji, “Assignment approach for electric vehicle charging using traffic data collected by sumo,” World Electric Vehicle Journal , vol. 14, no. 2, p. 40, 2023. [15] Y. Song, H. Zhao, R. Luo, L. Huang, Y. Zhang, and R. Su, “A sumo framework for deep reinforcement learning experiments solv-ing electric vehicle charging dispatching problem,” arXiv preprint arXiv:2209.02921 , 2022. [16] S. Schoenberg, D. S. Buse, and F. Dressler, “Coordinated electric vehicle re-charging to reduce impact on daily driving schedule,” in 2021 IEEE Intelligent Vehicles Symposium (IV) . IEEE, 2021, pp. 1180–1187. [17] J. Liu, G. Lin, S. Huang, Y. Zhou, C. Rehtanz, and Y. Li, “Collaborative ev routing and charging scheduling with power distribution and traffic networks interaction,” IEEE Transactions on Power Systems , vol. 37, no. 5, pp. 3923–3936, 2022. [18] A. Grigorev, T. Mao, A. Berry, J. Tan, L. Purushothaman, and A.-S. Mihaita, “How will electric vehicles affect traffic congestion and energy consumption: An integrated modelling approach,” in 2021 IEEE International Intelligent Transportation Systems Conference (ITSC) .IEEE, 2021, pp. 1635–1642. [19] T. Bai, Y. Li, A. A. Malikopoulos, K. H. Johansson, and J. M˚ artensson, “Distributed charging coordination for electric trucks under limited facilities and travel uncertainties,” IEEE Transactions on Intelligent Transportation Systems , vol. 26, no. 7, pp. 10 278–10 294, 2025. [20] P. ’Alvarez L’opez, M. Behrisch, L. Bieker-Walz, J. Erdmann, Y.-P. Fl”otter”od, R. Hilbrich, L. L”ucken, J. Rummel, P. Wagner, and E. Wießner, “Microscopic traffic simulation using sumo,” in 2018 21st International Conference on Intelligent Transportation Systems (ITSC) .IEEE, 2018, pp. 2575–2582. [21] B. Zhao, Y. Lin, H. Hao, and Z. Yao, “Fuel consumption and traffic emis-sions evaluation of mixed traffic flow with connected automated vehicles at multiple traffic scenarios,” Journal of Advanced Transportation , vol. 2022, pp. 1–14, 2022. [22] H. Li, H. Li, Y. Hu, T. Xia, Q. Miao, and J. Chu, “Evaluation of fuel consumption and emissions benefits of connected and automated vehicles in mixed traffic flow,” Frontiers in Energy Research , vol. 11, p. 1207449, 2023. [23] N. C’ardenas-Ben’itez, R. Aquino-Santos, P. Maga na-Espinoza, J. Aguilar-Velazco, A. Edwards-Block, and A. Medina Cass, “Traffic congestion detection system through connected vehicles and big data,” 
+
+Sensors , vol. 16, no. 5, p. 599, 2016.

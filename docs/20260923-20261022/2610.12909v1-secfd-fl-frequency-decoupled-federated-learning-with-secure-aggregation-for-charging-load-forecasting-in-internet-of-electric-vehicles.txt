@@ -1,0 +1,883 @@
+Title: SecFD-FL: Frequency-Decoupled Federated Learning with Secure Aggregation for Charging Load Forecasting in Internet of Electric Vehicles
+
+URL Source: https://arxiv.org/pdf/2610.12909v1
+
+Published Time: Mon, 12 Oct 2026 00:30:31 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+> 1
+
+# SecFD-FL: Frequency-Decoupled Federated Learning with Secure Aggregation for Charging Load Forecasting in Internet of Electric Vehicles 
+
+Mamunur Rashid, Member, IEEE, Nan Chen, Member, IEEE, Syed Ali Asad Rizvi, Member, IEEE, and Amiya Nayak, Fellow, IEEE 
+
+Abstract —Accurate charging load forecasting is essential for the reliability and efficiency of the Internet of Electric Vehicles (IoEV), yet it is challenging on two fronts: charging demand is highly stochastic, and the data collected by distributed sensors is privacy-sensitive. Although federated learning (FL) preserves data privacy, collaborative training still remains vulnerable to an honest-but-curious server that can invert shared model updates to reconstruct private data. To address both data volatility and privacy concerns, we propose SecFD-FL, a frequency-decoupled federated learning framework for IoEV comprising: 1) a dual-stream gated recurrent unit (GRU) network that separately models short-term and long-term charging load volatility, and 2) a lightweight secure aggregation layer for privacy preservation. Specifically, the secure aggregation layer employs a zero-sum additive masking protocol that perturbs each client’s upload with high-variance noise, preventing the server from reconstructing private data while preserving the exact aggregate. Extensive experiments have been conducted on both EV-level and charging station-level using real datasets. The experiment results show that SecFD-FL reduces global RMSE by up to 60% over centralized baselines, achieving Jain’s fairness up to 0.991 across clients, and reduces DLG-attack reconstruction correlation by 8 times to 15 times relative to FedAvg — all with no additional per-round communication cost beyond a one-time key exchange. 
+
+Index Terms —Internet of electric vehicles (IoEV), federated learning, charging demand, privacy preservation, secure aggre-gation. 
+
+I. I NTRODUCTION 
+
+# DRIVEN by the imperative climate change, the global transportation sector is undergoing a rapid transition toward electrification, with the worldwide stock of electric vehicles (EVs) projected to exceed 250 million units by 2030 [1]. However, range anxiety persists as a primary barrier to mass EV adoption, which necessitates strategic deployment of fast charging station (CS) networks [2]. Empowered by Internet of Things (IoT) technologies, EVs, CSs, and smart meters can interconnect to form the Internet of EVs (IoEV) to sense and collect EV data, which serves as a critical foundation for real-time operation at both edge and cloud ends [3]. At the early EV adoption stage, high-granularity 
+
+> Corresponding author: Nan Chen. Mamunur Rashid and Syed Ali Asad Rizvi are with the Department of Electrical and Computer Engineering, Tennessee Technological University, Cookeville, TN, USA. (Email: mrashid44@tntech.edu, srizvi@tntech.edu) Nan Chen and Amiya Nayak are with the School of Electrical Engineering and Computer Science, University of Ottawa, Ottawa, ON, Canada. (Email: nchen@uottawa.ca, nayak@uottawa.ca)
+
+EV charging demand forecasting is critical. However, high-granularity forecasting is a challenging task as the charging demand profile can be volatile and spatially heterogeneous [4], [5]. Therefore, novel and effective forecasting approaches are urgently needed [6]. In the literature, EV charging demand forecasting has evolved from statistical methods toward data-driven learning. Statistical models are inexpensive and interpretable but cannot capture the nonlinearity and stochasticity of EV loads [7]. Conventional machine learning (ML) methods, such as support vector machine and random forests (RF), improve nonlinear mapping but depend on hand-crafted features and struggle with long-range temporal dependencies in multi-scale charging behaviour. Deep learning (DL), a subclass that learns hier-archical representations directly from data, overcomes these limitations: recurrent architectures such as long short-term memory (LSTM) and gated recurrent unit (GRU) have become the dominant paradigm for extracting sequential patterns from charging demand [6]. However, deep models still rely on cen-tralized data aggregation, which poses severe privacy risks to individual users, particularly in IoEV, where data are collected by geographically distributed IoT devices and transmitted over communication networks. Federated learning (FL) emerges as a potential solution by enabling collaborative training that exchanges only local model updates rather than raw charging demand data [1]. FL has already been applied to EV-related forecasting tasks for privacy preservation, including blockchain-secured charging-load prediction [1], decentralized charging-demand forecasting [8], and clustered or transfer-learning-based station forecasting [9], [10]. However, existing works still have two critical limitations. First, feeding raw and highly volatile load signals directly into local models degrades forecasting accuracy, as these models struggle to capture rapid stochastic spikes of EV charging patterns [11]. Second, while FL avoids the direct transmission of raw data, the exchanged gradients remain vulnerable to inversion attacks, such as Deep Leakage from Gradients (DLG) [12]. Consequently, standard FL alone can-not simultaneously guarantee high forecasting accuracy and rigorous privacy protection. To address aforementioned challenges, we propose a novel frequency-decoupled federated learning scheme for charging load forecasting in the IoEV. First, to achieve high-granularity EV charging forecasting, we introduce the Complete En-semble Empirical Mode Decomposition with Adaptive Noise arXiv:2610.12909v1 [eess.SY] 9 Oct 2026 2
+
+(CEEMDAN) method to decompose each participant’s (an EV charging station or an individual EV) charging load into a set of intrinsic mode functions (IMFs) [13]. Through IMF analysis, we observe that EV charging loads can be divided into two streams: a high-frequency residual stream representing transient charging spikes and a low-frequency trend stream capturing seasonal and behavioral regularities. Therefore, a dual-stream GRU network is designed to learn different frequency streams independently before combining them into a unified forecast. Second, to preserve client privacy during model exchange, we integrate a lightweight zero-sum additive masking protocol that delivers cryptographic-grade protection of local updates against gradient inversion attacks with no additional per-round communication overhead beyond a one-time key exchange. The principal contributions of this work are summarized as follows:  
+
+> •
+
+We propose a novel dual-stream GRU network to cap-ture both long-term and short-term EV charging demand trends leveraging CEEMDAN frequency decomposition to achieve a high-granularity forecasting.  
+
+> •
+
+We develop a lightweight zero-sum additive masking protocol for the data transmission during FL to safeguard local updates against gradient inversion, with its robust-ness empirically validated through a Deep Leakage from Gradients (DLG) attack.  
+
+> •
+
+We evaluate SecFD-FL on real-world station-level and user-level EV charging datasets against six representative federated baselines. SecFD-FL attains the highest accu-racy (global R2 of 0.927 on EV WATTS data and 0.847 
+
+on Palo Alto data), while the secure-aggregation layer reduces DLG reconstruction correlation by 8.1 times to 
+
+15 .6 times at no additional communication cost. The remainder of this paper is organized as follows. Section II presents the related works. Section III introduces the system model and the proposed SecFD-FL framework. Section IV details the experimental setup, including the datasets, baseline models, and evaluation metrics. Section V presents the com-parative results alongside a formal security analysis. Finally, Section VI concludes the paper with future work. II. R ELATED WORKS 
+
+Early efforts in charging demand forecasting for IoEV predominantly relied on classical ML algorithms applied to handcrafted features. Rathore et al. [14] benchmarked several regression-based learners, including RF, XGBoost, linear re-gression, artificial neural networks, and deep neural networks, for EV energy consumption prediction, with RF emerging as the most accurate model. Sun et al. [15] developed a support vector regression model trained on thirteen handcrafted fea-tures drawn from charging records, weather conditions, and calendar properties. More recently, Palaniappan et al. [16] introduced a stacked meta-fusion regressor that layers RF, XGBoost, and decision tree models to enhance predictive performance. Although these ML-based methods improved upon purely statistical baselines, they remain heavily reliant on manual feature engineering and exhibit limited capacity to capture both the long-range temporal dependencies and nonlinear dynamics inherent in EV charging behavior. To overcome these limits, recent literature adopted DL archi-tectures that automatically extract spatio-temporal features. Several studies couple convolutional and recurrent components for station-level forecasting, including Conv-LSTM/BiConv-LSTM encoder–decoders [17] and a CNN optimized by the niche-immunity lion algorithm [18]. Others incorporate graph structure: an edge-based graph attention network combined with LSTM [19], and a graph-transformer that jointly models spatial and temporal patterns [20]. Further gains are reported from multi-feature fusion into LSTM inputs [21] and from a lite Transformer–GRU that fuses attention with sequential processing under dynamic conditions [22]. Despite their strong predictive performance, all of the aforementioned centralized DL frameworks require raw charging data to be aggregated at a central server. Such aggregation poses significant privacy and security risks, since EV charging records implicitly disclose users’ mobility patterns, daily routines, and home or workplace locations. To address the privacy limitations of centralized training, FL has emerged as a promising paradigm in which clients collaboratively train a shared model without exposing raw data. Danish et al. [1] proposed Block-FedL, a blockchain-augmented FL framework that employs a Bidirectional LSTM for client-side load forecasting and replaces the centralized aggregator with on-chain smart contracts, thereby ensuring tamper-resistant and verifiable model updates. Wang et al. [8] further removed the central coordinator by introducing decen-tralized synchronous and asynchronous FL variants, the latter offering improved robustness in heterogeneous, real-world set-tings. Several studies have integrated transfer learning into the FL pipeline to better cope with client heterogeneity. Wang et al. [9] proposed a domain-adaptive clustered federated transfer learning scheme that leverages maximum mean discrepancy to cluster clients with similar feature distributions and applies a multi-head attention transformer to capture salient spatio-temporal patterns. Other works have focused on architectural and security enhancements within the FL framework. Bian et al. [23] designed an attention-based convolutional model trained under FL, in which each service provider retains its time-series data locally and shares only model parameters. Wang et al. [24] proposed a lightweight authentication scheme for FL-driven energy prediction, although the contribution is primarily concerned with secure authentication rather than forecasting accuracy. Saputra et al. [25] developed an FL-based energy demand forecaster in which charging stations exchange model updates with a centralized provider server, while Perry et al. [10] introduced a clustering-driven FL approach that groups stations by behavioral similarity prior to aggregation. Although existing FL-based methods successfully decouple model training from raw data sharing, several critical limita-tions remain unaddressed. First, existing frameworks feed raw load signals directly into the predictive backbone, neglecting the multi-scale, non-stationary nature of EV charging load in which transient and stochastic spikes coexist with long-term seasonal and behavioral trends. These components are difficult to learn jointly with a homogeneous architecture. Second, 3
+
+the shared gradients among all clients remain susceptible to gradient inversion attacks, such as DLG, which can reconstruct private samples from observed updates. However, this vulner-ability is rarely examined or mitigated in prior studies. Third, comprehensive benchmarking against state-of-the-art federated optimizers (e.g., FedProx, FedAdam, SCAFFOLD, FedDyn, Per-FedAvg) on heterogeneous, CS-level and EV-level datasets is largely absent, leaving the relative merits of competing FL designs in the EV forecasting context unclear. The proposed SecFD-FL framework directly addresses these gaps by 1) developing a dual-stream GRU to capture both short-term and long-term load trends; 2) embedding a lightweight zero-sum additive masking protocol to defend DLG attacks; 3) conduct-ing extensive multi-level benchmarking against representative federated baselines. III. P ROPOSED SEC FD-FL F RAMEWORK 
+
+A. System Model and Problem Formulation 
+
+System model. We consider a federation of K clients coordinated by a single central server that collaboratively train a shared charging-load forecasting model without exchanging raw data. The framework can be generalized and evaluated at different deployment levels. At the station level , each client is an EV charging station and the server is operated by the charging-network operator; the trained model supports station-side load monitoring and operation planning. At the user level ,each client is an individual EV (or its associated user account) and the server is operated by the charging-service or fleet operator; here the model supports user- and fleet-level demand anticipation. In both settings, every client trains locally on its own data and uploads only model updates; the server’s role is restricted to aggregating these updates and broadcasting the result, and it never accesses raw charging records. 
+
+Problem formulation. Each client k ∈ { 1, . . . , K } holds a private dataset Dk = {(xk,i , yk,i )}nk 
+
+> i=1
+
+of nk samples, where xk,i ∈ Rτ ×M is a τ -step lookback window over M
+
+frequency channels and yk,i ∈ RM is the next-step target. Let 
+
+n = PKk=1 nk denote the total number of training samples across the federation. The goal is to learn a single global model fw that minimizes the average next-step charging-load forecasting error, measured as the mean squared error (MSE) between predictions and ground truth. Denoting client k’s local forecasting loss as 
+
+Lk(w) = 1
+
+nknkX
+
+> i=1
+
+fw(xk,i ) − yk,i 
+
+> 22
+
+, (1) the federation solves the data-weighted global objective 
+
+min  
+
+> w
+
+L(w) = 
+
+> K
+
+X
+
+> k=1
+
+nk
+
+n Lk(w), (2) without sharing any Dk with the server. Here, Lk is the local average MSE over client k’s nk samples, and the weight 
+
+nk/n scales each client’s contribution by its share of the total data, so that clients holding more data influence the global model proportionally. Equivalently, (2) is the empirical risk minimized over the union of all clients’ data. 
+
+Threat model. We adopt an honest-but-curious central server (the aggregating entity of Section III-A, e.g., the charging-network or service operator): it executes the aggrega-tion protocol faithfully but may attempt to infer clients’ private data from the updates it receives. The representative attack we consider is DLG [12], in which the server inverts an observed update to reconstruct the underlying training samples. 
+
+B. System Architecture of the SecFD-FL Framework 
+
+The proposed SecFD-FL framework is divided into local-ized client-side processing and centralized server-side orches-tration. As illustrated in Fig. 1, the process begins locally by decomposing raw load data xk(t) via CEEMDAN into a high-frequency residual band x(H) 
+
+> k
+
+and a lower-frequency trend band x(L) 
+
+> k
+
+. These decoupled bands are processed through a dual-stream GRU network to extract features and generate an initial local model update wk. To protect client privacy prior to transmission, a zero-sum masking mechanism is applied to form a secure final local update. On the server side, these masked updates are securely aggregated; because the masks sum to zero ( P Mk = 0 ), the server can perform a standard federated average for both residual and trend components without exposing raw local data. Finally, the newly aggregated global model W r+1 is broadcast back to the clients for the next training round. 
+
+C. CEEMDAN-Based Frequency Decoupling 
+
+EV charging load exhibits slow seasonal trends with sharp transient bursts. Feeding such non-stationary data to a single learner mixes incompatible scales and degrades accuracy. In this paper, we leverage the Empirical Mode Decomposition (EMD) to decompose a nonlinear signal into a set of simpler oscillatory components called IMFs. CEEMDAN refines EMD by repeatedly adding low-amplitude noise and averaging the resulting decompositions, which reduces mode mixing and yields more stable, well-separated IMFs [26]. Each client therefore decomposes its raw load xk(t) via CEEMDAN, yielding Mk IMFs ˜ck,m (t) and a residual signal rk,M (t):
+
+xk(t) = 
+
+> Mk
+
+X
+
+> m=1
+
+˜ck,m (t) + rk,M k (t), (3) 
+
+˜ck,m (t) = 1
+
+> II
+
+X
+
+> i=1
+
+Em
+
+rk,m −1(t) + εmEm−1(ε(i)(t)) , (4) where Em[·] extracts the m-th mode, ε(i) ∼ N (0 , 1) is white noise, and εm controls noise amplitude. IMFs are ordered by decreasing instantaneous frequency. Since Mk varies across clients, each decomposition is zero-padded to a common dimensionality M , so that every client’s input has a uniform shape. The frequency boundary b then partitions this fixed-length, padded representation: A frequency boundary b parti-tions the channels into a high-frequency residual band and a low-frequency trend band: 
+
+x(H) 
+
+> k
+
+(t) = ˜ck, 1(t), . . . , ˜ck,b +1 (t), (5) 
+
+x(L) 
+
+> k
+
+(t) = ˜ck,b +2 (t), . . . , ˜ck,M (t), r k,M (t). (6) 4Raw Data               
+
+> 𝑥 𝑘 𝑡
+> CEEMDAN
+> Decomposition
+> Trend Band 𝑥 𝑘 (𝐿)
+> 𝐼𝑀𝐹 𝑏+2 … . . 𝐼𝑀𝐹 𝑟
+> Residual Band 𝑥 𝑘
+> (𝐻)
+> 𝐼𝑀𝐹 1… . . 𝐼𝑀𝐹 𝑏+1
+> Zero-Sum
+> Masking
+> 𝑀 𝑘 , 𝜎 𝑀 = 10 3
+> 𝛼 𝑘 𝑤 𝑘 (𝐻) + 𝑀 𝑘 (𝐻)
+> 𝛽 𝑘 𝑤 𝑘 (𝐿) + 𝑀 𝑘 (𝐿)
+> Final local update
+> Dual-Stream GRU
+> GRU (64)
+> Dropout (0.2)
+> GRU (32)
+> Dense
+> Initial local update
+> 𝑤 𝑘 = {𝑤 𝑘
+> 𝐻 , 𝑤 𝑘
+> 𝐿 }
+> Secure Aggregation σ 𝑀 𝑘 = 0
+> Residual and trend aggregation
+> Global model update
+> 𝑊 𝑟+1 = {𝑊 (𝑟+1, 𝐻) 𝑊 (𝑟+1, 𝐿) }
+> Federated average
+
+Local side 
+
+Server side 
+
+Update 
+
+Fig. 1. System Architecture of the SecFD-FL framework. 
+
+Fig. 2. Dual-stream GRU. A parameter-free Lambda layer routes the high-frequency residual band ( x(H) 
+
+> k
+
+) and low-frequency trend band ( x(L) 
+
+> k
+
+) into two parameter-disjoint GRU branches, whose outputs are concatenated and inverse-scaled to reconstruct the next-step load ˆP (t+1) .
+
+Here, x(H) 
+
+> k
+
+captures high-frequency transient dynamics (charg-ing spikes, irregular usage) and x(L) 
+
+> k
+
+captures low-frequency trend patterns (daily/weekly cycles). The original signal xk(t)
+
+can be reconstructed by summing both high-frequency and low-frequency IMFs. Each IMF channel is normalized with a min-max scaler fitted on training data: 
+
+ˆck,m (t) = ˜ck,m (t) − min(˜ ctr 
+
+> k,m
+
+)max(˜ ctr 
+
+> k,m
+
+) − min(˜ ctr 
+
+> k,m
+
+) , (7) Supervised training sequences are constructed using a sliding window of length τ , giving inputs xk,i ∈ Rτ ×M and targets 
+
+yk,i ∈ RM :
+
+xk,i = [ˆ ck(t − τ + 1) , . . . , ˆck(t)] ∈ Rτ ×M , (8) 
+
+yk,i = ˆ ck(t + 1) ∈ RM . (9) 
+
+D. Dual-Stream GRU Networks 
+
+The framework uses a lambda layer to split the multi-channel input x into two parallel streams. This parameter-free slicing ensures that each network branch handles a specific frequency sub-band independently, as illustrated in Fig. 2. The input is routed as follows: 
+
+x(H) 
+
+> k
+
+= x[: , :, 0: b+1] , x(L) 
+
+> k
+
+= x[: , :, b +1: M ]. (10) Each branch s ∈ { H, L } uses a stacked GRU [27] with intermediate dropout: 
+
+h(s, 1)  
+
+> t
+
+= GRU (s, 1) 64 
+
+ x(s) 
+
+> t
+
+, h(s, 1) 
+
+> t−1
+
+, (11) 
+
+h(s, 2)  
+
+> τ
+
+= GRU (s, 2) 32 
+
+ Drop 0.2(h(s, 1)  
+
+> t
+
+), h(s, 2) 
+
+> t−1
+
+, (12) 
+
+ˆy(s) = W(s) 
+
+> o
+
+h(s, 2)  
+
+> τ
+
++ b(s) 
+
+> o
+
+, (13) The forecasted IMF vector is given by: ˆy = [ˆ y(H), ˆy(L)] ∈
+
+RM . The final load is reconstructed by inverse-scaling and summing all predicted IMF channels: 
+
+ˆP (t+1) = 
+
+> M
+
+X
+
+> m=1
+
+InverseScale m
+
+ ˆym
+
+. (14) Since the two branches share no weights, the global parameter vector w is partitioned into disjoint subsets: 
+
+w = {w(H), w(L)}, w(H) ∩ w(L) = ∅, (15) This architectural independence enables heterogeneous aggre-gation to independently update the residual and trend compo-nents. 
+
+E. Heterogeneous Federated Aggregation 
+
+Since the two streams capture statistically distinct phenom-ena, applying identical aggregation rules is suboptimal. We therefore design a stream-specific aggregation policy. 
+
+1) Stream-specific aggregation weights: For the residual stream, Data-proportional weights αk are applied, as stations with more data samples produce statistically stronger transient estimates: 
+
+αk = nk
+
+PKj=1 nj
+
+. (16) 
+
+Spectral-similarity weights govern the trend stream. During the one-time initialization phase, each client computes the trend-band spectral signature of its mean training feature 
+
+¯fk ∈ RM −b−1 via Fast Fourier Transform (FFT) magnitude nor-malization. The FFT is used only to derive these aggregation-weighting signatures; it is independent of CEEMDAN, which 5
+
+performs the time-domain signal decomposition through em-pirical mode sifting as defined below: 
+
+sk = |FFT( ¯fk)|
+
+|FFT( ¯fk)| 2
+
+. (17) By sharing normalized signatures with the server, the server forms the pairwise cosine-similarity graph Skj =max(0 , s⊤ 
+
+> k
+
+sj /(∥sk∥∥ sj ∥ + ϵ)) . The final trend weight is then derived from each client’s mean similarity centrality: 
+
+βk = ¯Sk
+
+P 
+
+> j
+
+¯Sj
+
+, ¯Sk = 1
+
+> KK
+
+X
+
+> j=1
+
+Skj . (18) Importantly, sharing sk preserves strict data privacy as it reveals no time-domain or sample-level information. βk is the trend-stream aggregation weight, computed entirely server-side from the similarity graph Skj .
+
+2) Stream-specific aggregation rules: At communication round r, after each client trains E local epochs, the server applies stream-specific aggregation: 
+
+w(L,r ) =
+
+> K
+
+X
+
+> k=1
+
+βk w(L,r ) 
+
+> k
+
+, (19) 
+
+w(H,r ) = (1 −γ)
+
+> K
+
+X
+
+> k=1
+
+αk w(H,r ) 
+
+> k
+
++ γ w(H,r −1) , (20) where γ ∈ [0 , 1] is the local-retention ratio. The momentum-like retention term in Eq. (20) preserves a fraction of the previous global residual, preventing station-specific transient patterns from being washed out by aggressive global aver-aging, a known weakness of standard FedAvg under highly heterogeneous and non-IID conditions [28]. 
+
+F. Zero-Sum Secure Aggregation and Privacy Analysis 
+
+Equations (19) - (20) require the server to read each w(s) 
+
+> k
+
+,exposing them to gradient inversion. To prevent privacy leak-age, we embed a lightweight additive masking protocol that lets the server compute the exact aggregate without observing individual updates. 
+
+1) Mask construction: Each pair of clients (i, j ), i̸ = j,shares a secret seed sij = sji via a one-time pairwise key exchange. Client k generates its mask Mk entirely locally as the signed sum of pairwise pseudorandom vectors PRG( skj ):
+
+Mk = X 
+
+> j̸=k
+
+sgn( k − j) PRG( skj ) (21) 
+
+PRG( skj ) ∼ N 
+
+
+
+0, σ2 
+
+> M
+> K−1
+
+I
+
+
+
+, (22) where sgn( k − j) = +1 if k < j and −1 otherwise. Since skj = sjk , clients k and j derive the identical vector 
+
+PRG( skj ) but apply it with opposite sign, so every pairwise term cancels between exactly two clients and the masks sum to zero across the federation: 
+
+> K
+
+X
+
+> k=1
+
+Mk = 0. (23) Each client’s mask has element-wise variance σ2 
+
+> M
+
+(the K−1
+
+pairwise terms each contribute σ2 
+
+> M
+
+/(K−1) ), with σM =10 3,to match a high magnitude above the natural weight scale, which is consistent with the SNR in Eq. (27). Because Mk
+
+is computed solely from seeds k shares pairwise with the other K−1 clients, no client can reconstruct another client’s mask, and the server observes only the masked contributions of Eq. (24), never an individual Mk.
+
+2) Masked upload and recovery: Each client computes its pre-weighted model update and adds its mask before uploading to the server. For stream s with aggregation weight ω(s) 
+
+> k
+
+, client 
+
+k uploads: 
+
+ˆc(s) 
+
+> k
+
+= ω(s) 
+
+> k
+
+w(s) 
+
+> k
+
++ M(s) 
+
+> k
+
+. (24) The server then sums the masked contributions as: 
+
+> K
+
+X
+
+> k=1
+
+ˆc(s) 
+
+> k
+
+=
+
+> K
+
+X
+
+> k=1
+
+ω(s) 
+
+> k
+
+w(s) 
+
+> k
+
++
+
+> K
+
+X
+
+> k=1
+
+M(s)
+
+> k
+
+| {z }  
+
+> =0by (23)
+
+. (25) Since the masks cancel exactly, the convergence trajectory of SecFD-FL is bit-identical to its unmasked counterpart, ensuring robust privacy at zero utility cost. 
+
+3) Privacy guarantee against DLG: In the standard feder-ated learning, an adversary can recover private data through DLG. This attack reconstructs the original input x by itera-tively minimizing the distance between the observed gradient 
+
+gobs and a synthetic gradient generated from dummy data 
+
+(x′, y′), where L is the same mean squared forecasting loss minimized during training (Eq. (2)): 
+
+x∗ = argmin  
+
+> x′
+
+∇wL(w; x′, y′) − gobs 
+
+> 22
+
+, (26) Under the proposed zero-sum secure aggregation defense, the server no longer observes raw gradients, but rather the masked contributions ˆc(s) 
+
+> k
+
+, whose signal-to-noise ratio is 
+
+SNR k = ∥ω(s)   
+
+> kw(s)
+> k∥2
+> ∥M(s)
+> k∥2
+
+≈ ωk σw 
+
+> σM
+
+. (27) Using our system parameters ( ωk ≈ 0.2, σ w ≈ 10 −2, σ M =10 3), the resulting SNR k ≈ 2×10 −6. This indicates that the true gradient signal is buried five orders of magnitude below the pseudorandom noise. Consequently, any DLG optimization in Eq. (26) performed on the masked update will converge to the random mask rather than the private data features, making the reconstruction statistically uncorrelated with the original charging profiles. 
+
+G. Overall Algorithm 
+
+Algorithm 1 formalizes the end-to-end orchestration of the proposed SecFD-FL framework, integrating one-time signal decomposition with an iterative, secure federated training loop. The procedure employs a dual-stream architecture to independently update stochastic residuals and seasonal trends, utilizing stream-specific weights to mitigate client drift while preserving privacy through zero-sum masking. 6
+
+Algorithm 1 SecFD-FL: Frequency-Decoupled FL with Se-cure Aggregation for IoEV  
+
+> 1:
+
+Input: Clients {D k}Kk=1 ; rounds T ; local epochs E; batch size B; learning rate η; boundary b; retention γ; mask scale σM . 
+
+> 2:
+
+Output: Global model w(T ). 
+
+> 3: 4:
+
+for k = 1 , . . . , K do  
+
+> 5:
+
+Apply CEEMDAN to obtain M IMFs (Eq. (4))  
+
+> 6:
+
+Partition by b into x(H) 
+
+> k
+
+, x(L) 
+
+> k
+
+(Eqs. (5)–(6))  
+
+> 7:
+
+Min-Max scale each IMF channel (Eq. (7)); build τ -step sequences  
+
+> 8:
+
+Compute spectral signature sk (Eq. (17)) and send to server  
+
+> 9:
+
+end for  
+
+> 10:
+
+Compute {αk}, {βk} (Eqs. (16),(18)); init w(0) ; key-exchange for mask seeds  
+
+> 11: 12:
+
+for r = 1 , . . . , T do  
+
+> 13:
+
+Server broadcasts w(r−1)  
+
+> 14:
+
+for in parallel k = 1 , . . . , K do  
+
+> 15:
+
+wk ← w(r−1) ; train E epochs on Dk 
+
+> 16:
+
+Generate zero-sum masks M(H) 
+
+> k
+
+, M(L) 
+
+> k
+
+using Eq. (21)  
+
+> 17:
+
+Upload ˆc(s) 
+
+> k
+
+= ω(s) 
+
+> k
+
+w(s) 
+
+> k
+
++ M(s) 
+
+> k
+
+using Eq. (24)  
+
+> 18:
+
+end for  
+
+> 19:
+
+w(L,r ) ← P 
+
+> k
+
+ˆc(L) 
+
+> k
+> 20:
+
+˜w(H,r ) ← P 
+
+> k
+
+ˆc(H) 
+
+> k
+> 21:
+
+w(H,r ) ← (1 −γ) ˜ w(H,r ) + γ w(H,r −1)  
+
+> 22:
+
+w(r) ← { w(H,r ), w(L,r )} 
+
+> 23:
+
+end for  
+
+> 24: 25:
+
+Predict ˆy = [ˆ y(H), ˆy(L)]; recover ˆP (t+1) using Eq. (14). IV. E XPERIMENTAL SETTINGS 
+
+A. Datasets 
+
+To assess SecFD-FL across both granularities at which charging forecasting is typically deployed in IoEV, we use one 
+
+station-level dataset from City of Palo Alto and one user-level 
+
+dataset from EV WATTS. 
+
+1) Station-level data — City of Palo Alto: The first dataset is the publicly released EV charging records of Palo Alto [29], which logs every charging session at municipally operated stations, including session start time, charging duration, and energy delivered (kWh). The dataset comprises five munic-ipally operated charging stations, identified by their media access control (MAC) addresses; we use all five as federated clients ( K = 5 ), each containing multi-year session histories. 
+
+2) User-level data — EV WATTS: The second dataset is the EV WATTS [30], which logs per-vehicle charging events across a heterogeneous national fleet. To ensure each client has sufficient history for sequence modelling, we retain only vehicles with at least 300 recorded sessions and a lifespan of at least 365 days, yielding 35 eligible EVs. For a fair comparison with the station-level dataset, we randomly draw 
+
+K = 5 representative clients for the federated experiments. 
+
+B. Data Preprocessing 
+
+Because both datasets record discrete charging sessions rather than continuous time series, we first convert each session log into an hourly load profile. Each session’s en-ergy is distributed across the hours it spans in proportion to the minutes falling in each hour, assuming approximately constant charging power within a session [31], after which hourly energies are summed over overlapping sessions and idle hours are set to zero. This conserves total session energy and avoids the artificial spikes of start-time aggregation. Palo Alto retains each station’s full 14 ,462 -hour history, whereas EV WATTS is aligned to a common 8,760 -hour ( 365 -day) window. Each client’s hourly load is then decomposed by CEEMDAN ( I = 100 trials, Eqs. (3)–(4)) and zero-padded to a uniform M = 12 IMF channels across the federation, which has no effect on training since zero channels contribute zero gradient. Finally, supervised sequences are formed with a 24 -hour lookback window ( τ = 24 , stride one) and split chronologically into 80% training and 20% test, with the per-IMF Min–Max scaler (Eq. (7)) fitted on the training portion only to prevent temporal leakage. The resulting tensors have shape (14 ,462 , 24 , 12) for Palo Alto and (8 ,736 , 24 , 12) for EV WATTS clients. 
+
+C. Baselines 
+
+We benchmark SecFD-FL against two complementary fam-ilies of methods: (i) centralized deep-learning backbones trained on raw and CEEMDAN-decomposed inputs, and (ii) representative federated optimizers trained on the CEEMDAN-decomposed signal. All baselines share the same lookback window, train/test split, and optimization budget as SecFD-FL to ensure a controlled comparison. 
+
+1) Centralized backbones: Five centralized backbones serves as baseline algorithms. LSTM stacks long short-term memory layers whose gated cell state retains long-range dependencies without the vanishing-gradient issue of vanilla recurrent neural networks [6]. GRU stacks Gated Recurrent Unit layers, replacing LSTM’s separate cell state with aleaner update/reset gate design for faster convergence [27]. CNN applies stacked 1-D convolutional layers to capture local temporal patterns through shift-invariant filters rather than recurrence [6]. Seq2Seq with Attention couples an LSTM encoder–decoder with Bahdanau-style attention to mitigate the information bottleneck of a single context vector [32]. Trans-former stacks self-attention blocks with positional encodings, replacing recurrence with parallel attention over the lookback window [6]. 
+
+2) Federated optimizers: We select six federated algorithms as baseline algorithms. FedAvg [33] aggregates client updates via a sample-size-weighted average and serves as the founda-tional baseline, though its convergence degrades under client drift. FedProx [34] adds a proximal term penalizing deviation from the global model to bound local drift under non-IID data. FedAdam [35] treats aggregated client updates as pseudo-gradients and applies server-side Adam-style momentum for more stable convergence. Per-FedAvg [36] formulates feder-ation as a MAML-inspired meta-learning problem, producing 7
+
+a global initialization that is rapidly personalized per client. SCAFFOLD [37] introduces client and server control variates that correct local gradient drift, accelerating convergence under heterogeneity. FedDyn [38] applies dynamic regularization via a per-client dual variable and a server-side error-feedback state to ensure convergence to the true global optimum. 
+
+D. Evaluation Metrics 
+
+We evaluate SecFD-FL along three orthogonal axes: fore-casting utility, federated fairness, and privacy. 
+
+1) Utility: For each client k (an EV charging station or an individual EV), predicted load ˆPk is compared to ground truth 
+
+Pk via Mean Absolute Error (MAE), Root Mean Square Error (RMSE), and the coefficient of determination ( R2) as: 
+
+MAE k = 1
+
+> N
+
+X
+
+> i
+
+|Pk,i − ˆPk,i |, (28) 
+
+RMSE k =
+
+s
+
+> 1
+> N
+
+X
+
+> i
+
+(Pk,i − ˆPk,i )2, (29) 
+
+R2 
+
+> k
+
+= 1 −    
+
+> P
+> i(Pk,i −ˆPk,i )2
+> P
+> i(Pk,i −¯Pk)2
+
+. (30) We report the federation-level mean and standard deviation of each metric. 
+
+2) Fairness: Performance equity across clients is captured by Jain’s index over per-client RMSE: 
+
+J =
+
+ P Kk=1 RMSE k
+
+2
+
+K PKk=1 RMSE 2
+
+> k
+
+, J ∈ (0 , 1] , (31) where J=1 indicates perfectly equal client performance. 
+
+3) Privacy: We instantiate the DLG attack of Eq. (26) on both raw and SecAgg-masked updates (300 attack iterations, lr 
+
+= 0 .1). We report the gradient-matching loss, the reconstruc-tion MSE MSE rec = ∥x∗ −x∥22/N , and the Pearson correlation 
+
+ρ(x∗, x) between the recovered and true samples; lower |ρ|
+
+implies stronger protection. 
+
+4) Communication overhead: Per-round upload is |w| · 
+
+4 bytes (float-32) per client, total round cost is 2K|w|· 4 bytes (upload + broadcast). The SecAgg mask overhead is reported both in bytes (key-exchange only) and in milliseconds of client-side compute.These quantities are evaluated in Sec-tion V-D. 
+
+E. Hyperparameter Settings 
+
+The hyperparameters used in all experiments are listed in Table I. They were selected via a small grid search on a held-out validation split of one client and then fixed for both datasets. The frequency boundary b=5 was chosen so the residual stream ( IMF 1–IMF 6) carries the high-frequency charging spikes while the trend stream ( IMF 7–IMF 12 ) car-ries diurnal/seasonal regularities. We evaluate the frequency boundary at b ∈ { 3, 5, 6, 7} on both datasets under identical training settings. On EV Watt, R2 rises from 0.849 at b = 3 
+
+to 0.926 at b = 5 , then falls slightly to 0.917 and 0.910 at 
+
+b = 6 and b = 7 . On Palo Alto, R2 follows the same pattern (0.782 → 0.820 → 0.799 → 0.817 ), confirming b = 5 as the best setting on both datasets. The mask scale σM =10 3
+
+guarantees an SNR ≈ 10 −6 from Eq. (27).                               
+
+> TABLE I HYPERPARAMETERS OF THE PROPOSED SEC FD-FL F RAMEWORK
+> Symbol Description Value
+> KNumber of clients 5
+> τLookback window (h) 24
+> MIMF channels (zero-padded) 12
+> bFrequency boundary index 5
+> TCommunication rounds 50
+> ELocal epochs / round 15
+> BMini-batch size 64
+> ηLearning rate (Adam) 1×10 −3
+> –Dropout 0.20 –GRU hidden units (layer 1 / 2) 64 / 32
+> γLocal-retention ratio (resid.) 0.30
+> σMMask scale 10 3
+> –Train/test split 0.80 / 0.20
+
+V. R ESULTS AND DISCUSSION 
+
+In this section, we present the performance results and comparison of the proposed SecFD-FL scheme with the afore-mentioned baseline algorithms in terms of (a) the effectiveness of CEEMDAN-driven frequency decoupling on forecasting accuracy; (b) the aggregation performance; (c) the defense performance against DLG; and (d) the communication and compute overhead. 
+
+A. Effectiveness of Frequency Decoupling 
+
+Table II compares five centralized models trained on two types of inputs: (i) the raw hourly load (raw case) and (ii) the CEEMDAN-decomposed load (C-D case). First, it is observed that CEEMDAN-decomposed inputs consistently improve the performance of recurrent models (LSTM, GRU, Seq2Seq) and CNN on both datasets. For example, on the Palo Alto data, GRU reduces RMSE from 1.44 to 0.80 kWh ( −44 .4% ) and raises R2 from 0.33 to 0.79 . On EV Watt, GRU improves RMSE from 5.69 to 3.55 kWh ( −37 .6% ) and R2 from 0.59 
+
+to 0.79 . LSTM and Seq2Seq show comparable gains on both datasets. This pattern confirms that separating fast transient spikes from slow seasonal trends helps the model learn each component more effectively. Second, among all models, GRU with CEEMDAN input achieves the best overall results. For the Palo Alto dataset, GRU records the lowest RMSE (0.80 kWh) and highest 
+
+R2 (0.791 ). On EV Watt, GRU again leads with RMSE of 
+
+3.55 kWh and R2 of 0.793 . This motivates our choice of GRU as the base model in SecFD-FL. Recurrent models (LSTM, GRU, Seq2Seq) outperform CNN and Transformer because they are designed to capture sequential dependencies across time steps, which is important for EV charging patterns that depend on recent history. On the other hand, transformer performs poorly on both datasets, with negative R2 values in most cases. This is expected because attention-based models lack a built-in preference for local temporal patterns and tend to overfit on short, noisy univariate signals [39]. CNN shows moderate improvement with CEEMDAN but still lags behind recurrent models due to its limited ability to model long-range dependencies. 8                                                                             
+
+> TABLE II CENTRALIZED BACKBONES WITH RAW VS . CEEMDAN I NPUTS
+> (P ER -S TATION MEAN OVER 5 C LIENTS )
+> Model Input EV Watt (user) Palo Alto (station)
+> MAE RMSE R2MAE RMSE R2
+> LSTM Raw 2.14 5.79 0.564 1.04 1.47 0.299 C-D 2.55 3.93 0.617 0.60 0.85 0.768 GRU Raw 1.99 5.69 0.586 0.99 1.44 0.333 C-D 2.32 3.55 0.793 0.54 0.80 0.791 Seq2Seq Raw 2.05 5.81 0.573 1.00 1.45 0.326 C-D 2.27 3.59 0.769 0.61 0.85 0.767 Transformer Raw 6.69 9.85 −2.03 1.45 1.86 −0.114 C-D 5.93 9.61 −1.11 1.23 1.38 0.186 CNN Raw 5.93 7.97 −0.39 1.34 1.84 −0.098 C-D 2.27 5.76 0.586 1.04 1.27 0.456 C-D: CEEMDAN-decomposed input; errors in kWh.
+
+B. Aggregation Result Comparison 
+
+Table III compares the aforementioned FL benchmarks with the proposed SecFD-FL. We highlight three observation from the findings. 
+
+Heterogeneity-aware methods do not always help. Fed-Prox, SCAFFOLD, and FedDyn show poor performance on at least one client, producing negative R2 values. For the EV Watt dataset, SCAFFOLD records an R2 of −0.529 and RMSE of 9.82 kWh, while FedDyn gives R2 = 0 .248 and RMSE of 6.63 kWh. For the Palo Alto dataset, the same methods also lag behind FedAvg, with SCAFFOLD reaching only R2 = 0 .181 . These methods apply corrections (proximal terms, control variates, or dynamic regularizers) that were designed for non-IID classification tasks. When applied to highly stochastic charging signals, these corrections can over-constrain the local updates and hurt convergence instead of helping it. 
+
+Frequency decoupling improves federated learning. By separating the model into residual and trend streams, SecFD-FL reaches a global RMSE of 2.28 kWh and R2 of 0.927 
+
+on EV Watt, and 0.689 kWh RMSE with R2 of 0.847 on Palo Alto. On EV Watt, standard FedAvg attains a marginally lower RMSE (2.08 vs. 2.28 kWh) and higher R2 ( 0.938 vs. 0.927) than SecFD-FL; However, FedAvg offers no pro-tection against gradient-inversion attacks, making SecFD-FL the preferable model when both forecasting accuracy and client-data privacy are required. The improvement comes from two sources: stream-specific aggregation weights match each stream’s statistical nature, and local retention in the residual branch preserves client-specific transient patterns that would otherwise be averaged out. SecFD-FL achieves a Jain’s fair-ness index of 0.871 on EV Watt and 0.991 on Palo Alto, the highest among all tested federated methods. This means that SecFD-FL maintains consistent performance across all clients, rather than favoring some at the expense of others. 
+
+SecAgg does not reduce accuracy. Comparing FedAvg-FD (without privacy) and SecFD-FL (with SecAgg) in Table III, the two methods differ by less than 10 −3 in every metric on both datasets. This confirms the result of Eq. (25): the zero-sum masks cancel exactly during aggregation, so SecFD-FL                                                             
+
+> TABLE III FEDERATED BASELINES AND FD V ARIANTS (G LOBAL METRICS )
+> Method EV Watt Palo Alto
+> MAE RMSE R2MAE RMSE R2
+> FedAvg 1.02 2.08 0.938 0.50 0.77 0.810 FedProx 3.79 6.43 0.351 0.81 1.04 0.656 FedAdam 1.88 2.87 0.861 0.56 0.83 0.781 Per-FedAvg 1.72 2.72 0.875 0.53 0.77 0.808 SCAFFOLD 6.66 9.82 −0.529 1.29 1.60 0.181 FedDyn 4.08 6.63 0.248 0.82 1.05 0.643 FedAvg-FD 1.37 2.36 0.923 0.443 0.689 0.847
+> FedAvg-FD-SecAgg or SecFD-FL (ours) 1.22 2.28 0.927 0.443 0.689 0.847
+> Fig. 3. SecFD-FL training convergence: per-client and globally averaged training loss over 50 rounds on (a) Palo Alto data (b) EV Watt data.
+
+produces the same model as FedAvg-FD. The key difference is that SecFD-FL also protects client updates from the server, while FedAvg-FD does not. Fig. 3 shows the training loss for all 5 clients across 50 rounds. The loss decreases smoothly and the global average stabilizes after approximately 25 rounds, showing that the masking protocol does not interfere with convergence. 
+
+C. Defense Performance against DLG 
+
+We evaluate the defence performance by running a 300-iteration DLG attack on the gradients of client 1. Two sce-narios are tested: (A) attack on raw gradients, as in standard FedAvg, and (B) attack on masked gradients, as in SecFD-FL. Table IV summarizes the results for both datasets. Without SecAgg, the attacker achieves a best Pearson cor-relation of ρ = 0 .689 on EV Watt data and ρ = 0 .626 on Palo Alto data. These values indicate that the attacker can partially recover the original training data from the raw gradients. The final gradient-matching loss remains low ( 4.45 on EV Watt, 
+
+2.18 on Palo Alto), and the reconstruction MSE stays small (0.117 and 0.078 ), meaning the attacker’s reconstructed data stays close to the true data throughout the attack. With SecAgg enabled, the picture changes completely. The best correlation drops to ρ = 0 .086 on EV Watt and 
+
+ρ = 0 .040 on Palo Alto, which are near zero and statistically indistinguishable from random noise. The gradient-matching loss increases by ten orders of magnitude to ∼ 4.55 × 10 10 ,showing that the attacker cannot match the masked gradients at all. The reconstruction MSE rises to 596 .4 and 601 .4, meaning the reconstructed data is far from the original. Overall, SecAgg 9                      
+
+> TABLE IV DLG G RADIENT -I NVERSION ATTACK OUTCOMES
+> Quantity EV Watt Palo Alto
+> Raw Masked Raw Masked Final grad-match loss 4.45 4.55 ×10 10 2.18 4.55 ×10 10
+> Final reconstruction MSE 0.117 596.4 0.078 601.4 Correlation coefficient 0.689 0.086 0.626 0.040 Reduction factor 8.1×15 .6×
+> Fig. 4. DLG gradient-inversion attack on the EV Watt dataset, Client 1. (a) Pearson correlation between reconstructed and true samples over attack iterations. (b) Reconstruction MSE over iterations. (c) True vs. reconstructed IMF-1 sequence without SecAgg. (d) True vs. reconstructed IMF-1 sequence with SecAgg.
+
+reduces the reconstruction correlation by 8.1× on EV Watt and 
+
+15 .6× on Palo Alto. Fig. 4 illustrates the DLG attack results on the EV Watt dataset for client 1. Subplot (a) shows the Pearson correlation over attack iterations: for raw gradients, the correlation rises quickly to around 0.6 and stays there, while for masked gradi-ents, it remains near zero. Subplot (b) shows the reconstruction MSE: for raw gradients, it stays low ( ∼ 0.1); for masked gradients, it grows steadily, confirming that the attacker moves further from the true data at each step. Subplots (c) and (d) compare a sample IMF-1 sequence. Without SecAgg (c), the reconstructed signal closely follows the true data. With SecAgg (d), the reconstructed signal is random noise with values ranging from −30 to +40 , bearing no similarity to the original. A similar analysis can be performed for the Palo Alto dataset, with consistent conclusions as shown in Table IV. These results show that the zero-sum masking protocol effectively prevents the server from recovering private training data. By burying each client’s update under high-variance noise (SNR ≈ 2 × 10 −6, see Eq. (27)), the attacker can only match the noise pattern rather than the true gradient. This ensures that client data remains private throughout the federated training process. 
+
+D. Communication and Compute Overhead 
+
+The SecFD-FL model contains 46,860 trainable parameters. Using 32-bit floating-point representation, each parameter re-quires 4 bytes, giving a total model size of 183 .05 KB. In each communication round, every client uploads its masked model weights ( 183 .05 KB) to the server, and the server broadcasts the updated global model ( 183 .05 KB) back to each client. With K = 5 clients, the total upload per round is 
+
+5 × 183 .05 = 915 .25 KB, and the total download (broadcast) is also 915 .25 KB. This gives a total communication cost of 
+
+1,830 .5 KB per round and 89 .4 MB over the full 50 rounds of training. The SecAgg masking protocol adds no additional per-round communication overhead. Each client generates its mask locally each round using a pseudorandom number generator. It is seeded with the pairwise secrets established once during initialization. Since masks are computed on the client side, they are never transmitted over the network. The only setup cost is a one-time pairwise key exchange, which requires each pair of clients to exchange a 64-byte shared secret. For K = 5 
+
+clients, there are K(K−1) /2 = 10 pairs, giving a total key-exchange cost of 10 × 64 = 640 bytes ( 0.625 KB). This is negligible compared to the model traffic. In terms of compute, mask generation takes 10 .4 ± 0.7 ms per client per round, measured on a standard CPU. A single round of local training (15 epochs on ∼7000 samples) takes several seconds. Therefore, the mask generation adds less than 
+
+0.1% to the total training time per round. Over 50 rounds, the total mask-generation time is approximately 0.52 seconds. 
+
+E. Per-Station Forecast Quality 
+
+Fig. 5 shows the actual and predicted hourly energy demand for each of the five EV clients on the EV Watt dataset. The model accurately tracks both the long periods of low or zero demand and the sudden high-energy charging events. For example, client 1 has several peaks exceeding 100 kWh, and the predicted curve closely follows these spikes in both timing and magnitude. A similar plot can be generated for the Palo Alto dataset, where comparable tracking quality is observed. Across all five clients, the global R2 is 0.9265 .Per-client R2 values range from 0.8598 (client 4) to 0.9523 
+
+(client 5), with clients 1, 2, 3, and 5 all exceeding 0.93 . This narrow range shows that SecFD-FL performs well across all clients, not just a few. The high Jain’s fairness index ( 0.871 )reported in Sec. V-B further confirms this. SecFD-FL avoids the common problem in federated forecasting where the global model works well for some clients but poorly for others. VI. C ONCLUSION 
+
+This paper introduced SecFD-FL, a federated learning framework for charging load forecasting in IoEV that couples CEEMDAN-driven frequency decoupling with stream-specific GRU model and a zero-sum secure-aggregation layer. By decomposing each client’s raw load into high-frequency tran-sients and low-frequency trends, and processing the two bands through a dual-stream GRU with stream-specific aggregation rules, SecFD-FL attains forecasting accuracy on par with or superior to six representative FL algorithms across both user-level and station-level real-world datasets. The embed-ded zero-sum masking protocol provides cryptographic-grade resistance against gradient-inversion attacks, reducing DLG reconstruction correlation by up to 15.6 × while incurring no 10 
+
+Fig. 5. True vs. predicted hourly energy demand for all five clients on the EV Watt test set. 
+
+additional per-round communication (beyond a one-time 640-byte key exchange) and only ∼10 ms of per-round client compute. Future work will extend SecFD-FL to dynamic client populations with asynchronous participation, integrate differential privacy guarantees on top of the masking layer, and investigate graph-aware aggregation for spatially correlated charging networks. VII. A CKNOWLEDGMENTS 
+
+We acknowledged the useage of Claude and ChatGPT solely for language editing and grammer checking. REFERENCES [1] S. M. Danish, A. Hameed, A. Ranjha, G. Srivastava, and K. Zhang, “Block-fedl: Electric vehicle charging load forecasting using federated learning and blockchain,” IEEE Transactions on Vehicular Technology ,vol. 74, no. 2, pp. 2048–2056, 2024. [2] L. You, Q. Chen, H. Qu, R. Zhu, J. Yan, P. Santi, and C. Ratti, “Fmgcn: Federated meta learning-augmented graph convolutional network for ev charging demand forecasting,” IEEE Internet of Things Journal , vol. 11, no. 14, pp. 24 452–24 466, 2024. [3] H. Zhang, D. Niyato, W. Zhang, C. Zhao, H. Du, A. Jamalipour, S. Sun, and Y. Pei, “The role of generative artificial intelligence in internet of electric vehicles,” IEEE Internet of Things Journal , vol. 12, no. 6, pp. 6208–6232, 2025. [4] P. Pradhan, I. Ahmad, D. Habibi, G. Kothapalli, and M. A. Masoum, “Reducing the impacts of electric vehicle charging on power distribution transformers,” IEEE Access , vol. 8, pp. 210 183–210 193, 2020. [5] S. Sachan and N. Adnan, “Stochastic charging of electric vehicles in smart power distribution grids,” Sustainable cities and society , vol. 40, pp. 91–100, 2018. [6] M. Rashid, T. Elfouly, and N. Chen, “A comprehensive survey of electric vehicle charging demand forecasting techniques,” IEEE Open Journal of Vehicular Technology , vol. 5, pp. 1348–1373, 2024. [7] S. Sharma, A. Goel, V. Tiwari, and S. P. S. Waghel, “Electricity demand forecasting: A review of statistical, machine learning, deep learning and hybrid approaches,” in 2025 2nd International Conference on Advanced Computing and Emerging Technologies (ACET) . IEEE, 2025, pp. 1–4. [8] J. Wang, D. Xu, and T. Yang, “Decentralized federated learning for time series prediction in electric vehicle charging ecosystems,” IEEE Transactions on Consumer Electronics , 2025. [9] T. Wang, C. Ren, Z. Y. Dong, and C. Yip, “Domain-adaptive clustered federated transfer learning for ev charging demand forecasting,” IEEE Transactions on Power Systems , vol. 40, no. 2, pp. 1241–1254, 2024. [10] D. Perry, N. Wang, and S.-S. Ho, “Energy demand prediction with optimized clustering-based federated learning,” in 2021 IEEE Global Communications Conference (GLOBECOM) . IEEE, 2021, pp. 1–6. [11] Z. Xu, Y. Liu, C. Wang, and Y. Yang, “Load forecasting for electric ve-hicle charging stations using sequence decomposition and deep learning techniques,” IEEE Transactions on Instrumentation and Measurement ,2025. [12] L. Zhu, Z. Liu, and S. Han, “Deep leakage from gradients,” Advances in neural information processing systems , vol. 32, 2019. [13] M. Rashid, N. Chen, and S. A. Asad Rizvi, “A multi-channel ceemdan-driven spatio-temporal graph convolutional network for ev charging demand forecasting,” in 2026 American Control Conference (ACC) ,2026, pp. 2356–2356. [14] H. Rathore, H. K. Meena, and P. Jain, “Prediction of ev energy consumption using random forest and xgboost,” in 2023 International Conference on Power Electronics and Energy (ICPEE) . IEEE, 2023, pp. 1–6. [15] Q. Sun, J. Liu, X. Rong, M. Zhang, X. Song, Z. Bie, and Z. Ni, “Charging load forecasting of electric vehicle charging station based on support vector regression,” in 2016 IEEE PES Asia-Pacific Power and Energy Engineering Conference (APPEEC) . IEEE, 2016, pp. 1777– 1781. [16] A. Palaniappan, P. Bhukya, S. K. Chitti, and J. Gao, “Data-driven anal-ysis of ev energy prediction and planning of ev charging infrastructure,” in 2023 IEEE Ninth International Conference on Big Data Computing Service and Applications (BigDataService) . IEEE, 2023, pp. 17–24. [17] F. Mohammad, D.-K. Kang, M. A. Ahmed, and Y.-C. Kim, “Energy demand load forecasting for electric vehicle charging stations network based on convlstm and biconvlstm architectures,” IEEE Access , vol. 11, pp. 67 350–67 369, 2023. [18] Y. Li, Y. Huang, and M. Zhang, “Short-term load forecasting for electric vehicle charging station based on niche immunity lion algorithm and convolutional neural network,” Energies , vol. 11, no. 5, p. 1253, 2018. [19] X. Li and Q. Han, “An ev charging station load prediction method considering distribution network upgrade,” IEEE Transactions on Power Systems , vol. 39, no. 2, pp. 4360–4371, 2023. [20] L. Zhu, Y. Ge, K. Wang, Y. Fan, X. Ma, and L. Zhang, “Spatial-temporal electric vehicle charging demand forecasting: A gtrans approach,” in 
+
+International Conference on Neural Computing for Advanced Applica-tions . Springer, 2023, pp. 345–358. [21] P. Aduama, Z. Zhang, and A. S. Al-Sumaiti, “Multi-feature data fusion-based load forecasting of electric vehicle charging stations using a deep learning model,” Energies , vol. 16, no. 3, p. 1309, 2023. [22] A. A. Khan, R. K. Mahendran, F. Ullah, F. Ali, A. K. Bashir, M. M. Al Dabel, and M. Omar, “Ai-driven dynamic allocation and management optimization for ev charging stations,” IEEE Transactions on Intelligent Transportation Systems , 2025. [23] R. Bian, L. Wang, Y. Liu, and Z. Dai, “Electric vehicle load forecasting based on convolutional networks with attention mechanism and feder-ated learning method,” IET Generation, Transmission & Distribution ,vol. 18, no. 13, pp. 2313–2324, 2024. [24] W. Wang, F. H. Memon, Z. Lian, Z. Yin, T. R. Gadekallu, Q.-V. Pham, K. Dev, and C. Su, “Secure-enhanced federated learning for ai-empowered electric vehicle energy prediction,” IEEE Consumer Electronics Magazine , vol. 12, no. 2, pp. 27–34, 2021. [25] Y. M. Saputra, D. T. Hoang, D. N. Nguyen, E. Dutkiewicz, M. D. Mueck, and S. Srikanteswara, “Energy demand prediction with federated learn-ing for electric vehicle networks,” in 2019 IEEE global communications conference (GLOBECOM) . IEEE, 2019, pp. 1–6. [26] S. K. Saha and S. M. Mahajan, “Multivariate optimal hybrid deep learning model for forecasting of day-ahead solar irradiance with mete-orological constraints,” in 2024 56th North American Power Symposium (NAPS) , 2024, pp. 1–6. [27] K. Cho, B. Van Merri¨ enboer, C ¸ . Gulc ¸ehre, D. Bahdanau, F. Bougares, H. Schwenk, and Y. Bengio, “Learning phrase representations using rnn encoder–decoder for statistical machine translation,” in Proceedings of the 2014 conference on empirical methods in natural language processing (EMNLP) , 2014, pp. 1724–1734. [28] Y. Zhao, M. Li, L. Lai, N. Suda, D. Civin, and V. Chandra, “Federated learning with non-iid data,” arXiv preprint arXiv:1806.00582 , 2018. [29] “Electric vehicle charging station usage – Palo Alto.” [Online]. Available: https://data.cityofpaloalto.org/dataviews/257812/ electric-vehicle-charging-station-usage-july-2011-dec-2020 [30] Y. Pavuluri, “EV Watts Public Database,” 2024. [Online]. Available: https://doi.org/10.15483/1970735 [31] S. Powell, G. V. Cezar, L. Min, I. M. Azevedo, and R. Rajagopal, “Charging infrastructure access and operation to reduce the grid impacts of deep electric vehicle adoption,” Nature Energy , vol. 7, no. 10, pp. 932–945, 2022. 11 
+
+[32] X. Wang, Z. Cai, Y. Luo, Z. Wen, and S. Ying, “Long time series deep forecasting with multiscale feature extraction and seq2seq attention mechanism,” Neural Processing Letters , vol. 54, no. 4, pp. 3443–3466, 2022. [33] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning of deep networks from decentralized data,” in Artificial intelligence and statistics . Pmlr, 2017, pp. 1273– 1282. [34] T. Li, A. K. Sahu, M. Zaheer, M. Sanjabi, A. Talwalkar, and V. Smith, “Federated optimization in heterogeneous networks,” Proceedings of Machine learning and systems , vol. 2, pp. 429–450, 2020. [35] S. Reddi, Z. Charles, M. Zaheer, Z. Garrett, K. Rush, J. Koneˇ cn` y, S. Kumar, and H. B. McMahan, “Adaptive federated optimization,” arXiv preprint arXiv:2003.00295 , 2020. [36] A. Fallah, A. Mokhtari, and A. Ozdaglar, “Personalized federated learning with theoretical guarantees: A model-agnostic meta-learning approach,” Advances in neural information processing systems , vol. 33, pp. 3557–3568, 2020. [37] S. P. Karimireddy, S. Kale, M. Mohri, S. Reddi, S. Stich, and A. T. Suresh, “Scaffold: Stochastic controlled averaging for federated learn-ing,” in International conference on machine learning . PMLR, 2020, pp. 5132–5143. [38] D. A. E. Acar, Y. Zhao, R. M. Navarro, M. Mattina, P. N. Whatmough, and V. Saligrama, “Federated learning based on dynamic regularization,” 
+
+arXiv preprint arXiv:2111.04263 , 2021. [39] S. Li, X. Jin, Y. Xuan, X. Zhou, W. Chen, Y.-X. Wang, and X. Yan, “En-hancing the locality and breaking the memory bottleneck of transformer on time series forecasting,” Advances in neural information processing systems , vol. 32, 2019.

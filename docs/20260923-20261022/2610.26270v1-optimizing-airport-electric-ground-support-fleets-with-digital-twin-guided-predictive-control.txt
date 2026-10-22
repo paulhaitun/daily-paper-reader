@@ -1,0 +1,1368 @@
+Title: Optimizing Airport Electric Ground Support Fleets with Digital-Twin-Guided Predictive Control
+
+URL Source: https://arxiv.org/pdf/2610.26270v1
+
+Published Time: Tue, 20 Oct 2026 03:23:30 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+> 1
+
+# Optimizing Airport Electric Ground Support Fleets with Digital-Twin-Guided Predictive Control 
+
+Juan Pablo Bertucci 1, Mauro Salazar 1, and Theo Hofman 1
+
+Abstract —Electrifying airport ground operations is a key step toward reducing aviation-related emissions, but it makes task assignment and charging coordination strongly coupled in real time. This paper develops a digital twin of airport ground handling operations for electric ground-support vehicles (EGSVs), combining an agent-based model of airport operations with live flight-schedule updates and vehicle-energy dynamics. On this platform, we compare three control strategies for EGSV dispatching and charging: a rule-based heuristic, a rolling-horizon model predictive controller (MPC), and a Monte Carlo tree search (MCTS) controller. The controllers are evaluated on three representative Schiphol Airport operating days and for multiple fleet sizes. The results show a clear trade-off between delays and energy use. Across all tested scenarios, MCTS yields the lowest average flight delay, with a pooled delay of 4.09 min, improving on the heuristic and MPC controllers by 64.7% and 31.5%, but at an increased energy consumption of 1% and 0.3%, respectively. The MPC and MCTS controllers coordinate charging more effectively throughout the day and reduce the peak charging infrastructure required by 6.0 and 4.7 charger units, respectively. Additionally, we find more vehicles can result in lower overall energy consumption and lower charging infras-tructure requirements for all controllers. These findings highlight the value of digital twins not only as offline design evaluation tools, but also as practical environments for real-time control policies in electrified airport operations. 
+
+Index Terms —Airport Ground Operations, Digital Twins, Elec-tric Ground Support Vehicles, Predictive Control 
+
+I. I NTRODUCTION 
+
+Aviation emissions pose a significant environmental chal-lenge, with ground support operation (taxiing, push-back, passenger and baggage transport, etc.) emissions constituting up to 10% of an airport’s total carbon footprint [1]. At Copenhagen Airport, these emissions represent between 5-9% [2] while at Bologna Airport they account for 9.3% of total emissions [3]. To address this issue, airports are transitioning to carbon-neutral vehicle fleets. For example, Schiphol Airport aims to achieve an emission-free ground fleet by 2030 [4]. These fleets comprise heterogeneous Ground Support Vehicles (GSVs), including passenger buses, baggage tractors, and fuel trucks, whose coordinated operation is essential for efficient and punctual Ground Handling Operations (GHO) As these fleets become electric, the joint scheduling of tasks and charg-ing activities for Electric GSVs (EGSVs) becomes critical to avoid operational delays. In this paper, we leverage advanced 
+
+This publication is part of the project GTD-Elektrifikatie, made possible in part by the Ministry of Economic Affairs and Climate Policy of the Netherlands. 
+
+> 1
+
+Department of Mechanical Engineering, Control Systems Technology, Eindhoven University of Technology, 5600 MB Eindhoven, The Netherlands 
+
+{j.p.bertucci}@tue.nl         
+
+> {ÔController (Heur / MPC / MCTS)
+> ¨Airport Digital Twin
+> Agent: Aircraft
+> ñAgent: Apron Vehicle
+> Agent: Charger Station
+> ×
+> I(t)X(t)KPI(t)
+> s(t)
+> API input controller outputs DT outputs
+
+Fig. 1. Sketch of the problem setup. Task schedules I(t) are drawn from the Schiphol API and fed to the controller, which provides the assignment of tasks X(t) to the airport DT at every time step. The twin outputs state s(t)
+
+feedback and performance metrics KP I (t).
+
+simulation techniques to provide a Digital Twin (DT) platform, as shown in Fig. 1, for the control of EGSVs and employ heuristic and predictive control approaches to analyze control impacts on design, efficiency and performance metrics. This work advances the Intelligent Transportation Systems (ITS) literature by demonstrating the value of DTs as platforms for developing, testing and deploying advanced control strategies in complex, time-sensitive environments. 
+
+Literature review: Several studies have focused on the opti-mization of airport GHOs using mathematical optimization, heuristics and simulation-based approaches. Airport-specific models have addressed apron vehicle assignment, dispatching and scheduling under operational constraints using mathemati-cal optimization, showing travel distance reductions, improved resource usage and increased schedule robustness [5], [6], [7]. GHOs have also been modeled as a large-scale vehicle-routing and scheduling problem across multiple service types, where realistic instances are tackled using gradient-free optimization (large neighborhood search and genetic algorithms) [8], [9]. These studies show the value of optimization for airport operations, but they typically focus on vehicle scheduling and resource allocation without explicitly considering the additional constraints introduced by fleet electrification. A second stream of literature focuses explicitly EGSVs. In the broader EV-routing literature, several models extend routing problems to include charging stops, time-windows and electric vehicle-specific constraints [10], [11]. Charger availability and partial recharging decisions have also been modeled explicitly, showing that such features can substantially affect feasibility and cost [12], [13]. Furthermore, offline optimization studies on electric vehicles have shown that fleet sizing, charging-task scheduling and infrastructure design are tightly coupled in electric fleet operations [14], [15], [16]. Within airport-specific applications, recent studies formulate the scheduling of electric arXiv:2610.26270v1 [eess.SY] 19 Oct 2026 2
+
+or mixed ground-handling fleets with charging constraints as bi-objective, decomposition-based or cooperative scheduling problems [17], [18], [19], [20], while stochastic dynamic plan-ning models have been proposed for electric towing vehicles under uncertain aircraft arrival and departure times [21]. Be-yond ground handling, the electrification of aviation networks more broadly has motivated optimization-based approaches for flight scheduling and energy management [22], [23], [24], as well as co-design frameworks that jointly optimize fleet size, battery capacity and charging infrastructure [25], [26]. These studies demonstrate the growing relevance of EGSV optimization in airports, but they mainly focus on offline optimization or a single scheduling formulation rather than on online control within a broader airport operational execu-tion environment. A third stream of literature addresses real-time decision-making for transportation and fleet systems. In broader mobility contexts, Model Predictive Control (MPC) has been applied to reschedule operational tasks and han-dle disruptions in an online fashion [27], [28], [29], [30]. Heuristic and search-based methods such as Monte Carlo Tree Search (MCTS) are viable alternatives for high-dimensional, stochastic fleets because they strike a balance between solution quality and computational time [31]. Deep learning methods have also shown promising results for large-scale airport ground-handling scheduling [8], [32]. However, few studies apply and compare such controller families specifically for heterogeneous airport EGSV fleets while jointly accounting for charging, infrastructure limitations and stochastic execution. Digital twins have also been explored in airport manage-ment for multiple purposes. Existing studies have used DT concepts for airport information management and operational synchronization [33], while related airport applications have considered simulation-supported operational control and DT-based scheduling for airport vehicles and airside systems [34], [35], [36]. These studies confirm the value of DTs for airport operations, but they do not focus on the real-time control of heterogeneous EGSV fleets with explicit charging and energy constraints. To the best of the authors’ knowledge, no prior work integrates an airport ground-operations digital twin, ex-plicit EGSV energy and charging modeling, and a comparative evaluation of multiple lookahead-based controller approaches for real-time EGSV fleet management under realistic operating conditions, including infrastructure design impacts. 
+
+Statement of Contributions: This paper makes three main contributions. First, we develop a digital twin of airport ground handling operations that integrates real-time flight-schedule data via the airport’s API, and explicitly models charging, energy consumption and operational constraints of EGSVs. Second, we implement and compare three distinct online controller approaches for managing an EGSV fleet, enabling comparison under stochastic scheduling and charging conditions. Third, we use the DT platform as an experimental environment to per-form a comparative evaluation of these controller approaches and their operational and infrastructure implications under realistic conditions. With this, we advance the state-of-the-art in airport ground handling operations for electrified fleets, pro-viding insights into controller performance and infrastructure  
+
+> Fig. 2. Simplified network of service roads and aprons used for routing in the DT overlayed on aerial view of Schiphol Airport. Depots are indicated in red, aircraft aprons are shown in blue, and passenger transfer stands used by buses are shown in green. Service roads are shown in black. Satellite Image Source: Google Earth.
+
+requirements. 
+
+Organization: The remainder of the paper is structured as follows: In Section II we describe the DT, in Section III we develop the controllers to be implemented. In Section IV, we present empirical results and performance evaluations derived from applying our proposed models to real-world scenarios. We conclude the paper in Section V with the key take-aways from our findings and suggestions for future work. II. D IGITAL TWIN FOR SCHIPHOL AIRPORT 
+
+We consider the general problem of scheduling a fleet of electric ground support vehicles (EGSVs) to perform a set of turnaround tasks for a given flight schedule at an airport. The EGSVs are responsible for performing various services such as baggage handling, catering, and passenger transport, which are essential for the timely departure of flights. The scheduling problem involves assigning EGSVs to tasks across the airport’s spatial layout while considering constraints such as task precedence, vehicle availability, battery capacities, and charging infrastructure requirements. Additionally, the scheduling must account for uncertainties in flight operations, such as delays and cancellations, which can impact the demand for ground support services. The objective is to minimize flight delays while optimizing energy consumption and charging infrastructure usage. In the following we outline the main agents used to develop a DT of Schiphol Airport. The DT models (i) the airport environment and layout, (ii) EGSV movement and energy use, (iii) aircraft turnaround processes, and (iv) charging infrastructure. It includes four primary agent types: Airport Agents, ApronVehicle Agents, Aircraft Agents, and ChargingStation Agents, each described in the subsequent sections. The main agents and their interactions in the simulation are shown in Fig. 3. An in-depth discussion of each agent and the simulation calculations can be found in [37]. 3 
+
+> Fig. 3. UML diagram of the Airport Ground Operations DT, showing the main agents, their attributes, methods, and relationships.
+
+A. Airport Agent 
+
+The Airport agent defines the simulation environment in which all other agents are initialised and interact. It stores the network of transitable service roads, and on startup, flight-schedule data from the Schiphol API is used to generate Air-craft agent arrivals. Fig. 2 depicts the simplified layout of the primary service roads at Schiphol Airport, constructed from OpenStreetMap data [38] and official documentation [39]. The layout consists of eight piers, two apron areas, and 142 aircraft stands. The DT relies on flight-schedule data obtained through the Schiphol Flight API, including scheduled and actual ar-rival/departure times and apron stand locations, to generate a complete daily schedule [40]. Aircraft models are obtained by matching their registration code to open databases [41], and this classification, together with operational manuals, provides typical turnaround-task durations. (A table detailing the turnaround, uplift, and other tasks durations is given in Annex 1). The DT incorporates two types of disruptions: temporal and spatial. Temporal disruptions correspond to dis-crepancies between scheduled and actual arrival or departure times, while spatial disruptions reflect changes in aircraft apron-stand assignment. Each Aircraft agent generates service tasks that must be completed before pushback, and these tasks form the demand that ApronVehicle agents respond to. 
+
+B. ApronVehicle Agent 
+
+ApronVehicle agents represent individual EGSVs responsi-ble for executing specific service tasks at aircraft stands. Each agent has a type parameter that determines its operational role. dss  
+
+> Fig. 4. State chart of the ApronVehicle agent. Vehicles are initially available at the terminals, and can move to fulfill a task at a depot or to a gate. Once at the location, it waits until it can perform its task, and after the service time heads back to the depot.
+
+At the start of each day, ApronVehicle agents are located at one of three depot sites. They move between stands and depots according to task assignments, traversing the statechart shown in Fig. 4, and return to a depot at the end of operations. Each ApronVehicle maintains a queue of assigned tasks, represented as an ordered list of aircraft identifiers. The ApronVehicle agent uses a physics-based model for driving energy consump-tion. The instantaneous power is 
+
+P drv = Fx νη , (1) where ν is vehicle speed, η is the powertrain efficiency, and the longitudinal force Fx is 
+
+Fx = μ m g + 12 ρ C d A (ν)2 + m a x. (2) Here μ is the rolling resistance coefficient, m vehicle mass, g
+
+gravitational acceleration, ρ air density, Cd drag coefficient, A
+
+frontal area, and ax acceleration. Acceleration ax is computed in-simulation considering the current ν and target νtgt speed of the agent. This target speed is given by the allowable speed on service roads. For vehicles with variable load (baggage tractors, buses), m = mv + mc where mv is the vehicle mass 
+
+mc is the cargo/passenger mass. Energy use during non-driving tasks is assumed negligible except for hydrant dispensers and pushback tugs, which will use instantaneous power P tsk for the duration of the task. A list of the technical specifications and assumptions for the ESGVs is provided in Annex 2. 
+
+C. Aircraft Agent 
+
+Aircraft agents represent the flights that require service from ApronVehicle agents. Each Aircraft agent is assigned a stand, type, scheduled arrival/departure time, and passen-ger bus requirement, according to the flight-schedule data. The stand assignment and schedule are updated according to live API information. Aircraft type and registration data determine task durations and the corresponding ApronVehicle load requirements following the specifications in Annex 1. The 4 
+
+> Fig. 5. State chart of the Aircraft agent. An aircraft goes through various states during its turnaround process, starting from positioning to pushback. Service tasks are performed in parallel during the servicing state.
+
+aircraft-specific parameter values reported in Table IV were obtained from manufacturer airport planning manuals. The state transitions of the Aircraft agent, shown in Fig. 5, represent aircraft turnaround phases, including positioning, deboarding, servicing, boarding, and pushback. These states update dynamically in response to temporal disruptions (de-lays) and spatial disruptions (stand changes) within the DT environment. 
+
+D. ChargingStation Agent 
+
+Charging Station agents represent individual chargers with fixed locations and power capacities. A charger begins in the 
+
+Available state. When an ApronVehicle receives a charging task, it requests a charger. If available, the charger transitions to Reserved and the vehicle moves toward its location. Upon arrival, the state changes to Charging and remains so until the vehicle is fully charged or until the controller stops charging. The charger then returns to Available . If no charger is available, the ApronVehicle queues or reroutes according to the controller policy. 
+
+E. Vehicle Control 
+
+The digital twin interfaces with an external control system, where the following are the key parameters and in-simulation calculations that are communicated to every controller: All controllers operate over a shared service-road network modeled as a directed graph G = (N, B ), represented in Fig. 2. The list of service tasks is I, where each task i ∈ I
+
+occurs at a stand located at node ni ∈ N with service duration 
+
+tsvc  
+
+> i
+
+and time window [tarr  
+
+> i
+
+, t dep  
+
+> i
+
+]. The fleet of EGSVs is denoted V , and the set of charging depots are denoted by 
+
+D ⊆ N .Vehicles move with velocity ν. The shortest-path distance between tasks i and j is d(ni, n j ), where ni indicates the node of task i, and then the corresponding travel time between tasks is 
+
+t(i, j ) = d(ni, n j )
+
+ν . (3) Shortest paths are calculated using Dijkstra’s algorithm [42] and precalculated using the in-built library from Matlab [43]. Vehicle energy is modeled using battery capacity Emax 
+
+and minimum reserve Emin . Energy spent by driving and performing tasks are given by 
+
+Edrv (i, j ) = P drv · t(i, j ), Etsk (i) = P tsk · tsvc  
+
+> i
+
+. (4) Charging at depot d ∈ D occurs at a fixed rate P C, with the powers specified in Annex 2. The location of a vehicle ℓ(v)
+
+and its current energy Ev can be queried from the DT at each time step. Each vehicle holds an internal task queue whose size is given by queueSize( v), which represents the number of pending tasks already assigned to vehicle v, excluding the task currently being executed. This quantity is updated dynamically whenever a task is assigned, started, or completed in the simulation. III. C ONTROLLERS 
+
+In this section, we develop the three control strategies for the EGSVs in the DT: First, a reactive dispatching heuristic assigns tasks based solely on each agent’s current state, providing a computationally efficient operational baseline. Second, a Model Predictive Control (MPC) approach solves a rolling-horizon Mixed-Integer Linear Program (MILP), offer-ing optimization-based decisions consistent with established industrial practice in other disciplines. Third, a Monte Carlo Tree Search (MCTS) algorithm performs a lookahead search over feasible actions using the updated DT states, acting as a middle ground between heuristics and optimization-based controllers. All three strategies are designed for deployable, closed-loop operation under continuously evolving airport states, rather than on the solving of static combinatorial problems. The interaction between the DT components and the control methods is illustrated in Fig. 1. 
+
+A. Heuristics 
+
+The heuristic controller assigns each incoming task i to the vehicle that can begin service the soonest while ensuring a minimum energy level. For each vehicle v ∈ V , its current node is ℓ(v), and the travel time to task i is t(ℓ(v), n i),using the distance model defined in Section II-E. The heuristic controller first queries the nearest available vehicle with 
+
+Ev ≥ Emin , denoted as va. If va exists, its relative travel time to task i is 
+
+ttrav  
+
+> va,i
+
+= t ℓ(va), n i
+
+. (5) The nearest busy vehicle satisfying Ev ≥ Emin is denoted vb.Let trem  
+
+> vb
+
+be its remaining service time. Its availability time at task i is 
+
+tavail  
+
+> vb
+
+= trem  
+
+> vb
+
++ t ℓ(vb), n i
+
+. (6) The assignment rule selects the vehicle minimizing estimated service start time: 
+
+v⋆ = arg min    
+
+> v∈V:Ev≥Emin
+
+tstart  
+
+> v
+
+(i), (7) 5
+
+where 
+
+tstart  
+
+> v
+
+(i) = 
+
+(ttrav  
+
+> v,i
+
+, v available ,trem  
+
+> v
+
++ ttrav  
+
+> v,i
+
+, v busy . (8) Finally, the task i is assigned to v⋆ if queueSize( v⋆) ≤ 0;otherwise, the task is deferred. The simulation implementation is shown in Algorithm 1. The charging of the vehicles is performed in-simulation in a rule-based fashion, with a vehicle sent to the nearest depot when its energy level drops below 
+
+Emin .
+
+Algorithm 1 HEURISTIC ASSIGNMENT (i, V, E min ) 
+
+> 1:
+
+Input: task i, fleet V , reserve energy Emin  
+
+> 2:
+
+va ← GET NEAREST (V, "available" , E v ≥ Emin ) 
+
+> 3:
+
+ttrav  
+
+> va,i
+
+←
+
+(
+
+t(ℓ(va), n i), va̸ = ∅,
+
+∞, otherwise.  
+
+> 4:
+
+vb ← GET NEAREST (V, "busy" , E v ≥ Emin ) 
+
+> 5:
+
+if vb̸ = ∅ then  
+
+> 6:
+
+trem  
+
+> vb
+
+← REMAINING TIME (vb) 
+
+> 7:
+
+ttrav  
+
+> vb,i
+
+← t(ℓ(vb), n i) 
+
+> 8:
+
+tavail  
+
+> vb
+
+← trem  
+
+> vb
+
++ ttrav  
+
+> vb,i
+> 9:
+
+else  
+
+> 10:
+
+tavail  
+
+> vb
+
+← ∞  
+
+> 11:
+
+if vb̸ = ∅ and tavail  
+
+> vb
+
+≤ ttrav  
+
+> va,i
+
+and queueSize( vb) ≤ 0 then  
+
+> 12: ASSIGN
+
+(vb, i ) 
+
+> 13:
+
+else if va̸ = ∅ then  
+
+> 14: ASSIGN
+
+(va, i ) 
+
+> 15:
+
+else  
+
+> 16: ASSIGN
+
+(vb, i ) ▷ fallback to vb even if task queue is not empty 
+
+B. Model Predictive Control 
+
+The MPC controller scheme solves a rolling-horizon mixed-integer linear program (MILP) at each decision epoch. At each step it selects assignments and routes for the EGSV fleet to service tasks, while respecting vehicle energy and time constraints. Given the set up of the DT outlined in Section II-E (road network G, the set of tasks I, the set of vehicles V , and the set of depots D), a set of feasible task–to–task arcs E ⊂ 
+
+I × I is defined such that (i, j ) ∈ E indicates that task j may be carried out directly after task i. The controller operates in continuous time. Decision epochs occur at times tk = k T step ,
+
+k = 0 , 1, 2, . . . , where the control step ( T step > 0) is the fixed interval between successive re-optimisations. At epoch tk, the planning horizon [tk, t k +T hor ) defines the lookahead window of tasks. The task subset within the horizon for a given time is given by It = i ∈ I | t ≤ ai < t + T hor , where ai
+
+denotes the arrival time of task i. The MILP is solved over 
+
+It, the resulting assignments are applied, and the horizon then shifts forward to [tk+1 , t k+1 + T hor ) at the next epoch. The procedure repeats until the simulation end time tend is reached. Each task i ∈ I occurs at node ni ∈ N , has service duration 
+
+tsvc  
+
+> i
+
+, an availability window [tarr  
+
+> i
+
+, t dep  
+
+> i
+
+], and a reference start time tref  
+
+> i
+
+. Vehicles serve their assigned tasks sequentially, with their travel times given by (3) and energy consumptions given by (4). 
+
+1) Decision variables: Decision variables include binary 
+
+xfirst  
+
+> iv
+
+∈ { 0, 1} indicating whether vehicle v ∈ V performs task i as its first route assignment, and xij ∈ { 0, 1} indicating whether task j follows task i. The real variable tstart  
+
+> i
+
+is the start time of task i and must lie in the window 
+
+tstart  
+
+> i
+
+∈ [tarr  
+
+> i
+
+, t end ], ∀i ∈ I. 
+
+Variable ξi denotes the pre-task energy level, non-negative 
+
+ei ≥ 0 is the charge energy added after task i, ξend  
+
+> i
+
+is the energy at end of routing for task i, δi measures deviation from reference start time, and zij is the non-negative idle gap between tasks i and j. We further introduce a binary variable 
+
+yi ∈ { 0, 1} indicating whether a charging detour is activated after task i, and non-negative variables ztrav  
+
+> ij
+
+and zchg  
+
+> ij
+
+denoting the detour–travel time and charging time, respectively, on arc 
+
+(i, j ) ∈ E .
+
+2) Flow conservation constraints: Vehicle flow conser-vation is enforced by ensuring each task has exactly one predecessor or is first in a route, 
+
+X
+
+> v∈V
+
+xfirst  
+
+> iv
+
++ X
+
+> j:( j,i )∈E
+
+xji = 1 , ∀i ∈ I, (9) 
+
+X
+
+> j:( i,j )∈E
+
+xij ≤ 1, ∀i ∈ I. (10) Each vehicle may have at most one first assignment, 
+
+X
+
+> i∈I
+
+xfirst  
+
+> iv
+
+≤ 1, ∀v ∈ V. (11) The number of active routes does not exceed fleet size, 
+
+X
+
+> v∈V
+
+X
+
+> i∈I
+
+xfirst  
+
+> iv
+
+≤ | V |. (12) Prior assignments L from the previous epoch are fixed: 
+
+xfirst  
+
+> iv
+
+= 1 , ∀(i, v ) ∈ L . (13) 
+
+3) Time feasibility and schedule deviation constraints: 
+
+The start times must satisfy temporal precedence between consecutive tasks. To this end we impose the big-M constraint: 
+
+tstart  
+
+> j
+
+≥ tstart  
+
+> i
+
++tsvc  
+
+> i
+
++t(i, j )−M time  
+
+> ij
+
+(1 −xij ), ∀(i, j ) ∈ E ,
+
+(14) where M time  
+
+> ij
+
+is a big-M constant defined as M time  
+
+> ij
+
+=max {0, t dep  
+
+> j
+
+− (tarr  
+
+> i
+
++ tsvc  
+
+> i
+
++ t(i, j )) }. This constraint enforces that if xij = 1 (i.e., tasks i and j are assigned consecutively to the same vehicle), then the start time of task j must be at least the end time of task i plus the travel time between them. If xij = 0 , the constraint becomes non-binding. The deviation of the optimized start time from the reference schedule is bounded by 
+
+|tstart  
+
+> i
+
+− tref  
+
+> i
+
+| ≤ δi, ∀i ∈ I. (15) If a task is locked as the first of a vehicle, its start time is fixed: 
+
+tstart  
+
+> i
+
+= tref  
+
+> i
+
+, ∀i such that ∃v : ( i, v ) ∈ L . (16) Constraints (14)–(16) preserve chronological feasibility and consistency with the previous solution. Lateness beyond the nominal window end tdep  
+
+> i
+
+− tsvc  
+
+> i
+
+is allowed but penalized through δi in the objective. 6
+
+4) Energy constraints: For each vehicle v ∈ V , the initial energy is E0 
+
+> v
+
+and its previous node is nold  
+
+> v
+
+. The energy required to reach its current task i from its previous location is 
+
+ES,init (v, i ) = P drv · t(nold  
+
+> v
+
+, n i). (17) We define an auxiliary variable ξi that records the energy of a vehicle before executing task i. This variable will be used to ensure the tours proposed for each vehicle are energy-feasible. We ensure all vehicles never exceed the operational limits by imposing ξi ∈ [Emin , E max ]. For tasks that come first in a route, the pre-task energy equals the initial energy of the assigned vehicle minus the travel energy from its previous position: 
+
+ξi ≤ X
+
+> v∈V
+
+xfirst 
+
+> iv
+
+ E0 
+
+> v
+
+− ES,init (v, i ) + Emax 
+
+1 − X
+
+> v∈V
+
+xfirst 
+
+> iv
+
+
+
+,ξi ≥ X
+
+> v∈V
+
+xfirst 
+
+> iv
+
+ E0 
+
+> v
+
+− ES,init (v, i ) − Emax 
+
+1 − X
+
+> v∈V
+
+xfirst 
+
+> iv
+
+
+
+,
+
+∀i ∈ I. (18) We define the minimal detour time and energy between tasks through the nearest depot as 
+
+tC(i, j ) = min 
+
+> d∈D
+
+t(i, d ) + t(d, j ) , EC(i, j ) = P drv tC(i, j ).
+
+(19) Detour travel time is enforced when both the arc (i, j ) is chosen and the detour binary yi is activated. 
+
+ztrav  
+
+> ij
+
+≥ tC(i, j ) yi − M time  
+
+> ij
+
+(1 − xij ), ∀(i, j ) ∈ E , (20) 
+
+ztrav  
+
+> ij
+
+≤ tC(i, j ) yi + M time  
+
+> ij
+
+(1 − xij ), ∀(i, j ) ∈ E . (21) To ensure that charging implies a detour, we impose 
+
+ei ≤ Emax yi, ∀i ∈ I. (22) Defining Edet  
+
+> i,j
+
+= P drv ztrav  
+
+> ij
+
+, the energy continuity for a successor tasks now becomes 
+
+ξj ≤ ξi − Etsk  
+
+> i
+
+− Edrv  
+
+> i,j
+
+− Edet  
+
+> i,j
+
++ ei + Emax (1 − xij ),ξj ≥ ξi − Etsk  
+
+> i
+
+− Edrv  
+
+> i,j
+
+− Edet  
+
+> i,j
+
++ ei − Emax (1 − xij ),
+
+∀(i, j ) ∈ E . (23) Equations (18)–(23) ensure energy consistency for both initial and consecutive tasks, while accounting for the energy used in any detour and allowing continuous charging decisions after tasks. Additionally, at the end of the route the vehicle’s energy must be non-negative: let ysucc  
+
+> i
+
+= P 
+
+> j:( i,j )∈E
+
+xij indicate whether task i has a successor. Then the end-of-route energy must satisfy 
+
+ξend  
+
+> i
+
+≤ Emax  1 − ysucc 
+
+> i
+
+, ∀i ∈ I, (24) 
+
+ξend  
+
+> i
+
+≥ ξi − Emax ysucc  
+
+> i
+
+, ∀i ∈ I. (25) 
+
+5) Charging constraints: With zij as the idle time (if available) between tasks i and j, it satisfies 
+
+zij ≥ tstart  
+
+> j
+
+− tstart  
+
+> i
+
+− tsvc  
+
+> i
+
+− t(i, j ), ∀(i, j ) ∈ E , (26) 
+
+zij ≤ tstart  
+
+> j
+
+− tstart  
+
+> i
+
+− tsvc  
+
+> i
+
+− t(i, j ) + M time  
+
+> ij
+
+(1 − xij ) (27) 
+
+∀(i, j ) ∈ E ,zij ≥ 0 ∀(i, j ) ∈ E . (28) This slack is decomposed as 
+
+zij = ztrav  
+
+> ij
+
++ zchg  
+
+> ij
+
+, ztrav  
+
+> ij
+
+≥ 0, z chg  
+
+> ij
+
+≥ 0, ∀(i, j ) ∈ E .
+
+(29) Charging time is only available when detour mode is active. We enforce this with a simple linking constraint 
+
+X
+
+> j:( i,j )∈E
+
+zchg  
+
+> ij
+
+≤ M time yi, ∀i ∈ I, (30) where M time is a suitably large time constant (e.g., the horizon length). The charge energy ei is then limited by the usable positive charging time through 
+
+ei ≤ P C X
+
+> j:( i,j )∈E
+
+zchg  
+
+> ij
+
+− M ener (1 − yi), ∀i ∈ I, (31) where M ener is a big-M constant defined as M ener = Emax .This constraint ensures that if yi = 0 no detour and thus no charging occurs. If yi = 1 , then ei is limited by the available charging time multiplied by the charger power. Together, (28)–(31) guarantee that charging energy is only drawn when positive idle time exists, that it is limited by charger power and the available slack between consecutive tasks, and that any charging implies activation of a detour with sufficient travel and charging time (via (22) and (30)). 
+
+6) Objective: The objective function comprises three weighted terms. The first term minimizes the deviation δi
+
+from each task’s previous start time, promoting consistency across successive assignments. The second term minimizes the recharged energy ei, reducing total energy consumption and charging events. The third term maximizes the end-of-route energy ξend  
+
+> i
+
+, ensuring adequate battery level at the horizon’s end. With this we write our final objective as follows: 
+
+J = w1
+
+X
+
+> i∈I
+
+δi + w2
+
+X
+
+> i∈I
+
+ei − w3
+
+X
+
+> i∈I
+
+ξend  
+
+> i
+
+. (32) 
+
+7) Final MILP formulation: Combining all the above, we summarize the optimization problem as follows: 
+
+Problem 1 (ESGV Routing with Charging) Given aset of vehicles V , refuelling tasks I, precomputed feasible arcs E ⊆ I × I, travel times t(·, ·), energy parameters 
+
+(Emax , P drv , P tsk , P C), the routing, timing, and charging decisions minimizing the objective J result from 
+
+min   
+
+> xij , ξ i, y i,ei, ξ end
+> i, δ i
+
+J(w1, w 2, w 3)
+
+s.t. (9)–(16) , (18)–(23) , (28)–(25) ,xfirst  
+
+> iv
+
+∈ { 0, 1} ∀i ∈ I, ∀v ∈ V, xij ∈ { 0, 1} ∀(i, j ) ∈ E ,yi ∈ { 0, 1} ∀i ∈ I, ei ≥ 0, zij ≥ 0, ∀(i, j ) ∈ E ,ξend  
+
+> i
+
+≥ 0, δi ≥ 0 ∀i ∈ I. 
+
+This MILP can be solved with off-the-shelf optimizers and is re-solved at each decision time kT step with the set It = {i ∈
+
+I | tarr  
+
+> i
+
+∈ [kT step , kT step + T hor ]}.7
+
+8) Computational Tractability: To guarantee running times to be suitable for online implementation, the arc set E is constructed by a spatial, temporal and energy filtering based on the problem setup. Each task i is associated with a pier identifier pi (e.g., gate G09 corresponds to pier G). For each task i we construct a candidate successor list by sorting feasible tasks j by pier compatibility (tasks with pi = pj first) and by slack time between tasks i and j defined as 
+
+tslack  
+
+> ij
+
+= tarr  
+
+> j
+
+−  tarr  
+
+> i
+
++ tsvc  
+
+> i
+
++ t(i, j ). (33) Task pairs with very small slacks are discarded as temporally infeasible. Similarly, task pairs where the energy required to travel from i to j exceeds the vehicle’s Ev (minus a safety margin) are also discarded. From this list we retain only the first K successors, ordered by pier compatibility, slack, and travel time. The resulting filtered arc set E guarantees computational tractability at runtime. 
+
+C. Monte Carlo Tree Search (MCTS) 
+
+The controller explores future routing and charging deci-sions by performing a tree-search over the set of feasible states. We cast the problem as a Markov decision process (S, A, R ),where S is the set of feasible states, A the set of admissible actions a = ( v, i ) representing either a vehicle–task assign-ment or a charging move, and R : S × A → [Rmin , R max ] the reward function, with Rmin and Rmax denoting the minimum and maximum per-step reward, respectively. A state s ∈ S encodes the current time t, the set of tasks within the lookahead window T hor : Ihor = i ∈ I | tarr  
+
+> i
+
+∈
+
+[t, t + T hor ) , each vehicle’s location and energy level, and the partial routes already committed. The search tree is built at every control step T step MCTS , spanning the planning horizon 
+
+[t, t + T hor ), where state transitions within the simulation are advanced in increments of T SIM MCTS , the temporal resolution used to step between successive states during tree rollout. In the following we describe the main phases of the MCTS algorithm, followed by the action-generation mechanism and the reward structure. 
+
+1) MCTS Algorithm: Starting from the root node u0 with state s0 (no tasks yet dispatched), the algorithm iterates the following four phases until the computational budget is exhausted. The pseudocode is presented in Algorithm 2 and illustrated in Fig. 6. The implementation follows [44]. 
+
+Selection: From a non-terminal node u with state s, a child node u′ is selected using the Upper Confidence bounds applied to Trees (UCT) policy, UCT (u′) = arg max 
+
+> u′∈children (u)
+
+Q(u′)
+
+C(u′) + γexpl 
+
+s
+
+ln C(u)
+
+C(u′)
+
+!
+
+(34) where C(u′) and C(u) count the number of visits to node 
+
+u′ and its parent node u, respectively, Q(u′) accumulates the total reward obtained through node u′ (Q(u′) = PC(u′) 
+
+> i=1
+
+R(i)), and γexpl is the exploration constant that controls the trade-off between exploitation and exploration. Starting at the root node u0, the algorithm iteratively selects the child node with the highest UCT value via (34) until reaching an unexpanded node (with unvisited actions) or a terminal node.       
+
+> Fig. 6. Overview of the MCTS search procedure. Starting from the root node u0with the airport DT state s0, the algorithm iteratively selects child nodes using the UCT policy (Selection), expands unvisited nodes by sampling feasible actions (Expansion), simulates complete schedules using a rollout policy (Simulation), and backpropagates the obtained rewards Rup the tree (Backpropagation). After exhausting the computational budget, the best action at the root is executed in the real system. The procedure is then repeated from the advanced DT state.
+
+Expansion: When an unexpanded node is reached, a feasible action is sampled to create a new child node. An untried action 
+
+a ∈ A (su) is selected according to a given expansion policy, where the procedure to generate feasible actions considers vehicle availability, task urgency, and energy constraints, de-tailed in Section III-C2. Then, the transition to the resulting successor state is obtained by applying the action and stepping the DT forward by T SIM MCTS .
+
+Simulation: From the expansion node su, a complete sched-ule is generated and simulated, using a rollout policy πroll .This policy is executed until a terminal state is reached or the time horizon T hor is met, accumulating the discounted return from (35). The reward R is computed as 
+
+R = 
+
+> Thor −1
+
+X
+
+> k=0
+
+γdis  
+
+> k
+
+rt+k+1 , (35) where the rollout terminates at horizon T hor or a terminal state and 0 < γ dis ≤ 1 is the discount factor. The immediate reward 
+
+rt+k+1 is defined in Section III-C3. 
+
+Backpropagation: The cumulative reward obtained in simu-lation is propagated up the tree, updating Q(u) and C(u) for every node on the selection path. For each node u on the path from u′ up to u0 we do 
+
+C(u) ← C(u) + 1 , Q(u) ← Q(u) + R. (36) Finally, the best action at the root (the one with the highest empirical mean return Q(u′)/C (u′)) is executed in the real system, the horizon tasks It are updated, and MCTS is re-invoked at the next decision step. 
+
+2) Action Generation: The search tree depends on how feasible actions are generated for each state. At decision time 
+
+t, an action assigns a vehicle v ∈ V either to a task i ∈ It or sends v to charge at a depot d ∈ D. To control the branching 8
+
+Algorithm 2 MCTS Scheduler at step t
+
+Require: state st, computational budget T budget  
+
+> 1:
+
+initialize root node u0 with state su0 ← st, and C(·) ← 0,
+
+Q(·) ← 0 
+
+> 2:
+
+while time < T budget do  
+
+> 3:
+
+P ← SELECT (u0) ▷ using UCT from (34)  
+
+> 4:
+
+u ← LAST (P ) 
+
+> 5:
+
+if u is unexpanded and nonterminal then  
+
+> 6:
+
+a ← EXPAND (su) ▷ a ∈ A from Alg. 3  
+
+> 7:
+
+(u′, s u′ ) ← SIM STEP (su, a ) 
+
+> 8:
+
+else  
+
+> 9:
+
+u′ ← u 
+
+> 10:
+
+R ← SIMULATE (u′) ▷ Reward as in (35)  
+
+> 11:
+
+BACKPROPAGATE (u′, R ) 
+
+> 12:
+
+return I⋆t ∈ arg max a∈A (st)
+
+> Q(ua)
+> C(ua)
+
+factor, the action generator returns at most Nmax candidate actions ranked by a combined scoring function. 
+
+Serviceable tasks: A task i ∈ It is considered serviceable if tarr  
+
+> i
+
+≤ t and its demand di > 0. When no such tasks exist, tasks arriving within a look-ahead window H are included to enable preemptive dispatching. 
+
+Feasible action set generation: For vehicle–task pair (v, i ),compute travel time t(ℓ(v), n i). The pair is feasible if vehicle energy Ev suffices to perform service and reach the nearest charger. Greedy matching assigns each flight to the idle vehicle with minimal travel time t ℓ(v), n i
+
+, where flights are ranked by urgency (t − tdep  
+
+> i
+
+). In addition, multi-dispatch actions can be formed by combining two or more single dispatches, combining up to Mmax single dispatches. Vehicles with Ev ≤ Emin can also charge, and idle vehicles can return to the depot when the candidate set is empty. 
+
+Action filter: The action generator limits the total number of actions returned to the MCTS procedure to a maximum Nmax ,keeping only those with the best heuristic scores Score( a) that combine travel time, urgency, and energy considerations. Each action a receives a score 
+
+Score( a) = wt ϕt(a) + wu ϕu(a) + we ϕe(a), (37) where ϕt is the travel-time cost, ϕu the urgency term, and 
+
+ϕe the energy term. Only the top-ranked Nmax actions are passed to the expansion phase of MCTS. The complete action generation procedure is summarized in Algorithm 3. 
+
+3) Reward Formulation: Given current state s, action a, and successor state s′, the immediate reward R′(s, a, s ′) is given by the sum of a completion reward, a post-departure penalty, a travel penalty, and a potential-based shaping term. 
+
+Completion reward: For every task i ∈ I that becomes fully serviced in this step (i.e., serviced in s′ but not in s), we give an early/on-time reward with exponential decay in the last window before departure 
+
+Rcomp = X
+
+> i∈I
+
+rcomp  
+
+> i
+
+, (38) 
+
+Algorithm 3 ACTION GENERATOR 
+
+Require: state s at time t, parameters 
+
+(H, T hor , M max , C max , N max ) 
+
+> 1:
+
+¯I ← AssignedTasks( s) 
+
+> 2:
+
+¯V ← LockedVehicles( s) 
+
+> 3:
+
+Ielig  
+
+> t
+
+← EligibleDepartures( I \ ¯I, H, T hor ) 
+
+> 4:
+
+Adisp ← GreedyDispatches( s, I elig  
+
+> t
+
+, ¯I, ¯V ) 
+
+> 5:
+
+Achg ← { (v, d ) | v ∈ V, d ∈ D, E v ≤ Emin } 
+
+> 6:
+
+Adepot ← { (v, d depot ) | v ∈ V \ ¯V } 
+
+> 7:
+
+Amulti ← MultiDispatch( Adisp , M max , C max ) 
+
+> 8:
+
+A ← Idle ∪ A chg ∪ A disp ∪ A multi ∪ A depot  
+
+> 9:
+
+for all a ∈ A do  
+
+> 10:
+
+S(a) ← Score( a) 
+
+> 11:
+
+return arg max 
+
+> B⊆A |B| =Nmax
+
+P 
+
+> a∈B
+
+S(a) ▷ top Nmax actions where 
+
+rcomp  
+
+> i
+
+=
+
+
+
+Rmax , tcomp  
+
+> i
+
+≤ tdep  
+
+> i
+
+− tearly ,Rmax · exp( λα i)−1exp( λ)−1 , tdep  
+
+> i
+
+− tearly < t comp  
+
+> i
+
+≤ tdep  
+
+> i
+
+,
+
+0, otherwise, (39) with Rmax as a maximum reward for this component, tearly 
+
+is a safety margin, λ is an exponential decay rate, and 
+
+αi = tdep  
+
+> i
+
+− tcomp 
+
+> i
+
+tearly ∈ [0 , 1] . (40) 
+
+Post-departure penalty: For tasks that are still unserved after their departure time we apply an exponential penalty 
+
+Rpost = X
+
+> i∈I
+
+ψi, (41) with 
+
+ψi =
+
+(0, if t′ ≤ tdep  
+
+> i
+
+or i ∈ ¯I, 
+
+−wpost ·  eλpost (t′−tdep   
+
+> i)
+
+− 1, otherwise ,
+
+(42) where wpost is a scaling factor, λpost is a decay rate, t′ is the time in s′. A maximum cap is also applied. 
+
+Travel penalty: We penalize total travel minutes of all vehicles between s and s′:
+
+Rtrav = −wtrav · T trav , (43) where wtrav is a weighting factor and T trav is the total travel time of all vehicles in minutes. With this our immediate reward is given by 
+
+R′(s, a, s ′) = Rcomp + Rpost + Rtrav . (44) To this we add a potential-based term [45] to better guide the search through sparse rewards. The shaped reward is given by: 
+
+R′(s, a, s ′) = R(s, a, s ′) + γshp  ϕs(s′) − ϕs(s), (45) where ϕs(s) depends on the total unserved flights and the total vehicle energy in a given state s. In particular, we consider two potential-based shaping terms: 9
+
+> TABLE I FLIGHT SCHEDULE STATISTICS
+
+Schedule Date No. of Aircraft Total Flights Total Time Changes Total Gate Changes Avg. Hourly Departures 02-03-2024 355 1103 469 532 26.29 10-03-2024 387 1224 566 672 29.14 07-11-2024 404 1294 875 910 27.04 
+
+> Note: Time changes reflect only deviations in departure/arrival times higher than 10 min from schedule. Source: Schiphol API [40].
+
+Outstanding-demand shaping: Let F (s) be the total un-served flights in s. Then we define Rout as 
+
+Rout = wout 
+
+ F (s) − F (s′), (46) with wout a weighting factor. 
+
+Fleet Energy shaping: Let ET(s) be the total energy across all vehicles in state s. Then we define RE
+
+RE = wE
+
+ ET(s′) − ET(s), (47) with wE a weighting factor. The implementation of Algorithm 2 using the reward struc-ture from Section III-C3 and the action generation mechanism from Algorithm 3 results in the MCTS controller for the ESGV scheduling and charging problem. This implementation has a controlled complexity (branching factor is bounded by Nmax ), making it suitable for real-time decision-making. IV. R ESULTS 
+
+We present the results from controller tests on the digi-tal twin focusing on the fleet of Hydrant-dispenser EGSVs. Experiments vary in schedule scenarios and fleet sizes. The primary outputs are flight delays, driving energy consumption and charging metrics. 
+
+A. Experimental Setup 
+
+We tested three representative days: 02-03-2024, 10-03-2024, and 07-11-2024, with 355, 387 and 404 aircraft handled, respectively, which were found to be representative of low, average and busy airport operations. Table I summarizes the key statistics of the flight schedules. Fleets of 20, 25, and 30 ESGVs were evaluated (20 chosen as the smallest fleet that the heuristic could handle on the busiest day). For each fleet size tested we allow an equal number of chargers, reflecting airport practice and ensuring no capacity constraints are imposed by charger availability. Controllers re-solve every 5 min ( T step = 5 min), in line with the API refresh rate, with a 120-min prediction horizon ( T hor = 120 min) shared by both predictive controllers, and a 5-min compute budget (T budget MPC = T budget MCTS = 5 min). The heuristic controller has a negligible computation time per re-solve (less than 10 ms.) due to its low complexity and is event-based triggered (only with new aircraft arrivals). The MILP problem from the MPC con-troller is solved using Gurobi 10.1 [46]. A varying optimality gap ranging between 20% and 0% was obtained for different re-solves due to the time budget imposed and variation in task demands. The MCTS controller was implemented by adapting 
+
+> TABLE II PARAMETER VALUES FOR THE EXPERIMENTS .
+
+Symbol Value Unit Symbol Value Unit 
+
+DT parameters 
+
+mv 7,500 kg Emax 90 kWh 
+
+Emin 9 kWh PC 40 kW 
+
+q 150 m3/h p 3.10 × 10 5 Pa 
+
+νtgt 25 km/h ax, max 1.0 m/s 2
+
+ρ 1.225 kg/m 3 Cd 0.5 –
+
+A 2.5 m2 μ 0.01 –
+
+η 0.8 –
+
+MPC parameters 
+
+T hor 120 min T step MPC 5 min 
+
+w1 10 – w2 5 –
+
+w3 1 – T budget MPC 5 min 
+
+MCTS parameters 
+
+T hor 120 min T step MCTS 5 min 
+
+T budget MCTS 5 min H 120 min 
+
+γexpl 250 – γdis 0.998 –
+
+K 3 – Mmax 4 –
+
+Cmax 4 – Nmax 10 –
+
+Rmin -1500 – Rmax 500 –
+
+tearly 20 min λ 3.0 –
+
+wpost 100 – λpost 0.15 –
+
+wtrav 2.5 – wout 20 –
+
+wE 50 –
+
+> Note: Fleet characteristics refer to ESGVs. Controller settings list the MPC and MCTS configurations used in the experiments. Sources and further details on the parameters can be found in Annex 2.
+
+the formulation in [47]. For the T budget and T hor it resulted in an average of 10,000 Alg. 2 iterations per simulation minute. All simulations were run on a single server with 16 GB of RAM and an Intel i7-9750H processor (20 cores). Table II presents other relevant parameter values used in the DT, MPC and MCTS controllers. 
+
+B. Controller Performance 
+
+In this subsection we analyze the controller performance in terms of convergence, flight delays, energy consumption, and the relation between these through charging patterns. 
+
+1) Convergence: Fig. 7 compares the convergence be-haviour of the MPC and MCTS controllers under a 300 s solve budget. MCTS exhibits stepwise convergence, with most improvements occurring in the early part of the budget and final performance reached by approximately 200 s. This suggests that shorter solve budgets may be sufficient for MCTS in practical deployments, although budgets below 100 s would truncate a large part of its improvement. MPC improves more smoothly and consistently, converging faster towards its own best found solution under short solve times, but it does not fully plateau within the 300 s budget. This indicates that MPC can benefit from longer solve times when operational condi-tions allow, while still remaining competitive under tighter budgets. MCTS also shows substantially higher variability across replications, consistent with the stochastic nature of the algorithm. Across the three fleet sizes, both controllers display 10 Elapsed solve time (s) 
+
+0 50 100 150 200 250 300 
+
+> Normalized gap
+
+00.2 0.4 0.6 0.8 1       
+
+> controller-fleet size MPC 20 MCTS 20 Heuristic 20 MPC 25 MCTS 25 Heuristic 25 MPC 30 MCTS 30 Heuristic 30
+> Fig. 7. Convergence of the MPC and MCTS controllers over iterations for the 300s computational budget, each normalized to its best found solution. MPC improves steadily across iterations, while MCTS converges rapidly in early iterations before plateauing. The heuristic controller is non-iterative and thus has no convergence curve.
+
+similar convergence patterns, indicating stable scalability over the tested range. 
+
+2) Delays: We define the average flight delay of a scenario as the mean departure delay over all flights handled on that day. In terms of delays, Fig. 8 shows the average flight delays for each controller across the three schedules and three fleet sizes tested; the error bars report the standard deviation of the delay across all flights of that day. The delays increase with higher demand levels for all controllers, with a significant jump in the most demanding schedule (07-11-2024). Delays decrease when increasing the fleet from 20 to 25 vehicles, while the improvement from 25 to 30 vehicles is narrow. The best performance is shown by MCTS in all scenarios, which has a pooled average delay of 4.09 min across all scenarios, an improvement of 7.5 min (64.7%) and 1.9 min (31.5%) over the heuristic and MPC controllers, respectively. The performance of the MPC and MCTS controllers become more similar as the number of vehicles in the fleet increases. The pooled standard deviation of the flight-delay distribution across all scenarios is 7.83 min for the heuristic, compared to 3.80 min and 2.20 min for the MPC and MCTS controllers, respectively. The heuristic shows large variance under constrained fleets, meaning that its higher average delay is accompanied by a substantially longer tail of badly delayed flights. 
+
+3) Energy Consumption: Fig. 9 reports the pareto plot of delays vs total energy consumption per controller and fleet. The more demanding schedules result in higher energy consumption for all controllers on average, with increases of 3.17 MWh from the least demanding schedule on 02-03-2024, to 3.45 MWh on 10-03-2024 and 3.65 MWh on 07-11-2024. Similarly, higher fleet sizes generally result in lower overall energy consumption, since vehicles reposition less to cover the same task set and consumption follows the distance driven. The heuristic achieves the lowest energy consumptions,  
+
+> Fig. 8. Average flight delays for each controller, for each flight schedule. Error bars show the standard deviation of the delay across all flights of the simulated day. The MCTS controller consistently outperforms both the heuristic and MPC controllers across all scenarios, and also produces the narrowest delay distribution. Average Delay (minutes )
+
+0 5 10 15 20 25 30 
+
+> Energy Consumption  (MWh )
+
+3.1 3.2 3.3 3.4 3.5 3.6 3.7 3.8 
+
+> 03-02-2024 03-10-2024 07-11-2024
+
+Heuristic MPC MCTS Fleet 20 Fleet 25 Fleet 30  
+
+> Fig. 9. Pareto plot of total energy consumption vs. average delay, for each controller, fleet size and flight schedule (delimited by grey background). MPC and MCTS controller consistently outperform the heuristic in terms of delay, while the heuristic achieves lower energy consumptions. Larger fleets and less challenging schedules result in lower energy consumption and delays for all controllers.
+
+with the exception of the smallest fleet size on the most demanding schedule. Similarly, the MCTS controller exhibits the highest consumption for the smallest fleet, but shows the best results with larger fleets. The MPC controller achieves the most consistent behavior in terms of energy consumption, performing better with small fleet sizes, but not improving as much as MCTS with larger fleets. 
+
+4) Charging Patterns: Fig. 10 exemplifies the charging strategies of each controller for the schedule of 02-03-2024 11 Hour         
+
+> 510 15 20 25
+> Average Delay  (minutes )
+> 0246810 12 14
+> Average Vehicles Charging
+> 0246810 12
+> Heur. (delay) Heur. (charging) MCTS (delay) MCTS (charging) MPC (delay) MPC (charging)
+> Fig. 10. Average number of vehicles charging per hour for the Heuristic (blue), MPC (green), and MCTS (red) controllers overlayed on the average delay per hour across the day for the schedule of 02-03-2024 and a fleet of 25 vehicles. The heuristic charging pattern is concentrated always around midday, while MPC and MCTS spread charging preemptively and more evenly over time.
+
+and a fleet of 25 vehicles. In the same plot, the average delay per hour across the day is overlayed to show the relation between charging patterns and delays. The heuristic shows a concentrated charging pattern, consistent with the top-up when below Emin rule. It produces the highest peaks of simultaneous charging, with up to 12 average vehicles charging simultaneously around midday. This results in higher delays during these hours, as many vehicles are unavailable for task assignments while charging. The MPC shows the most preemptive behavior, initiating charging sessions earlier in the day to avoid simultaneous charging sessions. It spreads charging over shorter charges, but still experiences some significant periods with delays. The MCTS controller initiates charging at the same time as the heuristic, but spreads the sessions more evenly over time. It charges significantly more vehicles simultaneously than MPC, but avoids the delay peaks seen in the heuristic and MPC after 15:00. Table III complements this, showing the average number of charging moments for each fleet and scenario. The heuristic charges between one and four times per vehicle, adding 54– 84% of Emax each time, whereas MPC and MCTS use shorter, partial top-ups of roughly 10–15% of Emax (9.7– 12.5% and 12.3–14.9%, respectively) and therefore charge more frequently. In the case of smaller fleets, the number of charging events is significantly higher due to the increased need for repositioning and charging to cover all tasks with a lower number of available vehicles. In the case of the MPC and MCTS this leads to very complex charging operations to keep delays low, and signals the fleet design is approaching the minimum size required to cover the demand in a practical way. Because it postpones to larger, deeper charges triggered by rule-based thresholds, the heuristic occupies 12 to 16 chargers simultaneously, compared with 6 to 10 for MPC and 8 to 11 for MCTS. Averaged over the nine scenarios this is 14.0 chargers for the heuristic against 8.0 for MPC and 9.3 for MCTS. A higher number of vehicles generally keeps constant or reduces the maximum number of chargers used, as charging sessions can be better distributed and there is more energy available in the fleet. This is also reflected in the total energy charged by each controller. The heuristic charges the most energy overall, as it performs deeper rule-based charges that are based on fixed thresholds. The MPC charges the least energy, which is consistent with the penalization in the objective function. MCTS strikes a balance between both approaches, as the charging actions are based on thresholds but their duration and timing are optimized within the search process. These two latter approaches would rely on night charging to fully restore the fleet energy levels for the next day. In terms of distance driven during the operations, the results vary significantly between controllers and fleet sizes. In general, higher fleet sizes result in lower distance travelled, as vehicles can be better allocated to nearby tasks without needing to reposition as often. However, the impact of the fleet size is stronger in the heuristic controller, and less significant in the MPC controller. The heuristic achieves the lowest average distance travelled with fleets 25 and 30, as it minimizes repositions for charging and it is exclusively based on distance to tasks and availability. With the smallest fleet size, however, it performs worse than MPC. The MCTS controller drives significantly more, as it repositions vehicles preemptively, resulting in increases of 36% and 8.5% over the heuristic and MPC, respectively, when pooled across all nine scenarios. V. C ONCLUSION 
+
+This paper compared three control strategies for a fleet of electric ground-support vehicles at Schiphol Airport, evaluated in a digital twin: (i) a nearest-vehicle heuristic, (ii) an MPC-based controller, and (iii) an MCTS-based controller. We find MCTS achieves the lowest overall delays with low energy consumption, making it a promising approach for real-world deployment in EGSV fleets. The heuristic controller yields rea-sonable solutions with minimal computational requirements, making it suitable for real-time applications with limited resources. Operations are also simplified, but at the expense of higher delays and infrastructure and fleet oversizing. MPC offers the most balanced delay-energy trade-off for mid-sized fleets, but does not make substantial gains for the largest fleet sizes. Larger fleets generally reduce charging infrastructure needs and energy consumption through more efficient vehicle assignments, a key upfront cost driver, but introduce greater operational complexity. Intelligent controllers are essential to capturing these efficiency gains and avoiding oversizing; smaller fleets benefit most, as they have less slack and are more vulnerable to inefficient heuristic use. Ensuring adequate KPI levels during this transition is critical, and is enabled by the use of DTs. A key shortcoming of the present work is the lack of validation of the DT with recorded operational data; future work will address this and test the controllers across a wider variety of scenarios. Similarly, the use of manual task durations is a simplification that should be replaced by live 12 
+
+TABLE III PERFORMANCE METRICS FOR THE CONTROLLERS TESTED FOR EACH FLEET SIZE AND SCHEDULE .
+
+Fleet Controller Avg. Charging Events Avg. Charge [% Emax ] Max chargers used Energy charged (MWh) Total Distance (km) 02-03 10-03 07-11 02-03 10-03 07-11 02-03 10-03 07-11 02-03 10-03 07-11 02-03 10-03 07-11 20 Heuristic 2.80 2.70 3.75 62.1 68.3 54.2 15 14 15 3.13 3.32 3.66 372.56 454.57 582.68 MPC 6.50 7.70 8.40 12.5 12.1 12 8 10 9 1.51 1.72 1.96 447.00 468.72 482.51 MCTS 11.05 10.90 11.35 12.3 12.9 14.9 11 9 10 2.55 2.55 3.24 490.62 507.52 592.16 25 Heuristic 1.16 1.20 1.52 77.9 75.9 61.1 14 14 16 2.06 2.05 2.12 249.07 275.59 314.93 MPC 4.12 4.88 6.00 11.4 11.9 11.3 6 9 7 1.12 1.41 1.69 332.83 383.94 462.70 MCTS 5.24 6.80 8.48 14.4 13.4 13.8 9 9 10 1.73 2.16 2.75 370.73 422.87 558.70 30 Heuristic 1.10 1.03 1.07 77.1 81.0 83.9 13 13 12 2.31 2.27 2.44 210.55 234.09 276.28 MPC 4.60 4.27 3.93 10.2 10.7 9.7 9 8 6 1.27 1.34 1.03 377.42 372.77 398.23 MCTS 4.73 4.87 4.53 13.1 13.6 14.3 8 9 9 1.41 1.86 1.85 312.45 383.62 404.63 
+
+Note: The average number of charging events are per vehicle. The average energy charged is the average percentage of the battery charged per event. The maximum number of chargers used is the maximum number of chargers used at any one time during the day. Energy charged is the total energy charged by all vehicles during the schedule day. Total distance is the sum of all distance driven by all vehicles during the operation. 
+
+occupancy data and upcoming mission information to produce more realistic estimates, to be developed in collaboration with airport stakeholders. Extending this work to other GHOs, analyzing the performance of the controllers under constrained charging infrastructure, and further tuning of controller pa-rameters are also promising avenues for future work, as is the development of adaptive control strategies that can learn from the DT environment and adjust their parameters in real time to optimize performance under changing conditions. 13 
+
+APPENDIX A 
+
+> TABLE IV OEM-BASED TURNAROUND PARAMETER TABLE FOR INCOMING AIRCRAFTS IN THE DT.
+
+Manufacturer Model MTOW (kg) Deboard Service Board Fuel Unload Load Airbus A220-100 60,800 6.2 15.0 7.3 8.5 7.5 11.3 Airbus A220-300 67,600 6.4 15.0 9.1 9.4 8.3 13.3 Airbus A318-100 66,000 7.2 18.6 10.9 21.0 7.3 8.7 Airbus A319-100 76,500 8.2 18.6 12.3 21.0 5.3 6.2 Airbus A319neo 75,500 8.2 18.6 12.3 21.0 5.3 6.2 Airbus A320-200 78,000 9.5 22.2 14.5 20.8 8.0 8.0 Airbus A320neo 79,000 9.5 22.2 14.5 20.8 8.0 8.0 Airbus A321-200 93,500 9.0 25.8 17.4 16.0 9.5 9.5 Airbus A321neo 93,500 9.0 25.8 17.4 16.0 9.5 9.5 Airbus A321neo-XLR 101,000 10.0 22.0 19.2 32.4 9.5 9.5 Airbus A330-200 238,000 8.0 38.0 15.0 37.7 19.3 22.1 Airbus A330-300 238,000 9.0 41.0 17.0 40.0 24.1 27.7 Airbus A330-800 251,000 8.0 38.0 15.0 37.7 19.3 22.1 Airbus A330-900 251,000 9.0 41.0 17.0 40.0 24.1 27.7 Airbus A340-300 275,000 9.2 45.5 16.0 44.3 21.7 24.9 Airbus A350-900 280,000 9.8 42.5 17.5 51.3 21.7 24.9 Airbus A350-1000 322,000 10.2 39.5 22.0 51.3 24.1 27.7 Airbus A380-800 569,000 17.2 50.0 26.0 53.2 26.5 30.5 Embraer EMB-120 ER 11,990 3.0 6.0 3.0 4.0 3.0 3.0 Embraer EMB-135 LR 20,000 4.0 5.0 4.5 12.0 4.5 6.0 Embraer ERJ-140 21,100 4.5 6.1 5.0 11.0 5.0 6.5 Embraer EMB-145 LR 22,000 5.0 7.0 6.0 12.0 6.0 8.0 Embraer E170 LR 37,200 3.9 6.0 5.4 8.5 3.4 5.5 Embraer E175 LR 38,790 4.3 6.0 5.9 8.5 3.6 5.8 Embraer E190 LR 50,300 5.1 7.0 7.1 11.7 4.3 7.1 Embraer E195 LR 50,790 5.5 7.0 7.8 11.7 4.4 7.2 Bombardier CRJ200 LR 24,041 5.0 12.5 5.0 12.5 8.5 9.0 Bombardier CRJ700 32,999 6.0 12.5 6.0 6.2 9.5 10.0 Bombardier CRJ900 38,329 6.0 12.5 6.0 6.2 9.5 10.0 Boeing 737-100/500 60,554 5.0 20.0 5.0 7.0 15.0 15.0 Boeing 737-600 65,090 6.2 16.0 9.3 16.2 9.0 12.0 Boeing 737-700 70,080 7.8 18.0 11.7 16.2 7.0 13.0 Boeing 737-800 79,010 9.0 16.0 13.5 16.2 13.0 16.0 Boeing 737-900 85,139 10.0 17.0 15.0 16.2 14.0 18.0 Boeing 737-7 80,285 8.3 14.0 12.5 15.0 12.1 18.8 Boeing 737-8 82,191 9.0 14.8 13.5 15.0 13.1 20.3 Boeing 737-8-200 82,191 11.1 13.3 16.7 15.0 16.1 25.0 Boeing 737-9 88,300 14.0 14.0 18.0 15.0 17.3 26.9 Boeing 737-10 89,765 14.0 14.0 18.0 15.0 18.5 28.8 Boeing 747-400 396,893 11.0 45.0 18.0 28.0 24.0 24.0 Boeing 747-400ER 412,770 11.0 45.0 18.0 53.0 24.0 24.0 Boeing 747-8 447,696 8.8 38.0 11.7 44.0 22.0 27.0 Boeing 757-200 115,666 10.0 20.0 21.0 15.0 15.0 17.0 Boeing 757-300 123,830 14.0 27.0 27.0 18.0 17.0 21.0 Boeing 767-200 142,880 7.4 22.0 8.6 24.0 12.0 18.0 Boeing 767-300 156,490 8.5 26.5 10.4 24.0 16.0 20.0 Boeing 767-400ER 204,120 9.6 24.0 12.1 37.0 20.0 24.0 Boeing 777-200 233,600 8.3 31.0 12.0 23.0 18.0 23.0 Boeing 777-300 267,619 8.3 35.0 12.0 47.0 24.0 32.0 Boeing 777-200LR 347,451 7.0 24.5 10.5 42.0 18.0 24.0 Boeing 777-300ER 351,534 9.4 29.4 14.0 42.0 24.0 34.0 Boeing 777-F 347,814 0.0 10.0 0.0 58.0 12.0 18.0 Boeing 777-9 351,534 10.4 34.5 30.5 62.0 26.0 26.0 Boeing 787-8 227,930 8.9 19.5 11.7 35.0 16.0 22.0 Boeing 787-9 259,228 11.0 17.0 20.0 35.0 20.0 28.0 Boeing 787-10 260,362 12.3 20.0 21.7 35.0 22.0 32.0 
+
+> Notes: All values expressed in minutes unless otherwise noted. MTOW (Maximum weight for takeoff) is the maximum weight at the start of the takeoff run. Turnaround durations are extracted from manufacturer airport planning manuals and OEM turnaround-station charts. Actual turnaround times may vary based on specific airport operations, mission range and passenger load for the next flight, but have been assumed constant for this work. 14
+
+APPENDIX B
+
+TABLE V SPECIFICATIONS AND MODELLING ASSUMPTIONS OF ELECTRIC GROUND SUPPORT VEHICLES USED IN THE DIGITAL TWIN .
+
+Variable Description Hydrant dispenser [48] Baggage tractor [49] Pushback tug [50] Service truck [51] Passenger bus [52] 
+
+mv (kg) Vehicle mass 7,500 4,500 16,965 11,250 15,950 
+
+Emax (kWh) Battery capacity 90 50 160 100 400 
+
+PC (kW) Charging power 40 40 40 40 40 
+
+mc (kg) Cargo / passenger mass 0 0 variable a 4,500 4,050 b
+
+P tsk (kW) Task power consumption q·p 
+
+> 3.6·10 3·η
+
+0 As per (2) with 
+
+m = mc + mv
+
+0 0
+
+Operational assumptions for pushback tugs 
+
+apx,max (m/s 2) Pushback acceleration - - 1.0 - -
+
+vp (km/h) Pushback speed - - 14 c - -
+
+Operational assumptions for hydrant dispensers 
+
+q (m 3/h) Pump flow rate 150 - - - -
+
+p (Pa) Pump pressure 3.10 · 10 5 - - - -
+
+Operational assumptions shared by all vehicles 
+
+νtgt (km/h) Target driving speed 25 
+
+ax,max (m/s 2) Max. acceleration 1.0 
+
+ρ (kg/m 3) Air density 1.225 
+
+η (-) Powertrain efficiency 0.8 
+
+Cd (-) Drag coefficient 0.5 
+
+A (m 2) Frontal area 2.5 
+
+μ (-) Rolling resistance 0.01 
+
+Notes: Values were agreed in consultation with Schiphol airport stakeholders and/or taken from OEM specifications where available. [a] Varies according to the aircraft MTOW being serviced. [b] Derived from a modelling assumption of 90 kg per passenger for 45 passengers. [c] We assume that pushback always takes 3 minutes following [53]. 15 
+
+ACKNOWLEDGMENT 
+
+We thank Dr. O. J. Borsboom, F. F. Vehlhaber and Dr. I. New for proofreading this paper. This publication is part of the project GTD-Elektrifikatie, made possible in part by the Ministry of Economic Affairs and Climate Policy of the Netherlands. For the initial implementations of the ABM model and API pipeline we thank Vincent Kuipers and Thomas Leniere. REFERENCES [1] Connected Places Catapult, “Decarbonizing airside operations,” Tech. Rep., 2025, Available at cp . catapult . org . uk / report / decarbonising -airside-operations/. [2] M. Winther, U. Kousgaard, T. Ellermann, A. Massling, J. K. Nøj-gaard, and M. Ketzel, “Emissions of nox, particle mass and particle numbers from aircraft main engines, APU’s and handling equipment at Copenhagen Airport,” Atmospheric Environment , 2015. DOI : 10.1016/ j.atmosenv.2014.10.045 [3] M. N. Postorino and L. Mantecchini, “A transport carbon footprint methodology to assess airport carbon emissions,” Journal of Air Transport Management , 2014, ISSN : 0969-6997. DOI : 10 . 1016 / j . jairtraman.2014.03.001 [4] Royal Schiphol Group. “Emissievrij in 2030. ”[Online]. Available: schiphol.nl/nl/schiphol-als-buur/pagina/emissievrij-in-2030/ [5] G. Andreatta, L. Capanna, L. D. Giovanni, M. Monaci, and L. Righi, “Efficiency and robustness in a support platform for intelligent airport ground handling,” Journal of Intelligent Transportation Systems , 2014. 
+
+> DOI
+
+: 10.1080/15472450.2013.802160 [6] D. A. Tabares, F. Mora-Camino, and A. Drouin, “A multi-time scale management structure for airport ground handling automation,” Jour-nal of Air Transport Management , 2021. DOI : 10.1016/j.jairtraman. 2020.101959 [7] D. Guimarans and S. Padron, “A stochastic approach for planning airport ground support resources,” en, International Transactions in Operational Research , vol. 29, no. 6, pp. 3316–3345, 2022, ISSN :1475-3995. DOI : 10.1111/itor.13104 [8] J. Zhou, Y. Wu, Z. Cao, W. Song, J. Zhang, and Z. Chen, “Learn-ing large neighborhood search for vehicle routing in airport ground handling,” IEEE Transactions on Knowledge and Data Engineering ,vol. 35, no. 9, pp. 9769–9782, 2023, arXiv:2302.13797. DOI : 10.1109/ TKDE.2023.3249799 [9] M. Yao, M. Hu, J. Yin, J. Su, and M. Yin, “A two-stage optimiza-tion model for airport stand allocation and ground support vehicle scheduling,” Applied Sciences , vol. 14, no. 23, 2024. DOI : 10.3390/ app142311407 [10] J. M. Brevoord, “Electric vehicle routing problems: The operations of electric towing trucks at an airport under uncertain arrivals and departures,” Available at: purl.utwente.nl/essays/86091, M.S. thesis, Univ. of Twente, 2021. [11] M. Zoutendijk, S. J. van Oosterom, and M. Mitici, “Electric taxiing with disruption management: Assignment of electric towing vehicles to aircraft,” in AIAA AVIATION 2023 Forum , 2023. DOI : 10.2514/6.2023-4219 [12] M. Keskin and B. Çatay, “Partial recharge strategies for the electric vehicle routing problem with time windows,” Transportation Research Part C: Emerging Technologies , 2016. DOI : 10.1016/j.trc.2016.01.013 [13] V. Yu, P. T. Anh, and Y. Chen, “The electric vehicle routing problem with time windows, partial recharges, and parcel lockers,” Applied Sciences , 2023. DOI : 10.3390/app13169190 [14] F. Paparella, T. Hofman, and M. Salazar, “Electric autonomous mobility-on-demand: Jointly optimal vehicle design and fleet op-eration,” IEEE Transactions on Intelligent Transportation Systems ,vol. 25, no. 11, pp. 17 054–17 065, 2024. [15] F. Paparella, K. Chauhan, L. Koenders, T. Hofman, and M. Salazar, “Ride-pooling electric autonomous mobility-on-demand: Joint opti-mization of operations and fleet and infrastructure design,” Control Engineering Practice , vol. 154, p. 106 169, 2025. [16] J. Bertucci, M. Salazar, and T. Hofman, “Battery electric truck in-frastructure co-design via joint optimization and agent-based simula-tion,” IEEE Transactions on Transportation Electrification , vol. 11, pp. 11 296–11 306, 5 2025. DOI : 10.1109/TTE.2025.3575704 [17] D.-W. Bao, J.-Y. Zhou, Z.-Q. Zhang, Z. Chen, and D. Kang, “Mixed fleet scheduling method for airport ground service vehicles under the trend of electrification,” Journal of Air Transport Management ,vol. 108, p. 102 379, 2023, ISSN : 0969-6997. DOI : 10.1016/j.jairtraman. 2023.102379 [18] W. Fu, J. Li, Z. Liao, and Y. Fu, “A bi-objective optimization ap-proach for scheduling electric ground-handling vehicles in an airport,” 
+
+Complex & Intelligent Systems , vol. 11, no. 4, p. 209, 2025, ISSN :2198-6053. DOI : 10.1007/s40747-025-01815-x [19] Y. Tang, L. Wang, W. Kang, W. Liu, and Y. Zhuang, “Cooperative scheduling of airport ground electric service vehicles considering workload balance: A column generation approach,” Computers & Industrial Engineering , vol. 200, p. 110 773, 2025, ISSN : 0360-8352. 
+
+> DOI
+
+: 10.1016/j.cie.2024.110773 [20] M. Zoutendijk and M. Mitici, “Fleet scheduling for electric towing of aircraft under limited airport energy capacity,” en, Energy , vol. 294, p. 130 924, 2024, ISSN : 03605442. DOI : 10.1016/j.energy.2024.130924 [21] S. van Oosterom and M. Mitici, “An environmentally-aware dynamic planning of electric vehicles for aircraft towing considering stochastic aircraft arrival and departure times,” Transportation Research Part C: Emerging Technologies , vol. 169, p. 104 857, 2024, ISSN : 0968-090X. 
+
+> DOI
+
+: 10.1016/j.trc.2024.104857 [22] F. Vehlhaber and M. Salazar, “Electric aircraft assignment, routing, and charge scheduling considering the availability of renewable energy,” 
+
+IEEE Control Systems Letters , vol. 7, pp. 3669–3674, 2023, Available online at http://arxiv.org/pdf/2309.09793v1. DOI : 10.1109/lcsys.2023. 3339998 [23] D. Fernandez Zapico, M. Izadi, F. Vehlhaber, T. Hofman, and M. Salazar, “Optimal control strategies for a network of electric vehicle charging energy hubs with smart scheduling via distributed optimiza-tion,” in Proc. IEEE Int. Conf. on Intelligent Transportation Systems ,In Press, 2026. [24] F. Vehlhaber and M. Salazar, “Energy management strategies for electric aircraft charging leveraging active landside vehicle-to-grid,” in 
+
+American Control Conference , In Press, 2026. DOI : 10.48550/arXiv. 2601.23108 [25] J. P. Bertucci, S. Raghuraman, T. Hofman, and M. Salazar, “Optimal co-design of a hybrid energy storage system for truck charging,” in 
+
+IFAC Workshop on Smart Energy Systems for efficient and Sustainable Smart Grids and Smart Cities , Available online at https://arxiv.org/ abs/2506.01426, 2025. [26] M. Izadi, D. Fernandez Zapico, M. Salazar, and T. Hofman, “Opti-mal sizing of charging energy hubs for heavy-duty electric transport through co-optimization,” in IFAC World Congress , In Press, 2026. [27] M. Tsao, D. Milojevic, C. Ruch, M. Salazar, E. Frazzoli, and M. Pavone, “Model predictive control of ride-sharing autonomous mobility-on-demand systems,” Proc. IEEE Conf. on Robotics and Automation , 2019. DOI : 10.1109/ICRA.2019.8794194 [28] G. Cavone, T. van den Boom, L. Blenkers, M. Dotoli, C. Seatzu, and B. D. Schutter, “An mpc-based rescheduling algorithm for disruptions and disturbances in large-scale railway networks,” IEEE Transactions on Automation Sciences and Engineering , 2022. DOI : 10.1109/TASE. 2020.3040940 [29] D. Fernandez Zapico, T. Hofman, and M. Salazar, “Stochastic model predictive control of charging energy hubs with conformal prediction,” in Proc. IEEE Conf. on Decision and Control , 2025. [30] F. Vehlhaber and M. Salazar, “A Model Predictive Control Scheme for Flight Scheduling and Energy Management of Electric Aviation Networks,” in European Control Conference , In press, arXiv preprint arXiv:2404.09282v2, 2026. [31] M. Swiechowski, K. Godlewski, B. Sawicki, and J. Madziuk, “Monte carlo tree search: A review of recent modifications and applications,” 
+
+Artificial Intelligence Review , 2022. DOI : 10.1007/s10462-022-10228-y [Online]. Available: http://dx.doi.org/10.1007/s10462-022-10228-y [32] Y. Wu, J. Zhou, Y. Xia, X. Zhang, Z. Cao, and J. Zhang, “Neural airport ground handling,” IEEE Transactions on Intelligent Transportation Systems , 2023. DOI : 10.1109/TITS.2023.3253552 [33] J. Conde et al., “Applying digital twins for the management of information in turnaround event operations in commercial airports,” 
+
+Advanced Engineering Informatics , 2022. DOI : 10.1016/j.aei.2022. 101723 [34] T. Noorman, “Agent-based modelling of an airport’s ground surface movement operation,” Available at: resolver.tudelft.nl/uuid:96c4fc2f-8ed1-4be6-a5e7-9b19ba71954b, M.S. thesis, Delft Univ. of Technol-ogy, 2024. [35] Q. Luo, H. Liu, C. Liu, and Q. Deng, “Multi-strategy cooperative scheduling for airport specialized vehicles based on digital twins,” en, 16 
+
+Scientific Reports , vol. 14, no. 1, p. 15 533, 2024, ISSN : 2045-2322. 
+
+> DOI
+
+: 10.1038/s41598-024-66350-0 [36] A. Attar, M. Babaee, S. Raissi, and M. Nojavan, “Airside optimiza-tion framework covering multiple operations in civil airport systems with a variety of aircraft: A simulation-based digital twin,” en, 
+
+Systems , vol. 12, no. 10, 2024, ISSN : 2079-8954. DOI : 10 . 3390 / systems12100394 [Online]. Available: https://www.mdpi.com/2079-8954/12/10/394 [37] V. Kuipers, “Simulation and control approaches for enhancing effi-ciency of electric ground fleets in airport operations,” Available at https : / / research . tue . nl / nl / studentTheses / simulation - and - control -approaches- for- enhancing- efficiency- of- ele/, M.S. thesis, Eindhoven University of Technology, 2024. [38] M. Haklay and P. Weber, “OpenStreetMap: User-generated street maps,” IEEE Pervasive Computing , 2008. DOI : 10.1109/MPRV.2008. 80 [39] Royal Schiphol Group. “Standaard pushback per positie. ”[Online]. Available: https://www.schiphol.nl/nl/aviation-partnerships/sleep-en-pushbackbewegingen [40] Royal Schiphol Group. “Schiphol developer center. ”[Online]. Avail-able: https : / / www . schiphol . nl / nl / developer - center / explore - all -schiphols-apis-in-the-developer-center/ [41] OpenSky Network. “Opensky data samples. ”[Online]. Available: https: //opensky-network.org/datasets/%5C#metadata/ [42] E. W. Dijkstra, “A note on two problems in connexion with graphs,” in 
+
+Edsger Wybe Dijkstra: his life, work, and legacy , 2022, pp. 287–290. [43] MathWorks. “Shortest path distances of all node pairs - matlab. ”[Online]. Available: https://la.mathworks.com/help/matlab/ref/graph. distances.html [44] L. Kocsis and C. Szepesvari, “Bandit based monte-carlo planning,” in European Conference in Machine Learning , 2006. DOI : 10.1007/ 11871842_29 [45] A. Y. Ng, D. Harada, and S. Russell, “Policy invariance under reward transformations: Theory and application to reward shaping,” in Proceedings of the Sixteenth International Conference on Machine Learning , 1999. DOI : 10.5555/645528.657613 [46] Gurobi Optimization, LLC. “Gurobi optimizer reference manual. ”[On-line]. Available: http://www.gurobi.com [47] L. Liu and J. T. Luo, “Mctreesearch4j: A monte carlo tree search implementation for the jvm,” Journal of Open Source Software , 2022. 
+
+> DOI
+
+: 10.21105/joss.03804 [48] Titan Aviation. “TITAN-HD150: 150m3/h Electric Hydrant Dispenser,” Accessed: Apr. 16, 2026. [Online]. Available: https://brochures.titan-aviation.com/TITAN-eHD-Low%20profile-EN.pdf [49] MULAG Fahrzeugwerk Heinz Wössner GmbH u. Co. KG. “Comet 4E-HV,” Accessed: Apr. 16, 2026. [Online]. Available: https://www.mulag. de/en/ground-support-equipment/products/towing-tractors/comet-4e-hv/ [50] Goldhofer Aktiengesellschaft. “PHOENIX AST-2E Technical Data,” Accessed: Apr. 16, 2026. [Online]. Available: https://www.goldhofer. com/fileadmin//downloads/BRO_AT/Data_Sheets/DSH_PHOENIX-E_EN-imp.pdf [51] DOLL Airport Equipment GmbH. “DOLL Airport Equipment Brochure,” Accessed: Apr. 16, 2026. [Online]. Available: https : / / www.doll.eu/files/doll/pdf/Airport%20Equipment/DOLL- Airport% 20Equipment-Brochure-Digital.pdf [52] MAN Truck & Bus SE. “MAN Lion’s City E Brochure,” Accessed: Apr. 16, 2026. [Online]. Available: https://www.man.eu/content/dam/ man / countries / doc / bw - master / digitalservices / bus / man - eMobility -broschuere-de-en.pdf/_jcr_content/renditions/original./man-eMobility-broschuere-de-en.pdf [53] B. Bubalo, F. Schulte, and S. Voß, “Reducing airport emissions with coordinated pushback processes: A case study,” en, in Computational Logistics , T. Bekta¸ s, S. Coniglio, A. Martinez-Sykora, and S. Voß, Eds., Springer International Publishing, 2017, pp. 572–586. DOI : 10. 1007/978-3-319-68496-3_38

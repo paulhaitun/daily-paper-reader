@@ -1,0 +1,209 @@
+Title: Price-Optimized EV and Heat-Pump Scheduling Can Exceed Uncoordinated Feeder Peaks
+
+URL Source: https://arxiv.org/pdf/2610.05916v1
+
+Published Time: Tue, 06 Oct 2026 02:28:09 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Price-Optimized EV and Heat-Pump Scheduling Can Exceed Uncoordinated Feeder Peaks 
+
+Tatjana Hein 1,2 , Lukas Wagner 1, Alex Bernhard 1, and Felix Ocker 1
+
+> 1
+
+Institute of Automation Technology, Helmut Schmidt University, Hamburg, Germany 2HAW Hamburg, Germany tatjanasophie.hein@haw-hamburg.de, {lukas.wagner, alex.bernhard, felix.ocker}@hsu.hamburg 
+
+Abstract —Electric vehicles and heat pumps add large, time-flexible loads to low-voltage distribution feeders. When each household independently minimizes its own charging cost against the same electricity price, this flexible demand piles into the cheapest hours, and the resulting synchronization can stress the feeder more than uncoordinated operation does. This work quantifies that effect on a rural low-voltage feeder (97 buses, 250 kVA transformer) across 160 simulation runs spanning seven scenarios, four seasons, and electric-vehicle, heat-pump, and photovoltaic penetration from 0 to 90 %. At 30 % penetration of each device, this decentralized cost minimization drives the transformer to 253 % of rated capacity, more than twice the level of uncoordinated charging, and up to 478 % at 90 % electric-vehicle penetration, with the first undervoltage violations at the far end of the longest feeder arm. The ranking is device-mix dependent: each 30 pp of heat-pump penetration adds about twelve times more to the price-based peak than to any fixed schedule, so price-based scheduling becomes the worst strategy once heat pumps are present. Only a central schedule that explicitly caps the transformer removes these demand-driven violations, while at high photovoltaic penetration a summer floor from midday reverse power flow bounds what any demand-side strategy can achieve. A regulated time-variable grid tariff added to the spot price provides no relief for heat-pump-driven synchronization and only marginal relief for electric-vehicle-driven synchronization in autumn. The simulation and optimization code is available at https://github.com/lukas-wagner/ SynchronizationEffectsAnalysis. 
+
+Index Terms —low-voltage distribution networks, load synchro-nization, demand-side coordination 
+
+I. I NTRODUCTION 
+
+Efforts to decarbonize the heating and transport sectors are driving large-scale adoption of heat pumps (HPs) and elec-tric vehicles (EVs) in residential areas. Both add substantial electrical loads to low-voltage (LV) feeders, and the timing of part of this consumption can be shifted within the day. When many devices on the same feeder draw power in the same hours, their individual loads add up into a coincident peak. This synchronization can overload the distribution transformer and depress bus voltages in LV networks [1]. Two kinds of time-varying cost signals steer such flexible loads away from peak hours: dynamic energy prices such as intraday spot prices, and time-variable grid tariffs. Germany’s § 14a of the Energy Industry Act (EnWG) [2] is one such tariff: in exchange for accepting operator control during congestion, 
+
+This work was funded in part by dtec.bw (project OptiFlex), which is funded by the European Union – NextGenerationEU, and in part by the German Federal Ministry for Economic Affairs and Energy (project InterPhaSe, FKZ 03EI6139A). 
+
+controllable EV and HP connections receive a reduced grid fee, and under its Module 3 this fee becomes a continuously time-variable tariff added to the spot price. This work models only that tariff signal, not the operator-side throttling. Auniform cost signal, however, can re-create the peak it is meant to relieve: when every device optimizes against the same prices, demand concentrates in the cheapest window, as observed for public EV charging under day-ahead prices [3]. That study excludes HPs and feeder-level power flow. Whether the same amplification arises for mixed residential EV and HP adoption on a rural German LV feeder, and how price-based coordination compares there to transformer-aware scheduling, has not been systematically studied. This work addresses that gap with a scenario-based power-flow simu-lation on the SimBench 1-LV-rural2--0-sw reference network, a 97-bus, 250 kVA feeder [4] whose long arms make it a demanding case for feeder voltage. Seven scenarios, from uncontrolled heating and fixed-time charging to centralized transformer-aware optimization, are evaluated in targeted one-factor-at-a-time penetration sweeps: each device is swept over 0, 30, 60, and 90 % while the others are held at a fixed reference level, across four seasonal contexts, for a total of 160 simulation runs. Three research questions guide the evaluation: 
+
+RQ1: How does peak transformer loading respond to increas-ing EV, HP, and photovoltaic (PV) penetration, and how do all three indicators, transformer loading, line loading, and bus voltage, compare across seasons at a reference penetration? 
+
+RQ2: Where in the rural LV feeder do synchronization-induced overloads and voltage violations concentrate spatially? 
+
+RQ3: Do price-based coordination strategies (intraday price, § 14a EnWG Module 3) mitigate or amplify synchronization effects relative to uncoordinated charging, and what does transformer-aware optimization achieve by comparison? The contributions are: (i) A quantification of how combined EV, HP, and PV pen-etration stresses a rural LV feeder, separating a demand-side price-synchronization peak from a summer supply-side reverse-power-flow floor that demand-side schedul-ing cannot remove. (ii) Evidence that the feeder topology determines where the stress concentrates, the longest arm, while price synchro-nization sets its severity and extent, since the end-of-line voltage violations there vanish under diversified charging start times. arXiv:2610.05916v1 [eess.SY] 5 Oct 2026 (iii) A systematic strategy and penetration comparison show-ing that the relative ordering is device-mix dependent, that only transformer-aware peak-shaving removes the demand-driven overloads, and that the § 14a EnWG Mod-ule 3 grid fee adds at most marginal relief, none for HP-driven synchronization. II. R ELATED WORK 
+
+Prior work is assessed against the problem from Sec. I, whether price-based coordination of combined residential loads relieves or amplifies feeder synchronization. Relevant work should jointly model EVs and HPs (R1), evaluate price-based coordination (R2) against the network-oriented control it is benchmarked on (R3), span at least two seasons (R4), test a regulatory mechanism dedicated to controllable loads such as § 14a EnWG curtailment or grid fee (R5), and resolve thermal and voltage violations spatially within the feeder (R6). One line of work models EVs and HPs together and quanti-fies their combined grid impact (R1). Oliyide and Cipcigan [5] project that in a typical urban British LV network, concurrent EV and HP uptake drives transformer overload in an optimistic 2050 winter scenario, while cable loading and bus voltages stay within limits (R1, R4), but evaluate no coordination strategy (R2, R3), on an urban rather than the rural feeder targeted here. Tomaselli et al. [6] use a rolling-horizon optimal power flow to schedule battery and thermal storage in a synthetic German LV grid, combined with curative EV and HP limiting (R1, R3), and evaluate § 14a EnWG curtailment (R5): storage pre-charging resolves most load violations while curtailment adds little and can worsen overloading through HP rebound. Congestion is assessed at the HV/MV transformer rather than at individual LV bus or line level. Zimmermann et al. [1] simulate the German Federal Government energy transition pathway, with rising EV, HP, and PV shares, on two SimBench reference networks under passive operation, characterizing congestion by month and by equipment rating (R1, R4). Congestion arises exclusively from transformer over-loading and voltage-band violations with no line exceeding its rating, and the radial topology concentrates thermal stress at the transformer and feeder-entry lines while undervoltage concentrates at the remote feeder ends (R6). Another line steers charging through price signals (R2). Lu et al. [7] propose a real-time EV price mechanism that maxi-mizes aggregate welfare and shaves peaks, without modeling network constraints or synchronization effects. Panda et al. [3] quantify the aggregate consequence at over 1200 public charging points in the Netherlands, finding that cost-minimized charging under dynamic day-ahead prices increases aggregate peak demand by up to 16 % relative to unoptimized charging as charging concentrates in the same low-price period. Segmented network tariffs reduce but do not eliminate this effect. Malkova et al. [8] minimize EV charging costs at a workplace charging station under day-ahead spot prices and dynamic grid tariffs via receding-horizon mixed-integer linear program (MILP), enforcing a cluster power limit but performing no feeder-level power flow (R2, R4). None of these works models HPs        
+
+> Table I COMPARISON OF RELATED WORK AGAINST SIX REQUIREMENTS .Reference R1 R2 R3 R4 R5 R6 Oliyide and Cipcigan [5] Tomaselli et al. [6] Zimmermann et al. [1] Lu et al. [7] Panda et al. [3] Malkova et al. [8] Fu et al. [9] Kilthau et al. [10] Galys et al. [11] Limmer et al. [12] Barta et al. [13] = addressed, = not addressed.
+
+(R1), performs network-oriented optimization (R3), or resolves overloads at the individual bus and line level (R6). A third line applies network-oriented control or regula-tory curtailment (R3, R5). Fu et al. [9] apply reinforcement learning to limit transformer overloading from uncontrolled EV charging (R3). Kilthau et al. [10] develop a scalable decentralized energy dispatch and congestion management approach, validated on the IEEE 33- and 119-bus test net-works (R3). Galys et al. [11] address congestion management under § 14a EnWG via agent-based decentralized optimization, eliminating thermal constraint violations on the IEEE-33 test system (R3, R5). Limmer et al. [12] learn interpretable rule-based policies via multi-objective genetic programming that distribute a transformer-limited charging power among resi-dential EVs, trading off efficiency against fairness across users (R3). Barta et al. [13] characterize HP rebound behavior during § 14a EnWG blocking and reenabling events. The response differs between inverter and fixed-speed HPs (R5). None of these works examines price-induced synchronization peaks (R2), compares seasons (R4), or resolves overloads spatially within the feeder (R6). Tab. I summarizes this comparison: to the authors’ knowl-edge, no existing work addresses all six requirements simul-taneously, and neither the isolated grid effect of the Module 3 incentive nor the point at which PV reverse power flow overtakes demand-driven stress has been quantified. III. M ODELING AND SIMULATION SETUP 
+
+A. Network and Temporal Model 
+
+The study uses the SimBench 1-LV-rural2--0-sw refer-ence network [4]: a 97-bus rural German LV feeder at 0.4 kV nominal voltage with a 250 kVA distribution transformer and 99 load connection points (92 household, 7 small commercial). Power flow is solved at each timestep by Newton-Raphson using pandapower. Time is discretized at Δ𝑡 = 0.25 h over a 7-day horizon ( 𝑇 = 672 steps), anchored to the Monday of the week containing the seasonal reference day. Winter (calendar week 3), spring (week 16), summer (week 29), and autumn (week 42) are studied. Grid indicators are evaluated against EN 50160 and equipment ratings: bus voltage must stay within 
+
+[0.9, 1.1] p.u., and transformer and line loading below 100 % of rated apparent power and rated current, respectively. Each Table II COORDINATION STRATEGIES EVALUATED IN THIS WORK .Strategy Description Baseline Household loads and PV only, no EVs or HPs Fixed-times All EVs charge from 18:00–20:00 at full wallbox power, HPs follow instantaneous thermal demand Fixed-random Each EV draws one start time from       
+
+> N ( 18:00 ,1.5h), clipped to 14:00–22:00 and reused across the week, HPs as above Decentralized Independent LP per device, minimizes own cost against intraday price, no grid awareness Decentralized-M3 As Decentralized, with § 14a EnWG Module 3 grid fee added to intraday price (only applicable in Q1 and Q4, so winter and autumn simulations) Centralized-cost Joint LP, minimizes total cost, transformer constraint enforced Centralized-peak Joint LP, minimizes peak active-power import at the transformer
+
+scenario reports the peak transformer loading ˆ𝑆 𝑇 , peak line loading ˆ𝑙 , minimum bus voltage ˆ𝑣 min , and the hours per week the transformer and voltage limits are exceeded ( ℎ𝑇 > 100 , ℎUV )over the 7-day horizon. Bus voltage never exceeds the upper band in any scenario (at most 1.096 p.u.), so only undervoltage is reported. The spatial figures use the single worst-loading timestep of each scenario, defined by its peak line loading. 
+
+B. Coordination Strategies 
+
+Seven scenarios are evaluated, a baseline and six coordination strategies, as described in Tab. II. Baseline contains only the household base load, taken from the SimBench standard load profiles, and PV without EVs or HPs. The two Fixed strategies model uncontrolled charging without optimization. The four optimized strategies solve linear programs (LPs) using Gurobi (academic licence, MIP gap 0, time limit 120 s) over the full 7-day horizon, one independent program per device in the decentralized case and a single joint program in the centralized case. 
+
+C. Device Models 
+
+Electric vehicle. Each EV 𝑒 ∈ E has a 60 kWh battery, an 11 kW wallbox, and charging efficiency 𝜂 = 0.95 , with usable energy bounded by 𝐸 min = 6 kWh and 𝐸 max = 60 kWh (10– 100 % state of charge) and at least the 45 kWh start-of-week state restored by the end of the week. Battery energy evolves as 
+
+𝐸 𝑒 (𝑡 ) = 𝐸 𝑒 (𝑡 −1) + 𝑝 𝑒 (𝑡 ) 𝜂 Δ𝑡, (1) subject to 𝐸 min ≤ 𝐸 𝑒 (𝑡 ) ≤ 𝐸 max and 0 ≤ 𝑝 𝑒 (𝑡 ) ≤ 𝑃 wb 𝑎 𝑒 (𝑡 ),where 𝑎 𝑒 (𝑡 ) ∈ { 0, 1} is the at-home indicator. The at-home indicator 𝑎 𝑒 (𝑡 ) is drawn from a stochastic mobility model: on weekdays a primary commute departs at 7:30 ± 0.8 hand returns at 17:00 ± 1.5 h, consuming 9.0 ± 2.5 kWh. A second evening trip ( 19:00 ± 1 h, 3.0 ± 1.5 kWh) occurs with probability 0.25. On weekends a single trip occurs with probability 0.60. Each EV draws independently (separate seeded stream), so plug-in times spread across the fleet. 
+
+Heat pump. Each HP ℎ ∈ H serves a single household. Per-step thermal demand is 
+
+𝑄 ℎ (𝑡 ) = max  𝑇 thr − 𝑇 out (𝑡 ), 0 · 𝛼 · Δ𝑡, (2) where 𝑇 thr = 15 ◦C is the heating threshold temperature below which space heating is required, 𝛼 = 0.15 kW /K is an aggregate building heat-loss coefficient, and 𝑇 out (𝑡 ) is the quarter-hourly outdoor temperature profile for Norderstedt, Germany (53.67°N, 10.02°E). The thermal buffer 𝐵 ℎ evolves as 
+
+𝐵 ℎ (𝑡 ) = 𝐵 ℎ (𝑡 −1) + COP · 𝑝 ℎ (𝑡 ) · Δ𝑡 − 𝑄 ℎ (𝑡 ), (3) with COP = 3.5, 𝑃 ℎ, max = 8 kW , and buffer capacity 10 kWh 
+
+(minimum 2 kWh ; 5 kWh at the start and at least 5 kWh at the end of the week). The 8 kW rating markedly exceeds the per-household thermal demand, so the buffer recharges within about 20 min; this is a deliberately homogeneous, synchronization-promoting stress-case sizing rather than atypical field design. At the coldest winter hour ( 𝑇 out ≈ − 3 ◦C), the 8 kWh usable buffer bridges about 2 to 3 h, so the HP can pre-heat during cheap hours and defer operation. With this threshold, HP thermal demand is near zero in summer (about 2 kWh per household-week) and largest in winter (about 380 kWh thermal per household-week). 
+
+Photovoltaic. PV system capacities are drawn from 
+
+N ( 10 .0, 3.0) kWp, clipped to [3, 20 ] kWp. Generation pro-files are derived from renewables.ninja capacity factors at Norderstedt. Feed-in tariff is set to zero to ensure the priority of PV-self-consumption in the optimization, since the grid price strictly exceeds the zero feed-in rate. 
+
+Penetration assignment. EVs, HPs, and PV systems are assigned by drawing a random permutation of the 99 load points with fixed seeds (42, 44, and 43, respectively), ensuring that the set assigned at penetration 𝑝 1 is a strict subset of that at 𝑝 2 > 𝑝 1. This property allows effects to be attributed to individual penetration increments without confounding by load-point selection. All stochastic draws (mobility, Fixed-random start times, device placement) use fixed seeds, so every scenario is exactly reproducible. 
+
+D. Optimization Formulations 
+
+Let 𝑐 (𝑡 ) denote the electricity price, a 15-minute volume-weighted profile from the German continuous intraday market (net wholesale, EUR/kWh) that matches the quarter-hourly control resolution used here, and 𝑐 fee (𝑡 ) the Module 3 grid fee at step 𝑡 , taken from the Stadtwerke Norderstedt 2026 tariff schedule. The Norderstedt grid operator applies the time-variable fee only in Q1 (January to March) and Q4 (October to December), designating 18:00–22:00 as the high-fee and 00:00–06:00 as the reduced-fee window. Outside these quarters the fee is flat, so Decentralized-M3 is evaluated only for the winter (week 3, Q1) and autumn (week 42, Q4) horizons. Let 𝑃 base (𝑡 ) be the aggregate household load, 𝑃 pv (𝑡 )
+
+the total PV output, and 𝑃 trafo the transformer power limit. 
+
+Decentralized. Each device (EV or HP) solves its own LP independently [14], minimizing its own energy cost: 
+
+min  
+
+> 𝑝 𝑒 , 𝑝 pv
+> 𝑒
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑐 (𝑡 ) + 𝑐 fee (𝑡 )  𝑝 𝑒 (𝑡 ) − 𝑝 pv  
+
+> 𝑒
+
+(𝑡 )Δ𝑡, (4) subject to (1) or (3) and device-level bounds, with 𝑐 fee (𝑡 ) = 0
+
+in the Decentralized scenario and the Module 3 fee schedule in Decentralized-M3. For EVs the availability mask sets 𝑝 𝑒 (𝑡 ) =
+
+0 while the vehicle is away, and a pre-departure constraint ensures the battery holds enough energy for the upcoming Table III GRID INDICATORS FOR ALL SCENARIOS (EV=PV=HP=30 %, WINTER );                                             
+
+> SYMBOLS AS DEFINED IN SEC . III. Strategy ˆ𝑆 𝑇 [%] ˆ𝑙 [%] ˆ𝑣 min [p.u.] ℎ𝑇> 100 ℎUV
+> Baseline 37.9 28.2 1.008 0.0 0.0 Fixed-times 167.6 110.5 0.936 14.0 0.0 Fixed-random 112.4 77.3 0.964 6.5 0.0 Decentralized 253.2 180.1 0.870 7.0 1.25 Decentralized-M3 253.2 180.1 0.870 7.0 1.25 Centralized-cost 102.4 87.5 0.952 12.75 0.0 Centralized-peak 37.9 38.8 0.994 0.0 0.0
+
+trip. The share 0 ≤ 𝑝 pv  
+
+> 𝑒
+
+(𝑡 ) ≤ min  𝑝 𝑒 (𝑡 ), 𝑃 pv ,𝑒 (𝑡 ) is drawn from the household’s own rooftop PV output 𝑃 pv ,𝑒 (𝑡 ) (𝑝 pv  
+
+> 𝑒
+
+≡
+
+0 without PV) and is free of charge, since the feed-in tariff is zero; feeder-wide PV surplus is not visible to the device. For HPs there is no availability restriction: the HP shifts its consumption freely within the buffer bounds at any time of day or night. No information is exchanged between households, and no transformer constraint is included. Each device acts in self-interest without grid awareness. Since all devices share the price signal 𝑐 (𝑡 ), synchronization emerges without explicit coordination. 
+
+Centralized-cost. A single LP coordinates all devices jointly: 
+
+min  
+
+> 𝑝 E, 𝑝 H
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑐 (𝑡 )
+
+"∑︁ 
+
+> 𝑒 ∈ E
+
+𝑝 𝑒 (𝑡 ) + ∑︁ 
+
+> ℎ∈ H
+
+𝑝 ℎ (𝑡 )
+
+#
+
+Δ𝑡, (5) subject to device dynamics (1)–(3), device-level bounds, and 
+
+𝑃 base (𝑡 ) − 𝑃 pv (𝑡 ) + ∑︁ 
+
+> 𝑒 ∈ E
+
+𝑝 𝑒 (𝑡 ) + ∑︁ 
+
+> ℎ∈ H
+
+𝑝 ℎ (𝑡 ) ≤ 𝑃 trafo ∀ 𝑡. (6) Constraint (6) bounds the active-power balance at the trans-former, whereas the reported loading comes from the AC power flow and includes reactive power and losses; EVs, HPs, and PV are modeled at unity power factor, so among the modeled loads only the SimBench base load carries reactive power. A schedule that meets (6) at the rated limit can therefore still reach about 102 % apparent-power loading. 
+
+Centralized-peak. The objective is replaced by min 𝜏 ,where the auxiliary variable 𝜏 upper-bounds the net feeder import at every step, and constraint (6) by 
+
+𝑃 base (𝑡 ) − 𝑃 pv (𝑡 ) + ∑︁ 
+
+> 𝑒 ∈ E
+
+𝑝 𝑒 (𝑡 ) + ∑︁ 
+
+> ℎ∈ H
+
+𝑝 ℎ (𝑡 ) ≤ 𝜏 ∀ 𝑡, (7) yielding a linear minimization of the peak active-power import at the transformer. This bounds import only, not PV reverse power flow, which is why the summer PV floor persists under every strategy. All optimizations assume perfect foresight over the 7-day horizon, an idealized common-information setting whose relaxation is discussed in Sec. V. IV. C ASE STUDY 
+
+A. Strategy Comparison at a Reference Penetration (RQ1, RQ3) 
+
+Tab. III compares the grid indicators defined in Sec. III for each scenario at the EV=PV=HP=30 % reference penetration in winter, the season with the highest heat-pump-driven load. The Baseline stays well within all limits. Fixing all EVs to an 18:00 start (Fixed-times) raises transformer loading to 167.6 %, as the simultaneous charging pulse alone exceeds the rating on top of the evening household peak, giving exactly 14.0 h of overload (2 h per evening) in every season. Randomizing start times (Fixed-random) spreads the pulses and reduces the peak to 112.4 %, substantial but insufficient relief. Decentralized cost optimization performs substantially worse than either fixed scenario: each device independently shifts demand to the cheapest overnight hours (00:00–05:00), which concentrates load into a synchronized night-time peak at 253.2 % of rated capacity. Individually rational cost mini-mization thus amplifies synchronization. Although the cheap window spans several hours, the linear cost minimization does not spread load across it: all devices face the same price ranking and draw full power in the same cheapest quarter-hours. This holds across seasons: the Decentralized peak reaches 255.1 % in spring and 253.6 % in autumn, both more than twice the corresponding Fixed-random peak. The spring ratio is largest (factor 2.5), as lower thermal demand extends the HP buffer flexibility. In summer, Fixed-random drops below rated capacity (96 %) while Decentralized coordination still reaches 158.2 % from EV overnight optimization alone. Line loading and voltage follow the transformer: Decentralized reaches about 180 % line loading and 0.87 p.u. in winter, spring, and autumn and still 113 % and 0.94 p.u. in summer, whereas Fixed-random stays at or below 77 % and above 0.96 p.u. in every season. Adding the Module 3 fee (Decentralized-M3) leaves the winter peak unchanged and lowers the autumn peak by 18.4 percentage points (pp), or 7.3 % (Sec. IV-D). Centralized-cost coordination caps the instantaneous peak at 102.4 % via the transformer constraint (the excess over 100 % stems from reactive power and losses outside the active-power constraint (6)), but the optimizer fills every available hour up to that limit, yielding 12.75 h of overload per week, nearly double the 6.5 h under Fixed-random. It trades overload height for duration, saturating near 102 % in all four seasons with fewer overload hours when HP demand is lower. At this reference point, Centralized-peak is the only strategy that removes all overloads, holding the transformer peak at its pre-electrification level of 37.9 %. 
+
+B. Spatial Distribution of Overloads (RQ2) 
+
+Fig. 1 contrasts the worst strategy, Decentralized coordination, with its realistic uncoordinated counterpart, Fixed-random, at the same reference penetration (EV=PV=HP=30 %, winter). Under Decentralized coordination, overloads are not dis-tributed uniformly: the three shorter branches connected to the transformer remain within acceptable limits, while the longest feeder arm, spanning the greatest electrical distance from the transformer, concentrates the synchronization effect. Within that arm, line loading is highest at the first segment after the feeder split, where the full downstream load concentrates, and eases with depth as load branches off at each bus. Bus voltage, by contrast, falls cumulatively along the arm, so the end-of-line buses drop below 0.9 p.u. (EN 50160) under the synchronized load. line loading      
+
+> <30 % 30–50 % 50–70 % 70–100 %
+> >100 % (a) Decentralized: worst step Wed 00:45, line max 180 % bus voltage [p.u.]
+> >0.97 (nominal) 0.95–0.97 0.93–0.95 0.90–0.93
+> <0.90 (EN 50160) trafo (HV bus)
+> (b) Fixed-random: worst step Fri 19:45, line max 77 % Figure 1. Feeder loading at the worst-loading timestep (EV=PV=HP=30 %, winter). The horizontal position of each bus is its cumulative line distance from the transformer, so spacing reflects electrical distance along the feeder.
+
+Under Fixed-random coordination the worst-loading timestep confines overloads to fewer segments of the same longest arm with no voltage-band violation. The synchronized overnight peak, not the feeder topology, therefore determines whether that arm actually violates its limits. 
+
+C. Penetration Scaling (RQ1) 
+
+Fig. 2 isolates the incremental effect of HPs and PV: rising HP penetration in winter (Fig. 2a) and rising PV penetration in summer (Fig. 2b), both at the 30 % EV reference level from Sec. IV-A. The EV-only sweep (HP=PV=0 %, winter) is discussed first, from the same runs. Under Decentralized coordination, EV penetration drives approximately linear growth in peak loading, going from 143 % at 30 % EVs penetration to 478 % at 90 % EVs pen-etration. Fixed-random scales more gradually (289 % at 90 % EV) due to temporal diversity in plug-in times. Fixed-times also scales linearly but reaches 504 % at 90 % EV, exceeding even the Decentralized peak, because the hardcoded 18:00– 20:00 window stacks the full fleet demand onto the residential evening peak. Centralized-cost coordination caps the peak near 102 % across all EV penetration levels, but overload duration grows from 6.5 h (EV=30 %) to 22.0 h (EV=90 %). Additional load converts to longer overload rather than higher peaks, because the hard cap fixes the peak height and extra demand can only fill more hours. Centralized-peak holds transformer loading near the baseline level, between 30 and 32 % across all EV levels. This strategy ordering reverses with HP scaling (Fig. 2a): once HPs are present (HP ≥ 30 %), Decentralized optimization performs worse than Fixed-times, since price-responsive HPs shift additional load to the same overnight cheap window Baseline Fixed-random Fixed-times Decentralized Centralized-cost Centralized-peak 0 30 60    
+
+> HP penetration [%]
+> 0200 400
+> Peak trafo loading [%]
+> (a) HP penetration (EV=30 %, PV=0 %, winter) 030 60
+> PV penetration [%]
+> 050 100 150
+> Peak trafo loading [%]
+> (b) PV penetration (EV=30 %, HP=0 %, summer) Figure 2. Peak transformer loading versus device penetration. Decentralized-M3 is omitted: its peak coincides with Decentralized in winter, and the time-variable fee does not apply in summer.
+
+as the EVs. Under Decentralized coordination, each 30 pp increment of HP penetration adds approximately 110 pp to the transformer peak: from 143 % (HP=0 %) to 253 % (HP=30 %) to 371 % (HP=60 %). Under fixed scheduling, the same in-crements add only 8–10 pp per step: Fixed-random rises from 104 % to 121 %, and Fixed-times from 158 % to 177 %. The contrast confirms that the compounding effect is driven by HP price-responsiveness, not by the additional thermal load volume. Centralized-cost coordination again saturates at 102 % peak regardless of HP penetration, but overload duration doubles with each HP increment: at PV=0 % it grows from 6.5 h (HP=0 %) to 14.5 h (HP=30 %) and 28.0 h (HP=60 %). The longest overload of all runs, 30.5 h with minimum bus voltage 0.94 p.u., occurs at EV=90 % with PV=HP=30 %. The 14.5 h exceed the 12.75 h of Tab. III because the table fixes PV=30 %. Centralized-peak holds transformer loading below 36 % across the swept HP levels. In winter (EV=30 %, HP=0 %), PV leaves the peaks of Decentralized (143 %) and both Fixed strategies unchanged, and Centralized-cost stays near 101 %; only for Baseline and Centralized-peak does midday export become peak-setting, raising their loading from 30 % to 88 % at PV=60 %. In sum-mer, where PV production is substantial, rising PV penetration replaces overnight demand as the dominant source of trans-former stress (Fig. 2b). At PV=0 %, the strategy spread mirrors the winter peak-pattern at reduced scale. As PV penetration grows, midday reverse power flow progressively compresses this spread. At PV=60 %, all strategies except Fixed-times converge to a common floor of 128.9 %, the peak reverse power flow from PV export that no EV scheduling strategy can eliminate without curtailment or storage. Fixed-times remains an outlier at 149.8 % because its hardcoded 18:00– 20:00 charging window adds an evening demand peak that still exceeds the PV export floor. The convergence illustrates a qualitative limit: once transformer overloading is supply-driven rather than demand-driven, demand-side coordination loses leverage. 
+
+D. § 14a EnWG Module 3 Grid Fee (RQ3) 
+
+The Module 3 fee is active only in Q1 and Q4, covering the studied winter and autumn weeks. Adding it to Decen-tralized coordination leaves the peak unchanged in winter at every tested penetration (143 %, 287 %, and 478 % at 30, 60, and 90 % EV with HP=0 %), because the fee’s 00:00–06:00 reduced-fee window coincides with the cheapest intraday hours. In autumn a 4–5 pp reduction emerges across the EV sweep, as the night-time price minimum is less pronounced in week 42 and the fee gains a marginal incentive to shift demand. The larger 18.4 pp drop at the mixed reference penetration (Sec. IV-A) reflects its higher baseline peak, so in relative terms every fee effect stays below 8 %. The HP scaling (EV=0 %) shows no reduction in either season: HPs already concentrate all shiftable thermal demand into the cheapest overnight hours through the spot price signal, so their buffer constraints leave no residual flexibility for the Module 3 fee to exploit. Without a channel to feeder state, as in the agent-based scheme of Galys et al. [11], a time-variable fee alone cannot deliver comparable relief. V. C ONCLUSION 
+
+This work quantified how a rural LV feeder responds when EVs and HPs follow a shared price signal, and how far coor-dinated scheduling and a regulated tariff relieve the resulting stress. 
+
+RQ1: At the reference penetration (EV=HP=PV=30 %), decentralized cost minimization drives the transformer to 253 % of rated capacity, more than twice the Fixed-random benchmark, and up to 478 % at 90 % EV. HPs amplify this disproportionately, adding about 110 pp per 30 pp of HP pen-etration, roughly twelve times the 8–10 pp per step under fixed scheduling, and the mechanism holds for all three indicators across winter, spring, and autumn. In summer, PV reverse power flow instead sets a 128.9 % transformer floor that demand-side coordination cannot lower. 
+
+RQ2: The overloads concentrate on the longest feeder arm. Line loading peaks at its entry, where the full downstream load concentrates, while cumulative impedance drives the end-of-line voltages below 0.9 p.u. Shorter branches stay within limits. 
+
+RQ3: The strategy ranking is device-mix dependent: Fixed-times is worst in a pure-EV fleet, but once HPs join, price-responsive Decentralized scheduling becomes worse than any fixed schedule in the demand-driven regime. Centralized-cost coordination holds the peak near 102 % but stretches the over-load over time (up to 30.5 h per week) and leaves less voltage margin (down to 0.94 p.u.), whereas Centralized-peak removes all demand-driven violations, limited only by the supply-driven PV floor. The § 14a EnWG Module 3 fee gives no relief for HP-driven synchronization in either fee-active season and only a marginal 4–5 pp reduction for EV-driven synchronization in autumn. These results indicate that price-signal coordination requires either sufficient device heterogeneity [3] or explicit grid-constraint coupling [10]. Several limitations bound these findings. All optimizations assume perfect foresight over the 7-day horizon, whereas prac-tical implementations must operate under forecast uncertainty. The device fleet is homogeneous (identical EV batteries, HP ratings, buffers, and building coefficients, with a constant COP and space-heating-only demand), which likely accentu-ates synchronization relative to a heterogeneous population. The study uses a single reference network topology, and the Module 3 null result holds for the studied intraday price profile and Norderstedt fee schedule; a price minimum outside the fee window would change it. Future work should examine receding-horizon control under forecast uncertainty, time-integrated overload-duration con-straints, a fair allocation of the capped feeder capacity among households [12], and additional feeder topologies. REFERENCES

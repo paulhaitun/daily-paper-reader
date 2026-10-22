@@ -1,9 +1,9 @@
 {
   "date": "20260923-20261022",
   "date_label": "2026-09-23 ~ 2026-10-22",
-  "generated_at": "2026-10-22 15:48:15 UTC",
+  "generated_at": "2026-10-22 16:22:55 UTC",
   "recommend_exists": true,
-  "run_count": 1,
+  "run_count": 2,
   "papers": [
     {
       "paper_id": "2610.18447v3",
@@ -52,6 +52,70 @@
       "evidence": "融合语言推理、动作生成与世界建模的世界-动作模型",
       "first_seen_at": "2026-10-22 15:48:15 UTC",
       "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2610.12909v1",
+      "route": "20260923-20261022/2610.12909v1-secfd-fl-frequency-decoupled-federated-learning-with-secure-aggregation-for-charging-load-forecasting-in-internet-of-electric-vehicles",
+      "title": "SecFD-FL: Frequency-Decoupled Federated Learning with Secure Aggregation for Charging Load Forecasting in Internet of Electric Vehicles",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向车联网的充电负荷预测",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.13588v1",
+      "route": "20260923-20261022/2610.13588v1-probabilistic-forecasting-of-electric-vehicle-charging-in-a-time-varying-hierarchical-infrastructure",
+      "title": "Probabilistic Forecasting of Electric Vehicle Charging in a Time-varying Hierarchical Infrastructure",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "电动汽车充电需求的概率预测与不确定性量化",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.15118v1",
+      "route": "20260923-20261022/2610.15118v1-co-optimization-of-scheduling-control-and-incentivization-of-electric-vehicles-for-improving-power-system-stability",
+      "title": "Co-Optimization of Scheduling, Control, and Incentivization of Electric Vehicles for Improving Power System Stability",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "电动汽车充电调度、速率与时间的协同优化",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.24797v1",
+      "route": "20260923-20261022/2610.24797v1-degradation-aware-v2g-dispatch-for-co-optimization-of-parking-facility-and-edge-data-center-located-in-the-airport-campus",
+      "title": "Degradation Aware V2G Dispatch for Co-Optimization of Parking Facility and Edge Data Center Located in the Airport Campus",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "线性规划调度电动汽车充电与V2G放电以削减峰值负荷",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
     },
     {
       "paper_id": "2609.28429v1",
@@ -566,6 +630,86 @@
       "updated_at": "2026-10-22 15:48:15 UTC"
     },
     {
+      "paper_id": "2609.30628v1",
+      "route": "20260923-20261022/2609.30628v1-openhail-an-event-driven-gymnasium-environment-for-electric-ride-hailing-fleet-control",
+      "title": "OpenHail: An Event-Driven Gymnasium Environment for Electric Ride-Hailing Fleet Control",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "电动网约车车队联合控制（含充电决策）的Gymnasium环境",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.05916v1",
+      "route": "20260923-20261022/2610.05916v1-price-optimized-ev-and-heat-pump-scheduling-can-exceed-uncoordinated-feeder-peaks",
+      "title": "Price-Optimized EV and Heat-Pump Scheduling Can Exceed Uncoordinated Feeder Peaks",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "配电网馈线上价格优化的电动汽车与热泵调度",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.07571v1",
+      "route": "20260923-20261022/2610.07571v1-models-of-electric-vehicle-charging-demands-in-distribution-grid-operation-a-review",
+      "title": "Models of Electric Vehicle Charging Demands in Distribution Grid Operation: A Review",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "综述配电网运行中表征电动汽车充电需求的模型",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.25151v1",
+      "route": "20260923-20261022/2610.25151v1-distributionally-robust-chance-constrained-reinforcement-learning-for-home-energy-management-under-electric-vehicle-uncertainty",
+      "title": "Distributionally Robust Chance-Constrained Reinforcement Learning for Home Energy Management under Electric Vehicle Uncertainty",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "不确定性下考虑电动汽车充电灵活性的家庭能量调度",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.26270v1",
+      "route": "20260923-20261022/2610.26270v1-optimizing-airport-electric-ground-support-fleets-with-digital-twin-guided-predictive-control",
+      "title": "Optimizing Airport Electric Ground Support Fleets with Digital-Twin-Guided Predictive Control",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "电动地面保障车队的调度与充电协调",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
       "paper_id": "2609.27308v2",
       "route": "20260923-20261022/2609.27308v2-embodiedswe-coding-agents-for-long-horizon-dexterous-robotics",
       "title": "EmbodiedSWE: Coding Agents for Long Horizon Dexterous Robotics",
@@ -678,6 +822,70 @@
       "updated_at": "2026-10-22 15:48:15 UTC"
     },
     {
+      "paper_id": "2609.40225v1",
+      "route": "20260923-20261022/2609.40225v1-l2r-ev-learning-what-to-repair-in-electric-ride-pooling-with-finite-charger-queues",
+      "title": "L2R-EV: Learning What to Repair in Electric Ride-Pooling with Finite Charger Queues",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "含电量与有限充电队列的电动车队调度",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.04219v1",
+      "route": "20260923-20261022/2610.04219v1-adaptive-operator-selection-in-bilevel-large-neighborhood-search-for-electric-autonomous-dial-a-ride-problem-under-uncertainty",
+      "title": "Adaptive Operator Selection in Bilevel Large Neighborhood Search for Electric Autonomous Dial-a-Ride Problem under Uncertainty",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "含电池约束的电动汽车车队路径与充电调度",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.08187v1",
+      "route": "20260923-20261022/2610.08187v1-hours-of-service-aware-siting-of-charging-and-battery-swapping-stations-for-long-haul-electric-trucks-under-adoption-uncertainty",
+      "title": "Hours-of-service-aware siting of charging and battery-swapping stations for long-haul electric trucks under adoption uncertainty",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "联合选址并调度卡车充电、换电与司机休息",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.23464v1",
+      "route": "20260923-20261022/2610.23464v1-reinforcement-learning-based-pricing-and-operation-for-hybrid-electric-and-hydrogen-vehicle-stations",
+      "title": "Reinforcement Learning-Based Pricing and Operation for Hybrid Electric and Hydrogen Vehicle Stations",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "强化学习的电动汽车充电站定价与运营",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
       "paper_id": "2609.28219v1",
       "route": "20260923-20261022/2609.28219v1-load-balancing-with-partial-queue-information---threshold-optimality-and-indexability",
       "title": "Load Balancing with Partial Queue Information - Threshold Optimality and Indexability",
@@ -740,6 +948,54 @@
       "evidence": "面向物理世界中自主智能体群体的具身语义通信",
       "first_seen_at": "2026-10-22 15:48:15 UTC",
       "updated_at": "2026-10-22 15:48:15 UTC"
+    },
+    {
+      "paper_id": "2609.35111v1",
+      "route": "20260923-20261022/2609.35111v1-the-missing-price-feedback-why-studies-overstate-local-peaks-from-synchronized-home-batteries-under-dynamic-pricing",
+      "title": "The missing price feedback: Why studies overstate local peaks from synchronized home batteries under dynamic pricing",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "电动汽车充电对动态电价的响应与负荷峰值",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2609.35153v1",
+      "route": "20260923-20261022/2609.35153v1-optimal-control-of-a-non-stationary-inventory-queue-with-applications-to-ev-battery-swapping",
+      "title": "Optimal Control of a Non-Stationary Inventory-Queue, with Applications to EV-Battery Swapping",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "电动汽车换电站充电调度的最优控制",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
+    },
+    {
+      "paper_id": "2610.10532v1",
+      "route": "20260923-20261022/2610.10532v1-predictive-rerouting-of-connected-and-automated-vehicles-using-traffic-and-charging-demand-forecasts",
+      "title": "Predictive Rerouting of Connected and Automated Vehicles Using Traffic and Charging Demand Forecasts",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "ev-forecast"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "结合交通与电动汽车充电需求预测的路径重规划",
+      "first_seen_at": "2026-10-22 16:22:55 UTC",
+      "updated_at": "2026-10-22 16:22:55 UTC"
     }
   ]
 }

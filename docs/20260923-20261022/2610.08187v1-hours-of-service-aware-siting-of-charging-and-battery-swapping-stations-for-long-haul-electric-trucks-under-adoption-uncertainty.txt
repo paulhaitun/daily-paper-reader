@@ -1,0 +1,2385 @@
+Title: Article
+
+URL Source: https://arxiv.org/pdf/2610.08187v1
+
+Published Time: Wed, 07 Oct 2026 01:21:02 GMT
+
+Number of Pages: 43
+
+Markdown Content:
+1
+
+# Hours-of-service-aware siting of charging and battery-swapping stations for long-haul electric trucks under adoption uncertainty 
+
+Elnaz Irannezhad* a, Jia Guo a
+
+> a
+
+Research Centre for Integrated Transport Innovations (rCITI), School of Civil and Environmental Engineering, University of New South Wales, Sydney, New South Wales, Australia, 2052 
+
+* Corresponding author’s email:  e.irannezhad@unsw.edu.au 
+
+## Abstract 
+
+Planning en-route charging and battery-swapping infrastructure for long-haul battery-electric trucks (BETs) requires models that reflect how trucks actually operate. This paper develops a mixed-integer programming framework that jointly sites charging or swapping stations and schedules each truck's charging, swapping and mandatory driver rest, so that charging time overlaps with regulated rest instead of being added to it. Energy use is derived segment by segment from road terrain with a tractive-force model, and the truck battery is modelled as a set of independently swappable packs. Staged investment under uncertain BET adoption is formulated as a multistage stochastic program with Markovian demand and solved by stochastic dual dynamic integer programming (SDDiP) with Lagrangian cuts; we show that the Lagrangian multipliers can be bounded by each station's annualised cost without weakening the cuts. Applied to twelve freight corridors on Australia's East Coast, the algorithm jointly optimises charging and battery swapping events as well as mandatory break events. A ±30% change in adoption alters the final charge-only network 
+
+by only −12% to +13% of stations, with over 95% of stations built by the second stage. Hedging against uncertainty mainly changes which sites are chosen (71% overlap with a deterministic rolling-horizon model), not when they are built. 
+
+Keywords: Battery-electric trucks; Charging infrastructure; Hours of service; Multistage stochastic programming; Stochastic dual dynamic integer programming; Driver rest regulations 2
+
+# 1 Introduction 
+
+Battery electric trucks (BETs) are widely regarded as a key pathway to decarbonising road freight, and attention is shifting from urban and regional operations to long-haul corridors (Balke et al., 2024). Their operational feasibility depends not only on battery capacity but also on how charging events are represented, how limited station capacity is allocated and how charging interacts with vehicle schedules. Unlike diesel refuelling, battery replenishment may require substantial dwell time and is affected by the nonlinear charging profile, available infrastructure and uncertain demand. Infrastructure planning must therefore connect spatial deployment decisions with operational constraints, including delivery schedules and mandatory driver rest periods. 
+
+Return-to-base operations, in which trucks complete short routes and recharge at a depot, are a plausible early deployment pathway. Long-haul operations require a different planning problem because en-route charging or battery swapping must be coordinated with route geometry, energy use, station capacity and driver regulations. A useful planning model should therefore identify infrastructure that is feasible for representative freight movements while making its assumptions about demand, technology and regulation explicit. 
+
+Distance-based station placement alone does not guarantee an economically or operationally feasible network. Existing heavy-vehicle rest areas, passenger electric vehicle (EV) charging sites and diesel refuelling locations may offer different combinations of land, access, amenities and electrical infrastructure. Co-locating replenishment facilities with rest areas may reduce the incremental delay associated with charging when the charging event can overlap with a required break. This is particularly advantageous, as it aligns charging dwell time with regulated driver rest periods, thereby minimising productivity impacts. Where feasible, expansion of existing EV charging infrastructure may also reduce marginal upgrade costs, though dedicated high-capacity connections or on-site energy management solutions for heavy vehicles may still be required. Finally, existing diesel refuelling sites along major freight corridors present strong candidates for early-stage retrofitting due to their established heavy-vehicle access, strategic locations, and supporting amenities; however, the significantly higher power requirements of heavy-duty charging necessitate careful assessment of electrical capacity, civil works, and site layout constraints. Importantly, infrastructure planning should adopt a network-level optimisation framework accounting for truck charging demands and prioritising strategically located stations at freight corridor intersections to maximise utilisation and reduce redundant capital expenditure (CAPEX) investments. Capacity and station siting design must be informed by freight volume projections and peak demand modelling to ensure operational reliability while maintaining cost efficiency. 
+
+This paper develops a staged planning framework that combines uncertain BET demand, candidate-site feasibility, station capacity and route-level charging or swapping schedules. The framework considers demand stages associated with increasing BET penetration and identifies station locations and capacity requirements as demand evolves. It also evaluates whether regulated rest periods can absorb some replenishment time. BET charging demand on each corridor is derived from observed traffic volumes at several adoption levels, and its growth is represented by a Markov chain over low, mid and high adoption branches. These stochastic demands feed a cost–delay optimisation model that determines which candidate sites to open at each adoption stage, how many chargers or swap batteries each site requires, and how each truck combines charging or swapping with the mandatory short breaks and long rests of its driver. The result is a staged deployment plan whose site choices hedge against the range of adoption paths. 
+
+The literature on BET charging infrastructure heavily focuses on mathematical optimisation methods to address facility location or vehicle routing problems. Whitehead et al. (2021) argue that current optimisation models of this nature function well for strategic planning. However, they have difficulty in representing the dynamic complexity of actual operations. The early BET studies have simplified the technical and operational constraints. For example, numerous optimisation models adopt the charging time and battery state-of-charge (SoC) as a linear relationship. The lithium-ion battery is charged following a non-linear profile, and the speed of charging is reduced when the battery is almost full, 3
+
+which is the tapering phase. When the non-linear behaviour of the battery is ignored, it is possible that "optimistic" operational schedules will appear that cannot be realised in practice (Montoya et al., 2017). 
+
+Furthermore, early studies often relied on other simplified assumptions, such as the requirement to always fully recharge the battery. Although overnight depot charging remains the most common strategy for fleet operations to avoid downtime, opportunity charging through battery swapping or fast charging can extend the daily operating range. Furthermore, the separation of charger deployment from vehicle scheduling usually results in the inefficient use of capital (Bertucci et al., 2024). It becomes particularly important for heavy vehicle operations, because heavy vehicles must take mandatory rests and follow the fatigue management schemes set by heavy vehicle regulators. The mandatory truck driver rest duration can be utilised for charging or battery swapping purposes. 
+
+Three questions motivate this study. First, how much charging or swapping infrastructure do long-haul freight corridors require when energy use is derived from terrain, charging follows a non-linear curve, and charging or swapping is scheduled jointly with mandatory driver rest? Second, how sensitive is that requirement to the balance between capital cost and driver delay, and does the sensitivity differ by corridor? Third, how much does planning under adoption uncertainty, rather than for a single forecast, change which stations are built and when? 
+
+To answer these questions, this study makes five contributions. First, unlike a flat, distance-proportional approximation of energy use, the proposed model derives energy consumption directly from the road corridor's vertical alignment. The road centreline for each route is discretised into 1-kilometre segments, each of which is assigned a terrain-derived grade. A physics-based tractive-force model is then applied to each segment to determine whether the truck draws energy from the battery (level or uphill travel) or returns energy to the battery through regenerative braking (sufficiently steep descents), and a constant auxiliary electrical load is added on top of traction demand. Segment-level energy values are summed to obtain cumulative energy consumption between the origin and destination of each route, and between consecutive candidate charging/swapping facilities along the route. 
+
+Second, the model jointly sites stations and schedules charging or swapping together with mandatory driver rest. Charging and rest are allowed to overlap, so charging adds to trip time only when it outlasts the rest the driver must take anyway. Earlier studies schedule charging and rest along a given route with given stations (Bai et al., 2023; Wan et al., 2024; Zähringer et al., 2024; Kahlert et al., 2026); here station locations are decision variables. We implement a stylised two-tier rule (a 10-minute short break after at most 2 hours of continuous driving and a 30-minute long rest after at most 5 hours of cumulative driving) that requires more frequent rest than the minimum under Australia's Standard Hours (Section 4). Other two-tier regimes can be represented by only changing four parameters. 
+
+Third, this study considers multi-pack batteries on trucks instead of one battery. This introduces a more realistic assumption where each battery is independently swappable. Most existing studies target passenger cars and last-mile delivery vans, which carry a single battery pack, so the battery has not been modelled as an indexed set of packs. Modular heavy-truck swapping systems already allow one to three standardised packs per truck (Barnard, 2026).  In this study, we assume each truck is equipped with a fixed number of battery modules. In a modular battery-swapping system, the number of packs exchanged during a single swapping event may vary, such that either a single pack or multiple packs can be replaced. By contrast, for charging, the onboard charging system distributes power across the individual battery modules, enabling simultaneous charging of all batteries. 
+
+Fourth, staged investment under uncertain adoption is formulated as a multistage stochastic program with Markovian demand and solved by stochastic dual dynamic integer programming (SDDiP), building on Zou et al. (2019). At each adoption stage, the policy decides which stations to open, given the stations already built and the adoption level observed so far; an opened station is never closed. Because station costs are discounted, a station that is not yet needed is cheaper to build later, and the stochastic policy weighs this against the risk of having to add stations if adoption turns out high. Methodologically, multistage stochastic integer programs of the kind formulated here are increasingly solved with SDDiP (Zou et al., 2019), which has been applied to power-system capacity expansion (Lara et al., 2020). Stagewise-dependent uncertainty is commonly handled by modelling the random process as a Markov chain and 4
+
+keeping a separate cost-to-go approximation for each Markov state (Dowson and Kapelevich, 2021; Löhndorf and Shapiro, 2019). We adopt this approach for BET adoption. We also show that the Lagrangian multipliers used to generate SDDiP cuts can be bounded by each station’s annualised cost without weakening the cuts (Proposition 2), and that the cuts remain valid when dual iterations or MILP solves are stopped early (Proposition 1). Fifth, a route’s peak-hour flow can be split into several parallel sub-flows, each free to use different stations, so that peak demand is served jointly by multiple capacity-constrained stations rather than by a single facility. 
+
+Section 2 provides a review of the literature and research gap. Section 3 introduces the methods and model formulation. Section 4 presents the case study, and Section 5 presents the results. Section 6 discusses the results, and Section 7 concludes the study and outlines study limitations and future research directions. 
+
+# 2 Literature Review 
+
+This review is organised around four linked modelling layers: evidence on BET deployment, energy-consumption estimation, charging behaviour and scheduling, and infrastructure placement under capacity and uncertainty. We identify which assumptions are inherited when operational models are used to inform strategic station investment. The review concludes by specifying the modelling gaps addressed in this paper and the aspects that remain outside its scope. 
+
+2.1 Operational Feasibility and Deployment Evidence 
+
+Field evidence indicates that BET performance depends strongly on duty cycle, battery capacity, ambient conditions and the maturity of the supporting charging network. Hovi et al. (2019) for example, reported positive user experiences among seven Norwegian pilot operators, but also identified range limitations under high loads and cold conditions, which have led companies to re-route operations and be cautious about vehicle scheduling during peak hours. These findings support modelling BET operations as context-dependent rather than assuming that one vehicle and infrastructure configuration is suitable for every freight task. 
+
+Economic studies reach a similar conclusion. Vijayagopal and Rousseau (2021) showed that the relative competitiveness of BETs depends on vehicle class, battery cost, electricity price and annual utilisation. In particular, a large battery can be economically inefficient when the duty cycle does not use its range. These results motivate explicit battery and duty-cycle assumptions in infrastructure studies, although the present paper does not perform a full total-cost-of-ownership comparison. 
+
+At the network level, Liimatainen et al. (2019) found that electrification potential varies by commodity, vehicle class and charging strategy. Their results demonstrate that the infrastructure network can be a binding condition for long-haul electrification. They suggested that, at current battery technology, BETs can cover around 52% of road transport tasks in Switzerland and 50% in Finland; with higher-capacity batteries and fast-charging infrastructure, coverage rises to 93% and 81% respectively. This gap between current and achievable coverage underscores the importance of the charging network itself, rather than the vehicle alone, as the binding constraint on electrification. The same study identifies medium-duty trucks (under 26 tonnes) and some heavy-duty rigid trucks (26-40 tonnes) as having the strongest commercial case for early electrification, informing the vehicle classes represented in this study's model. 
+
+These studies motivate two modelling requirements: energy and range estimates should reflect route conditions, and infrastructure should be evaluated against the operating patterns it is intended to serve. The following subsections review how these requirements have been addressed and where simplifications remain. 
+
+2.2 Energy Consumption Modelling 5
+
+Energy-consumption estimates affect feasible route spacing, charging requirements and the reliability of the resulting schedule. The literature generally uses either physics-based longitudinal models or data-driven models. The former are transparent and can be applied where telematics data are limited, whereas the latter can capture empirical interactions if sufficiently detailed training data are available. 
+
+Physics-based models use vehicle-dynamics relationships to estimate the power required to overcome aerodynamic drag, rolling resistance, gravitational effects and inertia. Goeke and Schneider (2015) incorporated such relationships into an electric-vehicle routing problem, including payload effects. Tong et al. (2021) likewise showed that corridor-level energy use can vary materially with road grade and speed. These studies support using route-specific energy estimates when station spacing is a central decision. 
+
+Physics-based models are explainable but require detailed parameters, such as drag coefficients and rolling resistance, that are not always available or accurate under real-world conditions. Data-driven approaches tackle this issue by regressing the observed energy consumption over variables such as speed, road grade and vehicle weight, using real-world empirical data. As the availability of BET telematics data increases, researchers move beyond classical statistical models and apply machine learning methods to unravel the nonlinear relationships between parameters (e.g. see, (Gonzalez et al., 2023)). Such models may be valuable for calibration, but detailed second-by-second BET data remain difficult to obtain, especially for emerging long-haul fleets. 
+
+2.3 Charging Behaviour and Non-linear State-of-Charge Dynamics 
+
+Once energy use is estimated, charging duration must be represented consistently with battery behaviour. A significant advance in this literature is the treatment of the relationship between charging time and battery SoC as non-linear rather than linear. Montoya et al. (2017) showed that nonlinear charging functions can materially affect electric-vehicle routing decisions. A constant-current/constant-voltage (CC-CV) profile generally produces a tapering rate at high SoC, so a linear charging-time approximation may underestimate dwell time. Piecewise-linear approximations provide a tractable way to embed this relationship in a mixed-integer model, provided that their breakpoints and approximation error are reported. Löbel et al. (2025) further discussed the limitations of coarse linear interpolation for nonlinear battery behaviour. Their findings highlight the need to document breakpoint selection and to check whether the approximation is conservative. Together, these two studies establish that charging-time realism, not just energy realism, is a prerequisite for credible station-sizing and scheduling models. 
+
+2.4 Charging Scheduling and Grid Interaction 
+
+With energy and charging time specified, a further literature stream considers operational scheduling and grid interaction. Bertucci et al. (2024) studied charging infrastructure placement jointly with the charging capacity in a logistics distribution network. Walz and Rudion (2024) demonstrated that charging policies affect aggregate load profiles on the electricity grid, while Balke et al. (2024) examined multi-site charging and synchronisation with rest periods, reducing peak-hour waiting time and spreading charging load. Liimatainen et al. (2019) simulated four charging-strategy scenarios, including centralised night charging and high-power on-road charging, and found that the share of routes coverable by BETs nearly doubles when a minimum charging time of 2 hours and charging power of at least 250 kW are available on-road, compared with relying on night charging alone, reinforcing the importance of high-power en-route infrastructure for range coverage. These studies suggest that vehicle schedules, charger capacity and grid impacts are interdependent. The present model captures the first two interactions but leaves electrical-network constraints outside the formulation and suggests it for future research direction. 
+
+Shared facilities also create congestion when truck arrivals overlap. Bai et al. (2023) modelled a coordinated charging mechanism and queue information sharing between charging stations and drivers. They modelled a scenario in which stations provide waiting-time estimates on a first-come, first-served basis and trucks dynamically re-optimise charging decisions en-route. Their results indicate that capacity planning based only on individual vehicle energy needs may be 6
+
+insufficient. In contrast, the present model represents peak concurrent demand through capacity constraints but does not model stochastic queues or first-come, first-served service explicitly. 
+
+2.5 Charging and Battery-Swapping Infrastructure Placement 
+
+The most closely related literature concerns the location and sizing of charging or battery-swapping infrastructure. These studies typically use facility-location, vehicle-routing or network-design formulations to balance coverage, service quality and investment cost. Their assumptions differ in whether station capacity, route-level scheduling, grid constraints and uncertainty are represented. 
+
+Whitehead et al. (2021) used a facility-location approach to examine public charging requirements for short-haul electric trucks in Queensland. Their results illustrate how public charging can complement depot charging, while also highlighting the limitations of coverage models that omit station capacity. Speth et al. (2025) incorporated capacity constraints informed by queueing considerations, showing why station layouts that ignore service capacity may be operationally infeasible. Hurtado-Beltran et al. (2021) used GIS-based network analysis to assess electrification potential across the U.S. highway system, and proposed that existing truck-stop infrastructure can provide a useful basis for charging deployment, although electrical and site constraints remain important. Deng et al. (2024) incorporated environmental objectives into station planning and demonstrated that a small number of well-located sites can cover a large share of freight flow in a particular study area. 
+
+Other studies consider battery-swapping systems and the management of batteries at swap stations. Outside the truck context, several studies address battery-delivery and battery-swapping station siting for passenger electric vehicles, without a truck or charging-network focus (e.g., (Liu et al., 2019; Yang and Sun, 2015; Yang et al., 2024)). Within trucking, Wang et al. (2024) jointly modelled station design and the charging of depleted batteries, while Ye (2024) considered charging infrastructure and grid supply for heavy-duty drayage. 
+
+A smaller group of studies incorporates driver regulations or dynamic charging into operational scheduling. Zähringer et al. (2024), Wan et al. (2024), and Kahlert et al. (2026) represent aspects of charging and rest scheduling, but treat station locations as given or simplify the regulatory process. Wang et al. (2025) compare swapping and fast charging in a strategic framework, but do not use the same route-specific station-siting formulation. 
+
+In operations research, en-route station siting is usually framed as a flow-refuelling location problem. An origin– destination flow is served only if the stations along its path allow the trip to be completed within the vehicle range (Capar et al., 2013; Kuby and Lim, 2005). Later work added Benders Decomposition algorithm for plug-in hybrid vehicles (Arslan and Karaşan, 2016) , route flexibility under full coverage (Kınay et al., 2021) , multi-period deployment (Chung and Kwon, 2015), multi-period capacitated planning with demand dynamics (Zhang et al., 2017) and non-linear charging times with heterogeneous chargers (Park and Lee, 2024). For battery swapping, Mak et al. (2013) located swapping stations for passenger EVs under uncertain demand using robust optimisation. These models treat a trip as a sequence of range-feasible legs; none of them schedules the driver’s mandatory rest, which is a defining operational constraint of long-haul trucking. 
+
+Truck driver scheduling under working-hour rules is itself a well-studied problem (Goel, 2009). Goel (2012b) formulated the Australian truck driver scheduling problem, whose sliding-window rules limit work to at most 12 hours and require at least 7 hours of rest in any 24-hour period. Similarly, (Goel, 2010, 2012a; Goel, 2012c) formulated the truck driver schedules for the European Union, Canada and the US. These studies treat vehicle range as unlimited, whereas the present paper models the interaction between rest and energy replenishment. 
+
+Collectively, these studies motivate a model that links station location, capacity and regulated rest scheduling. The present study is the first to address everyone of these features jointly, so the contribution is stated as an incremental integration of established modelling elements. 7
+
+2.6 Research Gaps and Study Contributions 
+
+The reviewed literature reveals a recurring separation between operational realism and strategic infrastructure planning. Energy models are not always connected to station siting; scheduling studies often treat station locations as fixed; and infrastructure studies frequently use static demand and simplified battery or rest representations. Studies that model terrain-based energy physics in detail (e.g. (Goeke and Schneider, 2015; Tong et al., 2021)) are not connected to siting or scheduling decisions; siting and scheduling studies that address driver rest regulations (e.g. (Kahlert et al., 2026; Wan et al., 2024; Zähringer et al., 2024)) either treat station locations as fixed or simplify the rest rules; and the placement and swapping studies reviewed treat the truck battery as a single pack and the infrastructure network as a static, single-stage design problem. 
+
+This paper combines several of these elements in a single staged planning framework. Table 1 summarises the gaps, their planning relevance and the corresponding modelling choices. Taken together, these five contributions integrate the energy, charging-behaviour, scheduling and network-placement layers reviewed above into a single staged planning framework, closing the gap between the operational realism established by the energy-consumption, charging-behaviour and scheduling literature and the strategic, investment-timing decisions addressed by the facility-location and battery-swapping literature. 
+
+Table 1: Research gaps identified in the literature, their importance, and this study's contributions. 
+
+Research gap  Why it matters  Contribution of this study 
+
+Energy consumption in siting/scheduling models is typically considered a flat, distance-proportional rate rather than derived from actual road grade and vehicle dynamics (e.g. (Kahlert et al., 2026; Tong et al., 2021)). 
+
+Specific energy consumption varies by nearly a factor of two with road grade ((Tong et al., 2021)), so flat-rate assumptions cause errors in station siting, battery sizing and charging-time estimates. 
+
+Discretises each route into fixed-length segments with terrain-derived grade and applies a physics-based tractive-force model per segment, including regenerative braking on descents, to obtain cumulative, corridor-specific energy profiles between stations. 
+
+To our knowledge, no siting model integrates mandatory driver HoS rest regulations into the joint charging-and-siting decision; related studies either schedule charging/rest on a fixed route without siting stations (e.g. (Wan et al., 2024; Zähringer et al., 2024)), or simplify the rest rules while treating stations as given (e.g. (Kahlert et al., 2026)). 
+
+Ignoring the interaction between rest breaks and charging produces networks that look efficient on paper but generate unnecessary trip delay in practice, since rest dwell-time is not used to offset charging time. 
+
+Integrates mandatory rest regulations directly into the charging/swapping and station-siting decision, aligning rest breaks with station placement to jointly minimise total trip delay. 
+
+Existing formulations treat the truck battery as a single pack, an assumption inherited from passenger-EV and last-mile-van routing research (e.g. (Wang et al., 2024; Wang et al., 2025)); they also ignore the possibility of partial opportunity charging. 
+
+Heavy-duty trucks can carry multiple battery packs; a single-pack assumption rules out partial charging/swapping strategies and understates the operational flexibility available to operators. 
+
+Models multi-pack batteries as an independently swappable set, enabling realistic partial charging/swapping decisions. 
+
+Placement studies are largely static, single-stage designs sized against one 
+
+Building full capacity upfront risks stranded assets if demand 
+
+Applies a multi-stage SDDiP approach (building on (Zou et al., 8
+
+demand forecast rather than a sequential investment problem under uncertain demand growth (e.g. (Deng et al., 2024; Speth et al., 2025; Whitehead et al., 2021; Ye, 2024)). 
+
+grows slower than expected, while under-building risks costly retrofits; static models price neither risk. 
+
+2019)) to time station investment under uncertain demand growth, separating stations worth building now from those to defer, and discounting CAPEX to present value. 
+
+Siting/capacity models typically assign each route's peak flow to a single station rather than allowing several capacity-constrained stations to jointly serve shared peak-hour demand (e.g. Whitehead et al., 2021). 
+
+Single-station assignment understates congestion risk and misprices capacity investment when several stations could share peak load along a corridor. 
+
+Allows peak-hour flow on a route to be served by multiple, capacity-contended stations simultaneously, within each stage of the SDDiP framework. 
+
+# 3 Models 
+
+This section presents the assumptions and mathematical formulation. Given candidate locations along each route, the proposed model determines the optimal siting of charging stations and battery-swapping stations by minimising the sum of (i) the total annualised fixed cost of station establishment and (ii) the monetised cost of driver delay, both in AUD per year, subject to HoS regulations and station capacity constraints. The stochastic charging demand component is then formulated as an SDDiP framework to identify the staged station sitings and required battery inventories and/or chargers at each station. 
+
+The principal decision variables are grouped as follows: 
+
+• Station deployment: (i) the candidate locations at which charging or swapping facilities are opened, (ii) the number of charging units installed at each deployed charging facility; (iii) the number of fully charged replacement battery modules at deployed battery swapping station; (iv) the truck sub-flow and facility visit along a route; and (v) if charging is selected, the charging duration and departure SoC of the battery module. 
+
+• Drivers’ rest schedule: The driver rest decision at each facility visit: no break, a short break or a long rest. 
+
+Constraints include: 
+
+• Energy feasibility: the battery state must support travel between the origin, consecutive facilities and the destination. 
+
+• Facility capacity constraints: 
+
+o Charging capacity: the number of trucks represented by the concurrent peak flow cannot exceed the available charging capacity. 
+
+o Swapping capacity: the number of battery modules exchanged concurrently cannot exceed the available replacement battery inventory. 
+
+o Demand growth: as the assumed BET share increases, the required service capacity may increase. Station deployment is irreversible in the current stochastic formulation, whereas charger counts and battery inventories are re-optimised at each stage unless additional monotonicity constraints are imposed. 
+
+• Drivers Hours of Service constraints: 
+
+o A driver must take the assumed short break after no more than the specified maximum period of continuous driving. 
+
+o A driver must take the assumed long rest after no more than the specified maximum cumulative driving period. The exact regulatory interpretation is documented in Section 4 and should be verified against the applicable jurisdiction. 
+
+The objective function is defined as follows: 
+
+• The first objective minimises the total annualised station establishment cost, where the upfront establishment cost is converted to an equivalent annual cost over the planning horizon using the capital recovery factor. 9
+
+• The second objective minimises the total delay cost incurred by trucks, calculated as the product of the delay experienced by each truck and the corresponding driver value of time. The delay at each station is determined by the time required for battery charging or swapping and, where applicable, mandatory rest and break requirements under HoS regulations. Because mandatory rest is required whether or not the truck charges, this term includes dwell time that a diesel truck would also incur; what the model can reduce is the dwell time in excess of the mandatory rest. 
+
+• Both objectives are expressed in AUD per year (delay through the driver value of time), so they are combined by simple addition and the value of time acts as the weight on delay. 
+
+3.1 Assumptions 
+
+This study assumes that batteries charged en-route are not required to reach 100% state of charge (SoC), whereas batteries obtained through swapping are assumed to be fully charged (SoC = 100%). A minimum SoC of 10% is enforced throughout to mitigate range anxiety. Charging battery packs takes substantially longer than swapping them (the charging parameters used in the case study are given in Section 4); a swap can be completed in about 10 minutes, as demonstrated in the eHaul project (Technische Universität Berlin, 2026). Depleted batteries removed from a truck during a swap are subsequently recharged to 100% SoC at the station, rendering them available for future use by other trucks. 
+
+Assumptions are outlined in two categories: 
+
+• Data assumptions: 
+
+o For each origin-destination pair, the input demand is represented by a peak-hour truck flow for the relevant planning stage. The model treats this aggregate flow as divisible across parallel sub-flows; it does not represent individual truck arrivals. 
+
+o Travel speed is fixed by segment and travel time between consecutive facilities is deterministic. Congestion, weather-related speed variation and incidents are not modelled. 
+
+o Energy consumption is calculated from tractive force as a function of grade, speed, distance, vehicle mass and the parameters in  Table 3 . All trucks are assigned the same values for these parameters within an experiment. 
+
+o Each origin-destination pair follows a predetermined route and direction. Rerouting, detours to facilities and route choice are outside the present model. 
+
+• Operational assumptions: 
+
+o When charging is selected at a visit, the battery modules on the representative truck are charged in parallel according to the adopted charging-curve approximation. 
+
+o When swapping is selected, one or more battery modules may be exchanged in the same event. The numerical experiments assume a fixed ten-minute event regardless of the number of modules exchanged; this simplifying assumption requires validation for a specific swapping technology. 
+
+o Charging duration is represented by a convex piecewise-linear approximation of the adopted CC-CV charge curve, rather than by a constant charging rate. 
+
+o During travel, all battery modules discharge in parallel and are subject to the same segment-level energy requirement. 
+
+o Partial charging is permitted. Arrival SoC is constrained by the minimum reserve, while a swapped module is assigned the assumed full SoC. The phrase “minimum SoC reserve” is used below in place of “charging anxiety.” 
+
+o All battery modules are assumed to leave the origin at the specified initial SoC, which is set to 100% in the experiments. 10 
+
+3.2 Mathematical Formulation 
+
+This section presents mathematical formulation.  Table 2  presents the notations used in this study. 
+
+Table 2: Model notations. 
+
+Sets and indices: 
+
+𝑅𝑅 , 𝑟𝑟  Set and index of routes (origin-destination pairs) 
+
+𝐼𝐼 , 𝑖𝑖  Set and index of candidate charging station locations 
+
+𝐼𝐼𝑟𝑟  Sequence of potential stations along route 𝑟𝑟 , from the origin to destination 
+
+𝑜𝑜𝑟𝑟 , 𝑑𝑑𝑟𝑟  Origin and destination of route 𝑟𝑟 
+
+𝐵𝐵  Set of batteries on a truck 
+
+𝛤𝛤 𝑟𝑟  Set of parallel sub-flows of route 𝑟𝑟 
+
+𝐾𝐾  Number of breakpoints used to discretise the charging curve 
+
+𝑇𝑇 , 𝑡𝑡  Set and index of planning stages 
+
+Demand parameters: 
+
+𝑓𝑓 𝑟𝑟  Total BET flow per day on route 𝑟𝑟 
+
+𝑓𝑓 𝑟𝑟 𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑝  Concurrent peak-hour BET flow on route 𝑟𝑟 , as opposed to 𝑓𝑓 𝑟𝑟 ’s daily total 
+
+𝑑𝑑𝑟𝑟 ,𝑖𝑖 ,𝑖𝑖+1  Distance between consecutive locations 𝑖𝑖 and 𝑖𝑖 + 1 on route 𝑟𝑟 
+
+𝑡𝑡𝑟𝑟 ,𝑖𝑖 ,𝑖𝑖+1  Driving time between consecutive locations 𝑖𝑖 and 𝑖𝑖 + 1 on route 𝑟𝑟 
+
+𝑒𝑒𝑟𝑟 ,𝑖𝑖 ,𝑖𝑖+1  Energy consumption between consecutive locations 𝑖𝑖 and 𝑖𝑖 + 1 on route 𝑟𝑟 
+
+𝛤𝛤 max  Cap on the number of parallel sub-flows a route may be split into 
+
+𝑞𝑞  Sub-flow 𝑞𝑞 carries a proportion of the route 𝑟𝑟 ’s peak-hour flow 
+
+Energy  parameters: 
+
+𝑒𝑒𝑏𝑏  Energy capacity of each battery 
+
+𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+, 𝜆𝜆 𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑  (nonnegative real, SOS2) interpolation weight on breakpoint p of the charge curve, for battery 
+
+b's arrival/departure SoC at location i on route r
+
+𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+, 𝛷𝛷 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+(nonnegative real) piecewise- linear interpolated time to charge from 0% SoC to battery b's arrival/departure SoC at location i on route r
+
+𝑠𝑠𝑝𝑝  SoC value at breakpoint 𝑝𝑝 = 0, … , 𝐾𝐾 , with 𝑠𝑠0 = 0 and 𝑠𝑠𝐾𝐾 = 1 from the charge-curve data 
+
+𝜑𝜑𝑝𝑝  Time (minutes) required to charge a battery from 0% SoC to 𝑠𝑠𝑝𝑝 , with 𝜑𝜑0 = 0 
+
+𝜌𝜌 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  Charger throughput (trucks per hour per charger), calculated as 𝜌𝜌 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  = 60/ 𝜑𝜑𝑝𝑝 
+
+𝜌𝜌 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  Swap throughput per hour per battery slot, calculated as 𝜌𝜌 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  = 60/ 𝑡𝑡 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝 
+
+𝑠𝑠𝑚𝑚 𝑖𝑖 𝑚𝑚  SoC floor at every arrival/departure, to avoid range anxiety (e.g. 10%) 
+
+𝑠𝑠𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  
+
+> 𝑚𝑚 𝑝𝑝 𝑚𝑚
+
+Ceiling on SoC reachable via a charger (e.g. 100% for a full charge, or 80% for faster charging and battery health) 
+
+Station parameters: 
+
+𝐶𝐶𝑖𝑖  Fixed upfront cost of building station 𝑖𝑖 
+
+𝜄𝜄  Lifetime of station 
+
+𝛼𝛼  Annual discount rate used in the capital recovery factor 
+
+𝜌𝜌  Capital recovery factor 𝛼𝛼 (1 + 𝛼𝛼 )𝜄𝜄 /((1 + 𝛼𝛼 )𝜄𝜄 − 1) 
+
+𝑁𝑁𝑖𝑖 𝑚𝑚 𝑝𝑝 𝑚𝑚  Maximum installable chargers at candidate station 𝑖𝑖 (upper bounds on 𝑁𝑁𝑖𝑖 )
+
+𝐻𝐻𝑖𝑖 𝑚𝑚 𝑝𝑝 𝑚𝑚  Maximum batteries at candidate station 𝑖𝑖 (upper bounds on 𝐻𝐻𝑖𝑖 )
+
+Time-related parameters: 11 
+
+𝑡𝑡 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  Time required to swap a battery 
+
+𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  Minimum short break time for consecutive driving 
+
+𝑡𝑡 𝑓𝑓𝑓𝑓𝑓𝑓𝑓𝑓  Time required to charge a battery from 0% to 100% SoC at 
+
+𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  Minimum long rest time for cumulative driving 
+
+𝑡𝑡 𝑑𝑑 𝑟𝑟𝑖𝑖𝑎𝑎𝑝𝑝  Maximum consecutive driving time before having a 𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  break 
+
+𝑡𝑡 𝑑𝑑𝑟𝑟𝑖𝑖𝑝𝑝  Maximum cumulative driving time before having a 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  rest 
+
+days  Total operational days in a year (assumed 365 days) 
+
+VoT  Driver value of time (assumed 3 AUD per truck-minute) 
+
+Other parameters: 
+
+𝑀𝑀  A sufficiently large positive constant (big-M)
+
+𝜀𝜀  A sufficiently small positive constant 
+
+Strategic (infrastructure) decision variables: 
+
+𝑋𝑋𝑖𝑖  (binary) 1 if a station is deployed in location 𝑖𝑖 , 0 otherwise 
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+(binary) 1 if battery 𝑏𝑏 is charged at location 𝑖𝑖 on route r, 0 otherwise 
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+(binary) 1 if battery 𝑏𝑏 is swapped at location 𝑖𝑖 on route r, 0 otherwise 
+
+𝜔𝜔𝑟𝑟 𝑖𝑖 𝑟𝑟  (binary) 1 if sub-flow q of route r charges at location i occupying one charger bay, 0 otherwise 
+
+𝑁𝑁𝑖𝑖  (nonnegative integer) number of deployed chargers at station 𝑖𝑖 at each demand stage 
+
+𝐻𝐻𝑖𝑖  (nonnegative integer) number of deployed full batteries in station 𝑖𝑖 at each demand stage 
+
+ℵ𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 ∗ (binary) Local linearisation auxiliary variable; if equal 1, it is an active segment for battery’s SoC interpolation at location i on route r
+
+Operational (scheduling) variables: 
+
+𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+(nonnegative real) SoC of battery 𝑏𝑏 upon arrival at location 𝑖𝑖 on route r
+
+𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+(nonnegative real) SoC of battery 𝑏𝑏 when it departs from visit 𝑖𝑖 on route r
+
+𝑇𝑇𝑟𝑟 𝑖𝑖  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+(nonnegative real) arrival time at location 𝑖𝑖 on route r
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+(nonnegative real) departure time from location 𝑖𝑖 on route r
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+(nonnegative real) charging time of battery 𝑏𝑏 at location 𝑖𝑖 on route r
+
+𝐷𝐷𝑟𝑟 𝑖𝑖  (nonnegative real) driver’s cumulative working time (including short breaks and charging/swapping time) since last long rest, when arriving at location 𝑖𝑖 on route 𝑟𝑟 
+
+𝐺𝐺𝑟𝑟 𝑖𝑖  (nonnegative real) driver’s consecutive driving time since last long rest or break, when the driver arrives at location 𝑖𝑖 on route 𝑟𝑟 
+
+𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+(nonnegative real) long rest duration at location 𝑖𝑖 on route r
+
+𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+(nonnegative real) short break duration at location 𝑖𝑖 on route r
+
+𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+(binary) 1 if a 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  long rest occurs at location 𝑖𝑖 on route r, 0 otherwise 
+
+𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+(binary) 1 if a 𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  short break occurs at location 𝑖𝑖 on route r, 0 otherwise 
+
+𝜏𝜏𝑟𝑟 𝑖𝑖 , 𝜂𝜂𝑟𝑟 𝑖𝑖  Auxiliary variables for linearising delay objective function for charge/swap at location 𝑖𝑖 on route r, respectively 
+
+Multistage stochastic (SDDiP) notation: 
+
+𝑛𝑛  Number of candidate stations on the route, n = | Ir |
+
+𝜉𝜉 𝑑𝑑  ∈ 𝛯𝛯  Demand state in stage t (Low, Mid or High adoption) 
+
+𝑃𝑃 = �𝑃𝑃 𝑗𝑗 𝑝𝑝 � Transition matrix of the demand-state Markov chain ( j: current state, k: next state) 
+
+𝜅𝜅 (𝜉𝜉 ) Demand multiplier of demand state ξ (0.7, 1.0 and 1.3 for Low, Mid and High) 12 
+
+𝛿𝛿  Per-stage discount factor (0.94) 
+
+𝑥𝑥 𝑑𝑑  = �𝑥𝑥 𝑑𝑑 ,𝑖𝑖 �𝑖𝑖∈𝐼𝐼𝑟𝑟 
+
+(binary vector) station-deployment state at the end of stage t, with xt,i = Xi in stage t
+
+𝑧𝑧 𝑑𝑑  Local copy of the incoming state xt−1 in stage t
+
+𝑦𝑦 𝑑𝑑 , 𝒴𝒴 𝑑𝑑 (𝑥𝑥 𝑑𝑑 , 𝜉𝜉 𝑑𝑑 ) Local (operational) decisions of stage t and their feasible set 
+
+𝑐𝑐 𝑑𝑑 , 𝑐𝑐̃ 𝑑𝑑 , 𝛥𝛥 𝑑𝑑  Stage cost; operating (delay) cost; total daily truck delay (minutes) 
+
+𝑄𝑄 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝜉𝜉 𝑑𝑑 ) Value function: optimal expected discounted cost from stage t onward 
+
+𝒬𝒬 𝑑𝑑 +1 (𝑥𝑥 , 𝑗𝑗 ), 
+
+𝒬𝒬 �𝑑𝑑 +1 (𝑥𝑥 , 𝑗𝑗 )
+
+Expected cost-to-go after stage t given deployment state x and current demand state j, and 
+
+its cut approximation 
+
+𝒞𝒞 𝑑𝑑 ,𝑗𝑗 , 𝛾𝛾ℓ , 𝛽𝛽ℓ , 𝜓𝜓  Cut set for stage t and demand state j; intercept and slope of cut ℓ; epigraph variable of the 
+
+cost-to-go 
+
+𝑥𝑥 � Trial state at which cuts are generated 
+
+𝜋𝜋 , 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ), 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ), 
+
+ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ; 𝑥𝑥 �)
+
+(non-negative) Lagrangian multipliers on the copy constraint, bounded by ρ Ci (Proposition 2); dual-function constant; any lower bound on it (e.g. the solver’s proven bound); Lagrangian dual function 
+
+𝜇𝜇 𝑑𝑑  Policy (decision rule) of stage t
+
+The first objective term minimises annualised station setup cost , where the upfront establishment cost is converted to an equivalent annual cost over the planning horizon using the capital recovery factor, which converts the initial capital investment into an equivalent uniform annual cost, as follows: 
+
+min 𝑍𝑍1 = ∑ 𝐶𝐶𝑖𝑖𝑋𝑋𝑖𝑖 ( 𝛼𝛼 (1+𝛼𝛼 )𝜄𝜄 
+
+> (1+𝛼𝛼 )𝜄𝜄 −1
+
+)𝑖𝑖∈𝐼𝐼 (1) 
+
+where 𝐶𝐶𝑖𝑖 is the upfront establishment cost of stations, 𝛼𝛼 is the annual discount rate, and 𝜄𝜄 is the lifetime of a station. 
+
+The second objective minimises the total annual delay cost incurred by trucks, calculated as the product of each truck's delay, the driver value of time (VoT), and the total operational days in a year ( days) . The delay at each station is determined by the time required for battery charging or swapping and, where applicable, mandatory rest and break requirements under HoS regulations. For swapping batteries, the fixed 10-minute swap time is independent of how many batteries are swapped. The second objective term is: 
+
+min 𝑍𝑍2 = VoT × days × ∑ 𝑓𝑓 𝑟𝑟 𝑟𝑟∈𝑅𝑅 ∑ �𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+�𝑖𝑖∈𝐼𝐼𝑟𝑟 
+
+= VoT × days × ∑ 𝑓𝑓 𝑟𝑟 𝑟𝑟∈𝑅𝑅 ∑ max 𝑖𝑖∈𝐼𝐼𝑟𝑟 �max  
+
+> 𝑏𝑏
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+, 𝑡𝑡 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  � 1𝑀𝑀 ∑ 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+> 𝑏𝑏
+
+� , 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+, 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+� (2) 
+
+To linearise this delay objective function term, we introduce new variables 𝜏𝜏𝑟𝑟 𝑖𝑖  and 𝜂𝜂𝑟𝑟 𝑖𝑖 , where 𝜏𝜏𝑟𝑟 𝑖𝑖  ≥ 0 and 𝜂𝜂𝑟𝑟 𝑖𝑖  ∈ {0,1}. 
+
+Therefore, the linearised objective function of total delay can be replaced with: 
+
+min 𝑍𝑍2 = VoT × 𝑛𝑛day × ∑ 𝑓𝑓 𝑟𝑟 𝑟𝑟∈𝑅𝑅 ∑ �𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+�𝑖𝑖∈𝐼𝐼𝑟𝑟 (3) 
+
+s.t. 
+
+𝜏𝜏𝑟𝑟 𝑖𝑖  ≥ 𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (4) 
+
+𝜂𝜂𝑟𝑟 𝑖𝑖  ≥ 1𝑀𝑀 ∑ 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+> 𝑏𝑏
+
+∀ 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (5) 13 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≥ 𝜏𝜏𝑟𝑟 𝑖𝑖  ∀ 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (6) 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≥ 𝑡𝑡 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝 𝜂𝜂𝑟𝑟 𝑖𝑖  ∀ 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (7) 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≥ 𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+∀ 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (8) 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≥ 𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+∀ 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (9) 
+
+The formulation above allows every station location to choose freely between charging and swapping. However, motivated by the existing swapping business models around the world, the experimental study instead evaluates two separate, specialised variants, obtained by fixing the corresponding decision variables to zero and removing the associated capacity and cost terms. Furthermore, because swapping is typically far faster than a full charge ( 𝜌𝜌 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  ≫
+
+𝜌𝜌 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝 , e.g. a battery swap in 10 minutes versus a full charge of more than an hour), separating two decisions will yield a clearer picture about each charge/swap decision. Accordingly, for a Charge model, no battery-swapping infrastructure is deployed ( 𝑍𝑍 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  ≡ 0) , and for a Swap model ( 𝑍𝑍 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  ≡ 0), no charging infrastructure is deployed. Both are special cases of the general model above; the facility-capacity, energy, and HoS constraints are otherwise unchanged. The general delay objective's linearisation collapses accordingly, since the now-fixed decision variable makes one of 𝜏𝜏𝑟𝑟 𝑖𝑖  or 𝜂𝜂𝑟𝑟 𝑖𝑖  identically zero. The results reported in Section 5 are obtained under each specialisation, where the charge-only and swap-only specialisations use only the corresponding one of the two ceiling terms below: 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≥ 𝑚𝑚𝑚𝑚 𝑥𝑥 �max 𝑏𝑏 𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+, 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+, 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+� ∀𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (10) 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑇𝑇𝑟𝑟 𝑖𝑖  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≥ 𝑚𝑚𝑚𝑚 𝑥𝑥 �𝑡𝑡 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  · 𝜂𝜂𝑟𝑟 𝑖𝑖 , 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+, 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+� ∀𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (11) 
+
+The following constraints ensure that replenishment can occur only at a deployed facility. 
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+≤ 𝑋𝑋𝑖𝑖 , 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+≤ 𝑋𝑋𝑖𝑖 ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (12) 
+
+If a battery module is not selected for charging at a visit, its charging time is zero at that visit. 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+≤ 𝑀𝑀𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (13) 
+
+A positive charging time activates the corresponding charging decision, subject to the numerical tolerance used in the formulation. 
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+≤ 𝑀𝑀𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (14) 
+
+A battery module cannot be charged and exchanged during the same visit. 
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
++ 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+≤ 1 ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (15) 
+
+If a battery module is neither charged nor exchanged at a facility, its SoC remains unchanged during the visit. 14 
+
+𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≤ 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
++ 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (16) 
+
+For a charged battery module, departure SoC cannot be lower than arrival SoC. 
+
+𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+≥ 𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (17) 
+
+An exchanged battery module is assigned the assumed replacement SoC of 100%. 
+
+𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+≥ 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (18) 
+
+The SoC balance accounts for depletion during travel and replenishment during a charging or swapping event. 
+
+𝑆𝑆𝑟𝑟 ,𝑖𝑖+1 ,𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+= 𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝑝𝑝 𝑟𝑟 ,𝑖𝑖 ,𝑖𝑖+1   
+
+> 𝑝𝑝 𝑏𝑏 · | 𝐵𝐵 |
+
+∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 \{ 𝑑𝑑𝑟𝑟 }, 𝑟𝑟 ∈ 𝑅𝑅 (19) 
+
+The initial SoC of every battery module at the origin is fixed at 100% in the numerical experiments. 
+
+𝑆𝑆 𝑟𝑟 ,𝑂𝑂𝑟𝑟 ,𝑏𝑏 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 = 1 ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 (20) 
+
+To provide a minimum range reserve, the arrival SoC at each facility visit is constrained to be no lower than the specified minimum SoC. 
+
+𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+≥ 𝑠𝑠min , 𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+≥ 𝑠𝑠min ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (21) 
+
+If a battery is charged at a station, its SoC cannot exceed the maximum SoC ( 𝑠𝑠𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  
+
+> 𝑚𝑚 𝑝𝑝 𝑚𝑚
+
+). This parameter can be set to 100% similar to swapped new batteries, or be considered as 80% for minimising the charging delay and/or for battery health reasons. 
+
+𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+≤ 𝑠𝑠𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  
+
+> 𝑚𝑚 𝑝𝑝 𝑚𝑚
+
++ �1 − 𝑠𝑠𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  
+
+> 𝑚𝑚 𝑝𝑝 𝑚𝑚
+
+�� 1 − 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+� ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (22) 
+
+This study assumes that battery charging follows a constant-current/constant-voltage (CC-CV) profile, in which the charge rate is roughly constant up to about 80% SoC, then tapers as SoC approaches 100%. Equivalently, the time required to reach a given SoC, starting from empty, is a convex, increasing function of SoC where equal increments of SoC take longer to add as SoC rises. Hence, at every location, the battery's arrival and departure SoC are each written as a convex combination of the K+1 charge-curve breakpoints: 
+
+𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+, 𝜆𝜆 𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ≥ 0, ∑ 𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝 𝐾𝐾 𝑝𝑝=0
+
+= ∑ 𝜆𝜆 𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 𝐾𝐾 𝑝𝑝=0 = 1 ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (23) 
+
+𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+= ∑ 𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝 𝐾𝐾 𝑝𝑝=0
+
+𝑠𝑠𝑝𝑝 , 𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+= ∑ 𝜆𝜆 𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 𝐾𝐾 𝑝𝑝=0 𝑠𝑠𝑝𝑝 ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (24) 
+
+𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+= ∑ 𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝 𝐾𝐾 𝑝𝑝=0
+
+𝜑𝜑𝑝𝑝 , 𝛷𝛷 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+= ∑ 𝜆𝜆 𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 𝐾𝐾 𝑝𝑝=0 𝜑𝜑𝑝𝑝 ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (25) 15 
+
+where 𝑠𝑠𝑝𝑝 represents the SoC value at the breakpoint 𝑝𝑝 = 0, … , 𝐾𝐾 , with 𝑠𝑠0 = 0 and 𝑠𝑠𝐾𝐾 = 1 from the charge-curve data. 
+
+𝜑𝜑𝑝𝑝 is the time required to charge a battery from 0% SoC to 𝑠𝑠𝑝𝑝 , with 𝜑𝜑0 = 0 . Since the curve is convex, the implied slopes �𝜑𝜑𝑝𝑝 − 𝜑𝜑𝑝𝑝−1� /�𝑠𝑠𝑝𝑝 − 𝑠𝑠𝑝𝑝−1� are increasing in 𝑝𝑝 . The set {𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,0∗ , … , 𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝐾𝐾 ∗ } is an SOS2 set (at most two consecutive nonzero), for all 𝑏𝑏 ∈ 𝐵𝐵 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , where * denotes either arrive or depart. Because {𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 ∗ } is an SOS2 set, 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> ∗
+
+is a piecewise-linear interpolation of the charging time curve equivalent at 𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> ∗
+
+. Accordingly, at most two, necessarily consecutive, weights are nonzero. This makes the interpolation exact and continuous over the whole [0,1] SoC range. 
+
+The physically required charging time is then pinned to the difference between the interpolated cumulative-charge-time values at departure and arrival, activated only when the battery is actually charged (big-M linearisation, when 
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+=0). In other words, if a battery is charged in a location ( 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+= 1 ), the charging time must equal the (piecewise-linearised) physically required time for that SoC gain: 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+≤ 𝛷𝛷 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
++ 𝑀𝑀� 1 − 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+� ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (26) 
+
+𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+≥ 𝛷𝛷 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑀𝑀� 1 − 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+� ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (27) 
+
+Remark 1: When 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+= 1 , the two constraints sandwich 𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+to equal exactly 𝛷𝛷 𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+− 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+– the piecewise-linearised physical charging time for that SoC transition. 
+
+Remark 2: When 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+= 0 , 𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+≤ 𝑀𝑀𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+forces 𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+= 0 , and the “SoC unchanged if not charged” constraint forces 𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+= 𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏 
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+, hence 𝜆𝜆 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+= 𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+(same weights) and 𝛷𝛷 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+= 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+automatically. 
+
+Remark 3: Because {𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 ∗ } is an SOS2 set, 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> ∗
+
+is pinned exactly to the piecewise-linear value of the charging curve at 𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> ∗
+
+– in both directions – regardless of how 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> ∗
+
+enters the objective or other constraints. There is no scope for the optimiser to inflate or deflate 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+to artificially relax the charging-time bound. 
+
+Remark 4: SOS2 constraints are natively supported by standard MILP solvers (e.g. Gurobi and CPLEX) and the solver’s branching handles the “at most two consecutive nonzero” logic internally. 
+
+Each route’s schedule may use at most 𝑁𝑁𝑖𝑖 chargers / 𝐻𝐻𝑖𝑖 batteries at station 𝑖𝑖 . Since the peak-hour demand (𝑓𝑓 𝑟𝑟 𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑝 ) is significantly higher than the station capacities, we introduce a route-splitting method so a single route’s demand can be met by more than one station when pooled capacity requires it. This demand splitting is needed because with a single schedule per route, a route’s entire concurrent demand must be served by whichever one station its schedule visits – if that demand exceeds even the largest station’s throughput, the model is infeasible, even when spreading the same demand across two or three nearby stations would be feasible. Route-splitting resolves this by representing each route as several parallel sub-flows, each free to choose its own station. The number of parallel sub-flows |Γ r| a route is split into is the smallest number such that the route's peak-hour flow, divided evenly across sub-flows, does not exceed the throughput of the bottleneck candidate station (most capacity-constrained) along the route. 
+
+Remark 5: Every decision variable and constraint previously indexed by battery 𝑏𝑏 alone is now indexed by the pair 
+
+(𝑞𝑞 , 𝑏𝑏 ), 𝑞𝑞 ∈ 𝛤𝛤 𝑟𝑟 , 𝑏𝑏 ∈ 𝐵𝐵 . Therefore, the notations 𝑆𝑆𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+, 𝑆𝑆 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+, 𝑇𝑇 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+, 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+, 𝑍𝑍 𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+, 𝜆𝜆𝑟𝑟 𝑖𝑖𝑏𝑏 ,𝑝𝑝 ∗ , 𝛷𝛷𝑟𝑟 𝑖𝑖𝑏𝑏  
+
+> ∗
+
+all become 
+
+𝑆𝑆𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+, 𝑆𝑆 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+, 𝑇𝑇 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+, 𝑍𝑍 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+, 𝑍𝑍 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+, 𝜆𝜆𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏 ,𝑝𝑝 ∗ , 𝛷𝛷𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> ∗
+
+respectively, with 𝑞𝑞 ∈ 𝛤𝛤 𝑟𝑟 added to every ∀ quantifier that previously read 𝑏𝑏 ∈ 𝐵𝐵 . The route-level timeline variables 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+, 𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
+, 𝐷𝐷𝑟𝑟 𝑖𝑖 , 𝐺𝐺𝑟𝑟 𝑖𝑖 , 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+, 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+, 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+, 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+are not widened, because every sub-flow of a route shares the same arrival/departure schedule, since dwell time depends on whether/how long a stop takes, not on which specific station handles it. Sharing one timetable means that a sub-16 
+
+flow that does not charge at a stop still dwells there for as long as the sub-flow that does, which is conservative for delay. 
+
+Charging capacity constraints limit the concurrent peak demand that can be served by the installed charging units. After route demand is divided across sub-flows, charger capacity is counted per truck rather than per battery, because a whole truck occupies one charger bay while all its battery modules charge in parallel. A charging-occupancy indicator 𝜔𝜔𝑟𝑟 𝑖𝑖 𝑟𝑟 
+
+is therefore introduced for each visit and sub-flow, equal to 1 if sub-flow 𝑞𝑞 of route 𝑟𝑟 charges at location 𝑖𝑖 , and 0 otherwise. It is linked to the battery-level charging decisions and to the installed chargers by: 
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+≤ 𝜔𝜔𝑟𝑟 𝑖𝑖 𝑟𝑟 ∀ 𝑏𝑏 ∈ 𝐵𝐵 , 𝑞𝑞 ∈ 𝛤𝛤 𝑟𝑟 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 , and ∑ 𝜔𝜔𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑟𝑟 ∈𝛤𝛤𝑟𝑟 ≤ 𝑁𝑁𝑖𝑖 ∀ 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (28) 
+
+The pooled peak-hour throughput constraint is then: 
+
+∑ ∑ 𝑓𝑓 𝑟𝑟 𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑝  
+
+> |𝛤𝛤𝑟𝑟 |𝑟𝑟 ∈𝛤𝛤𝑟𝑟 𝑟𝑟∈𝑅𝑅
+
+𝜔𝜔𝑟𝑟 𝑖𝑖 𝑟𝑟 ≤ 𝜌𝜌 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝 𝑁𝑁𝑖𝑖 , 𝜌𝜌 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝  = 90  
+
+> 𝑑𝑑 𝑓𝑓𝑓𝑓𝑓𝑓𝑓𝑓
+
+∀ 𝑖𝑖 ∈ 𝐼𝐼 (29) 
+
+where 𝑓𝑓 𝑟𝑟 𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑝 is the BET peak-hour flow of route 𝑟𝑟 in the current stage (trucks per hour) and 𝑡𝑡 𝑓𝑓𝑓𝑓𝑓𝑓𝑓𝑓 is the time to charge a battery from 0% to 100% SoC (90 minutes in the experiments). Each charger can therefore serve 90/ 𝑡𝑡 𝑓𝑓𝑓𝑓𝑓𝑓𝑓𝑓 trucks per hour, conservatively assuming that every charging event occupies the charger for a full-charge time. The swap model has the analogous constraint, counted per battery because 𝐻𝐻𝑖𝑖 is a battery inventory: 
+
+∑ ∑ ∑ 𝑓𝑓 𝑟𝑟 𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑝  
+
+> |𝛤𝛤𝑟𝑟 |𝑏𝑏∈𝐵𝐵 𝑟𝑟 ∈𝛤𝛤𝑟𝑟 𝑟𝑟∈𝑅𝑅
+
+𝑍𝑍 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+≤ 𝜌𝜌 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝 𝐻𝐻𝑖𝑖 , and 𝜌𝜌 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝  = 60  
+
+> 𝑑𝑑 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+
+∀ 𝑖𝑖 ∈ 𝐼𝐼 (30) 
+
+The delay-linearisation constraints are widened to include the sub-flow index: 
+
+𝜏𝜏𝑟𝑟 𝑖𝑖  ≥ 𝑇𝑇 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝
+
+∀ 𝑞𝑞 ∈ 𝛤𝛤 𝑟𝑟 , 𝑏𝑏 ∈ 𝐵𝐵 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (31) 
+
+𝜂𝜂𝑟𝑟 𝑖𝑖  ≥ 1𝑀𝑀 ∑ ∑ 𝑍𝑍 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝
+> 𝑏𝑏∈𝐵𝐵 𝑟𝑟 ∈𝛤𝛤𝑟𝑟
+
+∀ 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 (32) 
+
+Each sub-flow represents an independent group of trucks with its own batteries, not additional batteries on the same truck, so the energy-balance and battery-synchronisation constraints hold within each sub-flow separately, not summed across sub-flows: 
+
+𝑆𝑆𝑟𝑟 ,𝑖𝑖+1 ,𝑟𝑟 ,𝑏𝑏1  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑆𝑆 𝑟𝑟 𝑖𝑖 𝑟𝑟𝑏𝑏1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 = 𝑆𝑆𝑟𝑟 ,𝑖𝑖+1 ,𝑟𝑟 ,𝑏𝑏2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑆𝑆 𝑟𝑟 𝑖𝑖 𝑟𝑟𝑏𝑏2 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ∀ 𝑏𝑏1 ≠ 𝑏𝑏2 ∈ 𝐵𝐵 , 𝑞𝑞 ∈ 𝛤𝛤 𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 \{ 𝑑𝑑𝑟𝑟 } (33) 
+
+∑ 𝑆𝑆 𝑟𝑟 𝑖𝑖 𝑟𝑟 𝑏𝑏  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 𝑏𝑏∈𝐵𝐵
+
+− ∑ 𝑆𝑆𝑟𝑟 ,𝑖𝑖+1 ,𝑟𝑟 ,𝑏𝑏  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+> 𝑏𝑏∈𝐵𝐵
+
+= 𝑝𝑝 𝑟𝑟 ,𝑖𝑖 ,𝑖𝑖+1 
+
+> 𝑝𝑝 𝑏𝑏
+
+∀ 𝑞𝑞 ∈ 𝛤𝛤 𝑟𝑟 , 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 \{ 𝑑𝑑𝑟𝑟 } (34) 
+
+Remark 6: These are the only constraints that change in substance; every other constraint (station availability, charge/swap mutual exclusivity, HoS rules, travel-time propagation, and the charging-curve block) carries over unchanged under the mechanical (𝑞𝑞 , 𝑏𝑏 ) index-widening described above. 
+
+Remark 7: When |𝛤𝛤 𝑟𝑟 | = 1 for every route (e.g. 𝛤𝛤 max = 1 , or no route’s peak flow requires splitting), every sub-flow set is a singleton and the model above reduces to the formulation without route splitting: 𝜔𝜔𝑟𝑟 𝑖𝑖 𝑟𝑟 becomes a single per-visit charging indicator, and Eqs. (29) and (30) apply to the full peak-hour flow 𝑓𝑓 𝑟𝑟 𝑝𝑝𝑝𝑝𝑝𝑝𝑝𝑝 of each route. 17 
+
+Remark 8: The reformulation multiplies every per-battery variable and constraint on route 𝑟𝑟 by |𝛤𝛤 𝑟𝑟 |; total model size scales with ∑ |𝛤𝛤 𝑟𝑟 |𝑟𝑟∈𝑅𝑅 rather than |𝑅𝑅 |. Since |𝛤𝛤 𝑟𝑟 | is capped at 𝛤𝛤 max , a route requiring heavy splitting (busy corridor, tight station capacity) costs proportionally more to solve. 
+
+Rest break regulatory constraints: A driver cannot take both a long rest and short break at the same visit. 
+
+𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
++ 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+≤ 1 ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (35) 
+
+A long rest can be taken only at a deployed station, V ri rest ≤ X i, as for charging and swapping. The drivers’ long rest constraints are formulated as follows: 
+
+𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+≥ 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+, 𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+≤ 𝑀𝑀𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+, 0 ≤ 𝐷𝐷𝑟𝑟 𝑖𝑖  ≤ 𝑡𝑡 𝑑𝑑𝑟𝑟𝑖𝑖𝑝𝑝  ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (36) 
+
+The drivers’ short break constraint is formulated as follows: 
+
+𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+≥ 𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+, 𝑈𝑈𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+≤ 𝑀𝑀𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
+, 0 ≤ 𝐺𝐺𝑟𝑟 𝑖𝑖  ≤ 𝑡𝑡 𝑑𝑑 𝑟𝑟𝑖𝑖𝑎𝑎𝑝𝑝  ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (37) 
+
+Travel time propagation is formulated as follows: 
+
+𝑇𝑇𝑟𝑟 ,𝑖𝑖+1  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+= 𝑇𝑇 𝑟𝑟 𝑖𝑖  
+
+> 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑
+
++ 𝑡𝑡𝑟𝑟 ,𝑖𝑖 ,𝑖𝑖+1 ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 \{ 𝑑𝑑𝑟𝑟 } (38) 
+
+If a driver has a long rest at a location 𝑖𝑖1 (i.e., 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  = 1 ), and does not have long rests in locations 𝑖𝑖1 + 1, … , 𝑖𝑖2 − 1
+
+(i.e., ∑ 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1
+
+= 0 ), then the cumulative working time when the driver arrives at 𝑖𝑖2 is (𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ) (i.e., 
+
+𝐷𝐷𝑟𝑟 ,𝑖𝑖2 = 𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ). This is formulated as: 
+
+𝐷𝐷𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≤ 𝑀𝑀� 1 − ∑ 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1
+
+− 𝜀𝜀� ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (39) 
+
+𝐷𝐷𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≥ 𝜀𝜀� 1 − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 � − 𝑀𝑀 ∑ 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1
+
+∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (40) 
+
+𝐷𝐷𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≤ 𝑀𝑀� 1 − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  + ∑ 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1
+
+� ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (41) 
+
+𝐷𝐷𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≥ −𝑀𝑀� 1 − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  + ∑ 𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1
+
+� ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (42) 
+
+Similarly, if a driver has either a short break or long rest in location 𝑖𝑖1 (i.e., 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  = 1 ), and does not have any short breaks or long rests in locations 𝑖𝑖1 + 1, … , 𝑖𝑖2 − 1 (i.e., ∑ (𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
++ 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+) 
+
+> 𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1
+
+= 0 ), then the consecutive driving time when the driver arrives at 𝑖𝑖2 is (𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ) (i.e., 𝐺𝐺𝑟𝑟 ,𝑖𝑖2 = 𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ). This is formulated as: 
+
+𝐺𝐺𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≤ 𝑀𝑀� 1 − ∑ �𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
++ 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+�𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1 − 𝜀𝜀� ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (43) 
+
+𝐺𝐺𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2  
+
+> 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝
+
+− 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≥ 𝜀𝜀� 1 − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 � − 𝑀𝑀 ∑ (𝑉𝑉𝑟𝑟 𝑖𝑖  
+
+> 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝
+
++ 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+> 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑
+
+) 
+
+> 𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1
+
+∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (44) 18 
+
+𝐺𝐺𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≤ 𝑀𝑀� 1 − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  + ∑ (𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 )
+
+𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1 � ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (45) 
+
+𝐺𝐺𝑟𝑟 ,𝑖𝑖2 − �𝑇𝑇𝑟𝑟 ,𝑖𝑖2 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑇𝑇 𝑟𝑟 ,𝑖𝑖1 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 � ≥ −𝑀𝑀� 1 − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  − 𝑉𝑉𝑟𝑟 ,𝑖𝑖1 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  + ∑ (𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 )
+
+𝑖𝑖2−1 𝑖𝑖=𝑖𝑖1+1 � ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖1 < 𝑖𝑖2 ∈ 𝐼𝐼𝑟𝑟 (46) 
+
+If the difference between the arrival and departure time at location 𝑖𝑖 is longer than or equal to 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 , then the driver has a long rest at the location 𝑖𝑖 (𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  = 1 ). Otherwise, 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  = 0 .
+
+𝑀𝑀𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  ≥ 𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  + 𝜀𝜀 ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (47) 
+
+𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  − 1 ≤ 𝜀𝜀 (𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 ) ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (48) 
+
+If the difference between the arrival and departure time at location 𝑖𝑖 is longer than or equal to 𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  but shorter than 
+
+𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 , then the driver has a short break in this location 𝑖𝑖 (𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  = 1 ). Otherwise 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  = 0 .
+
+𝑀𝑀 (𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 ) ≥ 𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝜀𝜀 ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (49) 
+
+𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  − 1 ≤ 𝜀𝜀 (𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝 ) ∀ 𝑟𝑟 ∈ 𝑅𝑅 , 𝑖𝑖 ∈ 𝐼𝐼𝑟𝑟 (50) 
+
+Remark 9: When 𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  ≥ 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  , constraints 𝑀𝑀𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  ≥ 𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  + 𝜀𝜀 and 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  +
+
+𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  ≤ 1 force 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  = 1 and 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  = 0 .
+
+Remark 10: When 𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  ≤ 𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  < 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  , constraints 𝑀𝑀 (𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 ) ≥ 𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  −𝑡𝑡 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝜀𝜀 force 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  + 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  = 1 , and constraints 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  − 1 ≤ 𝜀𝜀 (𝑇𝑇 𝑟𝑟 𝑖𝑖 
+
+𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 − 𝑇𝑇𝑟𝑟 𝑖𝑖 
+
+𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  − 𝑡𝑡 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 ) make 𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  = 0 , so 
+
+𝑉𝑉𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  = 1 .
+
+Variable domains and linking conditions are as follows: 
+
+𝑍𝑍 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝 , 𝑍𝑍 𝑠𝑠𝑠𝑠 𝑝𝑝𝑝𝑝 , 𝑉𝑉 𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑 , 𝑉𝑉 𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  ∈ {0,1} (51) 
+
+0 ≤ 𝑆𝑆 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝  ≤ 1, 0 ≤ 𝑆𝑆 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ≤ 1 (52) 
+
+𝑇𝑇 𝑐𝑐ℎ 𝑝𝑝𝑟𝑟 𝑎𝑎 𝑝𝑝 , 𝑇𝑇 𝑝𝑝𝑟𝑟𝑟𝑟𝑖𝑖 𝑎𝑎 𝑝𝑝 , 𝑇𝑇 𝑑𝑑 𝑝𝑝𝑝𝑝𝑝𝑝𝑟𝑟 𝑑𝑑 ≥ 0 (53) 
+
+0 ≤ 𝐷𝐷 ≤ 𝑡𝑡 𝑑𝑑𝑟𝑟𝑖𝑖𝑝𝑝 , 0 ≤ 𝐺𝐺 ≤ 𝑡𝑡 𝑑𝑑 𝑟𝑟𝑖𝑖𝑎𝑎𝑝𝑝  (54) 
+
+𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+𝑟𝑟 𝑝𝑝𝑠𝑠𝑑𝑑  ≥ 0, 𝑈𝑈𝑟𝑟 𝑖𝑖 
+
+𝑏𝑏 𝑟𝑟𝑝𝑝𝑝𝑝𝑝𝑝  ≥ 0 (55) 
+
+Multistage stochastic formulation by SDDiP: The SDDiP model is solved independently for each route 𝑟𝑟 . Let 𝐼𝐼𝑟𝑟 be the set of candidate stations on the route, with 𝑛𝑛 = | 𝐼𝐼𝑟𝑟 |. Stages 𝑡𝑡 = 1, … , 𝑇𝑇 (𝑇𝑇 = 4 ) are the planning stages. In each 19 
+
+stage, demand is the base BET penetration of that stage scaled by a multiplier 𝜅𝜅 (𝜉𝜉 𝑑𝑑 ), where 𝜉𝜉 𝑑𝑑  ∈ 𝛯𝛯 = {Low, Mid, High} 
+
+is the demand state and 𝜅𝜅 (Low) = 0.7 , 𝜅𝜅 (Mid) = 1 , 𝜅𝜅 (High) = 1.3 .
+
+The state at the end of stage 𝑡𝑡 is the vector of station-opening decisions is defined as: 
+
+𝑥𝑥 𝑑𝑑  = �𝑥𝑥 𝑑𝑑 ,𝑖𝑖 �𝑖𝑖∈𝐼𝐼𝑟𝑟 ∈ {0,1} 𝑚𝑚  (56) 
+
+where 𝑥𝑥0 = 0 and 𝑥𝑥 𝑑𝑑 ,𝑖𝑖 =1 if station i is open at the end of stage t. The demand state 𝜉𝜉 𝑑𝑑  is an exogenous information state, so the full dynamic-programming state entering stage 𝑡𝑡 is (𝑥𝑥 𝑑𝑑 −1 , 𝜉𝜉 𝑑𝑑 ). All other decisions of stage t are local (stage) variables, for example 𝑦𝑦 𝑑𝑑  represents the number of chargers 𝑁𝑁 𝑑𝑑 ,𝑖𝑖 (or batteries 𝐻𝐻 𝑑𝑑 ,𝑖𝑖 ) at each station. Other stage variables include the assignment of driver sub-flows to stations, arrival and departure times, state of charge, charging or swapping decisions, and short-break and long-rest indicators. Charger and battery counts are re-optimised in every stage, subject to the station being open and to the stage capacity limit 𝑁𝑁 𝑑𝑑 ,𝑖𝑖 ≤ 𝑁𝑁 𝑑𝑑 ,𝑖𝑖 max 𝑥𝑥 𝑑𝑑 ,𝑖𝑖 ; they are not part of the state. Only the decision to open a station is irreversible. Because charger and battery costs are not included in the objective function, the reported numbers of chargers and batteries should be read as the capacity used by the scheduling decisions rather than as cost-optimised sizing. 
+
+The state-transition equation is dictated by the assumption that opening a station is irreversible: 
+
+𝑥𝑥 𝑑𝑑  ≥ 𝑥𝑥 𝑑𝑑 −1 , 𝑥𝑥 𝑑𝑑  ∈ {0,1} 𝑚𝑚 , 𝑡𝑡 = 1, … , 𝑇𝑇 (57) 
+
+Following Zou et al. (2019), a local copy 𝑧𝑧 𝑑𝑑  of the incoming state is introduced: 
+
+𝑧𝑧 𝑑𝑑  = 𝑥𝑥 𝑑𝑑 −1 , 0 ≤ 𝑧𝑧 𝑑𝑑  ≤ 𝑥𝑥 𝑑𝑑 , 𝑧𝑧 𝑑𝑑  ∈ [0,1] 𝑚𝑚  (58) 
+
+The copy constraint 𝑧𝑧 𝑑𝑑  = 𝑥𝑥 𝑑𝑑 −1 is the only link between consecutive stages, and it is the constraint that is dualised in the backward pass. 
+
+The demand state follows a first-order Markov chain with transition matrix 𝑃𝑃 = [ 𝑃𝑃 𝑗𝑗 𝑝𝑝 ], where 𝑃𝑃 𝑗𝑗 𝑝𝑝  = Pr( 𝜉𝜉 𝑑𝑑  = 𝑘𝑘 | 𝜉𝜉 𝑑𝑑 −1 =
+
+𝑗𝑗 ), and 𝜉𝜉1 = Mid is known at the outset (the transition probabilities are given in  Table 6 , Section 5). 
+
+Within each stage, the sequence of events is: (i) the stage demand state 𝜉𝜉 𝑑𝑑  is observed; (ii) the station-opening decisions 
+
+𝑥𝑥 𝑑𝑑  ≥ 𝑥𝑥 𝑑𝑑 −1 are made, and new stations are available immediately; (iii) the operational decisions 𝑦𝑦 𝑑𝑑  are made for the realised demand, and the stage cost is incurred; (iv) the process moves to stage t + 1, where 𝜉𝜉 𝑑𝑑 +1 is drawn from row 𝜉𝜉 𝑑𝑑 
+
+of 𝑃𝑃 . Decisions in stage 𝑡𝑡 are therefore made with full knowledge of the current demand but only the probability distribution of future demand. 
+
+Let 𝜉𝜉 [𝑑𝑑 ] = ( 𝜉𝜉1 , … , 𝜉𝜉 𝑑𝑑 ) denote the demand history. A policy is nonanticipative if 𝑥𝑥 𝑑𝑑  and 𝑦𝑦 𝑑𝑑  are functions of 𝜉𝜉 [𝑑𝑑 ] only; equivalently, in the extensive form on the scenario tree, two scenarios that share the same history up to stage 𝑡𝑡 must have identical stage-t decisions. Because the demand process is Markov and all inter-stage coupling passes through 
+
+𝑥𝑥 𝑑𝑑 −1 , it is sufficient to consider Markov policies 𝑥𝑥 𝑑𝑑  = 𝜇𝜇 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝜉𝜉 𝑑𝑑 ). The SDDiP policy in the stage-t problem uses only 
+
+𝑥𝑥 𝑑𝑑 −1 , the observed 𝜉𝜉 𝑑𝑑  and an approximation of the expected future cost conditional on 𝜉𝜉 𝑑𝑑  . It never uses future realisations, so it is nonanticipative by construction. 
+
+The cost incurred in stage t is defined as: 
+
+𝑐𝑐 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑥𝑥 𝑑𝑑 , 𝑦𝑦 𝑑𝑑 ; 𝜉𝜉 𝑑𝑑 ) = 𝜌𝜌 ∑ 𝐶𝐶𝑖𝑖 𝑖𝑖∈𝐼𝐼𝑟𝑟 �𝑥𝑥 𝑑𝑑 ,𝑖𝑖 − 𝑥𝑥 𝑑𝑑 −1 ,𝑖𝑖 � + VoT 𝑛𝑛day 𝛥𝛥 𝑑𝑑 (𝑦𝑦 𝑑𝑑 ; 𝜉𝜉 𝑑𝑑 ) (59) 
+
+where 𝐶𝐶𝑖𝑖 is the fixed cost of station 𝑖𝑖 , 𝜌𝜌 is the capital recovery factor (6%, 20 years), VoT is the value of time (AUD 3 per truck-minute), 𝑛𝑛day = 365 operating days, and 𝛥𝛥 𝑑𝑑  is the total daily truck delay in minutes, which depends on 𝜉𝜉 𝑑𝑑 
+
+through the truck flow. Only newly opened stations incur capital cost. 
+
+The value function is defined as follows: 20 
+
+𝑄𝑄 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝜉𝜉 𝑑𝑑 ) = min 𝑚𝑚 𝑡𝑡 ,𝑦𝑦𝑡𝑡 ,𝑧𝑧𝑡𝑡 {𝑐𝑐 𝑑𝑑 (𝑧𝑧 𝑑𝑑 , 𝑥𝑥 𝑑𝑑 , 𝑦𝑦 𝑑𝑑 ; 𝜉𝜉 𝑑𝑑 ) + 𝛿𝛿𝒬𝒬 𝑑𝑑 +1 (𝑥𝑥 𝑑𝑑 , 𝜉𝜉 𝑑𝑑 )} (60) 
+
+s. t. 𝑧𝑧 𝑑𝑑  = 𝑥𝑥 𝑑𝑑 −1 , 0 ≤ 𝑧𝑧 𝑑𝑑  ≤ 𝑥𝑥 𝑑𝑑 , 𝑥𝑥 𝑑𝑑  ∈ {0,1} 𝑚𝑚 , 𝑦𝑦 𝑑𝑑  ∈ 𝒴𝒴 𝑑𝑑 (𝑥𝑥 𝑑𝑑 , 𝜉𝜉 𝑑𝑑 )
+
+where 𝛿𝛿 = 0.94 is the per-stage discount factor and 𝒴𝒴 𝑑𝑑 (𝑥𝑥 𝑑𝑑 , 𝜉𝜉 𝑑𝑑 ) is the operationally feasible set of the stage MILP. 
+
+The expected cost-to-go function is then defined as: 
+
+𝒬𝒬 𝑑𝑑 +1 (𝑥𝑥 𝑑𝑑 , 𝑗𝑗 ) = ∑𝑝𝑝 ∈𝛯𝛯 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑄𝑄 𝑑𝑑 +1 (𝑥𝑥 𝑑𝑑 , 𝑘𝑘 ), 𝒬𝒬𝑇𝑇+1 ≡ 0 (61) 
+
+The optimal expected discounted cost is 𝑄𝑄1 (𝑥𝑥0 , Mid) 
+
+For the cost-to-go approximation, the SDDiP replaces 𝒬𝒬 𝑑𝑑 +1 (·, 𝑗𝑗 ) by a polyhedral under-approximation built from cuts, with one cut family for each demand state 𝑗𝑗 :
+
+𝒬𝒬 �𝑑𝑑 +1 (𝑥𝑥 , 𝑗𝑗 ) = max �0, max 
+
+> ℓ∈𝒞𝒞𝑡𝑡+1 ,𝑗𝑗
+
+(𝛾𝛾ℓ + 𝛽𝛽ℓ ⊤𝑥𝑥 )� (62) 
+
+The constant 0 is a valid lower bound because all costs are non-negative. 
+
+The policy is the rule that, in stage t and given (𝑥𝑥 𝑑𝑑 −1 , 𝜉𝜉 𝑑𝑑 ), solves the value-function problem with 𝒬𝒬 𝑑𝑑 +1 replaced by 
+
+𝒬𝒬 �𝑑𝑑 +1 and implements the resulting (𝑥𝑥 𝑑𝑑 , 𝑦𝑦 𝑑𝑑 ). Policy evaluation estimates the expected discounted cost 𝐸𝐸 [∑𝑑𝑑 𝛿𝛿 𝑑𝑑 −1 𝑐𝑐 𝑑𝑑 ] of this policy by simulation (see ‘Lower bound, upper bound’ below). It is distinct from both the value function and its approximation. The following ordering holds: 
+
+LB = 𝑄𝑄 �1 ≤ 𝑄𝑄1 ≤ expected cost of the SDDiP policy (63) 
+
+where 𝑄𝑄 �1 is the stage-1 optimal value using the cut approximation. 
+
+Lagrangian cuts and conditions for validity: For a trial state 𝑥𝑥 � ∈ {0,1} 𝑚𝑚  and demand state 𝑘𝑘 in stage 𝑡𝑡 , the copy constraint 𝑧𝑧 𝑑𝑑  = 𝑥𝑥 � is dualised with multiplier 𝜋𝜋 ∈ ℝ 𝑚𝑚 :
+
+ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ; 𝑥𝑥 �) = min 
+
+> 𝑚𝑚 ,𝑦𝑦 ,𝑧𝑧
+
+�𝑐𝑐̃ 𝑑𝑑 (𝑥𝑥 , 𝑦𝑦 ; 𝑘𝑘 ) + 𝜌𝜌𝐶𝐶 ⊤(𝑥𝑥 − 𝑧𝑧 ) + 𝛿𝛿𝒬𝒬 �𝑑𝑑 +1 (𝑥𝑥 , 𝑘𝑘 ) + 𝜋𝜋 ⊤(𝑧𝑧 − 𝑥𝑥 �)� (64) 
+
+s. t. 0 ≤ 𝑧𝑧 ≤ 𝑥𝑥 , 𝑥𝑥 ∈ {0,1} 𝑚𝑚 , 𝑦𝑦 ∈ 𝒴𝒴 𝑑𝑑 (𝑥𝑥 , 𝑘𝑘 )
+
+where 𝑐𝑐̃ 𝑑𝑑  = VoT 𝑛𝑛day 𝛥𝛥 𝑑𝑑  is the operating cost. The variable 𝑧𝑧 appears only in separable terms, so it can be minimised in closed form, min 
+
+> 0≤𝑧𝑧𝑖𝑖≤ 𝑚𝑚 𝑖𝑖
+
+(𝜋𝜋𝑖𝑖 − 𝜌𝜌𝐶𝐶𝑖𝑖 )𝑧𝑧𝑖𝑖 = min(0, 𝜋𝜋𝑖𝑖 − 𝜌𝜌𝐶𝐶𝑖𝑖 ) 𝑥𝑥𝑖𝑖 . This gives 
+
+ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ; 𝑥𝑥 �) = 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ) − 𝜋𝜋 ⊤𝑥𝑥 �, 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ) = min 
+
+> 𝑚𝑚 ,𝑦𝑦
+
+�𝑐𝑐̃ 𝑑𝑑  + ∑ min 𝑖𝑖 (𝜌𝜌𝐶𝐶𝑖𝑖 , 𝜋𝜋𝑖𝑖 ) 𝑥𝑥𝑖𝑖 + 𝛿𝛿𝒬𝒬 �𝑑𝑑 +1 (𝑥𝑥 , 𝑘𝑘 )� (65) 
+
+where the dual function is evaluated by solving one MILP with modified station costs. The cut passed to stage t-1 for demand state 𝑗𝑗 is the probability-weighted aggregate of the child cuts: 
+
+𝜓𝜓 ≥ ∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑝𝑝  �𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ) − 𝜋𝜋 𝑝𝑝 
+
+> ⊤
+
+𝑥𝑥� = 𝛾𝛾 + 𝛽𝛽 ⊤𝑥𝑥 , 𝛽𝛽 = − ∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑝𝑝  𝜋𝜋 𝑝𝑝  (66) 
+
+Proposition 1 (validity of the Lagrangian cuts): Let 𝑥𝑥 � ∈ {0,1} 𝑚𝑚  be a trial state in stage 𝑡𝑡 , and for each demand state 
+
+𝑘𝑘 ∈ 𝛯𝛯 let 𝜋𝜋 𝑝𝑝  ∈ ℝ 𝑚𝑚  be any multiplier vector. Let 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ) be any lower bound on the optimal value 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ) of the MILP in Eq. (65), such as the solver’s proven bound. For a parent demand state 𝑗𝑗 , define the cut coefficients as follows: 
+
+𝛾𝛾 = ∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑝𝑝 ∈𝛯𝛯 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ), 𝛽𝛽 = − ∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑝𝑝 ∈𝛯𝛯 𝜋𝜋 𝑝𝑝  (67) 
+
+Assume Condition 1 where the cut approximation of the next stage satisfies 𝒬𝒬 �𝑑𝑑 +1 (⋅, 𝑘𝑘 ) ≤ 𝒬𝒬 𝑑𝑑 +1 (⋅, 𝑘𝑘 ) for all 𝑘𝑘 , and Condition 2 where the stage-𝑡𝑡 problem is feasible for every incoming state, so that every 𝛬𝛬 𝑑𝑑 ,𝑝𝑝  is finite. Then 21 
+
+𝛾𝛾 + 𝛽𝛽 ⊤𝑥𝑥 𝑑𝑑 −1 ≤ 𝒬𝒬 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑗𝑗 ) for every 𝑥𝑥 𝑑𝑑 −1 ∈ {0,1} 𝑚𝑚  (68) 
+
+The cut is therefore a valid lower bound on the expected cost-to-go at every state 𝑥𝑥 𝑑𝑑 −1 , not only at the trial state 𝑥𝑥 �
+
+where it was generated. 
+
+Proof: Fix any 𝑥𝑥 𝑑𝑑 −1 ∈ {0,1} 𝑚𝑚  and any 𝑘𝑘 ∈ 𝛯𝛯 . If 𝑄𝑄 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑘𝑘 ) = + ∞ the inequality below holds trivially, so assume it is finite and let (𝑥𝑥 ∗, 𝑦𝑦 ∗) be an optimal solution of the stage-𝑡𝑡 problem in Eq. (60) with incoming state 𝑥𝑥 𝑑𝑑 −1 and demand state 𝑘𝑘 . Then 𝑥𝑥 ∗ ≥ 𝑥𝑥 𝑑𝑑 −1 , 𝑥𝑥 ∗ ∈ {0,1} 𝑚𝑚  and 𝑦𝑦 ∗ ∈ 𝒴𝒴 𝑑𝑑 (𝑥𝑥 ∗, 𝑘𝑘 ).
+
+Consider the Lagrangian problem in Eq. (64) with the trial state 𝑥𝑥 � replaced by 𝑥𝑥 𝑑𝑑 −1 , that is, with the copy constraint 
+
+𝑧𝑧 = 𝑥𝑥 𝑑𝑑 −1 dualised. The point (𝑥𝑥 , 𝑦𝑦 , 𝑧𝑧 ) = ( 𝑥𝑥 ∗, 𝑦𝑦 ∗, 𝑥𝑥 𝑑𝑑 −1 ) is feasible for it, because 0 ≤ 𝑥𝑥 𝑑𝑑 −1 ≤ 𝑥𝑥 ∗ . At this point the penalty term 𝜋𝜋 𝑝𝑝 
+
+> ⊤
+
+(𝑧𝑧 − 𝑥𝑥 𝑑𝑑 −1 ) is zero, and 𝜌𝜌𝐶𝐶 ⊤(𝑥𝑥 ∗ − 𝑥𝑥 𝑑𝑑 −1 ) is exactly the capital cost of the stations opened in stage 𝑡𝑡 .Hence: 
+
+ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ; 𝑥𝑥 𝑑𝑑 −1 ) ≤ 𝑐𝑐̃ 𝑑𝑑 (𝑥𝑥 ∗, 𝑦𝑦 ∗; 𝑘𝑘 ) + 𝜌𝜌𝐶𝐶 ⊤(𝑥𝑥 ∗ − 𝑥𝑥 𝑑𝑑 −1 ) + 𝛿𝛿 𝒬𝒬 �𝑑𝑑 +1 (𝑥𝑥 ∗, 𝑘𝑘 ) ≤ 𝑐𝑐 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑥𝑥 ∗, 𝑦𝑦 ∗; 𝑘𝑘 ) + 𝛿𝛿 𝒬𝒬 𝑑𝑑 +1 (𝑥𝑥 ∗, 𝑘𝑘 ) = 
+
+𝑄𝑄 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑘𝑘 ) (69) 
+
+where the second inequality uses the Condition1. By Eq. (65), ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ; 𝑥𝑥 𝑑𝑑 −1 ) = 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ) − 𝜋𝜋 𝑝𝑝 
+
+> ⊤
+
+𝑥𝑥 𝑑𝑑 −1 , and 𝛬𝛬 𝑑𝑑 ,𝑝𝑝  ≤ 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 ,so 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ) − 𝜋𝜋 𝑝𝑝 
+
+> ⊤
+
+𝑥𝑥 𝑑𝑑 −1 ≤ 𝑄𝑄 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑘𝑘 ). Multiplying by 𝑃𝑃 𝑗𝑗 𝑝𝑝  ≥ 0, summing over 𝑘𝑘 and using Eq. (61) gives 
+
+𝛾𝛾 + 𝛽𝛽 ⊤𝑥𝑥 𝑑𝑑 −1 = ∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑝𝑝 ∈𝛯𝛯 �𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 𝑝𝑝 ) − 𝜋𝜋 𝑝𝑝 
+
+> ⊤
+
+𝑥𝑥 𝑑𝑑 −1 � ≤ ∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑝𝑝 ∈𝛯𝛯 𝑄𝑄 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑘𝑘 ) = 𝒬𝒬 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑗𝑗 ) (70) 
+
+Finally, the Condition1 holds in the last stage because 𝒬𝒬 �𝑇𝑇+1 = 𝒬𝒬𝑇𝑇+1 ≡ 0. If it holds at stage 𝑡𝑡 + 1 , the argument above shows that every cut added to stage 𝑡𝑡 is valid. Since 𝒬𝒬 �𝑑𝑑  is the maximum of 0 and valid cuts, and 𝒬𝒬 𝑑𝑑  ≥ 0, it follows that 
+
+𝒬𝒬 �𝑑𝑑  ≤ 𝒬𝒬 𝑑𝑑 . By backward induction, the Condition1 holds at every stage, and so every cut generated by the algorithm is valid. 
+
+Remark 11: The trial state 𝑥𝑥 � influences the cut only through the choice of the multipliers 𝜋𝜋 𝑝𝑝 , which Algorithm 3 selects to make the cut as tight as possible at 𝑥𝑥 �. Validity holds for any 𝜋𝜋 𝑝𝑝  and any lower bound 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 . Ending the level method early, or stopping a MILP at its time limit, therefore weakens a cut but never invalidates it. Tightness of the cut at 𝑥𝑥 �,which Zou et al. (2019) (Theorem 3) establish for binary states, additionally requires that 𝜋𝜋 maximise the dual and that 
+
+𝛬𝛬 be evaluated exactly. 
+
+Proposition 2 (Sign and bounds of the multipliers) : Suppose the operating cost ℎ𝑑𝑑 ,𝑝𝑝 (𝑥𝑥 ) = min 𝑦𝑦∈𝒴𝒴𝑡𝑡 (𝑚𝑚 ,𝑝𝑝 )𝑐𝑐̃ 𝑑𝑑 (𝑥𝑥 , 𝑦𝑦 ; 𝑘𝑘 ) + 
+
+𝛿𝛿𝒬𝒬 �𝑑𝑑 +1 (𝑥𝑥 , 𝑘𝑘 ) is non-increasing in 𝑥𝑥 . Then 
+
+sup 
+
+> 𝜋𝜋∈ℝ 𝑛𝑛
+
+ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ; 𝑥𝑥 �) = sup 
+
+> 𝜋𝜋∈ [0,𝜌𝜌𝜌𝜌 ]
+
+ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ; 𝑥𝑥 �), (71) 
+
+Therefore, the multipliers can be restricted to the box 0 ≤ 𝜋𝜋𝑖𝑖 ≤ 𝜌𝜌𝐶𝐶𝑖𝑖 without loss. 
+
+Monotonicity of h: In the stage model, 𝑥𝑥𝑖𝑖 appears only in enabling constraints: 𝑁𝑁𝑖𝑖 ≤ 𝑁𝑁𝑖𝑖 max 𝑥𝑥𝑖𝑖 , 𝐻𝐻𝑖𝑖 ≤ 𝐻𝐻𝑖𝑖 max 𝑥𝑥𝑖𝑖 , and the charging, swapping and long-rest indicators at station 𝑖𝑖 are bounded above by 𝑥𝑥𝑖𝑖 . Opening a station therefore only enlarges 𝒴𝒴 𝑑𝑑 . Every cut has slope 𝛽𝛽 = −∑ 𝑝𝑝 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝜋𝜋 𝑝𝑝  ≤ 0 (by the lower bound below), so 𝒬𝒬 �𝑑𝑑 +1 is also non-increasing in 𝑥𝑥 ,and the assumption holds by induction over the cuts generated. 
+
+Upper bound: For 𝜋𝜋𝑖𝑖 ≥ 𝜌𝜌𝐶𝐶𝑖𝑖 , the coefficient min( 𝜌𝜌𝐶𝐶𝑖𝑖 , 𝜋𝜋𝑖𝑖 ) = 𝜌𝜌𝐶𝐶𝑖𝑖 no longer depends on 𝜋𝜋𝑖𝑖 , while −𝜋𝜋𝑖𝑖𝑥𝑥 �𝑖𝑖 is non-increasing in 𝜋𝜋𝑖𝑖 . Hence replacing 𝜋𝜋𝑖𝑖 by 𝜌𝜌𝐶𝐶𝑖𝑖 never decreases ℒ.
+
+Lower bound: Let 𝜋𝜋𝑖𝑖 < 0 , and let 𝜋𝜋′ equal 𝜋𝜋 except that 𝜋𝜋′𝑖𝑖 = 0 . If 𝑥𝑥 �𝑖𝑖 = 0 : 𝛬𝛬 is non-decreasing in 𝜋𝜋 , because the coefficients min( 𝜌𝜌𝐶𝐶𝑖𝑖 , 𝜋𝜋𝑖𝑖 ) are non-decreasing and 𝑥𝑥 ≥ 0, so ℒ(𝜋𝜋 ) ≤ ℒ (𝜋𝜋′ ). If 𝑥𝑥 �𝑖𝑖 = 1 : under 𝜋𝜋′ the coefficient of 𝑥𝑥𝑖𝑖 is 0 and ℎ is non-increasing, so there is a minimiser 𝑥𝑥 ∗∗ of 𝛬𝛬 (𝜋𝜋′ ) with 𝑥𝑥𝑖𝑖 ∗∗ = 1 . Evaluating 𝛬𝛬 (𝜋𝜋 ) at 𝑥𝑥 ∗∗ gives 𝛬𝛬 (𝜋𝜋 ) ≤𝛬𝛬 (𝜋𝜋′ ) + 𝜋𝜋𝑖𝑖 , so ℒ(𝜋𝜋 ) = 𝛬𝛬 (𝜋𝜋 ) − 𝜋𝜋 ⊤𝑥𝑥 � ≤ 𝛬𝛬 (𝜋𝜋′ ) − 𝜋𝜋 ′⊤ 𝑥𝑥 � = ℒ(𝜋𝜋′ ). In both cases, negative multipliers do not improve the 22 
+
+bound, which proves the proposition. Economically, 𝜋𝜋𝑖𝑖 is the value of entering the stage with station 𝑖𝑖 already open. It is non-negative because an open station can only reduce operating cost, and it cannot exceed the annualised cost 𝜌𝜌𝐶𝐶𝑖𝑖 
+
+of opening the station in the current stage. The bounded box also keeps the cutting-plane model in the level method bounded. 
+
+3.3 Solution Algorithm 
+
+The solution algorithm is presented as pseudocode for the forward pass (Algorithm 1), the backward pass (Algorithm 2), the level method used to solve each Lagrangian dual (Algorithm 3), and the overall training and evaluation procedure (Algorithm 4). Setting each stage for the mid-path demand gives the deterministic rolling-horizon benchmark used in Section 5. In the pseudocode, 𝒞𝒞 t,j is the set of cuts for stage t and demand state j, ψ the epigraph variable of the expected cost-to-go, ξ̄ an optional forced demand state, x̂ the trial state and π̄ t,k the multiplier warm start. In Algorithm 3, 𝓑𝓑 is the bundle of evaluated points u = (π u, Lu , σ u) with subgradients σ u; Lup , Lbest and Llev are the cutting-plane upper bound, 
+
+the best dual value found and the level; ζ ∈ (0,1) is the level weight and mmax the iteration limit. In Algorithm 4, ν indexes training iterations (at most ν max ) and J is the number of evaluation replications. 
+
+Algorithm 1: Pseudocode of the forward pass in the SDDiP solution procedure 
+
+Forward pass (one sampled demand path) 
+
+Input: cuts { 𝒞𝒞 𝑑𝑑 ,𝑗𝑗 }; transition matrix P; optional forced demand state ξ̄ 
+
+𝑥𝑥0 ← 0; 𝜉𝜉1 ← Mid; cost ← 0
+
+for t = 1, …, T do 
+
+if t > 1 then 𝜉𝜉 𝑑𝑑  ← ξ̄ if ξ̄ is given, else sample 𝜉𝜉 𝑑𝑑  ~ P( 𝜉𝜉 𝑑𝑑 −1 , ·) 
+
+solve min 𝑐𝑐 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑥𝑥 , 𝑦𝑦 ; 𝜉𝜉 𝑑𝑑 ) + 𝛿𝛿 𝜓𝜓 
+
+s.t. 𝑥𝑥 ≥ 𝑥𝑥 𝑑𝑑 −1 , 𝑥𝑥 ∈ {0,1} 𝑚𝑚 , 𝑦𝑦 ∈ 𝒴𝒴 𝑑𝑑 (𝑥𝑥 , 𝜉𝜉 𝑑𝑑 ), 𝜓𝜓 ≥ 0, 𝜓𝜓 ≥ 𝛾𝛾ℓ + 𝛽𝛽ℓ ⊤𝑥𝑥 ∀ℓ ∈ 𝒞𝒞 𝑑𝑑 +1 ,𝜉𝜉𝑡𝑡 (𝜓𝜓 omitted if t = T) 
+
+(time-limited MILP; the incumbent is a feasible decision) 
+
+𝑥𝑥 𝑑𝑑  ← 𝑥𝑥 ; cost ← cost + 𝛿𝛿 𝑑𝑑 −1 𝑐𝑐 𝑑𝑑 (𝑥𝑥 𝑑𝑑 −1 , 𝑥𝑥 𝑑𝑑 , 𝑦𝑦 ; 𝜉𝜉 𝑑𝑑 )
+
+end for 
+
+return trial states ( 𝑥𝑥1 , … , 𝑥𝑥𝑇𝑇−1 ), path ( 𝜉𝜉1 , … , 𝜉𝜉𝑇𝑇 ), cost 
+
+Algorithm 2: Pseudocode of the backward pass in the SDDiP solution procedure 
+
+Backward pass (Lagrangian cuts) 
+
+Input: trial states ( 𝑥𝑥1 , … , 𝑥𝑥𝑇𝑇−1 ) from Algorithm 1; multiplier warm starts π̄ t,k 
+
+for t = T, T−1, …, 2 do 
+
+𝑥𝑥 � ← 𝑥𝑥 𝑑𝑑 −1 
+
+for each demand state k ∈ {Low, Mid, High} do 
+
+(𝛬𝛬 𝑝𝑝 , 𝜋𝜋 𝑝𝑝 ) ← LevelMethod (𝑡𝑡 , 𝑘𝑘 , 𝑥𝑥 �, start = π̄ t,k )
+
+π̄ t,k ← 𝜋𝜋 𝑝𝑝 
+
+end for 
+
+for each parent demand state j ∈ {Low, Mid, High} do 
+
+𝛾𝛾 ←∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝑝𝑝  𝛬𝛬 𝑝𝑝  ; 𝛽𝛽 ← − ∑ 𝑃𝑃 𝑗𝑗 𝑝𝑝 𝜋𝜋 𝑝𝑝 𝑝𝑝 
+
+add the cut 𝜓𝜓 ≥ 𝛾𝛾 + 𝛽𝛽 ⊤𝑥𝑥 to 𝒞𝒞 𝑑𝑑 ,𝑗𝑗 
+
+end for 
+
+end for 23 
+
+Algorithm 3: Pseudocode of the level method in the SDDiP solution procedure 
+
+Algorithm 3: LevelMethod(t, k, x̂, π⁰): maximise ℒ𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 ; 𝑥𝑥 �) over 𝜋𝜋 ∈ [0, 𝜌𝜌 𝐶𝐶 ]
+
+evaluate 𝐿𝐿 0 = 𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋 0) − 𝜋𝜋 0⊤ 𝑥𝑥 � (MILP; Λ from the solver's proven bound) and the subgradient 𝜎𝜎 0 = 𝑧𝑧 ∗ − 𝑥𝑥 �,
+
+where 𝑧𝑧𝑖𝑖 ∗ = 𝑥𝑥𝑖𝑖 ∗ if 𝜋𝜋𝑖𝑖 0 < 𝜌𝜌𝐶𝐶𝑖𝑖 , and 𝑧𝑧𝑖𝑖 ∗ = 0 otherwise 
+
+bundle ℬ ← {( 𝜋𝜋 0, 𝐿𝐿 0, 𝜎𝜎 0)} ; (𝐿𝐿𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 , 𝜋𝜋𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 ) ← (𝐿𝐿⁰ , 𝜋𝜋⁰ )
+
+for 𝑚𝑚 = 1, … , 𝑚𝑚 max do 
+
+𝐿𝐿 𝑓𝑓𝑝𝑝  ← max  
+
+> 𝑠𝑠 ,𝜋𝜋∈ [0,𝜌𝜌𝜌𝜌 ]
+
+{𝑤𝑤 : 𝑤𝑤 ≤ 𝐿𝐿 𝑓𝑓  + 𝜎𝜎 𝑓𝑓 
+
+> ⊤
+
+(𝜋𝜋 − 𝜋𝜋 𝑓𝑓 ) ∀𝑢𝑢 ∈ ℬ } (linear programming) 
+
+if 𝐿𝐿 𝑓𝑓𝑝𝑝  − 𝐿𝐿𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑  ≤ 𝜀𝜀𝑑𝑑 𝑓𝑓𝑝𝑝𝑓𝑓  then break 
+
+level 𝐿𝐿 𝑓𝑓𝑝𝑝𝑎𝑎  ← 𝐿𝐿𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑  + 𝜁𝜁 (𝐿𝐿 𝑓𝑓𝑝𝑝  − 𝐿𝐿𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 )
+
+𝜋𝜋 𝑚𝑚 ← arg min  
+
+> 𝜋𝜋∈ [0,𝜌𝜌𝜌𝜌 ]
+
+∥ 𝜋𝜋 − 𝜋𝜋𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑  ∥2 s.t. 𝐿𝐿 𝑓𝑓  + 𝜎𝜎 𝑓𝑓 
+
+> ⊤
+
+(𝜋𝜋 − 𝜋𝜋 𝑓𝑓 ) ≥ 𝐿𝐿 𝑓𝑓𝑝𝑝𝑎𝑎  ∀𝑢𝑢 ∈ ℬ (quadratic programming) 
+
+evaluate 𝐿𝐿 𝑚𝑚 and 𝜎𝜎 𝑚𝑚 at 𝜋𝜋 𝑚𝑚 as in line 1; ℬ ← ℬ ∪ {( 𝜋𝜋 𝑚𝑚 , 𝐿𝐿 𝑚𝑚 , 𝜎𝜎 𝑚𝑚 )} 
+
+if 𝐿𝐿 𝑚𝑚 > 𝐿𝐿𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑  then (𝐿𝐿𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 , 𝜋𝜋𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 ) ← (𝐿𝐿 𝑚𝑚 , 𝜋𝜋 𝑚𝑚 )
+
+end for 
+
+return �𝛬𝛬 𝑑𝑑 ,𝑝𝑝 (𝜋𝜋𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 ), 𝜋𝜋𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 � = ( 𝐿𝐿𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑  + 𝜋𝜋𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑  
+
+> ⊤
+
+𝑥𝑥 �, 𝜋𝜋𝑏𝑏 𝑝𝑝𝑠𝑠𝑑𝑑 )
+
+Algorithm 4: Pseudocode of training and policy evaluation in the SDDiP solution procedure 
+
+Algorithm 4: SDDiP training, lower bound and policy evaluation 
+
+Initialise 𝒞𝒞 𝑑𝑑 ,𝑗𝑗 ← ⌀ for all t, j ; stall ← 0
+
+for iteration 𝜈𝜈 = 1, … , 𝜈𝜈 max do: 
+
+run Algorithm 1 on a sampled path → trial states 
+
+run Algorithm 2 on the trial states → new cuts 
+
+𝐿𝐿𝐵𝐵𝜈𝜈 ← proven lower bound of the stage-1 problem with 𝜉𝜉1 = Mid and cuts 𝒞𝒞2 ,Mid 
+
+if |𝐿𝐿𝐵𝐵𝜈𝜈 − 𝐿𝐿𝐵𝐵𝜈𝜈−1 |/| 𝐿𝐿𝐵𝐵𝜈𝜈−1 | ≤ 𝜀𝜀𝐿𝐿 𝐵𝐵  , then stall ← stall + 1 else stall ← 0
+
+if stall ≥ patience then break 
+
+end for 
+
+freeze the cuts; for replication = 1, … , 𝐽𝐽 : run Algorithm 1 on a new random path → cost of replication 
+
+𝑈𝑈 𝐵𝐵  ← mean( 𝑐𝑐 𝑜𝑜𝑠𝑠𝑡𝑡 ) + 1.96 × sd( 𝑐𝑐 𝑜𝑜𝑠𝑠𝑡𝑡 )/ �𝐽𝐽 ; 𝑔𝑔 𝑚𝑚𝑝𝑝  ← (𝑈𝑈 𝐵𝐵  − 𝐿𝐿 𝐵𝐵 )/ 𝐿𝐿 𝐵𝐵 
+
+report the mid-, low- and high-branch policies: Algorithm 1 with ξ̄ = Mid, Low, High 
+
+The cut computed for each child demand state 𝑘𝑘 in Algorithm 2 does not depend on the parent state. The same three dual solutions are therefore reused to update the cut sets of all three parent states, each with its own transition probabilities, at no additional computational cost. This is the standard treatment of Markovian uncertainty in SDDP-type algorithms (e.g. (Dowson and Kapelevich, 2021; Löhndorf and Shapiro, 2019; Philpott and de Matos, 2012)). With T = 4 and three demand states, the scenario tree has 40 nodes and 27 scenario paths and could still be solved as an extensive form. In this paper, SDDiP is used because its effort per iteration grows with the number of stages rather than with the number of scenario paths, which allows finer stage and branch resolution in larger applications. 
+
+As shown in Algorithm 4, the lower bound is the optimal value of the stage-1 problem with 𝜉𝜉1 = Mid and the current cuts, read from the solver's proven bound so that it remains valid under time limits. Training stops when the lower 24 
+
+bound changes by less than 𝜀𝜀𝐿𝐿 𝐵𝐵  (relative) in a given number of consecutive iterations (patience), or after 𝜈𝜈 max 
+
+iterations. In this study, we assumed 𝜀𝜀𝐿𝐿 𝐵𝐵  = 10 −4 , patience = 3, 𝜈𝜈 max = 50 , 𝜀𝜀𝑑𝑑 𝑓𝑓𝑝𝑝𝑓𝑓  = 100 AUD, 𝜁𝜁 = 0.5 , 𝑚𝑚 max = 30 .
+
+With the cuts then frozen, the policy is simulated on 𝐽𝐽 independently sampled demand paths (in this study, 𝐽𝐽 = 200) ,using a random-number stream separate from training. The statistical upper bound is the sample mean plus the half-width of its 95% confidence interval, and the reported confidence bounds is (UB − LB)/LB . Because time-limited forward solves return feasible incumbent decisions, the simulated policy is always feasible, and its expected cost is a valid upper bound on 𝑄𝑄1 .
+
+3.4 Energy Consumption Model 
+
+The network distance and drive time between each pair of nodes are calculated using the network analysis in ArcGIS Pro software. Energy consumption model: route distance and travel time between consecutive nodes are obtained from ArcGIS Pro network analysis. Each road centreline is discretised into contiguous segments with a nominal length of 1 km; the final segment retains its actual length. Elevation values were sampled along each route centreline from NASADEM, a NASA global digital elevation model at 1 arc-second (~30 m) horizontal resolution (NASA JPL, 2021).Elevation is sampled at the segment vertices. Segment grade is calculated as the endpoint elevation difference divided by planimetric length. Positive grade denotes uphill travel and negative grade denotes downhill travel in the direction assigned to the route. For each segment ( 𝑙𝑙 ), the net resistive force acting on the truck ( 𝐹𝐹 𝑓𝑓 ) is computed from three components: the gravitational force along the grade, rolling resistance, and aerodynamic drag. 
+
+𝐹𝐹 𝑓𝑓  = 𝑚𝑚𝑚𝑚 𝑠𝑠𝑠𝑠  × 𝑔𝑔 × sin( 𝜃𝜃 𝑓𝑓 ) + 𝑚𝑚𝑚𝑚 𝑠𝑠𝑠𝑠  × 𝑔𝑔 × 𝐶𝐶𝑟𝑟 × cos( 𝜃𝜃 𝑓𝑓 ) + 0.5 ℏ0𝐶𝐶𝑑𝑑𝐴𝐴𝑓𝑓𝑣𝑣 𝑓𝑓 2 (72) 
+
+where 𝑚𝑚𝑚𝑚 𝑠𝑠𝑠𝑠  is truck mass, 𝑔𝑔 gravitational acceleration, 𝐶𝐶𝑟𝑟 the rolling resistance coefficient, 𝐶𝐶𝑑𝑑 the aerodynamic drag coefficient, 𝐴𝐴𝑓𝑓 frontal area, ℏ0 air density, and 𝑣𝑣 𝑓𝑓  the travel speed on the segment (taken as the posted/design speed for that segment). The parameter 𝜃𝜃 𝑓𝑓  = arctan( 𝑔𝑔 𝑟𝑟𝑚𝑚𝑑𝑑𝑒𝑒 𝑓𝑓 ) takes the road grade into account. Air density is treated as constant along the corridor rather than varying with sampled elevation, as a simplifying assumption appropriate to corridors without extreme elevation change. The sign of the net force determines whether the segment's traction draws energy from the battery or returns it. When the combined gravitational, rolling and aerodynamic resistance is positive, the motor must supply tractive effort and energy is drawn from the battery, subject to drivetrain efficiency losses. When a sufficiently steep descent makes the net force negative (the gravitational component exceeds rolling and aerodynamic resistance), the truck brakes regeneratively and returns energy to the battery, subject to the round-trip efficiency of the regenerative braking system. 
+
+In addition to traction energy, battery-electric trucks consume electrical energy to operate auxiliary systems such as cabin heating and cooling, battery thermal management, air compressors, power steering, lighting and onboard electronics. These loads are represented by a constant auxiliary power demand ( 𝑃𝑃 𝑝𝑝𝑓𝑓𝑚𝑚 ), assumed to be independent of road grade and proportional to travel time over each segment. Consequently, the total battery energy required for a segment is the sum of the traction energy and the auxiliary energy consumption. This approach reflects the fact that auxiliary loads continue to draw power even on level roads or during regenerative braking events. The auxiliary energy consumption over the segment is calculated based on drive time on segment ( 𝑡𝑡 𝑓𝑓 ) and the assumed constant auxiliary electrical load ( 𝑃𝑃 𝑝𝑝𝑓𝑓𝑚𝑚 ), as: 𝐸𝐸 𝑝𝑝𝑓𝑓𝑚𝑚 ,𝑓𝑓  = 𝑃𝑃 𝑝𝑝𝑓𝑓𝑚𝑚 𝑡𝑡 𝑓𝑓 . The traction energy ( 𝐸𝐸 𝑑𝑑𝑟𝑟𝑝𝑝𝑐𝑐𝑑𝑑𝑖𝑖 𝑡𝑡 𝑚𝑚 ,𝑓𝑓 ) for segment ( 𝑙𝑙 ) is then calculated as: 
+
+𝐸𝐸 𝑑𝑑𝑟𝑟𝑝𝑝𝑐𝑐𝑑𝑑𝑖𝑖 𝑡𝑡 𝑚𝑚 ,𝑓𝑓  = �𝐹𝐹 𝑓𝑓 𝑑𝑑 𝑓𝑓 
+
+> ℎ𝑑𝑑 𝑟𝑟𝑖𝑖 𝑑𝑑 𝑝𝑝
+
+, 𝑖𝑖 𝑓𝑓  𝐹𝐹 𝑓𝑓  ≥ 0
+
+𝐹𝐹 𝑓𝑓 𝑑𝑑 𝑓𝑓 ℎ𝑟𝑟 𝑝𝑝𝑎𝑎𝑝𝑝𝑚𝑚𝑝𝑝 𝑟𝑟 𝑝𝑝𝑑𝑑𝑖𝑖𝑎𝑎𝑝𝑝 , 𝑖𝑖 𝑓𝑓  𝐹𝐹 𝑓𝑓  < 0 (73) 
+
+where ℎ𝑑𝑑 𝑟𝑟𝑖𝑖𝑎𝑎𝑝𝑝  and ℎ𝑟𝑟 𝑝𝑝𝑎𝑎𝑝𝑝𝑚𝑚𝑝𝑝 𝑟𝑟 𝑝𝑝𝑑𝑑𝑖𝑖𝑎𝑎𝑝𝑝  are the drivetrain and regenerative-braking efficiencies, respectively. 
+
+The total battery energy required for the segment ( 𝑒𝑒 𝑓𝑓 ) is therefore the sum of traction ( 𝐸𝐸 𝑑𝑑𝑟𝑟𝑝𝑝𝑐𝑐𝑑𝑑𝑖𝑖 𝑡𝑡 𝑚𝑚 ,𝑓𝑓 ) and auxiliary energy (𝐸𝐸 𝑝𝑝𝑓𝑓𝑚𝑚 ,𝑓𝑓 ). Because 𝐸𝐸 𝑝𝑝𝑓𝑓𝑚𝑚 ,𝑓𝑓  is always positive, it partially offsets the energy recovered on regenerative segments, i.e. a 25 
+
+descent yields net negative ( 𝑒𝑒 𝑓𝑓 ) (net energy returned to the battery) only once traction-side regeneration exceeds the auxiliary draw for that segment. Segment energy is then converted from joules to the same units as battery capacity (kWh) by dividing by 3,600,000 .
+
+Segment energies are aggregated over the complete route and over each leg between consecutive candidate facilities. The signed sum is used to identify the net energy requirement for each leg, subject to the model’s treatment of regenerative braking and auxiliary load. This aggregation determines feasible facility spacing under the adopted battery and SoC assumptions. The parameters in  Table 3  are held constant across routes and segments; payload, weather, traffic, acceleration and battery-temperature effects are not calibrated in the current implementation. 
+
+In this study, charging a battery from 0% to 100% SoC is assumed to take 90 minutes, while a swap takes 10 minutes. A battery removed during a swap is recharged to 100% at the station so that it can be used by other trucks. Each truck carries 4 packs of batteries, each charged at up to 120 kW in the 10–80% SoC range, the fastest part of the charging curve. 
+
+Table 3: Parameter assumptions used in the segment-level energy model. 
+
+Symbol  Parameter  Assumed value 
+
+Description 
+
+𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎  Loaded truck mass  34,000 kg  Representative GVW for a heavy-duty battery-electric line-haul truck 
+
+𝑪𝑪𝒓𝒓  Rolling resistance coefficient 
+
+0.006  Typical value for heavy truck tyres on paved highway 
+
+𝑪𝑪𝒅𝒅  Aerodynamic drag coefficient 
+
+0.60  Typical value for a Class 8 tractor-trailer 
+
+𝑨𝑨𝒇𝒇  Frontal area  10.0 m2  Representative frontal area for a loaded Class 8 tractor-trailer 
+
+ℏ𝟎𝟎  Air density  1.225 kg/m3 
+
+Standard atmosphere at 15C; treated as constant along the corridor (see Section 3) 
+
+𝒉𝒉𝒅𝒅 𝒓𝒓 𝒅𝒅𝒅𝒅𝒅𝒅  Drivetrain efficiency (motoring) 
+
+0.90  Combined motor, inverter and drivetrain efficiency while drawing power 
+
+𝒉𝒉𝒓𝒓 𝒅𝒅 𝒓𝒓 𝒅𝒅 𝒓𝒓 𝒅𝒅 𝒓𝒓 𝒎𝒎 𝒓𝒓 𝒅𝒅𝒅𝒅𝒅𝒅  Regenerative braking efficiency 
+
+0.60  Round-trip efficiency of energy recovery during braking/descent 
+
+𝑷𝑷 𝒎𝒎 𝒂𝒂𝒂𝒂  Auxiliary electrical load 
+
+4.0 kW  Representative constant auxiliary demand for a heavy-duty battery-electric truck (HVAC, battery thermal management, air compressor, steering, electronics) 
+
+# 4 Data 
+
+The case study covers major freight corridors on Australia’s east coast, connecting Brisbane, Sydney and Melbourne and including both travel directions. Candidate locations comprise (i) heavy-vehicle rest areas, (ii) existing passenger-EV charging sites and (iii) existing fuel-service stations. Only sites accessible in the direction of travel are retained, so the model does not require a U-turn or route detour. The candidate set is therefore a route-specific representation of feasible sites, not a complete national infrastructure inventory. 
+
+The demand for charging stations is calculated based on a percentage of the current flow on each corridor, considering future demand growth. The current flow, observed as average annual daily traffic (AADT) and the peak hour counts, is obtained from the counter stations alongside the highways, provided by the Commonwealth Government.  Table 4 26 
+
+presents the route characteristics, peak-hour flow and the candidate stations alongside each route. It should be noted that the HV percentage might be significantly smaller than the values presented in  Table 5 ; however, we assume the charging stations could be dual-purpose (for both passengers and trucks), and also the traffic volumes are more likely to grow significantly. Hence, we deliberately assume higher peak-hour volumes than the existing HV volumes on these corridors. 
+
+The fixed establishment cost represents the planning-level investment required to convert an existing site into a battery electric truck charging station. Notably, each charging facility needs to be planned and assessed as a bespoke item with detailed specifications on the battery energy storage system and grid supplies. In this study, we assume different candidate site categories would require different upgrade costs according to their anticipated level of existing infrastructure. The following assumptions are derived from the industry stakeholder consultation. Passenger EV charging stations are assumed to require the lowest incremental investment due to the presence of electrical infrastructure and utility approvals. The main upgrade costs for these candidate sites would be associated with a higher-capacity transformer, larger parking bays and a truck manoeuvring area. The existing gas service stations require the highest investment owing to the need for land acquisition, substantial electrical upgrades, a transformer, significant grid reinforcement and dedicated heavy-vehicle charging facilities. These sites are more likely to be private operators which already have commercial services, lighting, toilets, and sometimes a fast-food restaurant co-located, enabling long rest for truck drivers. Heavy vehicle rest areas require a moderate investment, since these sites already have truck parking, acceleration/deceleration lanes, and land is owned by the road infrastructure manager. These sites, however, would need new electrical connections, a transformer, a switchboard and charger foundations. For heavy vehicle rest areas, a separate Site Readiness Score is computed from existing amenities, assuming the weight parameters presented in  Table 5 , and discounting the fixed establishment costs. 
+
+Table 4: Route characteristics and candidate stations, with assumed peak-hour demand                                                                                         
+
+> Route Name ID Route Direction *
+> Peak hourly demand
+> Total length (km)
+> Candidate charging/swapping stations
+> Passenger EV Charging stations
+> Gas stations HV Rest areas
+> New England highway
+> 1Newcastle to Brisbane NB 1065 793 149 11
+> 2Brisbane to Newcastle SB 654 589 140 8
+> Pacific highway
+> 3Brisbane to Sydney SB 2230 1037 742 15
+> 4Sydney to Brisbane NB 2432 971 537 18
+> Princes highway
+> 5Melbourne to Sydney NB 1641 1028 657 15
+> 6Sydney to Melbourne SB 1716 1046 452 15
+> Hume highway
+> 7Melbourne to Sydney NB 693 870 214 39
+> 8Sydney to Melbourne SB 701 791 610 36
+> Newell highway
+> 9Melbourne to Toowoomba NB 138 1533 348 15
+> 10 Toowoomba to Melbourne SB 166 1577 338 9
+> Great Western
+> highway
+> 11 Sydney to Dubbo WB 846 403 533 -
+> 12 Dubbo to Sydney EB 452 403 324 3
+> * NB (Northbound); SB (Southbound); WB (Westbound); EB (Eastbound) 27
+
+Table 5: Weight factors assumed for calculating the site readiness score for heavy vehicle rest areas. 
+
+Facility  Toilet  Lighting  Shelter  Water  Table  BBQ  Shade 
+
+Weight  20  25  15  20  5 5 10 
+
+The annual fixed establishment costs are obtained by annualising the upfront cost with the capital recovery factor, using a discount rate of 6% and 20 years average lifetime. To focus on the trade-off between infrastructure deployment and freight service performance, both charging and battery swapping stations were assumed to have the same fixed establishment cost. This assumption reflects the strategic nature of the optimisation model, where the dominant investment components (land acquisition, site development, grid connection, transformers, and civil infrastructure) are assumed to be comparable across technologies. Technology-specific equipment costs, including charging units, battery inventories, and automated swapping systems, were excluded because they are highly uncertain, rapidly evolving, and vary considerably across manufacturers.  Figure 1  presents all the potential sites considered as candidate charging stations. Notably, northbound/southbound and westbound/eastbound candidate sites are physically distinct locations. 
+
+Figure 1: Potential charging stations, including heavy vehicle rest areas, existing gas stations and passenger EV charging stations 28 
+
+In Australia, heavy vehicle drivers must take mandatory rest under the Heavy Vehicle National Law (HVNL). Under its Standard Hours for solo drivers, a driver may work at most 5¼ hours in any 5½-hour period, 7½ hours in any 8 hours, 10 hours in any 11 hours and 12 hours in any 24 hours, with at least 15 minutes, 30 minutes, 60 minutes and 7 continuous hours of stationary rest in those periods, respectively (Heavy Vehicle (Fatigue Management) National Regulation, 2013). Stationary rest is time that a driver spends out of a heavy vehicle or in an approved sleeper berth of a stationary fatigue-regulated heavy vehicle, so the mandatory rest can be used for charging or battery swapping (opportunity charging). This study uses a stylised two-tier rule that requires more frequent rest than these minimums: a 10-minute short break after at most 2 hours of driving and a 30-minute rest after at most 5 hours of driving, following the NSW Heavy Vehicle Driver Handbook (Government of New South Wales) . The 24-hour limit and its 7-hour rest are not modelled (Section 7). We assume that charging is unattended (the driver plugs in and then rests away from the vehicle) and that swapping is automated; the few minutes needed to connect or position the vehicle are neglected, and the remaining dwell counts as rest. Because refuelling counts as work under the HVNL, this assumption should be confirmed for attended charging. 
+
+# 5 Experimental Results 
+
+This section reports the computational performance and station-siting results of the model variants introduced in Section 3, solved as MILP problems across all 12 routes.  The model formulation assumes that, at each en-route station, a trucking operator chooses either to charge all onboard battery packs simultaneously or to swap one or more of them. Although the proposed formulation in Section 3 handles both charging and swapping decisions within a single integrated model, the two energy-replenishment strategies are treated separately in the experimental analysis to more closely reflect current operational practice. This separation is motivated by existing battery-swapping schemes deployed globally, in which operators participating in swapping-based business models rely predominantly on battery exchange rather than independently charging onboard batteries. Such schemes also mitigate operator concerns related to battery ownership, degradation, and residual value, as battery management and replacement are typically handled within the swapping ecosystem. Commercial precedents for both modular multi-pack swapping and the exclusive adoption of a single energy-replenishment strategy are already well established. Battery-as-a-service subscriptions, first offered for passenger cars, have since been extended to freight. CATL's Qiji Energy division has deployed a modular heavy-truck swapping system in which one to three standardised 171-kWh battery modules can be assembled per truck, with users selecting the number of batteries according to their needs and optimising swap routes through a dedicated cloud reservation platform (Barnard, 2026). Automated multi-pack exchange has also been demonstrated for heavy-duty trucks outside China. In Germany's eHaul project, a swap robot approaches the truck from the left and right, lifting and removing the battery packs before retrieving and reinserting fully charged replacements, with the entire process completed in approximately ten minutes (Technische Universität Berlin, 2026). 
+
+These practices are also reflected in the academic literature. Wang et al. (2025) directly compare battery-swapping and fast-charging infrastructure for electric heavy-duty trucks, treating them as two distinct network designs rather than a hybrid system. Their evaluation finds that battery-swapping stations significantly increase transportation efficiency by reducing vehicle downtime relative to fast charging, although they may require larger battery inventories, and that swapping stations using medium-sized batteries offer the best balance of time and labour efficiency. These practical applications and studies collectively motivate us to  assume that a trucking operator adopts either a charging strategy or a swapping strategy exclusively, rather than combining both.  These service models are treated as mutually exclusive from the perspective of individual trucks: trucks subscribed to the charging network use only public charging stations, while trucks subscribed to the battery-swapping network use only swapping stations. Therefore, the two infrastructure networks are modelled separately, while their spatial deployment may be jointly optimised. However, we provide the 29 
+
+integrated model framework capable of handling both swapping vs. charging decisions simultaneously, for readers who wish to study a combined business model. 
+
+To model the demand uncertainty, four demand stages (5%, 10%, 15%, 20% of BET penetration), with three stochastic demand branches (low, mid, and high) are assumed. The demand tree is modelled as a Markov chain, in which each subsequent demand stage branches three ways from its parent. The first node represents the Stage 1 demand (5% BET penetration), and then propagates into 40 distinct nodes (Stage 1: 1; Stage 2: 3 demand scenarios; Stage 3: 9 demand scenarios; and Stage 4: 27 demand scenarios).  Table 6  presents the stochastic demand transition matrix (i.e. branching probabilities). In the absence of real BET adoption data, these demand transition values are hypothesised for methodological demonstrations. The rationale behind the assumed values is as follows. The diagonal dominance (i.e. higher values assumed for diagonal cells) enforces that staying in the same state is always most likely (i.e. model adoption momentum). In other words, technology adoption processes tend to persist. For example, if demand has been growing slowly in this stage, it is more likely to keep growing slowly next stage than to suddenly swing to a completely different regime. Looking at the off-diagonal pattern within each row, the values are assumed to follow an ordered scale, encoding the assumption that demand shifts tend to happen gradually. For example, a low adoption trajectory drifting up to moderate adoption is far more plausible in one stage than leaping straight to high adoption. This assumption attempts to mirror diffusion-of-technology curves (S-curve, not step function). The low and high scenarios are assumed symmetric, indicating the absence of directional bias, meaning that the model has no prior view on whether demand is more likely to accelerate than decelerate. The mid row is a symmetric 25/50/25 split, so from the mid branch the next-stage outcome is equally likely to move up or down. The branch multipliers are 0.7, 1.0 and 1.3 times the mid-path demand. 
+
+Table 6: Demand transition matrix assumed in this study. 
+
+From/To  Low  Mid  High 
+
+Low  0.5  0.40  0.10 
+
+Mid  0.25  0.50  0.25 
+
+High  0.10  0.40  0.50 
+
+Table 7  presents the number of decision variables for the swap-only and charge-only models for each route for the whole demand tree. 
+
+Table 7: Number of decision variables in the SDDiP model 
+
+Route  Total Variables  Binary Variables  Integer Variables  Continuous Variables 
+
+1 85,360  32,600  4,880  47,880 
+
+2 67,680  25,840  3,840  38,000 
+
+3 89,440  34,160  5,120  50,160 
+
+4 84,000  32,080  4,800  47,120 
+
+5 108,480  41,440  6,240  60,800 
+
+6 98,960  37,800  5,680  55,480 
+
+7 79,600  30,360  4,400  44,840 
+
+8 73,120  27,920  4,160  41,040 
+
+9 95,760  36,520  5,280  53,960 
+
+10  75,200  28,640  4,000  42,560 
+
+11  54,080  20,640  3,040  30,400 
+
+12  43,200  16,480  2,400  24,320 30 
+
+All optimisation models were implemented in Python using the Gurobi Optimizer (version 13.0.2) via its gurobipy interface (Gurobi Optimization, 2024). Models were solved on high computational infrastructure, using 16 CPU cores and 256 GB RAM per job. Each route's SDDiP solve proceeds in two phases: a training phase (alternating forward and backward passes, building Benders-style cuts via a level-method Lagrangian dual) that stops once the lower bound stalls (relative change <= 1e-4 for 3 consecutive iterations), followed by an evaluation phase that draws J independent forward-pass replications (J = 200 by default) against the fixed, trained cuts to produce a statistical upper bound (mean 
+
++ 95% confidence -interval half-width), a materially more reliable convergence signal than comparing the lower bound against any single sampled path (see Section 3 and Algorithm 4). A route was classed as converged once the gap between this statistical upper bound and the proven lower bound fell to 5% or below. High demand long routes (e.g. routes 3, 4 and 5) initially closed this gap slowly under the baseline solver configuration. Diagnostic inspection of the candidate-station data revealed that a large share of candidate sites on these corridors share identical fixed installation costs and identical composite site-suitability scores (e.g. 42 of 64 candidates on Route 3 and 37 of 60 on Route 4 are tied on both cost and score). This is a well-documented pathology in facility-location-type mixed-integer programs, where many candidate locations are cost- and score-equivalent, the solver cannot distinguish between combinatorially many interchangeable solutions, which weakens the LP relaxation bound and slows branch-and-bound convergence independently of the underlying decision problem's genuine difficulty. To mitigate this, Gurobi's Symmetry parameter was set to its most aggressive detection-and-breaking level (Symmetry = 2) for these routes, directing the solver to spend additional presolve effort identifying and breaking these symmetric candidate-site structures before branching begins. With this setting, all swap-only routes except Route 9 (5.35%) and seven of the twelve charge-only routes reached the 5% target; the remaining policy-evaluation confidence bounds are reported in Table 10. 
+
+5.1 Station-siting Decisions in SDDiP against Deterministic Rolling Horizon Model 
+
+Table 8  and  Table 9  report the station-siting decisions for the battery-swap and charge network, respectively. Some high-traffic routes required a higher number of battery inventories (in the swap-only model) or chargers (in the charge-only model). 
+
+Table 8: Results for the SDDiP swap-only model by routes and demand stages. 
+
+Swap-only model 
+
+Route Name  Direction  Route ID 
+
+Stations built in each stage 
+
+Cap battery inventory at each station 
+
+Maximum utilisation rate 
+
+New England highway 
+
+NB  1 3→3→3→3 200  18% →36% →53% →71% 
+
+SB  2 3→3→3→3 200  11% →22% →33% →44% 
+
+Pacific highway 
+
+SB  3 3→3→7→7 200  37% →74% →98% →93% 
+
+NB  4 3→3→3→6 200 →200 →250 →300  41% →81% →97% →95% 
+
+Princes highway 
+
+NB  5 4→4→4→4 200 →200 →250 →300  27% →55% →66% →73% 
+
+SB  6 4→4→4→8 200  29% →57% →86% →86% 
+
+Hume highway 
+
+NB  7 4→4→4→4 200  12% →23% →35% →46% 
+
+SB  8 3→3→3→3 200  12% →23% →35% →47% 
+
+Newell highway 
+
+NB  9 7→7→7→7 200  2% →5% →7% →9% 
+
+SB  10  6→6→6→6 200  3% →6% →8% →11% 
+
+Great Western highway 
+
+WB  11  1→1→1→1 200  14% →28% →42% →56% 
+
+EB  12  1→1→1→1 200  8% →15% →23% →30% 
+
+The maximum number of chargers per station was set by route and stage (Table 9), from 50 on the Newell Highway and the eastbound Great Western Highway to 300 on the Pacific Highway, and was increased where a lower cap made 31 
+
+a route infeasible. The resulting peak utilisation ranges from 28% to 100%. Where the cap is held fixed while demand grows, as on the Newell Highway, utilisation rises from 28–34% in the second stage to 56–66% in the final stage. 
+
+Table 9: Results for SDDiP charge-only model by routes and demand stages. 
+
+Charge-only model 
+
+Route Name 
+
+Direction  Route ID 
+
+Stations built in each stage 
+
+Assumed chargers required at each station 
+
+Maximum utilisation rate 
+
+New England highway 
+
+NB  1 8→8→8→8 50 →100 →150 →200  54% →53% →53% →53% 
+
+SB  2 4→4→4→4 50 →100 →150 →200  66% →65% →65% →66% 
+
+Pacific highway 
+
+SB  3 13 →13 →13 →13  50 →100 →200 →300  74% →74% →84% →74% 
+
+NB  4 12 →12 →12 →12  50 →100 →200 →300  82% →81% →91% →81% 
+
+Princes highway 
+
+NB  5 9→10 →10 →10  50 →100 →150 →200  82% →82% →82% →82% 
+
+SB  6 10 →10 →10 →10  50 →100 →150 →200  86% →86% →86% →86% 
+
+Hume highway 
+
+NB  7 7→7→7→7 50 →100 →150 →200  100% →69% →69% →70% 
+
+SB  8 4→7→7→7 50 →70 →100 →150  70% →50% →53% →93% 
+
+Newell highway 
+
+NB  9 9→9→9→9 50 →50 →50 →50  100% →28% →42% →56% 
+
+SB  10  8→8→8→8 50 →50 →50 →50  89% →34% →50% →66% 
+
+Great Western highway 
+
+WB  11  2→3→3→3 50 →70 →100 →150  84% →60% →63% →57% 
+
+EB  12  2→2→3→3 50 →50 →50 →50  46% →90% →68% →90% 
+
+Figure 2  presents the stations built and the maximum number of required battery inventories in every demand stage at the mid-path demand branch by route at every demand stage, showing how the number of stations built varies across the network, from the lowest-flow corridors (e.g. route IDs 1-2 & 7-12) to the busiest routes (e.g. route IDs 3-6). Routes 9 and 10 need lower battery inventories but a relatively higher number of stations to satisfy the peak-hour demand compared to other routes. This is due to the geographic stretch of the candidate stations along the routes and the fact that seven and six swapping stations will be needed for routes 9 and 10, respectively, to satisfy the charging needs, regardless of the lower route demands. 
+
+Figure 2: Results of battery swapping station counts and maximum required number of batteries in the SDDiP model by routes and demand stages.                       
+
+> 050 100 150 200 250 300 01234567891234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 12345678910 11 12 Maximum number of batteries required at each station Number of Battery Swapping Stations Route IDs and Demand Stages Battery Swapping Station Counts and Maximum Required Batteries in Each Station by Routes and Demand Stages - SDDiP Model
+> Maximum number of batteries required at each station
+> Number of battery swapping stations
+
+32 
+
+Figure 3 (a-c) shows the number of charging stations and the peak number of chargers required at the busiest station on each route along the low, mid and high demand branches of the charge-only SDDiP model. Each branch traces the policy's decisions when demand remains on that branch in every stage, at 70%, 100% and 130% of the mid-path penetration, respectively. 
+
+Figure 3: Results of charging station counts and maximum required number of chargers at each station by route and demand stage. 
+
+050 100 150 200 250 300 0246810 12 14 16 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 5 6 7 8 9 10 11 12 Maximum number of chargers required at each station Number of Charging Stations Route IDs and Demand Stages (a) Charging Stations and Required Number of Chargers (Low Demand Branch)- SDDiP Model Maximum number of chargers required at each station Number of charging stations 
+
+050 100 150 200 250 300 0246810 12 14 16 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 5 6 7 8 9 10 11 12 Maximum number of chargers required at each station Number of Charging Stations Route IDs and Demand Stages (b) Charging Stations & Required Number of Chargers (Mid Demand Branch) - SDDiP Model Maximum number of chargers required at each station Number of charging stations 
+
+050 100 150 200 250 300 0246810 12 14 16 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 5 6 7 8 9 10 11 12 Maximum number of chargers required at each station Number of Charging Stations Route IDs and Demand Stages (c) Charging Stations and Required Number of Chargers (High Demand Branch)-SDDiP Model Maximum number of chargers required at each station Number of charging stations 33 
+
+The size of the network scales with demand, but less than proportionally. By the final stage, the model builds 83, 94 and 106 stations on the low, mid and high branches, at capital costs of AUD 1,148M, 1,262M and 1,475M. The ±30% 
+
+variation in demand therefore produces only a −12% to +13% change in station count and a −9% to +17% change in 
+
+capital cost. The remaining demand is absorbed by installing more chargers at existing sites and using them more intensively, where the average peak utilisation of the busiest station on each route rises from 57% on the low branch to 73% on the mid branch and 77% on the high branch. On every branch, the build-out is concentrated in the early stages, with more than 95% of the final-stage stations already in place by the second stage, so hedging against uncertainty acts mainly on which sites are selected rather than on when they are built. The peak charger requirement, however, does not increase monotonically with demand. Across the network, the busiest station needs 170, 243 and 290 chargers in the final stage, but in the third stage the mid branch (182) exceeds the high branch (158). On Routes 3, 4 and 8, the high branch builds additional stations that spread the demand, lowering the load at the busiest site; on Route 4 in the final stage, for example, 16 stations with a peak of 211 chargers replace 12 stations with a peak of 243. On the low-volume Routes 9 and 10 the number of stations barely changes across branches (8–11), indicating that siting there is driven by the driving range between stations rather than by charging capacity, and only the number of chargers scales with demand. 
+
+The SDDiP model was benchmarked against a myopic stage-by-stage solve with irreversible stations, chargers and batteries. The same 12-route network was also solved with a deterministic rolling-horizon model, which re-solves each stage as a single mixed-integer program against one point-forecast demand value, with no representation of demand uncertainty.  Figure 4 (a-b) present the maximum required stations, battery inventory and chargers at each station in both swap-only and charge-only model by route and demand stage.  Figure 4 (a-b) can be compared to  Figure 2  and 
+
+Figure 3 (b) under the SDDiP model along its mid-demand path, which follows the same demand trajectory as the deterministic case. For the charge-only network, the two models are closely aligned. They build almost the same number of stations in every stage (87 vs 88 at 5% penetration and 95 vs 94 at 20%), and the peak charger requirement is identical on every route and stage, reaching 243 chargers on Route 4 at 20% penetration. The models differ mainly in which sites they select. Only 67 of the stage-4 SDDiP stations (71%) coincide with the deterministic solution, with the largest differences on Routes 1, 2, 7, 8 and 12. The SDDiP sites are also more expensive, raising the capital cost by 8.2% in the first stage and 4.4% in the final stage. 
+
+The swap-only network diverges more strongly. SDDiP builds fewer stations once demand grows (46 vs 52 at 15% and 53 vs 59 at 20% penetration), and only about half of its stage-4 stations coincide with the deterministic ones, with entirely different sites on Routes 3 and 4 in the first two stages. Concentrating demand on fewer sites raises the peak battery requirement at the busiest station, from 162 to 284 batteries on Route 4 and from 191 to 219 on Route 5 at 20% penetration. The cost profile is also shifted forward. The SDDiP model spends 5.8% more than the deterministic model in the first two stages but 3.0% less by the final stage. These differences are consistent with the SDDiP policy anticipating the high-demand branch. The rolling-horizon model optimises each stage only for the demand observed at that stage and adds stations incrementally as demand grows; Route 3 swap stations, for instance, rise from 5 to 10. The SDDiP model instead commits early to sites and capacities that remain cost-effective across the possible future demand paths, even at the cost of higher early investment, and so ends with a smaller and more concentrated network. 34 
+
+Figure 4: Maximum station counts and required number of batteries and chargers in the deterministic rolling horizon model, by routes and demand stages. 
+
+Table 10  reports the lower bound (LB) and statistical upper bound (UB) of the SDDiP objective for each route under the swap-only and charge-only models. The SDDiP objective value represents the total expected discounted cost of one multi-stage stochastic decision problem, which includes annualised CAPEX and VoT-monetised delay, summed across all 4 demand stages with per-stage discounting, under genuine demand uncertainty. The LB is a deterministic, valid bound on the minimum expected discounted cost, obtained by solving the first-stage problem with the cost-to-go function approximated by the Lagrangian cuts accumulated during training. The UB is a statistical estimate of the expected cost of the trained policy, where the policy is fixed and simulated over independently sampled demand paths, and the UB is the sample mean plus the half-width of its 95% confidence interval. The policy-evaluation confidence bound , (UB − LB)/LB, therefore bounds how far the trained policy may be from the true optimum, but it also includes                       
+
+> 050 100 150 200 250 0246810 12 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 12345678910 11 12 Maximum number of batteries required at each station Number of Battery Swapping Stations Route IDs and Demand Stages
+
+(a) Battery Swapping Stations and Maximum Required Batteries - Deterministic Rolling Horizon Model Maximum number of batteries required at each station Number of battery swapping stations                        
+
+> 050 100 150 200 250 300 0246810 12 14 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 12345678910 11 12 Maximum number of chargers required at each station Number of charging stations Route IDs and Demand Stages (b) Charging Stations and Maximum Required Chargers - Deterministic Rolling Horizon Model Maximum number of chargers required at each station Number of charging stations 35
+
+the sampling error of the UB estimate. The reported relative difference therefore combines policy suboptimality with sampling uncertainty and should not be read as a deterministic proof gap. 
+
+Table 10: Lower bound (LB) and upper bound (UB) objective function values for swap-only and charge-only models 
+
+Route 
+
+Name  Direction  Route ID 
+
+Swap-only model  Charge-only model 
+
+Objective Function Value (million AUD)  Confidence 
+
+bound (%) 
+
+Objective Function Value (million AUD)  Confidence 
+
+bound (%) 
+
+LB  UB  LB  UB 
+
+New England highway 
+
+NB  1 100.62  103.55  2.91  359.41  387.95  7.94 
+
+SB  2 88.86  91.34  2.8  205.30  211.61  3.07 
+
+Pacific highway 
+
+SB  3 400.22  413.84  3.4  1127.05  1157.87  2.73 
+
+NB  4 446.96  463.48  3.69  1460.70  1513.27  3.60 
+
+Princes highway 
+
+NB  5 265.18  273.04  2.96  899.89  933.01  3.68 
+
+SB  6 282.28  293.69  4.04  898.78  931.91  3.69 
+
+Hume highway 
+
+NB  7 266.15  274.42  3.11  330.73  357.12  7.98 
+
+SB  8 101.55  105.32  3.71  249.83  259.92  4.04 
+
+Newell highway 
+
+NB  9 67.18  70.77  5.35  101.85  106.47  4.54 
+
+SB  10  67.58  69.35  2.62  101.39  107.59  6.12 
+
+Great Western highway 
+
+WB  11  37.41  38.53  2.98  87.99  92.84  5.52 
+
+EB  12  16.65  17.09  2.63  42.53  44.20  3.79 
+
+> Note: The lower bound (LB) is a certified bound from the trained value function; the statistical upper bound (UB) is a confidence-interval estimate from policy evaluation. Together they bracket the optimal expected cost, up to the sampling error of the UB.
+
+The swap-only model converges tightly and consistently: policy-evaluation confidence bounds range from 2.62% to 5.35% (mean 3.35%), and only route 9 exceeds 5%. The charge-only model yields confidence bounds of 3.07–7.9%, with four routes above 5%. The largest are on the New England Highway northbound (7.94%) and the Hume Highway northbound (7.98%). The looser convergence of the charge-only model is consistent with its harder stage subproblems. Charger occupancy depends on continuous charging durations coupled to battery state-of-charge dynamics, and demand is split across sub-flows of drivers, so the mixed-integer stage problems are larger and more often terminated at their time limit. In such cases, the cuts are built from the solver's proven bound rather than the optimal value, which weakens the cost-to-go approximation and keeps the LB lower. In addition, the charge-only objective values are 1.2–3.6 times larger than their swap-only counterparts because charging adds substantially to driver delay. Delay is more sensitive to the demand realisation than station capital cost, which widens the spread of simulated policy costs and hence the confidence interval on the UB. Even so, ten of the twelve charge-only routes converge to within about 6%, indicating that the SDDiP policies are near-optimal for both technologies, with the charge-only results on routes 1 and 7 warranting more cautious interpretation. 
+
+Table 11  reports each route's computational time comparison between the deterministic aand the SDDiP models. For the deterministic rolling-horizon model, the computation time is reported for the sum of the four per-stage MILP solve times (each solved once, to a proven exact optimum). For SDDiP, the computational time is the reported end-to-end elapsed time covering the full SDDiP training loop (repeated forward and backward passes until the lower bound stalled or the iteration cap was reached) plus the J-replication policy evaluation used to compute the statistical upper bound. Every deterministic rolling horizon stage/route solve reached a proven global optimum (Gurobi status 2, MIP gap 0%) in well under ten minutes, reflecting the much smaller size of a single-scenario problem compared to SDDiP's multi-branch scenario tree. SDDiP, by contrast, solves a low/mid/high demand scenario tree at every stage and hedges the station-siting decision against the probability-weighted range of future demand outcomes, at the cost of far greater 36 
+
+computational effort. The computational time difference is even more pronounced in the charge-only model for high-traffic routes, such as the Pacific and Princes Highways. 
+
+Table 11: Computational time (min) per iteration for the SDDiP model vs. the deterministic rolling-horizon model. 
+
+Route Name  Direction  Route 
+
+Swap-only model  Charge-only model 
+
+Rolling-horizon  SDDiP 
+
+SDDiP / Rolling-horizon 
+
+Rolling-horizon  SDDiP 
+
+SDDiP / Rolling-horizon 
+
+New England highway 
+
+NB  1 3 218  64×  4 680  164× 
+
+SB  2 1 66  65×  1 12  33× 
+
+Pacific highway 
+
+SB  3 51  3090  60×  3620  39738  10× 
+
+NB  4 34  5262  154×  3702  51048  13× 
+
+Princes highway 
+
+NB  5 111  782  6×  4 19320  5336× 
+
+SB  6 35  3484  99×  20  22249  1134× 
+
+Hume highway 
+
+NB  7 5 427  90×  2 143  70× 
+
+SB  8 2 370  148×  30  26747  891× 
+
+Newell highway 
+
+NB  9 10  569  58×  1 80  90× 
+
+SB  10  5 392  85×  1 22  47× 
+
+Great Western highway 
+
+WB  11  1 133  266×  1 8 18× 
+
+EB  12  1 27  80×  1 1261  1400× 
+
+5.2 Driver Hours of Service and Charging Schedule 
+
+The model determines the driving schedule for every route, and the charging (or swapping) schedule for every sub-flow, in each demand stage and for both the charge-only and swap-only models.  Figure 5  shows the driver schedule on Route 1 (Newcastle–Brisbane via the New England Highway, northbound) in the first demand stage (5% BET penetration) under the SDDiP solution. The figure reports the cumulative arrival and departure times from the origin, the dwell time and the battery SoC at each stop, and whether the stop is a short break, a long rest, or a break combined with a charging event. At 5% penetration, the route's peak-hour BET flow exceeds the 50-charger capacity of a single station, so the model splits the flow into two subgroups of drivers that recharge at different stations (using equation 31). Both subgroups follow the same timetable, completing the 718-minute trip with six stops: three short breaks and five long rests, with a combined dwell of 244 minutes. They alternate charging sites, however. Every charging event coincides with a mandatory short break or long rest, so charging is absorbed into rest time required under the hours-of-service rules rather than adding separate stops. Where the charge takes longer than the required break, the dwell is extended. Batteries are typically recharged from 10–38% SoC to the 80% charging cap, taking 11–42 minutes per event. It should be noted that a long rest does not necessarily coincide with charging to the maximum SoC. A battery is charged only as much as is needed to reach the next charging stop, or the destination, while keeping the minimum SoC reserve; on Route 1, for example, the batteries charged during long rests reach 74–78% rather than the 80% cap at two stops, and some long rests involve no charging at all. Both subgroups reach Brisbane at the 10% minimum SoC, showing that the schedule uses the available battery range fully without violating the reserve requirement. 37 
+
+Figure 5: Illustrative example of rest and charging schedule on route 1. 
+
+5.3 Cost–delay Trade-off: Single-objective Extremes 
+
+To test how much of each route’s station-siting decision is driven by capital cost rather than driver delay, the deterministic rolling-horizon model was re-solved under two single-objective extremes with all capacity and HoS constraints unchanged: minimising station CAPEX alone (cost-only, VoT = 0) and minimising driver delay alone (delay-only).  Figure 6  compares the stations built in the final stage (20% penetration) under the two extremes for the swap-only (a) and charge-only (b) models. The cost-only results show the least-cost network that satisfies the range, capacity and HoS constraints. 
+
+Across the 12 routes, the delay-only objective required more charging stations than the cost-only objective (range: 2×– 7×), resulting in a significant increase in total station CAPEX when built to the delay-minimising configuration. For swapping the increase is larger still (6–38×): with no cost penalty, every additional station shortens some dwell, so the delay-only model opens almost every candidate site. Comparing the combined-objective results of the deterministic model ( Figure 4 ) with the single-objective results in  Figure 6  shows that, in the final stage, the cost-only network coincides with the combined-objective network on every charge-only route and on 11 of the 12 swap-only routes. At the assumed value of time of 3 AUD per truck-minute, the least-cost network is therefore already the cost–delay optimum, and the cost–delay trade-off is inactive. This is consistent with charging being absorbed into mandatory rest (Section 5.2), which leaves little delay for additional stations to remove; a value-of-time sweep would show at what value of time additional stations begin to pay off.                                               
+
+> 010 20 30 40 50 60 70 80 90 100 0100 200 300 400 500 600 700 800 01122334455667SoC (%) Travel Time (minutes) Station ID (a) Schedule - Subgroup 1 Time (min) SOC (%)
+> ©Ń→ ╗╤ك7 ╗ ¾كÏ Ź ك� 9 ŃÏ ╗ ě¾ Ä¾ ☺ك9 Ï ╛ ╤Γ¾ككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككك7╗ ň╛¦ Ï τ ¾ ©Ń→ ╗╤ك7 ╗ ¾Ï Ź x→ كτ ě • ¾ ╛╤©Ń→ ╗╤ك7 ╗ ¾Ï Ź x→ كτ ě • ¾ ╛╤©Ń→ ╗╤ك7 ╗ ¾كÏ Ź ك� 9 ŃÏ ╗ ě¾
+> 010 20 30 40 50 60 70 80 90 100 0100 200 300 400 500 600 700 800 011223344556677889SoC (%) Travel Time (minutes) Station ID (b) Schedule - Subgroup 2 Time (min) SOC (%)
+> ©Ń→ ╗╤ك7 ╗ ¾كÏ Ź ك� 9 ŃÏ ╗ ě¾ Ä¾ ☺ك9 Ï ╛ ╤Γ¾كككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككككك7╗ ň╛¦ Ï τ ¾ ©Ń→ ╗╤ك7 ╗ ¾كÏ Ź x→ كτ ě • ¾ ╛╤كك� 9 ŃÏ ╗ ě¾ x→ كτ ě • ¾ ╛╤©Ń→ ╗╤ك7 ╗ ¾كÏ Ź ك� 9 ŃÏ ╗ ě¾ x→ كτ ě • ¾ ╛╤x→ كτ ě • ¾ ╛╤كك� 9 ŃÏ ╗ ě¾ ©Ń→ ╗╤ك7 ╗ ¾كÏ Ź 38
+
+Figure 6: Stations built in the final stage under cost-delay trade-off for swap-only (a) and charge-only (b)models. 
+
+# 6 Discussion 
+
+The results in Section 5 bear on the three questions posed in the Introduction: (i) how much infrastructure the corridors require when energy, charging and rest are modelled explicitly; (ii) how sensitive that requirement is to the balance between capital cost and driver delay; and (iii) how much planning under adoption uncertainty changes which stations are built and when. 
+
+On the second question, the cost–delay trade-off is inactive at the assumed value of time. Comparing the combined-objective policies of Figure 4 with the cost-only policies ( Figure 6 ) shows that the least-cost network satisfying the range, capacity and HoS constraints is already the cost–delay optimum on every charge-only route, whereas removing capital cost from the objective multiplies the station count by 2–7 for charging and opens nearly every candidate site for swapping. The delay-only extreme is therefore a diagnostic rather than a plausible investment target. The practical implication is that, once charging is aligned with mandatory rest, network size is governed by range and capacity feasibility at least capital cost rather than by delay. Whether this holds at higher values of time, or for drivers whose charging cannot count as rest, remains to be tested with a value-of-time sweep. 
+
+Comparing the deterministic rolling-horizon model versus the SDDiP model, the results illustrate the central methodological trade-off between the two approaches. Under the charge-only variant, the two approaches select similar total station counts and identical peak charger requirements in several stages, although the selected sites and early-stage costs differ. This comparison suggests that the value of the stochastic model is concentrated in investment timing and site choice under the assumed uncertainty, rather than in a uniform increase in station count. The swapping-only                             
+
+> 20× 16× 6× 9× 10× 9× 13× 17× 11× 8× 38× 30× 010 20 30 40 50 60 70 80 90 12345678910 11 12 Number of stations built in the final demand stage Routes (a) Ablation results of swap-only model Stations built in the cost-only model Stations built in the delay-only model
+> 2× 7× 2× 2× 3× 4× 6× 6× 4× 2× 3× 5× 0510 15 20 25 30 35 40 45 50 12345678910 11 12 Number of stations built in the final demand stage Routes (b) Ablation results of charge-only model Stations built in the cost-only model Stations built in the delay-only model 39
+
+network differs more substantially from the deterministic benchmark. The SDDiP policy sometimes builds fewer but more concentrated battery swapping stations as demand grows, increasing the replacement inventory at the busiest locations. It also shifts part of the investment earlier because the policy accounts for possible higher-demand branches. In summary, the deterministic rolling-horizon model is fast, but has no way to hedge against the possibility that the realised demand differs from that path. The SDDiP model is far more computationally expensive to solve, but produces a policy that is explicitly optimised against the full range of demand uncertainty represented in the scenario tree, which is the more appropriate criterion for capital-intensive, long-lived infrastructure decisions of this kind. 
+
+The SDDiP model reached policy-evaluation confidence bounds of 5% or less on 19 of the 24 instances (combination of 12 routes and swapping/charging) despite the integer state space, though cost scales with route complexity, not iteration count. Per-iteration solve time varied by close to two orders of magnitude across routes, and the high-demand routes required both a significantly higher number of iterations and high-cost backward-pass dual solves per iteration. This suggests that computational budget for network-wide SDDiP deployment should be allocated by route complexity (candidate count, peak flow) rather than assumed uniform across a corridor set, an operational consideration for applying this framework at scale. 
+
+Overall, the experiments indicate that staged investment can produce different site and capacity trajectories from a deterministic rolling-horizon policy under the assumed demand process. They also show that terrain, charging-curve, rest and capacity assumptions can influence feasibility and delay. The magnitude of these effects should be established through systematic ablation and sensitivity experiments before the model is used for policy or investment decisions. 
+
+# 7 Conclusion 
+
+This study developed an integrated optimisation framework for siting battery-electric truck charging and swapping infrastructure that jointly addresses five gaps identified in the existing literature: terrain-derived, physics-based energy consumption in place of a flat distance-based rate; direct integration of mandatory driver HoS rest regulations into the charging/siting decision; multi-pack batteries modelled as an independently swappable set; a multi-stage stochastic SDDiP extension that times infrastructure investment under uncertain demand growth; and station siting that allows a route's peak-hour demand to be served jointly by multiple, capacity-contended facilities rather than a single site. 
+
+Applied to twelve major freight corridors on Australia's East Coast, using terrain data, real candidate infrastructure sites, and observed heavy-vehicle traffic volumes, the framework shows that (i) on the illustrative route every charging event fits within a mandatory break, and at the assumed value of time the least-cost network is also the cost–delay optimum; (ii) a ±30% change in adoption alters the final charge-only n etwork by only −12% to +13% stations, with 
+
+over 95% of stations built by the second stage; and (iii) planning under uncertainty mainly changes which sites are selected (71% overlap with a deterministic plan for charging and about half for swapping). The SDDiP policies reached statistical oconfidence bounds of 2.6–5.4% for swap-only and 3.1–7.9% for charge-only routes. 
+
+Methodologically, the SDDiP implementation combines several established elements and adds two results. It follows Zou et al. (2019) in generating Lagrangian cuts for the binary deployment state; it represents stagewise-dependent adoption by a Markov chain with cuts indexed by (stage, parent branch), as is standard for Markovian SDDP (Löhndorf and Shapiro, 2019); and it solves each Lagrangian dual with a level (bundle) method (Lemaréchal et al., 1995), which in preliminary tests converged where plain subgradient ascent did not. Proposition 1 shows that the cuts remain valid lower bounds when dual iterations or MILP solves are stopped early, so time limits weaken the cuts but never invalidate them, and Proposition 2 shows that the Lagrangian multipliers can be restricted to [0, ρ Ci ] without loss, which keeps the level method’s master problem bounded. Finally, training is stopped on lower-bound stability alone and solution quality is reported from a separate, larger-sample policy evaluation, because with the small forward samples recommended by Zou et al. (2019) the per-iteration upper bound was too noisy to serve as a stopping signal. 
+
+This study, however, suffers from a few limitations, which set out the direction for future studies. First, the energy consumption is assumed as a function of terrain, vehicle characteristics, auxiliary loads and a fixed travel speed, and 40 
+
+does not explicitly model traffic, weather, payload variation, or battery thermal effects on efficiency. In particular, the model relies on heavy vehicle traffic counts rather than payload data and therefore assumes a fixed vehicle mass across all trips; as Goeke and Schneider (2015) demonstrate, incorporating actual payload substantially improves energy-consumption accuracy, so more granular, trip-level payload data would be a natural refinement of the current approach. 
+
+Second, charging and swapping stations are assumed to have the same fixed establishment cost, deliberately excluding technology-specific equipment costs (chargers, battery inventory, automated swap systems) because these are highly uncertain, rapidly evolving, and vary considerably across manufacturers. Future studies can test technology-specific, time-varying cost curves as charging and swapping equipment pricing matures and becomes less volatile and publicly available to researchers. 
+
+Third, the transition probabilities and branch multipliers of the SDDiP model are hypothesised; they should be calibrated against historical BET uptake, fleet-operator surveys or forward order data once available. The proposed SDDiP model only carries the binary station-open decision forward, and charger counts and battery inventory are re-solved each stage without a ratchet constraint. Future studies could extend this by including the number of chargers and battery inventory with their own monotonicity constraint, so capacity expansions can be staged and irreversible. However, from the operational viewpoints and emerging business models, the economic viability of this option should be studied in more detail. 
+
+Fourth, the adoption-branch multiplier scales exogenous traffic volumes; the model does not capture the more realistic feedback where better charging/swapping infrastructure itself accelerates BET adoption (i.e. induced demand). Future studies can consider an endogenous demand model where next-stage adoption probabilities respond to the infrastructure actually built, not just to a pre-set Markov process. 
+
+Fifth, the hours-of-service rule is stylised, as all the routes in the case study had travel times less than 12 hours. Therefore, this study does not represent the 24-hour work limit and 7-hour stationary rest of the HVNL Standard Hours, which bind on routes longer than about 12 hours and would create overnight charging opportunities. Implementing the full sliding-window rules is a natural extension. 
+
+Sixth, each route is optimised separately, and the peak-hour flow is assumed to load every station on the route at the same time. A joint network model with time-shifted station arrivals would capture stations shared at corridor intersections and would likely reduce the capacity required. 
+
+Finally, this study overlooks the grid capacity and considers a fixed interconnection for the candidate sites without nearby EV charging stations. Future studies can integrate the station siting decision with the grid capacity constraints, heterogeneously introduced across candidate sites. 
+
+# Supplementary Material: 
+
+The model results are available through an interactive web-based dashboard at: 
+
+https://www.freightlabx.com/app/battery-truck-charging .
+
+# 8 References 
+
+Arslan, O., Karaşan, O.E., 2016. A Benders decomposition approach for the charging station location problem with 
+
+plug-in hybrid electric vehicles. Transportation Research Part B: Methodological 93, 670-695. 
+
+Bai, T., Li, Y., Johansson, K.H., Mårtensson, J., 2023. Rollout-Based Charging Strategy for Electric Trucks With 41 
+
+Hours-of-Service Regulations. IEEE Control Systems Letters 7, 2167-2172. 
+
+Balke, G., Zähringer, M., Schneider, J., Lienkamp, M., 2024. Connecting the Dots: A Comprehensive Modeling and Evaluation Approach to Assess the Performance and Robustness of Charging Networks for Battery Electric Trucks and Its Application to Germany. World Electric Vehicle Journal 15. 
+
+Barnard, M., 2026. Europe Saw Truck Swapping. China Is Building The Freight-Energy Platform, Michael Barnard's TFIE Strategy Briefing .
+
+Bertucci, J.P., Hofman, T., Salazar, M., 2024. Joint Optimization of Charging Infrastructure Placement and Operational Schedules for a Fleet of Battery Electric Trucks, 2024 American Control Conference (ACC) , pp. 2995-3000. 
+
+Capar, I., Kuby, M., Leon, V.J., Tsai, Y.-J., 2013. An arc cover–path-cover formulation and strategic analysis of alternative-fuel station locations. European Journal of Operational Research 227, 142-151. 
+
+Chung, S.H., Kwon, C., 2015. Multi-period planning for electric car charging station locations: A case of Korean Expressways. European Journal of Operational Research 242, 677-687. 
+
+Deng, W., Fan, N., Jin, H., 2024. Optimization of Electric Truck Charging Infrastructure Planning Considering GHG Emissions, 2024 56th North American Power Symposium (NAPS) , pp. 1-6. 
+
+Dowson, O., Kapelevich, L., 2021. SDDP. jl: a Julia package for stochastic dual dynamic programming. INFORMS Journal on Computing 33, 27-33. 
+
+Goeke, D., Schneider, M., 2015. Routing a mixed fleet of electric and conventional vehicles. European Journal of Operational Research 245, 81-99. 
+
+Goel, A., 2009. Vehicle scheduling and routing with drivers' working hours. Transportation Science 43, 17-26. 
+
+Goel, A., 2010. Truck Driver Scheduling in the European Union. Transportation Science 44, 429-441. 
+
+Goel, A., 2012a. The Canadian Minimum Duration Truck Driver Scheduling Problem. Computers & Operations Research 39, 2359-2367. 
+
+Goel, A., C. Archetti and M. Savelsbergh, 2012b. Truck Driver Scheduling in Australia. Computers & Operations Research 39, 1122-1132. 
+
+Goel, A.a.L.K., 2012c. Truck Driver Scheduling in the United States. Transportation Science 46, 317-326. 
+
+Gonzalez, E.H., Garrido, J., Barth, M., Boriboonsomsin, K., 2023. Machine Learning-based Energy Consumption models for Battery Electric Trucks, 2023 IEEE Transportation Electrification Conference & Expo (ITEC) , pp. 1-6. 
+
+Government of New South Wales, Heavy Vehicle Driver Handbook. 
+
+Gurobi Optimization, L., 2024. Gurobi Optimizer Reference Manual (version 13.0.2). 
+
+Hovi, I.B., Pinchasik, D.R., Figenbaum, E., Thorne, R.J., 2019. Experiences from Battery-Electric Truck Users in Norway. World Electric Vehicle Journal 11. 
+
+Hurtado-Beltran, A., Rilett, L.R., Nam, Y., 2021. Driving Coverage of Charging Stations for Battery Electric Trucks Located at Truck Stop Facilities. Transportation Research Record: Journal of the Transportation Research Board 
+
+2675, 850-866. 
+
+Kahlert, J., Wang, R., Mårtensson, J., 2026. En-route charging coordination for electric trucks, 2026 IEEE Forum for Innovative Sustainable Transportation Systems (FISTS) . IEEE, pp. 67-70. 42 
+
+Kınay, Ö.B., Gzara, F., Alumur, S.A., 2021. Full cover charging station location problem with routing. Transportation Research Part B: Methodological 144, 1-22. 
+
+Kuby, M., Lim, S., 2005. The flow-refueling location problem for alternative-fuel vehicles. Socio-Economic Planning Sciences 39, 125-145. 
+
+Lara, C.L., Siirola, J.D., Grossmann, I.E., 2020. Electric power infrastructure planning under uncertainty: stochastic dual dynamic integer programming (SDDiP) and parallelization scheme. Optimization and Engineering 21, 1243-1281. 
+
+Lemaréchal, C., Nemirovskii, A., Nesterov, Y., 1995. New variants of bundle methods. Mathematical Programming 
+
+69, 111-147. 
+
+Liimatainen, H., van Vliet, O., Aplyn, D., 2019. The potential of electric trucks – An international commodity-level analysis. Applied Energy 236, 804-814. 
+
+Liu, H., Gao, B., Liu, Y., 2019. Battery swap station location routing problem with capacitated electric vehicles and time windows, 2019 IEEE 6th International Conference on Industrial Engineering and Applications (ICIEA) . IEEE, pp. 832-836. 
+
+Löbel, F., Borndörfer, R., Weider, S., 2025. Non-linear Battery Behavior in Electric Vehicle Scheduling Problems, 
+
+Operations Research Proceedings 2023 , pp. 415-421. 
+
+Löhndorf, N., Shapiro, A., 2019. Modeling time-dependent randomness in stochastic dual dynamic programming. 
+
+European Journal of Operational Research 273, 650-661. 
+
+Mak, H.-Y., Rong, Y., Shen, Z.-J.M., 2013. Infrastructure planning for electric vehicles with battery swapping. 
+
+Management science 59, 1557-1575. 
+
+Montoya, A., Guéret, C., Mendoza, J.E., Villegas, J.G., 2017. The electric vehicle routing problem with nonlinear charging function. Transportation Research Part B: Methodological 103, 87-110. 
+
+NASA JPL, 2021. NASADEM Merged DEM Global 1 arc second V001, in: OpenTopography, D.b. (Ed.). 
+
+Park, H., Lee, C., 2024. An exact algorithm for maximum electric vehicle flow coverage problem with heterogeneous chargers, nonlinear charging time and route deviations. European Journal of Operational Research 315, 926-951. 
+
+Philpott, A.B., de Matos, V.L., 2012. Dynamic sampling algorithms for multi-stage stochastic programs with risk aversion. European Journal of Operational Research 218, 470-483. 
+
+Speth, D., Plötz, P., Wietschel, M., 2025. An optimal capacity-constrained fast charging network for battery electric trucks in Germany. Transportation Research Part A: Policy and Practice 193. 
+
+Technische Universität Berlin, 2026. Battery swapping for trucks is a viable concept: Two-year field test of Europe's first automated battery-swapping station for heavy-duty electric trucks (eHaul project), TU Berlin Press Release .
+
+Tong, F., Wolfson, D., Jenn, A., Scown, C.D., Auffhammer, M., 2021. Energy consumption and charging load profiles from long-haul truck electrification in the United States. Environmental Research: Infrastructure and Sustainability 1, 025007. 
+
+Vijayagopal, R., Rousseau, A., 2021. Electric Truck Economic Feasibility Analysis. World Electric Vehicle Journal 
+
+12. 
+
+Walz, K., Rudion, K., 2024. Charging Profile Modeling of Electric Trucks at Logistics Centers. Energies 17. 
+
+Wan, Y., He, Z., Gao, Y., Xue, Y., 2024. Long-haul truck charging planning problem considering time flexibility and 43 
+
+energy flexibility. Energy 306, 132361. 
+
+Wang, F.Y., Chen, Z., Hu, Z., 2024. Comprehensive optimization of electrical heavy-duty truck battery swap stations with a SOC-dependent charge scheduling method. Energy 308, 132773. 
+
+Wang, R., Martinez, A., Allybokus, Z., Zeng, W., Obrecht, N., Moura, S., 2025. Electrifying Heavy-Duty Trucks: Battery-Swapping Versus Fast Charging. IEEE Transactions on Smart Grid 16, 3989-4003. 
+
+Whitehead, J., Whitehead, J., Kane, M., Zheng, Z., 2021. Exploring public charging infrastructure requirements for short-haul electric trucks. International Journal of Sustainable Transportation 16, 775-791. 
+
+Yang, J., Sun, H., 2015. Battery swap station location-routing problem with capacitated electric vehicles. Computers & Operations Research 55, 217-232. 
+
+Yang, X., Yang, B., Wang, Z., Liu, S., Ma, K., Xu, X., Guan, X., 2024. Online optimal scheduling for battery swapping charging systems with partial delivery. Electric Power Systems Research 235, 110629. 
+
+Ye, Z., N. Yu and R. Wei 2024. Joint Planning of Charging Stations and Power Systems for Heavy-duty Drayage Trucks. Transportation Research Part D: Transport and Environment 134, 104320. 
+
+Zähringer, M., Teichert, O., Balke, G., Schneider, J., Lienkamp, M., 2024. Optimizing the Journey: Dynamic Charging Strategies for Battery Electric Trucks in Long-Haul Transport. Energies 17. 
+
+Zhang, A., Kang, J.E., Kwon, C., 2017. Incorporating demand dynamics in multi-period capacitated fast-charging location planning for electric vehicles. Transportation Research Part B: Methodological 103, 5-29. 
+
+Zou, J., Ahmed, S., Sun, X.A., 2019. Stochastic dual dynamic integer programming. Mathematical Programming 175, 461-502.

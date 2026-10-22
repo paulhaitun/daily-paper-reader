@@ -1,0 +1,1309 @@
+Title: The missing price feedback: Why studies overstate local peaks from synchronized home batteries under dynamic pricing
+
+URL Source: https://arxiv.org/pdf/2609.35111v1
+
+Published Time: Tue, 29 Sep 2026 04:06:01 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+2
+
+# The missing price feedback: Why studies overstate local peaks from synchronized home batteries under dynamic pricing 
+
+Lion Hirth 
+
+Hertie School, Berlin, and Neon Neue Energieökonomik, Berlin 
+
+hirth@hertie-school.org 
+
+This version: 28 September 2026 
+
+Abstract: Existing studies consistently find that home batteries and electric vehicles optimized against real-time electricity prices create new load peaks in local distribution grids, because all assets respond to the same price signal in sync. However, all but one of the 18 studies reviewed here treat wholesale prices as exogenous. This paper argues that treating prices as non-responsive biases the result: in reality, charging in low-price hours raises the wholesale price, which dampens the incentive to charge. I test this by simulating households with rooftop solar and home batteries under a spot-based retail tariff, calibrated to German data for 2025 with a model of equilibrium wholesale prices. With exogenous prices, my results confirm the finding from the previous literature: synchronous charging pushes the 
+
+coincident import peak of the local grid to 83 % above its no -battery level. With endogenous prices, the 
+
+same fleet leaves the peak 6 % below the no-battery benchmark. In other words, treating prices as endogenous reduces the coincident peak at high battery penetration nearly by half. This finding is robust across alternative price functions and exogenous price paths, different measures of the coincident peak, 25 scenario variations and three historical years. I conclude that new local peaks remain possible, particularly in grids where battery deployment runs ahead of the national average, but the risk and magnitude are considerably smaller than the existing literature suggests. 
+
+Keywords: real-time pricing; price feedback; endogenous prices; home batteries; distribution grid 
+
+JEL classification: Q41, Q48, L94, D47, C63 3
+
+# 1. Introduction 
+
+Batteries are reshaping global power systems. This year, about 3 TWh of cell capacity will be produced, adding to the stock of around 7 TWh. The fastest-growing segments are electric vehicles and stationary energy storage, quickly surpassing consumer electronics and starter batteries in combustion engine cars. At this scale, batteries can contribute to the short-term balancing of electricity supply and demand, and battery storage, including optimized charging of EVs, may well provide the bulk of power system flexibility by mid-century. 
+
+Most electric vehicles are charged at the homes of residential electricity consumers, connected to the low-voltage grid. In addition, a growing number of households are adding home batteries to their rooftop solar assets. I estimate that about one in ten single-family homes in Italy, Austria, Puerto Rico 
+
+and Australia owns a home battery. In some states of Germany, the share is likely to exceed 20 %. 
+
+The financial benefit of home batteries to the owner is two-fold: on the one hand, they increase the share of domestic solar generation that can be consumed locally (rather than injecting into the grid), which saves grid fees and taxes. On the other hand, if households subscribe to a dynamic retail tariff, they can arbitrage, charging from the grid when electricity is cheap and potentially re-injecting when prices are high. This is particularly relevant for spot-linked retail tariffs (real-time pricing) that follow the hourly swings of wholesale electricity prices. 
+
+There is, however, a real concern that such kind of decentralized flexibility can increase the stress in local electricity grids. The concern is easily explained: Optimized EVs and home batteries under spot tariffs respond to the same national electricity price signal. This may lead to synchronized behavior, creating new load peaks on local transformers. All of the 18 published studies I reviewed find evidence for new local load peaks. If that is true, policy makers face a trade-off between forgoing these batteries as a means of balancing the national electricity market and spending considerable sums on upgrading power grids. 
+
+However, wholesale electricity prices do not only determine battery dispatch; battery charging also has repercussions on the power price. Low wholesale prices cause batteries to charge, increasing power demand and in turn lifting wholesale prices – dampening the incentive to charge. Rather than a one-way causality from prices to battery dispatch, these two variables should be thought of as an equilibrium. However, with one single exception, none of the published studies takes this wholesale price feedback into account. 
+
+This is the gap this paper aims to fill: Is the emergence of new load peaks in local power grids triggered by spot-optimized battery dispatch a robust result? Or is it an artifact driven by the (unrealistic) assumption of non-responsive wholesale prices? 
+
+Specifically, the paper makes four contributions to the existing literature. First, it reviews the existing literature on local load peaks triggered by dynamic pricing. Every study finds evidence for such peaks caused by synchronized charging; only one treats wholesale prices as endogenous. The other studies are potentially biased in this regard. Second, I propose a simple modeling technique to close this gap, i.e. to endogenize wholesale prices in simulation studies of low-voltage flexibility. The core idea is to model them as equilibrium prices by specifying them as a function of residual load, including battery (dis)charge. 4
+
+Third, I present quantitative results from a set of simulations of households with home batteries under a spot retail tariff calibrated to German data. 
+
+With just a few batteries on the grid, they reduce the coincident load peak both in the import and export direction. This is because batteries charge when prices are low, which tends to coincide with low local load or even local generation surplus. They discharge when prices are high, usually on high-load winter evenings. This changes when battery penetration grows. At very low power prices, all batteries simultaneously charge; at high prices they all discharge. Wholesale prices fluctuate widely enough for such synchronized behavior to occur in hundreds of hours every year. I find that new peaks emerge once about a third of the PV households have home batteries, in line with previous studies. The main finding of this paper is that they disappear once wholesale prices are allowed to respond. The coincident peak remains below no-battery levels across all penetration rates, both in the import and export direction. At full battery penetration, the price feedback reduces the import peak by about half and the expor t peak by about 15 %. 
+
+The fourth contribution is a set of robustness checks: a range of alternative specifications of the price function, four exogenous price curves, three alternative measures of the coincident load peak, 25 scenario variations, three historical years, variation of the temporal granularity of the analysis, and tests of the simulation procedure. The finding holds in most variations: the synchronized local load peak disappears once wholesale prices are treated as endogenous. In some variations, e.g. larger batteries or the future power system (2035), a smaller new import peak remains. 
+
+# 2. Dynamic pricing and price feedback 
+
+If electricity consumers are exposed to dynamic prices such as time-of-use or real-time pricing, they shift consumption towards low-price hours. This has repercussions for the wholesale price: the additional demand lifts the low prices that attracted it, which in turn dampens the incentive for load shifting, and a new equilibrium price results. This section explains how this feedback works under different variants of dynamic pricing. 
+
+# 2.1. Dynamic retail pricing 
+
+In liberalized electricity markets with unbundling, i.e. where grid operation is separated from retail supply and from power generation, the electricity bill includes two major components: the price of energy and network charges (and, as a third component, taxes). Network charges are regulated because grid operators are monopolists. The price of energy is determined by the retail supplier based on the price it pays for procuring electricity from the wholesale market. The specifics of the price, in particular whether the price is constant or varies during the day, are a choice of the two contracting parties. This paper is interested in the energy part of retail tariffs, not in network charges. The reason is simple: The phenomenon this paper studies (how prices respond to flexibility) exists in wholesale markets, but not in grid tariffs. 
+
+A dynamic retail tariff is one where the price varies within the lifetime of the contract, often during the day. This includes four major types of contracts: 5
+
+• Time-of-use pricing – predetermined, fixed periods with prespecified prices such as peak and off-peak prices. 
+
+• Spot pricing (real-time pricing), where the retail tariff includes the hourly or sub-hourly wholesale price, possibly plus a mark-up. 
+
+• Critical peak pricing, where the price is generally constant except in rare, pre-announced periods of scarcity when it is much higher. 
+
+• Flexibility contracts, where utilities get the right to optimize an asset in return for a discount, e.g. the right to trade an EV battery on the market for eight hours per day in return for free charging of the car (Table A2). 
+
+All these tariffs may be combined with a constant (time-invariant) energy network charge, a time-varying one, or none. 
+
+Markets are institutions designed to match demand and supply. Because electricity storage is limited and costly, such a market equilibrium must be reached at high temporal granularity, e.g. each quarter-hour of the year. Residential electricity consumers do not participate in wholesale markets directly, so the retail contract is the vehicle that passes on wholesale price signals to them (or not). Any type of dynamic retail contract tends to pass on wholesale price signals to residential consumers, some more immediately and granularly (spot pricing), others with a lag and more coarsely (time-of-use). 
+
+With the rise of rooftop solar photovoltaics, electric vehicles and home batteries, households are increasingly gaining the technical capability to optimize withdrawal of electricity from and injection into the grid – through load shifting, storage and, at times of negative wholesale prices, curtailment of solar generation. From an economics perspective, the whole point of dynamic pricing is to use this resource to most efficiently balance supply and demand of electricity at any time. 
+
+# 2.2. Wholesale price feedback 
+
+The mechanism at the heart of this paper is the feedback from battery dispatch to the wholesale price. A fleet of batteries that charges in the cheapest hours adds demand precisely in those hours, and the added demand lifts the price the fleet is responding to. Electricity demand and price should therefore be thought of as jointly determined (endogenous) variables of a system of equations that is solved simultaneously, not as a one-way causality from price to dispatch. 
+
+Under flexibility contracts, where utilities optimize assets directly, the feedback is direct: Buying energy to charge a battery on the wholesale market drives up the price, selling discharged energy depresses it. The feedback is immediate and direct. 
+
+For most dynamic retail tariffs, however, including time-of-use and spot pricing, the sequencing of events seems incompatible with any feedback: The price is set at some point in time, be it the day before or a year earlier, and is not changed afterwards. Only then do households decide how to dispatch their battery. How can that dispatch feed back to wholesale prices? 
+
+The answer is expectations. Retail suppliers anticipate the response of the portfolio of customers they serve and factor their behavior into their wholesale bids. In practical terms, instead of bidding 
+
+“unlimited” in day -ahead auctions, they may submit price-sensitive bids, i.e. procuring more energy if it is cheaper, because they know their customers will use it. Alternatively, or in addition, they may engage in short-term electricity procurement on intraday, real-time, and imbalance markets after day-ahead prices are known to them and their customers. The model in Section 4.3 does not distinguish between 6
+
+these channels: the price function is a reduced form of the resulting expectations equilibrium. It assumes that retailers anticipate the aggregate battery response correctly, so that day-ahead prices already are equilibrium prices. 
+
+# 3. Literature review 
+
+I have identified 18 academic studies that quantify the impact of decentralized flexibility, usually EVs or home batteries, on the local electricity grid. 15 of them are simulations, 3 are empirical studies. These studies have been mostly published in engineering, energy economics and interdisciplinary energy outlets. Table 1 (simulations) and Table 2 (empirical studies) provide details for each reviewed study. 
+
+The studies measure the impact on the local grid in slightly different ways. Most studies evaluate the annual coincident peak, measured at the level of the individual feeder or the entire population, and assessed in the import or export direction of flows. Other papers focus on voltage at the connection points, low-voltage reinforcement investments, and other measures. For the purposes of this paper, they can all be understood as indicators of stress on the local low-voltage grid. 
+
+When reviewing the literature for this paper, I am interested mostly in two questions: 
+
+(1)  Do studies find a new peak, created by the synchronized behavior of flexibility assets? 
+
+(2)  Do studies take into account the price feedback, i.e. are prices modeled endogenously? 
+
+The pattern is uniform. Every study finds new peaks, and every study but one,  Verzijlbergh et al. [1] ,treats prices as exogenous. In other words, almost everyone ignores the wholesale price feedback. This is the gap this paper aims to fill: Is the emergence of new peaks a robust result? Or is it an artifact driven by the (unrealistic) assumption of non-responsive wholesale prices? 
+
+Table 1. Simulation studies 
+
+Study  Setting  Signal  Grid metric  Synchronized new peak?  Price feedback 
+
+Turk et al. [2]  Massachusetts; 400 households on one feeder; EVs with perfect foresight 
+
+TOU energy rate, two-part, plus seven network tariff designs 
+
+Feeder peak (import) 
+
+Yes. Rebound peak at the start of the off-peak period exceeds the historical evening peak from 15 percent EV adoption; at 50 percent adoption it is 60 percent above the historical peak 
+
+No 
+
+Rodriguez-Garcia et al. [3] 
+
+US; 178 synthetic feeders with PV and batteries 
+
+Seven US retail tariff variants: TOU with and without grid charging restrictions, net billing 
+
+Feeder peak (import); deferral value 
+
+Yes, on part of the feeders. Under unrestricted time-of-use the peak falls by 
+
+only 0.10 kW per kW of storage against an 
+
+ideal of 1.00; investment rises on one feeder in five 
+
+No 
+
+Korab et al. [4]  Poland; one real low-voltage feeder with 144 customers and 56 PV systems; 18 home 
+
+batteries of 5 kW and 20 kWh 
+
+RTP: hourly Polish wholesale prices of 2024, identical for draw and injection 
+
+Node voltage; overvoltage hours 
+
+Yes, in the export direction. On a day with negative midday prices one objective discharges around the price trough and pushes maximum voltage above the no-battery level 
+
+No 
+
+Pimm et al. [5]  UK; 150 aggregations of 100 households; 3 and 
+
+10 kWh storage, with 
+
+and without PV 
+
+TOU, three-tier, and time-of-export tariff, two-tier 
+
+Aggregate peak, 100 households (import and export) 
+
+Yes, small. Without PV the peak moves into the overnight off-peak band, after-diversity maximum demand up 2 percent 
+
+No 7
+
+Stute and Kühnbach [6] 
+
+Germany; 146-node suburban low-voltage grid; HEMS with battery, EV, heat pump 
+
+RTP: EPEX day-ahead prices of 2019, or TOU, three-tier; freely chosen by households 
+
+Household peak (withdrawal); transformer loading; overload hours 
+
+Partly. Household peaks up 11 and 15 percent and overload hours up from 2 to 111 per year; the grid maximum falls because the tariff mix limits synchronization 
+
+No 
+
+Kamana-Williams et al. [7] 
+
+Auckland, New Zealand; 50 households on one transformer 
+
+TOU retail price with one or two staggered off-peak windows 
+
+Transformer peak (import) 
+
+Yes. Secondary peak at the start of the off-peak period; it exceeds the original peak from 20 percent participation and by 33 percent at full participation 
+
+No 
+
+Gottwalt et al. [8] 
+
+Germany; 20 populations of 1,000 single-family households with smart appliances (refrigerator, freezer, washing machine, dishwasher, dryer, electric water and space heating); no grid model 
+
+RTP: day-ahead hourly tariff from the 2008 EEX spot price; smart-appliance adoption 0 to 90 percent, price spread varied by ±10 percent 
+
+Aggregate peak of 1,000 households, 100 highest hours (import) 
+
+Yes. In every scenario with load shifting the 100 highest hours exceed the flat-tariff peaks; the highest hour rises from about 1.1 to about 1.4 MW. New peaks form where off-peak pricing sets in and grow with the adoption rate of smart appliances (avalanche effect) 
+
+No 
+
+Semmelmann et al. [9] 
+
+Germany; 500 single-family households, each with EV, heat pump, PV and battery, empirical load and charging data, hourly, 2019; ten representative medium-and low-voltage grids; four peak day types 
+
+RTP: day-ahead prices of 2019, against a constant price; adoption 0 to 100 percent; four grid charge designs and two feed-in schemes 
+
+Reinforcement cost (medium and low voltage) 
+
+Yes. Under volumetric grid charges, reinforcement cost across the ten grids rises from 22 to 55 million EUR between zero and full adoption; some grids need reinforcement from 25 percent adoption, at full adoption all grids but one. Segmented grid charges hold the rise below 1 million EUR 
+
+No 
+
+Verzijlbergh et al. [1] 
+
+Netherlands; one distribution cable with about 1,000 households and 500 EVs 
+
+RTP: wholesale prices from a Dutch system model 
+
+Feeder peak (import) 
+
+Yes. Cost-minimizing charging raises the cable peak by 47 percent, more than uncontrolled charging (35 percent); with 
+
+2 GW wind the new peak does not occur. 
+
+Static time-of-use grid tariffs raise it by up to 69 percent 
+
+Yes 
+
+Stawska et al. [10] 
+
+Netherlands; 250 households on one 
+
+500 kW feeder; EV 
+
+aggregator 
+
+Other: historical Dutch imbalance prices; energy tariff, capacity tariff or local flexibility market 
+
+Feeder overload hours 
+
+Yes. Charging spikes whenever imbalance prices are very low, growing with penetration and charging power; an energy-based grid tariff does not prevent it 
+
+No 
+
+Flath et al. [11]  Germany; EV fleet; residential distribution grids 
+
+Other: time-based prices, uniform price vs. area pricing with a local capacity component 
+
+Distribution grid peak (import) 
+
+Yes. Time-based prices alone produce high load spikes from simultaneous charging, independent of charging strategy and power level 
+
+No 
+
+Cong et al. [12]  Denmark; one real 400 kVA feeder with 160 households; EVs, PV and home batteries; second-by-second agent-based model, 2024 –2025 
+
+RTP: Nord Pool day-ahead prices, plus a time-of-use grid charge 
+
+Transformer loading; overload hours (import) 
+
+Yes. Price-driven EV charging overloads the transformer within four months of the adoption path 
+
+No 
+
+Holmberg et al. [13] 
+
+US; IEEE 8500 reference feeder with 1,977 single-family homes, each with an air-source heat pump; 8 MW peak load 
+
+RTP: CAISO five-minute real-time prices, against hourly averages as a day-ahead proxy 
+
+Feeder loading (import); voltage; voltage violations 
+
+Yes, as synchronized swings rather than as an annual peak. Under five-minute prices the mean change in substation flow between time steps rises from 101 to 870 kW, about 10 percent of peak load, and voltage violations rise to about 400 percent of the baseline 
+
+No 
+
+Huang and Sandström [14] 
+
+Sweden; residential district with 1,321 customers on twelve 10/0.4 kV substations; EVs with V1G and V2G at 5 to 70 percent penetration 
+
+RTP: spot price, plus a time-of-use network tariff; also prices differentiated by substation 
+
+Transformer loading; cable loading; voltage; hosting capacity 
+
+Yes, above 20 percent penetration. V2G lowers peaks at low penetration and raises them above it. Prices differentiated by substation lower the district peak but not the peak of the individual substation 
+
+No 8
+
+Salah et al. [15]  Switzerland; distribution substations of one regional grid, with measured substation capacity and load and regional driving profiles; EVs with decentral, price-based charging decisions; penetration levels up to 100 percent 
+
+Dynamic electricity prices derived from market prices, against a flat tariff 
+
+Substation loading; share of substations overloaded (import) 
+
+Yes. Under a flat tariff the substations cope with about 16 percent penetration and an increasing number is overloaded beyond 50 percent; dynamic prices further increase the risk of overloads 
+
+No; prices enter as data inputs 
+
+Table 2. Empirical studies that report new peaks under time-varying prices 
+
+Study  Setting  Signal  Grid metric  Synchronized new peak?  Price feedback 
+
+Van Montfoort et al. [16] 
+
+Netherlands; randomized trial with 600 households with EV chargers 
+
+Other: grid charge on consumption 
+
+above 5 kW, 
+
+static or TOU, 
+
+5 p.m. to 2 a.m. 
+
+Household peak (withdrawal); aggregate peak, 10 households 
+
+Yes, under the time-of-use version. Charging moves to after 2 a.m. without lowering own peaks; on clusters the new violations outweigh the relief during the priced hours. The static charge has no cluster effect 
+
+No 
+
+Torriti [17]  Province of Trento, Italy; 1,446 residential smart-meter customers on 41 substations; flat tariff in year one against TOU in year two, controlled for temperature 
+
+TOU, two periods (peak 8 a.m. to 7 p.m., off-peak otherwise) 
+
+Substation demand during morning and evening peak events (import) 
+
+Yes. The morning peak shifts, the evening peak persists and a higher peak appears after 9 p.m., plus a third peak at 4 to 5 p.m.; 31 of 41 substations (76 percent) see higher demand during peak events; consumption rises by 14 percent 
+
+No 
+
+Brylle et al. [18]  Denmark; metered load of one residential secondary substation and of industrial sites in the Cerius-Radius grid, hourly, 2023 –2025 
+
+RTP: Nord Pool spot price, plus a static time-of-use grid charge 
+
+Transformer loading; exceedance events (import) 
+
+Yes. 76 percent of all capacity exceedance events fall in the low-load night window, which is also the low-price window, with load up to 50 percent above the transformer rating 
+
+No 
+
+# 4. Methodology 
+
+The core of this paper is a simulation of how home batteries behave under real-time pricing. In particular, it wants to understand how they impact the coincident peak load of the local grid, and how this outcome changes once the wholesale price feedback is taken into account. This section first introduces the general simulation methodology and the measure of the coincident peak before discussing wholesale price modeling. 
+
+# 4.1. Household simulation 
+
+I simulate the electricity consumption, generation and storage of 100 households in hourly granularity for one year to calculate the coincident peak in import and export direction. This corresponds to the loading of the low-voltage transformer if these households are located on the same low-voltage grid. Half the households own solar panels, and a varying share of those have home batteries. All of them are assumed to have a spot tariff, i.e. they pay the hourly wholesale price plus a fixed grid fee of 10 ct/kWh. In sensitivity runs, different grid fees are tested. 9
+
+The 100 households are single-family homes. Their load profiles are synthetic for the calendar year 2025: a base load plus stochastic appliance events with daily shapes similar to the German standard load profile (BDEW H0). One in five households has an air-source heat pump. Another one in five has an electric vehicle with uncontrolled charging. The day-to-day variation of the synthetic household load is replaced by the weather-driven daily residual of German grid load 2025, scaled to keep the original amplitude. For robustness, different synthetic and empirically measured profiles are used. Figure A1 shows individual household load and aggregate load during the week of the annual import peak. 
+
+Half of the households own a PV system of 8 kWp. Generation is based on ERA5 reanalysis irradiance 
+
+for 2025 at a grid point near Berlin. The PV households are spread across four orientations: east, south, west and flat. For energy injected into the grid the households receive the spot prices. PV is not curtailed, also not at negative prices. Sensitivity runs assume different PV specifications (sizes, orientation, curtailment). 
+
+Only PV households can own a battery, with 8 kWh capacity, 4 kW power, a round -trip efficiency of 90 % and a cycling cost of 10 EUR/MWh per direction. Penetration  𝑋  is the share of PV households with a 
+
+battery. It varies from zero to all PV households in steps of 10 %, with batteries added to households in 
+
+a fixed order. For robustness, I test different battery assets (size, cycling costs) and allow households to own batteries without solar. Table 3 reports descriptive statistics.                     
+
+> Table 3. Households without batteries, hourly
+> Statistic Households Min Mean Max
+> Annual consumption, kWh All 100 1,378 5,428 15,331
+> Annual PV generation, kWh 50 with PV 6,184 7,111 8,458
+> Highest hourly withdrawal, kW All 100 3.5 7.2 17.7
+> Highest hourly injection, kW 50 with PV 5.0 5.3 6.0
+
+Each household solves an optimization problem. Given the retail tariff of each hour, it minimizes the annual electricity bill. It has one single decision variable: charging or discharging the battery. This is done under perfect foresight within each calendar month, with an empty battery at the start of the month. 
+
+The retail tariff is the wholesale price plus a fixed payment of 10 ct/kWh for grid fees and taxes. When 
+
+injecting electricity into the grid, the household earns the wholesale price but does not pay (nor receive) a grid fee. The battery may charge from the grid and inject into it. For electricity that is charged from the grid and re-injected, the household earns the wholesale price plus the refunded grid fee; storage losses are not refunded. 
+
+As a consequence of this setting, the household can use the battery in two ways to reduce its bill: by storing self-produced solar energy and consuming it later, it saves 10 ct/kWh in grid fees and taxes. This is the common incentive for self-consuming electricity (“tax evasion”). By charging the battery at low prices and discharging it at higher prices it earns money from arbitrage. The optimization problem is stated formally in the Appendix. 
+
+The base case is hourly throughout: household load and PV enter as hourly means, as do dispatch, the national price and the outcome metrics. The reason is that day-ahead prices for 2025 are hourly through September. 10 
+
+# 4.2. Outcome metrics 
+
+What matters for policy and consumers is ultimately the cost of grid upgrades. In this paper I study the aggregate load of 100 households, corresponding to the loading of the low-voltage transformer that serves them. What determines grid costs is not average loading but the peak loading of the transformer, i.e. the coincident peak of the households. 
+
+My preferred measure of the coincident peak is the mean load (kW) in the highest 1 % of hours, 
+
+separately for import and export. The reason I prefer the 1 % top hours is that the extreme upper tail 
+
+may not be representative, and transformers tolerate short overloads. In addition, the absolute peak 
+
+(highest hour) and the top 10 % will also be reported. 
+
+# 4.3. Market modeling and price feedback 
+
+The core idea of this paper is to acknowledge that battery dispatch changes wholesale electricity prices, which in turn change optimal battery dispatch. The outcome of this is equilibrium prices, i.e. a set of hourly prices that (a) are consistent with battery dispatch and (b) for which dispatch of batteries is optimal. This is done by making wholesale prices  𝑝 𝑡  a function of the residual load after storage  𝑅 𝑡  plus an otherwise unexplained residual  𝜀 𝑡 :
+
+𝑝 𝑡 = 𝑓(𝑅 𝑡 ) + 𝜀 𝑡  (1) 
+
+Residual load after storage is national load  𝐿 𝑡  minus wind  𝑊 𝑡  and solar  𝑆 𝑡  generation minus battery dispatch  𝑏 𝑡 :
+
+𝑅 𝑡 = 𝐿 𝑡 − 𝑊 𝑡 − 𝑆 𝑡 − 𝑏 𝑡  (2) 
+
+Battery dispatch is the sum of discharging  𝑔  minus charging  𝑐  of both utility-scale and home batteries (superscripts  𝑢  and  ℎ) across  𝑁  identical low-voltage grids: 
+
+𝑏 𝑡 = (𝑔 𝑡 𝑢 − 𝑐 𝑡 𝑢 ) + 𝑁 ∙ ∑ (𝑔 𝑖,𝑡 ℎ − 𝑐 𝑖,𝑡 ℎ )𝐻 𝑖=1  (3) 
+
+𝑅 𝑡  is also the load that thermal power plants have to serve, i.e. the thermal load. The wholesale price is the marginal cost of the last plant needed to serve it, so the price rises with  𝑅 𝑡  along the merit order of the thermal fleet. For the simulations, a parameterized price function is needed. My preferred specification is a cubic price function: 
+
+𝑓(𝑅 𝑡 ) = 𝑎 ∙ 𝑅 𝑡 3 (4) 
+
+where  𝑎  is a parameter calibrated to historical prices. In addition, I use two additional functions for robustness, including a quadratic function: 
+
+𝑓(𝑅 𝑡 ) = 𝑎 2 ∙ sgn(𝑅 𝑡 ) |𝑅 𝑡 |2 (5) 
+
+The third specification is a piecewise linear function with ten segments with breakpoints at the deciles of thermal residual load. 
+
+The parameters  𝑎  and  𝑎 2 of the cubic and the quadratic function and the slopes of the piecewise linear function are estimated by regressing hourly 2025 day-ahead prices on thermal residual load with day fixed effects. The piecewise linear function is continuous with non-negative slopes. Thermal residual load is national residual load plus net exports and pumped-storage consumption minus pumped-storage 11 
+
+generation (all data taken from ENTSO-E Transparency Platform). The residual between the observed price and the fitted price function is added to the price as an exogenous hourly term and held fixed across all battery penetrations. To account for adjustments of pumped hydro and imports/exports to changing price patterns, they are collectively modeled as a utility-scale storage of 10 GW and 60 GWh with a cycling cost of 20 EUR/MWh per direction. The properties of the price curves resulting from this 
+
+procedure are reported in Table 4. 
+
+Table 4. Properties of the observed 2025 day-ahead price and of the three price functions at zero home storage penetration                             
+
+> Property Observed 2025 Cubic Quadratic Piecewise linear
+> Calibration parameter n.a. 1.8 × 10⁻³ 8.9 × 10⁻² (many)
+> Mean, EUR/MWh 89 91 91 90
+> Minimum, EUR/MWh -250 -254 -258 -257
+> Maximum, EUR/MWh 583 533 549 549
+> Mean daily spread, EUR/MWh 124 119 121 122
+> Hours with negative price 576 617 635 686
+
+# 5. Results 
+
+This section presents the simulation results, focusing on the difference between exogenous and endogenous prices: battery dispatch, coincident peak, battery size and adoption, the role of local concentration of batteries, renewables, and network charges. 
+
+# 5.1. Battery dispatch 
+
+The wholesale price feedback changes battery dispatch considerably. Figure 1 shows the dispatch of the fleet of home batteries for exogenous prices (blue) and endogenous equilibrium prices (green) for five days, i.e. ∑ (𝑔 𝑖,𝑡 ℎ − 𝑐 𝑖,𝑡 ℎ )𝐻 𝑖=1  . With prices set in stone, batteries follow the most extreme prices, even charging and discharging at or near nameplate capacity, i.e. in perfect synchronization. When prices are allowed to respond to battery dispatch, they dampen those incentives. Charging and discharging are smoother. This can also be seen in the national residual load after storage  𝑅 𝑡  (bottom). With exogenous prices, batteries regularly trigger new peaks in national residual load; with endogenous prices the residual load curve is flatter, not only compared to the exogenous case but also compared to the no-storage benchmark. 12 
+
+Figure 1. Battery dispatch and resulting national residual load under exogenous and endogenous prices during five days. 
+
+This is also visible in the duration curve of battery dispatch (Figure 2), i.e. the sorted charging across the year, separately for exogenous and endogenous prices. Without price feedback, the battery fleet charges and discharges in synchrony at full capacity for hundreds of hours. With price feedback, synchronized dispatch is reduced to a fraction of these hours, and those occur when they tend to reduce the local coincident peak. 
+
+Figure 2. Dispatch of the local battery fleet, ordered by size (duration curves). 
+
+There are two mechanisms through which the price feedback reduces the coincident peak of batteries. First, even in the hours when they charge in sync, they do so at lower power. As the fleet charges into the hours of low residual load, it raises the price in those hours until the price is flat across the charging window. Figure A2 shows the national price duration curve without home batteries and at full penetration. 
+
+Second, the price feedback also reduces the synchronization across individual batteries. At full penetration, the mean pairwise correlation of hourly dispatch between two batteries is 0.87 under -40 -20 020 40 Fri 06 Jun Sat 07 Jun Sun 08 Jun Mon 09 Jun Tue 10 Jun -200 -100     
+
+> 0
+> 100 Fri 06 Jun Sat 07 Jun Sun 08 Jun Mon 09 Jun Tue 10 Jun
+
+National residual load Households          
+
+> Battery dispatch: exogenous prices Battery dispatch:
+> endogenous prices Before storage
+> With exogenous prices With endogenous prices Net consumption without batteries GW kW -200
+> -100 0100 200 01000 2000 3000 4000 5000 6000 7000 8000 8760 Endogenous prices (with price feedback)
+> Exogenous prices
+> (no wholesale price feedback)
+> Price feedback
+> Price feedback
+> Hours kW
+
+13 
+
+exogenous prices and 0.53 under endogenous prices. Under exogenous prices, wide price spreads make arbitrage between charging from and re-injecting into the grid profitable for virtually every battery. Under endogenous prices, spreads are compressed such that arbitrage is profitable less often: the share of charging for re-injection falls from 43 % to 20 % . Instead, self-consumption dominates the battery dispatch decision. Self-consumption depends on the load and PV profile of each household. Because these profiles are heterogeneous, individual batteries charge and discharge at different times. 
+
+# 5.2. Coincident peak 
+
+Figure 3 summarizes the main result of this paper. It shows the annual coincident load peak (top 1 % of 
+
+hours) for growing penetration of home batteries. At small penetration rates, batteries reduce the load peak, regardless of how they are modeled: they tend to charge when local demand is low or negative, because this tends to coincide with low or negative national wholesale prices. In turn, they discharge at high prices, which correlate with local demand. Batteries hence reduce the coincident peak in import direction (left) as well as export direction (right). The pattern is identical under exogenous prices (blue line) and endogenous prices (green line), because the number of batteries is too small to shift prices. 
+
+This changes as battery adoption grows. If prices are assumed to be exogenous, the synchronous pattern of high-power charging and discharging creates new load peaks as soon as a penetration threshold is crossed. For the import direction, the threshold is at 30 –40 %, for the export direction at 
+
+90 –100 %. This, however, is only true as long as wholesale prices are not allowed to change .Endogenizing wholesale prices results in import coincident peaks stabilizing well below the no-battery case and export peaks continuously falling with more batteries added. The difference is not small. At full battery penetration, the price feedback reduces the import peak by about half and the export peak 
+
+by about 15 %. Figure A3 shows the loading in the current peak hours, in the peak hours without 
+
+batteries and in the peak hours at full penetration. 
+
+In other words, it is not surprising that every study that assumed wholesale prices to be exogenous finds new load peaks created by synchronized decentralized flexibility. The present simulations reproduce this. But they also suggest that the finding may well be explained by the fact that all of these studies (with one exception) ignore the wholesale price feedback. 
+
+Figure 3. Coincident peak for exogenous and endogenous prices, import and export direction. -20% 0% 20%                      
+
+> 40%
+> 60% 80%
+> 010 20 30 40 50 60 70 80 90 100
+> -15% -10% -5% 0%
+> 010 20 30 40 50 60 70 80 90 100
+> Import direction
+> PV households with battery (%)
+> Export direction
+> PV households with battery (%)
+> Exogenous prices (no price feedback) Endogenous prices (with price feedback) Exogenous prices (no price feedback)
+> Price feedback
+> Endogenous prices (with price feedback)
+> change to no-battery peak change to no-battery peak Price feedback
+
+14            
+
+> Table 5. Coincident peak at full penetration under endogenous prices
+> Sensitivity Description Compared to no-battery vs. exogenous prices
+> Import peak Export peak Import peak Export peak
+> Base case See text -6 % -15 % -49 % -15 %
+
+Verzijlbergh et al. [1] is the only study in the literature review that also models wholesale price feedback. The two studies agree on two points. Without price feedback, flexibility concentrates in the cheapest hours, which creates new peaks. Because the wholesale price is set for a much larger area than the local grid, new local peaks remain possible even with price feedback. However, the quantitative conclusions of the two papers differ. In Verzijlbergh et al., cost-minimizing EV charging raises the annual cable peak 
+
+by 47 % despite price feedback, whereas in this paper the coincident peak falls by 6 % in the import direction and by 15 % in the export direction at full penetration. Three differences in the setting are plausible drivers. First, EVs must charge a given amount of energy while parked at home, whereas home batteries can reduce their arbitrage volume when price spreads narrow. Second, the new peak in Verzijlbergh et al. stems from rare hours in which high wind output coincides with high local load. Third, 
+
+their result rests on an extreme scenario with 15 GW of wind in the Netherlands; with 2 GW they find 
+
+no new peak. 
+
+# 5.3. Battery size and adoption 
+
+This section presents sensitivity runs in which battery properties are varied: battery size is halved and doubled; battery charging power is halved and doubled, cycling costs are increased and batteries are also adopted by households without solar panels. Figure 4 shows, for each sensitivity variation separately, the coincident peak for exogenous prices (blue) and endogenous prices (green); Table 6 reports the values at full penetration. 
+
+In every variation the price feedback reduces the coincident peak both in the import and the export direction. As expected, smaller batteries, reduced charging power and higher cycling costs imply that the new peaks that batteries create under exogenous prices are smaller; accounting for price feedback still reduces those peaks. Larger, higher-powered and more batteries lead to new peaks being more extreme; accounting for price feedback still reduces them, sometimes by a lot. 
+
+What becomes clear from these model runs, however, is that price feedback is no guarantee that new peaks are never created. If all households own batteries, the coincident peak in both import and export direction is larger than without any batteries, even when prices are endogenous (last charts to the right). 15 
+
+Figure 4. Coincident peak for exogenous and endogenous prices: battery size and adoption. 
+
+Table 6. Coincident peak at full penetration under endogenous prices: battery size and adoption 
+
+Sensitivity  Description  Compared to no-battery  vs. exogenous prices 
+
+Import peak  Export peak  Import peak  Export peak 
+
+Base case  8 kWh / 4 kW; cycling costs 10 EUR/MWh  -6 %  -15 %  -49 %  -15 % 
+
+Larger batteries  Battery size doubled (16 kWh / 8 kW)  +11 %  +22 %  -66 %  -40 % 
+
+Smaller batteries  Battery size halved (4 kWh / 2 kW)  -9 %  -10 %  -20 %  -2 % 
+
+High power  Power doubled, energy unchanged (8 kWh / 8 kW)  -5 %  -7 %  -70 %  -49 % 
+
+Low power  Power halved, energy unchanged (8 kWh / 2 kW)  -7 %  -23 %  -21 %  -1 % 
+
+High cycling costs  Cycling cost of 50 EUR/MWh  -5 %  -14 %  -23 %  -4 % 
+
+All households  All households get batteries, also without solar PV  +15 %  +23 %  -65 %  -40 % 
+
+# 5.4. Local concentration 
+
+Impact on low-voltage grid assets is a local phenomenon while the price feedback happens at the level of the wholesale market granularity. In Germany with its uniform wholesale market that is the national level; in other countries it would be bidding zones or, under locational marginal pricing, transmission nodes. In any case, the wholesale market structure is much more coarse than low-voltage grids. As long as local grids are similar in load patterns and battery penetration, the wholesale price feedback smoothens local charging. If adoption concentrates in some “frontrunner” grids, the national price responds to a fleet that is smaller than the one behind a frontrunner transformer, and the feedback per local battery weakens. In the limit of a single grid with batteries, prices are practically exogenous again. 
+
+In the simulation, this is adjusted by setting  𝑁  in equation 3, the number of identical grids. In the base case, it is set to  𝑁 = 190,000 . This number derives from the housing stock, assuming that home batteries are installed in specific types of buildings: 13.5 million dwellings in single-family and 5.5 million in two-family houses in Germany at the end of 2024 [19], divided by 100 households per grid. This implies that at  𝑋 = 100 % , half of all single- and two-family homes in Germany have rooftop solar, all of these have a battery, and they are distributed evenly across the country, yielding a total of 38 GW / 76 GWh of home batteries .
+
+To test for the effect of a more uneven allocation of batteries, e.g. concentrated in more affluent neighborhoods or more climate-conscious communities, I vary  𝑁  between 25 % and 200 % of the base case. As expected, a higher concentration of batteries in fewer clusters leads to new peaks in those areas (Figure 5). Modeling home batteries in just one single network  𝑁 = 1  replicates the exogenous Import direction Export direction       
+
+> PV households with battery (%) -20% 0% 20% 40% 60% 80% 100% -20% 0% 20% 40% 60%
+> Base case Larger batteries Smaller batteries High power Low power High cycling costs All households
+> change to no-battery peak change to no-battery peak
+
+16 
+
+price case. A similar, but less pronounced effect occurs if utility-scale flexibility, representing imports/exports, pumped hydro storage, and utility-scale BESS, is scaled (Table 7, Figure A4). 
+
+Figure 5. Coincident peak for exogenous and endogenous prices: local concentration. 
+
+Table 7. Coincident peak at full penetration under endogenous prices: local concentration and utility-scale flexibility 
+
+Sensitivity  Description  Compared to no-battery  vs. exogenous prices 
+
+Import peak  Export peak  Import peak  Export peak 
+
+Base case  𝑁 = 190,000 ; utility-scale flex 10 GW / 60 GWh  -6 %  -15 %  -49 %  -15 % 
+
+Strong concentration  National home battery fleet 25% of base case  +23 %  -9 %  -33 %  -9 % 
+
+Moderate concentrat.  National home battery fleet 50% of base case  +4 %  -11 %  -43 %  -11 % 
+
+Larger national fleet  National home battery fleet 200% of base case  -8 %  -24 %  -50 %  -24 % 
+
+No utility-scale flex  No utility-scale storage  -3 %  -14 %  -47 %  -14 % 
+
+Less utility-scale flex  Utility-scale flexibility halved to 5 GW / 30 GWh  -5 %  -14 %  -48 %  -14 % 
+
+More utility-scale flex  Utility-scale flexibility doubled to 20 GW / 120 GWh  -7 %  -18 %  -49 %  -18 % 
+
+# 5.5. Renewables 
+
+In the base case, residential PV never curtails. Allowing for economic curtailment does not alter results in a meaningful way (Figure 6, Table 8). The same is true for increased residential solar capacity or different assumptions about utility-scale wind and solar generation. -20% 0% 20% 40%                     
+
+> 60%
+> 80% 010 20 30 40 50 60 70 80 90 100 -40% -20% 0% 010 20 30 40 50 60 70 80 90 100
+> Exogenous (all cases)
+> Strong concentration Moderate concentration Base case Larger national fleet Exogenous (all cases) Strong concentration Moderate concentration Base case Larger national fleet
+> PV households with battery (%)
+
+Import direction Export direction 
+
+> change to no-battery peak change to no-battery peak PV households with battery (%)
+
+Import direction Export direction      
+
+> PV households with battery (%) -20% 0% 20% 40% 60% 80% 100% -20% 0% 20% 40% 60%
+> Base case PV curtailment Larger residential PV More solar More wind Future power system
+> change to no-battery peak change to no-battery peak
+
+17 
+
+Figure 6. Coincident peak for exogenous and endogenous prices: renewables. 
+
+Table 8. Coincident peak at full penetration under endogenous prices: renewables 
+
+Sensitivity  Description  Compared to no-battery  vs. exogenous prices 
+
+Import peak  Export peak  Import peak  Export peak 
+
+Base case  8 kWp per household; no curtailment  -6 %  -15 %  -49 %  -15 % 
+
+PV curtailment  Economic curtailment of residential PV  -4 %  -18 %  -48 %  -17 % 
+
+Larger residential PV  PV size doubled to 16 kWp per PV household  -10 %  -13 %  -51 %  -6 % 
+
+More solar  Additional 50 TWh/a of solar PV (non-residential)  -5 %  -19 %  -48 %  -19 % 
+
+More wind  Additional 50 TWh/a of onshore wind  +3 %  -13 %  -44 %  -13 % 
+
+Future power system  2035 scenario: wind 200 GW, solar 250 GW, load 750 TWh, utility -scale flexibility 33 GW / 200 GWh  +7 %  -17 %  -43 %  -19 % 
+
+# 5.6. Network charges 
+
+In the base case, households pay a network charge of 10 ct/kWh. Injection is free of charge; and batteries that re-inject stored energy previously drawn from the grid get the charge reimbursed. Higher or lower charges do not change the results substantially (Figure 7, Table 9). Making batteries pay the full fee for charging from the grid means they do so less often, resulting in lower new import peaks. But also in this case endogenizing prices reduces the import peak substantially. 
+
+Figure 7. Coincident peak for exogenous and endogenous prices: network charges. 
+
+Table 9. Coincident peak at full penetration under endogenous prices: network charges 
+
+Sensitivity  Description  Compared to no-battery  vs. exogenous prices 
+
+Import peak  Export peak  Import peak  Export peak 
+
+Base case  Network charges and taxes 10 ct/kWh; refund on re -injected electricity  -6 %  -15 %  -49 %  -15 % 
+
+Low network charge  Network charges and taxes of 5 ct/kWh  -4 %  -14 %  -48 %  -17 % 
+
+High network charge  Network charges and taxes of 20 ct/kWh  -7 %  -16 %  -48 %  -10 % 
+
+No charge refund  No refund of the grid fee on re-injected electricity  -9 %  -16 %  -30 %  -5 % Import direction Export direction    
+
+> PV households with battery (%) -20% 0% 20% 40% 60% 80% 100% -20% 0% 20% 40% 60%
+> Base case Low network charge High network charge No network charge refund
+> change to no-battery peak change to no-battery peak
+
+18 
+
+# 6. Robustness 
+
+This section checks the robustness of the price-feedback bias against three types of assumptions: the functional form of the price function, the measure of the coincident peak, and simulation procedures such as the draw of households. Across most of these variations, the new load peaks that occur under exogenous prices disappear once the price feedback is accounted for. Exceptions are the peak hour as peak measure and measured load profiles (Tables 11 and 12). Figures A5 and A6 show the coincident peak for exogenous and endogenous prices across all sensitivities. 
+
+# 6.1. Alternative price functions 
+
+This paper is about wholesale prices responding to battery dispatch, so the most important robustness checks concern the price function. In the base case I have used a cubic function of residual load after storage estimated on historical prices (equation 4). Figure 8 compares it to two alternative price functions, a quadratic (equation 5) and a piecewise linear function. In addition, three variants of the cubic price function are modeled: fully endogenous prices ( 𝜀 = 0 ) and a flatter/steeper price function (𝑎  halved/doubled). In addition to observed historical 2025 prices, I used these three price functions to create three further exogenous price curves, each calculated for the case of zero batteries and then held fixed. Across price functions, the coincident peak in import direction remains remarkably robust. Across all variants, the endogenous peaks stay below the no-battery level (Figure 8, left). Accounting for price feedback reduces the import peak by 47 –51 % for the alternative price functions (Table 10). For the export peak, the alternative functions lead to a significantly lower peak than the base case (Figure 8, right). 
+
+Figure 8. Coincident peak for alternative price functions and different exogenous price curves. 
+
+Table 10. Coincident peak at full penetration under endogenous prices for different price functions 
+
+Sensitivity  Description  Compared to no-battery  vs. exogenous prices 
+
+Import peak  Export peak  Import peak  Export peak 
+
+Base case  Exogenous: historical 2025 prices; endogenous: cubic price function  -6 %  -15 %  -49 %  -15 % 
+
+Cubic  Exogenous: cubic price function at  𝑋 = 0 ;endogenous: cubic  -6 %  -15 %  -49 %  -15 % -20% 0% 20%                      
+
+> 40%
+> 60% 80%
+> 010 20 30 40 50 60 70 80 90 100 -30%
+> -20%
+> -10% 0% 010 20 30 40 50 60 70 80 90 100
+
+Import direction 
+
+> PV households with battery (%)
+
+Export direction 
+
+> PV households with battery (%)
+> Exogenous prices
+> Endogenous prices Exogenous prices
+> change to no-battery peak change to no-battery peak
+> Endogenous prices
+> Base case Cubic Quadratic Piecewise linear Cubic Quadratic Piecewise linear
+> Cubic, ε = 0
+> Base case Cubic Quadratic Piecewise linear Cubic Quadratic Piecewise linear
+> Cubic, ε = 0
+
+19 
+
+Quadratic  Exogenous: quadratic price function at  𝑋 = 0 ;endogenous: quadratic  -7 %  -20 %  -50 %  -21 % 
+
+Piecewise linear  Exogenous: piecewise linear price function at  𝑋 = 0 ;endogenous: piecewise linear  -7 %  -26 %  -50 %  -25 % 
+
+Cubic,  𝜀  = 0  Exogenous: historical 2025 prices; endogenous: cubic, price residual  𝜀  set to zero  -11 %  -29 %  -51 %  -29 % 
+
+Flatter price function  Exogenous: historical 2025 prices; endogenous: cubic, parameter  𝑎  halved  -3 %  -12 %  -47 %  -12 % 
+
+Steeper price function 
+
+Exogenous: historical 2025 prices; endogenous: cubic, parameter  𝑎  doubled  -7 %  -17 %  -49 %  -18 % 
+
+# 6.2. Alternative measures of the coincident peak 
+
+The next robustness check concerns the measure of the coincident peak. In the base case I use the 
+
+average load in the top 1 % of hours. Figure 9 and Table 11 show two additional metrics: the peak hour 
+
+(highest loading of any hour) and the top 10 % of hours. The results hold for all three measures :compared to exogenous prices, the import peak at full penetration is reduced by 34 –49 %, the export 
+
+peak by 15 –24 %. 
+
+Figure 9. Alternative measures of the coincident peak (maximum, top 1 %, top 10 %) for exogenous and endogenous prices. 
+
+Table 11. Coincident peak (different definitions) at full penetration under endogenous prices 
+
+Sensitivity  Description  Compared to no-battery  vs. exogenous prices 
+
+Import peak  Export peak  Import peak  Export peak 
+
+Peak hour  Load in the highest hour of the year  +2 %  -8 %  -38 %  -18 % 
+
+Top 1 % (Base)  Mean load in the highest 1 % of hours  -6 %  -15 %  -49 %  -15 % 
+
+Top 10 %  Mean load in the highest 10 % of hours  -7 %  -26 %  -34 %  -24 % 
+
+# 6.3. Household simulation assumptions 
+
+Beyond the substantive scenario assumptions, the details of the simulation methodology can also affect results: the draw of households, the size of the household population, the coupling of household load to national load, measured household load profiles, the foresight horizon, the temporal resolution, the historical year, and PV orientation and share. I have also replaced simulated household load profiles with two sets of measured profiles. Table 12 reports a number of robustness tests in this respect. -20% 0% 20% 40% 60% 80% 100% -20% 0% 20% 40% 60% 
+
+Import direction Export direction     
+
+> PV households with battery (%)
+> Peak hour Top 1 % (Base) Top 10 %
+> change to no-battery peak change to no-battery peak
+
+20 
+
+In every case the coincident peaks at full penetration are lower under endogenous than under exogenous prices (import by 28 –51 %, export by 9–25 %); they are also lower than without batteries, 
+
+except with measured load profiles in the import direction (+6 to +22 %). 
+
+Table 12. Coincident peak (top 1 %) at full penetration under endogenous prices: household simulation assumptions 
+
+Sensitivity  Description  Compared to no-battery  vs. exogenous prices 
+
+Import peak  Export peak  Import peak  Export peak 
+
+Base case  100 households, single draw, perfect foresight within each month, hourly  -6 %  -15 %  -49 %  -15 % 
+
+Bootstrap 
+
+400 replications, stratified 50 PV and 50 non-PV households, from the base dispatch; mean ± standard deviation 
+
+-6 ± 2 %  -14 ± 2 %  -46 ± 2 %  -14 ± 2 % 
+
+Independent networks 
+
+Three new networks (new load profiles and coupling), own equilibrium each; range  -8 to -5 %  -15 to -14 %  -51 to -48 %  -14 % 
+
+Network size  25 to 400 households, national fleet unchanged; range  -7 to -5 %  -15 to -13 %  -51 to -43 %  -15 to -13 % 
+
+No load coupling  Household load not coupled to national load  -7 %  -14 %  -48 %  -15 % 
+
+Stronger load coupling 
+
+Coupling of household load to national load at double strength  -6 %  -15 %  -47 %  -15 % 
+
+Measured load Zurich 
+
+Measured household load (EKZ Zurich, 2024, annual energy normalized) instead of synthetic profiles; against synthetic profiles for 2024 
+
++22 %  -11 %  -47 %  -25 % 
+
+Measured load Lucerne 
+
+Measured household load (CKW Lucerne, 2025, annual energy normalized) instead of synthetic profiles 
+
++6 %  -13 %  -51 %  -23 % 
+
+Daily foresight  Home batteries with a one-day horizon (empty at midnight), utility-scale flexibility unchanged  -1 %  -15 %  -47 %  -17 % 
+
+Quarter-hourly  All quantities quarter-hourly; the year solved as twelve monthly problems  -7 %  -14 %  -47 %  -15 % 
+
+Historical year 
+
+Load, solar, wind and prices of 2023 or 2024 instead of 2025; price function estimated for each year; range 
+
+-4 to -1 %  -12 %  -45 to -44 %  -20 to -19 % 
+
+PV orientation  All PV facing south, or half east and half west (base case: east, south, west and flat); range  -8 to -5 %  -15 to -9 %  -49 to -48 %  -24 to -9 % 
+
+Fewer PV households  30 % of households with PV (base case: 50 %)  -8 %  -14 %  -28 %  -10 % 
+
+# 7. Conclusions 
+
+This paper asks whether the new local load peaks that simulation studies attribute to price-optimized home batteries survive once wholesale prices are allowed to respond to battery dispatch. It finds that in the base case they do not. With exogenous prices, the simulations reproduce the established finding of the literature: from a penetration of about a third of PV households, the fleet charges and discharges 
+
+in synchrony, and at full penetration the coincident import peak of the local grid is 83 % above i ts no-
+
+battery level. With endogenous prices, the same fleet leaves the import peak 6 % and the export peak 15 % below the no -battery level. 
+
+However, the price feedback does not logically rule out new local peaks. Wholesale prices clear at the level of the bidding zone (or the transmission node), not of the local low-voltage grid, so a local fleet can still be synchronized by the national price whenever the local situation deviates from the national one. Only if the local grid were its own market would no new peak occur. 21 
+
+The “omitted feedback bias” matters for grid planning. Reinforcement decisions that rest on exogenous -price simulations overstate the transformer and cable capacity that price-responsive batteries require. How much capacity would be built in vain is a question for future work; the size of the bias found here suggests that the answer is worth knowing. 
+
+This study simulates stationary home batteries. I expect the same effects to occur with optimized charging of EVs and, to a lesser degree, other types of residential flexibility, such as optimized heating and cooling. I hope the simple price feedback methodology proposed here will be useful for future studies that cover a more diverse set of technologies. 22 
+
+# References 
+
+[1] Verzijlbergh, R.A., de Vries, L.J., Lukszo, Z. (2014). Renewable energy sources and responsive demand. Do we need congestion management in the distribution grid? IEEE Transactions on Power Systems 29(5), 2119-2128. 
+
+[2] Turk, G., Schittekatte, T., Dueñas-Martínez, P., Joskow, P.L., Schmalensee, R. (2025). Designing distribution network tariffs in the US with an application to increased electric vehicle adoption. The Energy Journal 46(6), 143-165. https://doi.org/10.1177/01956574251365616 
+
+[3] Rodriguez-Garcia, L., Barbose, G.L., Forrester, S., Blonsky, M., Heleno, M. (2026). Estimating the impact of tariff-driven behind-the-meter storage operation on distribution grid investments. Energy Reports 16, 109531. https://doi.org/10.1016/j.egyr.2026.109531 
+
+[4] Korab, R., Połomski, M., Smołka, M., Naczyński, T. (2026). Impact of distributed battery energy 
+
+storage controlled by optimization-based home energy management systems implementing various objective functions on the voltage profiles in the low-voltage network with a high saturation of prosumer photovoltaic micro-installations. Energy Conversion and Management 353. https://doi.org/10.1016/j.enconman.2026.121148 
+
+[5] Pimm, A.J., Cockerill, T.T., Taylor, P.G. (2018). Time-of-use and time-of-export tariffs for home batteries: Effects on low voltage distribution networks. Journal of Energy Storage 18, 447-458. https://doi.org/10.1016/j.est.2018.06.008 
+
+[6] Stute, J., Kühnbach, M. (2023). Dynamic pricing and the flexible consumer – Investigating grid and financial implications: A case study for Germany. Energy Strategy Reviews 45, 100987. https://doi.org/10.1016/j.esr.2022.100987 
+
+[7] Kamana-Williams, B., Hooper, R.J., Gnoth, D., Chase, J.G. (2025). The peak load effects of demand response with simple time-of-use pricing. Sustainable Energy, Grids and Networks 44, 101981. https://doi.org/10.1016/j.segan.2025.101981 
+
+[8] Gottwalt, S., Ketter, W., Block, C., Collins, J., Weinhardt, C. (2011). Demand side management – Asimulation of household behavior under variable prices. Energy Policy 39(12), 8163-8174. https://doi.org/10.1016/j.enpol.2011.10.016 
+
+[9] Semmelmann, L., Kaiser, K., Heider, A., Kircher, K.J., Hug, G., Weinhardt, C. (2025). Analyzing the impact of dynamic tariff adoption and regulatory options on distribution grids with an open-source framework. Proceedings of the 16th ACM International Conference on Future and Sustainable Energy Systems (e-Energy 2025), 515-533. https://doi.org/10.1145/3679240.3734590 
+
+[10] Stawska, A., Romero, N., de Weerdt, M., Verzijlbergh, R. (2021). Demand response: For congestion management or for grid balancing? Energy Policy 148, 111920. https://doi.org/10.1016/j.enpol.2020.111920 
+
+[11] Flath, C.M., Ilg, J.P., Gottwalt, S., Schmeck, H., Weinhardt, C. (2014). Improving electric vehicle charging coordination through area pricing. Transportation Science 48(4), 619-634. https://doi.org/10.1287/trsc.2013.0467 23 
+
+[12] Cong, L., Christensen, K., Værbak, M., Jørgensen, B.N., Ma, Z.G. (2025). Empirically informed multi-agent simulation of distributed energy resource adoption and grid overload dynamics in energy communities. Electronics 14(20), 4001. https://doi.org/10.3390/electronics14204001 
+
+[13] Holmberg, D., Omar, F., Roth, T. (2023). Impact of dynamic prices on distribution grid power quality. NIST Technical Note 2261, National Institute of Standards and Technology. https://doi.org/10.6028/NIST.TN.2261 
+
+[14] Huang, P., Sandström, M. (2025). Do smart charging and vehicle-to-grid strengthen or strain power grids with rising EV adoption? Insights from a Swedish residential network. Applied Energy 401, 126713. https://doi.org/10.1016/j.apenergy.2025.126713 
+
+[15] Salah, F., Ilg, J.P., Flath, C.M., Basse, H., van Dinther, C. (2015). Impact of electric vehicles on distribution substations: A Swiss case study. Applied Energy 137, 88-96. 
+
+https://doi.org/10.1016/j.apenergy.2014.09.091 
+
+[16] Van Montfoort, F., Dijkstra, P.T., Mulder, M., Kopányi, D. (2026). Reducing peak load from electric vehicles through grid tariffs: Evidence from a randomized field experiment. Journal of Environmental Economics and Management 139, 103354. https://doi.org/10.1016/j.jeem.2026.103354 
+
+[17] Torriti, J. (2012). Price-based demand side management: Assessing the impacts of time-of-use tariffs on residential electricity demand and peak shifting in Northern Italy. Energy 44(1), 576-583. 
+
+[18] Brylle, L., Andersen, N., Madsen, H. (2026). Scaling demand-side flexibility through dynamic tariffs. arXiv:2606.13401. 
+
+[19] Statistisches Bundesamt (Destatis) (2025). 43,8 Millionen Wohnungen in Deutschland zum Jahresende 2024. Press release No. 336, 17 September 2025. https://www.destatis.de/DE/Presse/Pressemitteilungen/2025/09/PD25_336_31231.html 
+
+[20] Kühnbach, M., Stute, J., Klingler, A.-L. (2021). Impacts of avalanche effects of price-optimized electric vehicle charging - Does demand response make it worse? Energy Strategy Reviews 34, 100608. 
+
+[21] Powell, S., Cezar, G.V., Min, L., Azevedo, I.M.L., Rajagopal, R. (2022). Charging infrastructure access and operation to reduce the grid impacts of deep electric vehicle adoption. Nature Energy 7, 932-945. 
+
+[22] Ensslen, A., Ringler, P., Dörr, L., Jochem, P., Zimmermann, F., Fichtner, W. (2018). Incentivizing smart charging: Modeling charging tariffs for electric vehicles in German and French electricity markets. Energy Research & Social Science 42, 112-126. 
+
+[23] Martin, S., Powell, S., Rajagopal, R. (2025). Cascading marginal emissions signals for green charging with growing electric vehicle adoption. Nature Communications 16, 10150. 
+
+[24] Stute, J., Pelka, S., Kühnbach, M., Klobasa, M. (2024). Economic viability of dynamic electricity retail tariffs for residential prosumers. Advances in Applied Energy 14, 100174. 
+
+[25] Verzijlbergh, R.A., Grond, M.O.W., Lukszo, Z., Slootweg, J.G., Ilić, M.D. (2012). Network impacts 
+
+and cost savings of controlled EV charging. IEEE Transactions on Smart Grid 3(3), 1203-1212. https://doi.org/10.1109/TSG.2012.2190307 24 
+
+[26] Figgener, J., van Ouwerkerk, J., Haberschusz, D., Bors, J., Woerner, P., Mennekes, M., Hildenbrand, F., Hecht, C., Kairies, K.-P., Wessels, O., Sauer, D.U. (2024). Multi-year field measurements of home storage systems and their use in capacity estimation. Nature Energy 9(11), 1438-1447. 
+
+[27] Zhou, H.S., Passey, R., Bruce, A., Sproul, A.B. (2021). A case study on the behaviour of residential battery energy storage systems during network demand peaks. Renewable Energy 180, 712-724. 
+
+[28] Zhou, H.S., Passey, R., Bruce, A., Sproul, A.B. (2022). Impact of residential battery energy storage systems on the peak reverse power flows from distributed photovoltaic systems. Journal of Energy Storage 52, 104817. 
+
+[29] Askeland, M., Bjarghov, S., Rana, R., Morch, A., Taxt, H. (2025). Smart flexibility in energy communities: Scenario-based analysis of distribution grid implications and economic impacts. Smart Energy 18, 100184. https://doi.org/10.1016/j.segy.2025.100184 
+
+[30] Gupta, R., Morey, J. (2023). Evaluation of residential demand response trials with smart heat pumps and batteries and their effect at the substation feeder. Journal of Cleaner Production 403, 136760. https://doi.org/10.1016/j.jclepro.2023.136760 
+
+[31] Lorenz, C., Bayer, D.R., Pruckner, M., Staake, T., Hopf, K. (2026). Do dynamic electricity tariffs change the gains of residential PV-battery systems? A simulation-based evaluation using data from 448 households. Energy Policy 209, 114952. https://doi.org/10.1016/j.enpol.2025.114952 
+
+[32] Priyadarshan, Crozier, C., Baker, K., Kircher, K.J. (2024). Distribution grids may be a barrier to residential electrification. Cell Reports Physical Science 5(11), 102284. https://doi.org/10.1016/j.xcrp.2024.102284 
+
+[33] Stute, J., Klobasa, M. (2024). How do dynamic electricity tariffs and different grid charge designs interact? Implications for residential consumers and grid reinforcement requirements. Energy Policy 189, 114062. https://doi.org/10.1016/j.enpol.2024.114062 
+
+[34] Patteeuw, D., Bruninx, K., Arteconi, A., Delarue, E., D’haeseleer, W., Helsen, L. (2015). Integrated 
+
+modeling of active demand response with electric heating systems coupled to thermal energy storage systems. Applied Energy 151, 306-319.  https://doi.org/10.1016/j.apenergy.2015.04.014 
+
+[35] Arteconi, A., Patteeuw, D., Bruninx, K., Delarue, E., D’haeseleer, W., Helsen, L. (2016). Active 
+
+demand response with electric heating systems: Impact of market penetration. Applied Energy 177, 636-648.  https://doi.org/10.1016/j.apenergy.2016.05.146 
+
+[36] Klaassen, E.A.M., Kobus, C.B.A., Frunt, J., Slootweg, J.G. (2016). Responsiveness of residential electricity demand to dynamic tariffs: Experiences from a large field test in the Netherlands. Applied Energy 183, 1065-1074.  https://doi.org/10.1016/j.apenergy.2016.09.051 
+
+[37] Schram, W.L., Lampropoulos, I., van Sark, W.G.J.H.M. (2018). Photovoltaic systems coupled with batteries that are optimally sized for household self-consumption: Assessment of peak shaving potential. Applied Energy 223, 69-81.  https://doi.org/10.1016/j.apenergy.2018.04.023 
+
+[38] Moshövel, J., Kairies, K.-P., Magnor, D., Leuthold, M., Bost, M., Gährs, S., Szczechowicz, E., Cramer, M., Sauer, D.U. (2015). Analysis of the maximal possible grid relief from PV-peak-power impacts by using storage systems for increased self-consumption. Applied Energy 137, 567-575. 
+
+https://doi.org/10.1016/j.apenergy.2014.07.021 25 
+
+[39] Crozier, C., Morstyn, T., McCulloch, M. (2020). The opportunity for smart charging to mitigate the impact of electric vehicles on transmission and distribution systems. Applied Energy 268, 114973. 
+
+https://doi.org/10.1016/j.apenergy.2020.114973 
+
+[40] Mangipinto, A., Lombardi, F., Sanvito, F.D., Pavičević, M., Quoilin, S., Colombo, E. (2022). Impact of 
+
+mass-scale deployment of electric vehicles and benefits of smart charging across all European countries. Applied Energy 312, 118676.  https://doi.org/10.1016/j.apenergy.2022.118676 
+
+[41] Fischer, D., Harbrecht, A., Surmann, A., McKenna, R. (2019). Electric vehicles’ impacts on residential 
+
+electric local profiles – A stochastic modelling approach considering socio-economic, behavioural and spatial factors. Applied Energy 233-234, 644-658.  https://doi.org/10.1016/j.apenergy.2018.10.010 26 
+
+# Appendix 
+
+Figure A1. Individual household load and aggregate load during the week of the annual import peak. 
+
+Figure A2. National wholesale price without home batteries and at full penetration under endogenous prices (duration curves). -5 0510 15 -50 050 100 150 Mon 24 Nov Tue 25 Nov Wed 26 Nov Thu 27 Nov Fri 28 Nov Sat 29 Nov Sun 30 Nov kW kW Individual households (right axis) Aggregate load (left axis) -300 
+
+-200 -100 0100 200 300 400 500 0 1000 2000 3000 4000 5000 6000 7000 8000 8760 No home batteries (X = 0) Full penetration (X = 100) Hours EUR/MWh 0100 200 
+
+0 20 40 60 80 100 0 20 40 60 80 100 0 20 40 60 80 100 0 20 40 60 80 100 
+
+Import, exogenous prices 
+
+PV households with battery (%) 
+
+Import, endogenous prices 
+
+PV households with battery (%) 
+
+Export, exogenous prices 
+
+PV households with battery (%) 
+
+Export, endogenous prices 
+
+PV households with battery (%) 
+
+Loading in hours that have peaks at X=0 Loading at current peak hours Loading in hours that have peaks at X=100 
+
+kW 27 
+
+Figure A3. Loading in the current peak hours, in the peak hours without batteries and in the peak hours at full penetration (top 
+
+1 % of hours). 
+
+Figure A4. Coincident peak for exogenous and endogenous prices: utility-scale flexibility. 
+
+Figure A5. Coincident peak for exogenous and endogenous prices across sensitivities. 
+
+Figure A6. Coincident peak for exogenous and endogenous prices across sensitivities, one panel per direction. -20% 0% 20% 40% 
+
+60% 
+
+80% 0 10 20 30 40 50 60 70 80 90 100 
+
+Exogenous (all cases) 
+
+No utility-scale flex Less utility-scale flex Base case More utility-scale flex 
+
+-40% -20% 0% 0 10 20 30 40 50 60 70 80 90 100 
+
+Exogenous (all cases) Less utility-scale flex No utility-scale flex Base case More utility-scale flex 
+
+Import direction Export direction 
+
+change to no-battery peak change to no-battery peak PV households with battery (%) PV households with battery (%) -20% 0% 20% 40% 60% 80% 100% -20% 0% 20% 40% 60% 
+
+Import direction 
+
+Export direction 
+
+PV households with battery (%) 
+
+Larger batteries Smaller batteries High power Low power No network charge refund High cycling costs All households Low network charge High network charge Flatter price function Steeper price function More solar More wind Future power system PV curtailment South-facing PV East-west PV Fewer PV households Quarter-hourly 
+
+change to no-battery peak change to no-battery peak -20% 0% 
+
+20% 
+
+40% 60% 80% 0 10 20 30 40 50 60 70 80 90 100 -50% -40% -30% -20% -10% 0% 10% 20% 30% 0 10 20 30 40 50 60 70 80 90 100 
+
+Import direction 
+
+PV households with battery (%) 
+
+Export direction 
+
+PV households with battery (%) 
+
+Larger batteries High power Future power system Base case Quarter-hourly No network charge refund Fewer PV households Low power Smaller batteries High cycling costs Future power system Larger batteries 
+
+Base case 
+
+Larger batteries High power 
+
+East-west PV 
+
+Future power system Quarter-hourly Base case 
+
+No network charge refund 
+
+South-facing PV Smaller batteries High cycling costs Future power system Smaller batteries Low power High cycling costs Base case Flatter price function Larger batteries 
+
+change to no-battery peak change to no-battery peak 28 
+
+Scope: studies of decentralized flexibility under a time-varying energy price that report a metric of local grid loading. Self-consumption under a fixed retail price, technical peak-shaving optimization and grid charge instruments without a dynamic energy price are reviewed in the companion paper. 
+
+Table A1. Studies dropped from the review 
+
+Study  Subject  Reason for exclusion 
+
+Kühnbach et al. [20], Powell et al. [21] 
+
+Price-driven and timer-driven charging of national electric vehicle fleets 
+
+System level, the metric is the national residual load or net demand peak, no distribution grid is modeled. Kühnbach et al. [20] model the price feedback 
+
+Ensslen et al. [22], Martin et al. [23] 
+
+A load-shift tariff in an agent-based market model, and emissions-based charging signals 
+
+No grid metric, the outcomes are hours of capacity deficit and wholesale prices, and grid emissions. Both model the feedback of the fleet on the signal, at system level 
+
+Stute et al. [24]  Dynamic retail tariffs for prosumers with electric vehicles and heat pumps 
+
+No grid metric, the study reports the timing of household load only 
+
+Verzijlbergh et al. [25]  Controlled EV charging on 55 Dutch distribution networks 
+
+No price signal, the controlled case minimizes the combined network peak on behalf of the grid operator 
+
+Figgener et al. [26], Zhou et al. [27], Zhou et al. [28] 
+
+Observed home storage fleets in Germany and Australia 
+
+The systems run for self-consumption on flat tariffs, not against a time-varying price. Figgener et al. [26] also report no grid metric 
+
+Askeland et al. [29]  Flexibility of energy communities in Norwegian distribution grids, in an equilibrium model 
+
+The signal is a local market price and direct procurement of flexibility by the grid operator, not a time-varying retail price derived from the wholesale market 
+
+Gupta and Morey [30]  Demand response trials with heat pumps and batteries in 14 UK dwellings, measured at the substation feeder 
+
+No price signal, the interventions are dispatched directly by the trial operator. The feeder effects are large, up to 307 percent in the turn-up direction 
+
+Lorenz et al. [31]  Dynamic against fixed retail tariffs for PV-battery households, simulated on 448 metered German households 
+
+No grid metric, the study reports household gains only 
+
+Priyadarshan et al. [32]  Distribution grid capacity needed for full residential electrification across US counties 
+
+No price signal, load is not price-responsive and reinforcement is costed at static rates 
+
+Stute and Klobasa [33]  Time-of-use and real-time pricing with four grid charge designs on six SimBench low-voltage grids 
+
+No no-flexibility baseline, the study compares grid charge designs against each other; transformer loading of up to 339 percent of rating is reported for the tariff variants only 
+
+Patteeuw et al. [34], Arteconi et al. [35] 
+
+Integrated modeling of active demand response with electric heating in Belgium, with the supply side and the demand side solved jointly, and the effect of participation rates 
+
+No grid metric, the outcomes are system operating cost and savings per participant. The studies are the closest precedent to the argument made here: they show what representations with exogenous price profiles miss, and that the benefit per participant falls as more consumers respond to the same price 
+
+Klaassen et al. [36]  Field test of dynamic tariffs with smart appliances and home displays in a Dutch smart grid pilot 
+
+No storage or vehicles, and no grid metric, the study reports the shifting of white-goods load 
+
+Schram et al. [37], Moshövel et al. [38] 
+
+Peak shaving with PV-battery systems sized for self-consumption in 79 Dutch households, and grid relief from forecast-based charging of PV-battery systems in Germany 
+
+No price signal, the batteries run for self-consumption or follow a peak-shaving rule with forecast or perfect foresight. Schram et al. report a neighborhood peak reduction of 6 percent without control and 51 percent with perfect foresight 
+
+Crozier et al. [39], Mangipinto et al. [40] 
+
+Smart charging of electric vehicles in Great Britain, and mass deployment of electric vehicles with smart charging in 28 European countries 
+
+No price signal, charging is centrally optimized, and Mangipinto et al. report national peak demand only. Crozier et al. find that smart charging cuts the share of distribution networks needing reinforcement from 28 to 9 percent 
+
+Fischer et al. [41]  Stochastic bottom-up model of residential EV charging in Germany 
+
+No price signal, only uncontrolled charging is simulated; local load peaks rise by up to a factor of 8.5 
+
+Table A2. Examples of flexibility contracts (as of September 2026) 
+
+Offer  Market, status  Asset  Customer receives  Customer commits to 
+
+Octopus Power Pack  UK; tariff, beta since 2024 
+
+EV (BYD Dolphin) with V2G charger 
+
+Free home charging up to 
+
+210 kWh per month 
+
+Plugged in 12 h per day on 20 
+
+days per month; minimum 
+
+state of charge below 30 % 29 
+
+Octopus and BYD, Power Pack Bundle 
+
+UK; car and tariff bundle, 2025 
+
+Leased EV, V2G charger 
+
+Car lease below £300 per month including free home charging 
+
+Plugged in overnight 
+
+Octopus Powerloop  UK; trial 2020 –2022, 135 customers 
+
+Leased EV (Nissan Leaf), V2G charger 
+
+Car and bidirectional charger  Not specified in source 
+
+Renault, Mobilize and The Mobility House, Mobilize Power 
+
+France; since 2024  EV (Renault 5, Alpine A290), bidirectional AC charger 
+
+Free charging  Mobilize charger and supply contract 
+
+The Mobility House, V2G tariff 
+
+Germany; announced 2026 
+
+EV (Renault 5; later Mercedes GLC, CLA) 
+
+Free charging electricity  Plugged in every night; minimum state of charge set 
+
+in advance (e.g. 60 % at 7:00) 
+
+BMW and E.ON, V2G tariff  Germany; since 2026  EV (BMW iX3), bidirectional wallbox 
+
+0.24 EUR per plugged -in 
+
+hour, up to 60 EUR per 
+
+month 
+
+Supply and feed-in contract; smart meter 
+
+Mercedes-Benz, MB.CHARGE Home 
+
+Germany, France, UK; planned 2026 
+
+EV (Mercedes GLC), bidirectional charger 
+
+Not published  Minimum range and departure time set by user 
+
+1KOMMA5°, Heartbeat  Sweden; since 2023  Home battery with PV  Electricity at 0 ct/kWh up to 15,000 kWh per year 
+
+Battery pooled by provider; monthly software fee 
+
+Octopus Zero Bills  UK; new-build homes  PV, home battery, heat pump 
+
+No energy bill for a guaranteed period, fair-use terms 
+
+Provider operates all assets 
+
+Octopus, Intelligent Octopus (battery) 
+
+Germany  Home battery  Bonus of 10 ct/kWh on grid -charged energy 
+
+Provider controls charging only; smart meter 
+
+Green Mountain Power, energy storage lease 
+
+Vermont, US  Home battery (Tesla Powerwall) 
+
+Battery lease at 55 USD per 
+
+month over ten years; backup power 
+
+Utility discharges the battery at peak times 
+
+SOLRITE and sonnen  Texas, US; 2025  PV and two home batteries 
+
+Hardware at no upfront cost; 
+
+solar electricity at 12 US 
+
+ct/kWh 
+
+Provider operates batteries in ERCOT 
+
+# Model description 
+
+This section states the optimization problems of households and utility-scale storage and the equilibrium condition. Table A3 defines the symbols. All problems are solved for each calendar month separately. 
+
+Each household  𝑖  with a battery minimizes its electricity bill: 
+
+min ∑ [(𝑝 𝑡 + 𝜑)𝑤 𝑖,𝑡 − 𝑝 𝑡 𝑒 𝑖,𝑡 + (𝑝 𝑡 + 𝜑)(𝑐 𝑖,𝑡 𝑟 − 𝑔 𝑖,𝑡 𝑟 ) + 𝜅(𝑐 𝑖,𝑡 + 𝑔 𝑖,𝑡 + 𝑐 𝑖,𝑡 𝑟 + 𝑔 𝑖,𝑡 𝑟 )] 𝑡  (A1) 
+
+Withdrawal and injection balance load, PV generation and the own storage account: 
+
+𝑤 𝑖,𝑡 − 𝑒 𝑖,𝑡 = 𝑙 𝑖,𝑡 − 𝑣 𝑖,𝑡 + 𝑐 𝑖,𝑡 − 𝑔 𝑖,𝑡  (A2) 
+
+The own account holds solar or grid electricity for consumption in the household. The refund account holds grid electricity for re-injection: 
+
+𝑠 𝑖,𝑡 = 𝑠 𝑖,𝑡−1 + 𝜂𝑐 𝑖,𝑡 − 𝑔 𝑖,𝑡 𝜂 ⁄ (A3) 
+
+𝑠 𝑖,𝑡 𝑟 = 𝑠 𝑖,𝑡−1 𝑟 + 𝜂𝑐 𝑖,𝑡 𝑟 − 𝑔 𝑖,𝑡 𝑟 𝜂 ⁄ (A4) 
+
+Both accounts share the power and energy limits of the battery. Within an hour, charging and discharging share the available time: 
+
+𝑐 𝑖,𝑡 + 𝑔 𝑖,𝑡 + 𝑐 𝑖,𝑡 𝑟 + 𝑔 𝑖,𝑡 𝑟 ≤ 𝑃̅  (A5) 
+
+𝑠 𝑖,𝑡 + 𝑠 𝑖,𝑡 𝑟 ≤ 𝐸̅  (A6) 30 
+
+All variables are non-negative. Storage is empty at the start of each month: 
+
+𝑠 𝑖,0 = 𝑠 𝑖,0 𝑟 = 0  (A7) 
+
+Home battery dispatch in Eq. (3) is the sum over both accounts: 
+
+𝑔 𝑖,𝑡 ℎ = 𝑔 𝑖,𝑡 + 𝑔 𝑖,𝑡 𝑟 , 𝑐 𝑖,𝑡 ℎ = 𝑐 𝑖,𝑡 + 𝑐 𝑖,𝑡 𝑟  (A8) 
+
+Utility-scale storage maximizes its arbitrage revenue: 
+
+max ∑ [𝑝 𝑡 (𝑔 𝑡 𝑢 − 𝑐 𝑡 𝑢 ) − 𝜅 𝑢 (𝑐 𝑡 𝑢 + 𝑔 𝑡 𝑢 )] 𝑡  (A9) 
+
+subject to storage dynamics and limits: 
+
+𝑠 𝑡 𝑢 = 𝑠 𝑡−1 𝑢 + 𝜂𝑐 𝑡 𝑢 − 𝑔 𝑡 𝑢 𝜂 ⁄ , 𝑐 𝑡 𝑢 + 𝑔 𝑡 𝑢 ≤ 𝑃̅ 𝑢 , 𝑠 𝑡 𝑢 ≤ 𝐸̅ 𝑢  (A10) 
+
+Under exogenous prices,  𝑝 𝑡  is a fixed time series. Under endogenous prices,  𝑝 𝑡  follows Eqs. (1) to (4) and all agents take it as given. The equilibrium is computed as one linear program per month that minimizes 
+
+∑ ∫  𝑓(𝑥)dx 
+
+𝑅 𝑡 
+
+0𝑡 + ∑ 𝜀 𝑡 𝑅 𝑡 𝑡 + 𝑁 ∑ ∑ [𝜑𝑤 𝑖,𝑡 + 𝜑(𝑐 𝑖,𝑡 𝑟 − 𝑔 𝑖,𝑡 𝑟 ) + 𝜅(𝑐 𝑖,𝑡 + 𝑔 𝑖,𝑡 + 𝑐 𝑖,𝑡 𝑟 + 𝑔 𝑖,𝑡 𝑟 )] 𝑡 𝑖 +∑ 𝜅 𝑢 (𝑐 𝑡 𝑢 + 𝑔 𝑡 𝑢 )𝑡  (A11) 
+
+subject to Eqs. (2), (3) and (A2) to (A10). Its optimality conditions coincide with those of problems (A1) and (A9) at  𝑝 𝑡 = 𝑓(𝑅 𝑡 ) + 𝜀 𝑡 . The integral is approximated piecewise linearly with 256 segments. 
+
+Table A3. Symbols 
+
+Symbol  Definition  Unit or value 
+
+𝑡  Hour of the month  h
+
+𝑖  Household with a battery  –
+
+𝐻  Number of households with a battery per grid  0 to 50 
+
+𝑝 𝑡 
+
+Wholesale price  EUR/MWh 
+
+𝜑  Grid fees and taxes on withdrawal  10 ct/kWh 
+
+𝜅, 𝜅 𝑢  Cycling cost of home and utility-scale batteries, per direction  10 and 20 EUR/MWh 
+
+𝜂  One-way efficiency  √0.9 
+
+𝑃 ̅ , 𝐸 ̅ Power and capacity of a home battery  4 kW, 8 kWh 
+
+𝑃 ̅ 𝑢 , 𝐸 ̅ 𝑢  Power and capacity of utility-scale storage  10 GW, 60 GWh 
+
+𝑙 𝑖,𝑡 , 𝑣 𝑖,𝑡  Household load and PV generation  kW 
+
+𝑤 𝑖,𝑡 , 𝑒 𝑖,𝑡  Withdrawal and injection, excluding the refund account  kW 
+
+𝑐 𝑖,𝑡 , 𝑔 𝑖,𝑡 
+
+Charging and discharging, own account  kW 
+
+𝑐 𝑖,𝑡 𝑟 , 𝑔 𝑖,𝑡 𝑟  Charging and discharging, refund account  kW 
+
+𝑠 𝑖,𝑡 , 𝑠 𝑖,𝑡 𝑟  State of charge, own and refund account  kWh 
+
+𝑐 𝑡 𝑢 , 𝑔 𝑡 𝑢 , 𝑠 𝑡 𝑢  Charging, discharging and state of charge of utility-scale storage  MW, MWh 
+
+𝑅 𝑡  Residual load after storage  MW 
+
+𝑓  Price function  EUR/MWh 
+
+𝜀 𝑡  Price residual: observed price minus price function at thermal residual load, fixed across penetrations 
+
+EUR/MWh 
+
+𝑁  Number of identical low-voltage grids  190,000 31 
+
+# Acknowledgements 
+
+I thank Johanna Bronisch, Anselm Eicke and Clemens Lohr for helpful discussions and comments. 
+
+# Declaration of competing interest 
+
+The author is managing director of Neon Neue Energieökonomik, a consultancy advising clients in the electricity sector. This paper did not receive any funding and was not commissioned by any client; no client has seen its results prior to publication. 
+
+# Funding 
+
+This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors. 
+
+# Data availability 
+
+The simulation code, all input data and the complete simulation results are available from the author on request and will be deposited in a public repository upon acceptance. 
+
+# CRediT authorship contribution statement 
+
+Lion Hirth: Conceptualization, Methodology, Software, Formal analysis, Investigation, Writing – original draft, Writing – review & editing, Visualization. 32 
+
+# Declaration of generative AI and AI-assisted technologies in the manuscript preparation process 
+
+During the preparation of this work the author used Claude (Anthropic) in order to draft and edit text, write simulation and analysis code, and produce tables and figures. After using this tool, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.

@@ -1,0 +1,1508 @@
+Title: Co-Optimization of Scheduling, Control, and Incentivization of Electric Vehicles for Improving Power System Stability
+
+URL Source: https://arxiv.org/pdf/2610.15118v1
+
+Published Time: Wed, 14 Oct 2026 01:29:44 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> 1
+
+# Co-Optimization of Scheduling, Control, and Incentivization of Electric Vehicles for Improving Power System Stability 
+
+Amit Kumer Podder, Tomonori Sadamoto, and Aranya Chakrabortty 
+
+Abstract —We present a finite-horizon, greedy heuristic-based co-optimization and optimal control framework that jointly de-termines the optimized charging rates, charging times, and an op-timal charging control law for electric vehicles (EVs) to improve both voltage stability and small-signal dynamic performance of a power distribution system. The proposed strategy encourages EV drivers to be flexible in choosing their charging rates and times through monetary incentivization under a fixed budget. The design is validated using the IEEE 33-bus distribution system model with ten EV charging stations (EVCSs). Results show that incentivizing drivers to settle for lower charging rates, implemented by a wait-and-save strategy, and rescheduling their charging times strategically can significantly improve the voltage stability index (VSI) of the system as well as the damping factors for the mid-frequency oscillation modes seen in the DC-link bus voltage. 
+
+Index Terms —Electric vehicles, optimal charging, temporal scheduling, incentivization, co-optimization, voltage stability 
+
+Grid 
+
+n number of buses 
+
+N index set of all buses, i.e., N := {1, . . . , n }.
+
+NP, NE, NL index set of the point of common coupling (PCC) bus, EVCS buses, and non-EV load buses. These sets are disjoint, and N = NP ∪
+
+NE ∪ NL.
+
+Nrec , Nsend index set of receiving/sending bus 
+
+Nk ⊂ Nrec index set of receiving buses to the k-th bus for k ∈ Nsend .
+
+μ(τ ) 
+
+> v
+
+, μ p(τ ) 
+
+> v
+
+a binary variable that equals to 1 if EV v is assigned to time slot τ , otherwise 0. μp(τ ) 
+
+> v
+
+is the preferred value declared by EV v.
+
+Vk ∈ R voltage magnitude at the k-th bus, for k ∈ N.
+
+P Lk , QLk constant real/reactive power consumed by non-EV load at the k-th bus, for k ∈ NL.
+
+VSI h Voltage stability index at the h-th bus, h ∈
+
+Nrec .
+
+VSI , VSI min VSI := [VSI h]⊤ 
+
+> h∈Nrec
+
+, & minimum of VSI 
+
+EV 
+
+This work was supported in part by the US National Science Foundation under grant ECCS 1931932. A. Podder and A. Chakrabortty are with the Department of Electrical and Computer Engineering, North Carolina State University, Raleigh, NC 27606. Emails: {apodder, achakra2 }@ncsu.edu 
+
+T. Sadamoto is with the Department of Mechanical Engineering and Intelligent Systems, The University of Electro-Communications, Chofugaoka, Chofu, Tokyo. Email: sadamoto@uec.ac.jp 
+
+NV number of EVs 
+
+V index set of EVs, i.e., V := {1, . . . , N V}.
+
+v ∈ V index of EV 
+
+imin  
+
+> v
+
+, i max  
+
+> v
+
+min/max charging current for EV vi⋆(τ ) 
+
+> v
+
+optimal charging current for EV v at slot τ
+
+EVCS 
+
+NE number of EVCSs 
+
+E index set of EVCSs, i.e., E := {1, . . . , N E}.Each EVCS is assumed to be connected to a single, distinct bus without overlap 
+
+e ∈ E index of EVCS 
+
+epv preferred choice of EVCS for the driver of EV v ∈ V 
+
+vdc ∗ 
+
+> e
+
+DC link voltage at EVCS eP max  
+
+> e
+
+maximum charging power at EVCS eP ⋆(τ ) 
+
+> e
+
+optimal charging power at EVCS e at slot τπe per-kWh energy price at EVCS e
+
+Time slot 
+
+NT number of time slots 
+
+T index set of time slots, i.e., T := 
+
+{1, . . . , N T}.
+
+τ ∈ T index of time slot 
+
+τ pv preferred time slot of the driver of EV v ∈ V 
+
+Charging demand and incentivization 
+
+T min  
+
+> v
+
+, T ⋆v charging duration at the maximum and opti-mal charging power rate for EV vM C⋆v , M S⋆v dollar incentive caused by charging current changes and by time shift changes 
+
+CDv , C net  
+
+> v
+
+demanded charging cost and the net amount including incentive 
+
+Mathematical Notations: We denote the set of non-negative (resp. positive) real numbers as R≥0 (resp. R>0). 1n := [1 , . . . , 1] ⊤ ∈ Rn. Given xk1 , . . . , x kw ∈ R1×N and K := 
+
+{k1, . . . , k w}, the quantity [xk]k∈K := [xk1 , . . . , x kw ] ∈
+
+R1×wN . For N := {1, . . . , n }, we denote the block-diagonal matrix with matrices M1, · · · , M n on its diago-nal blocks as diag( Mk)k∈N. The symbol ⊗ denotes the Kronecker product. For x := [x1, . . . , x n]⊤ ∈ Rn and 
+
+β1, . . . , β n ∈ R, we define ∥x∥2,β := x⊤diag( βk)k∈{ 1,...,n }x
+
+and ∥x∥∞,β := max {β1x1, . . . , β nxn}, where ∥x∥2 := x⊤x.Given X ≥ 0, we denote its square root X 12 ≥ 0 such that X = X 12 X 12 . Given a stable strictly proper trans-fer matrix G(s), its H2-norm is defined as ∥G(s)∥H2 := arXiv:2610.15118v1 [eess.SY] 10 Oct 2026 2
+
+ 12π
+
+R ∞−∞ tr( G(jω )G⊤(jω )) dω 
+
+ 12
+
+where tr is the trace op-erator. For any symbol •, we denote its setpoint as •∗.I. I NTRODUCTION 
+
+# INcreased adoption of electric vehicles (EVs), especially heavy-duty EVs such as electric trucks and electric buses, has led to the emergence of diverse charging solutions, in-cluding medium-voltage AC chargers in parking lots and DC fast chargers at public charging stations [1]. As the number of EVs scales and becomes an integral part of highway traffic, one challenge that distribution system operators are unanimously concerned about is on how to schedule, control, and coordinate the charging of several hundred EVs within a short period of time to avoid unexpected peak load pressure that can easily cause fluctuations in voltage and frequency at critical buses in the system. Multiple papers have been written on optimal EV charging and scheduling, such as [2]– [6], but mostly aimed at steady-state operations such as load flattening, voltage and frequency regulation, electricity pricing, and modeling of the equilibrium behavior of EV queues. Fair allocation of benefits between EV charging station (EVCS) owners and EV customers has been addressed in [7] using game theory, and monetary incentivization of EV customers to encourage flexible charging has been studied in [8], but, again, from a steady-state or quasi-steady-state point of view. Therefore, most of the existing optimal charging scheduling solutions are carried out in AC distribution networks by solving static convex or non-convex optimization problems without accounting for the dynamics coming from the power-electronics-based EVCS side. Moreover, these methods pri-marily target slow and medium-speed chargers by considering them as aggregated passive loads, making them unsuitable for emerging AC/DC distribution networks where DC fast charging stations, interfaced via voltage source converters and governed by fast-acting local control logic, are integrated into the power distribution grid. This raises a critical question: how can we design coordinated charging strategies that not only account for the dynamic behavior of high-power DC fast charging stations but also ensure better steady-state voltage stability index (VSI) within the distribution grid? To address this gap, in our recent paper [9], we proposed a co-design method where a system operator can dictate the 
+
+optimal charging rate for an EV (that may be less than the demanded rate) and design an optimal charging control law using state-feedback linear-quadratic regulator (LQR) con-trol such that the combined effect of the two significantly improves the small-signal dynamic performance and VSI of the distribution network. The improvement came at the cost of incentivizing EV drivers to wait an additional amount of time in the charging queue, referred to as wait-and-save . The strategy was shown to be highly effective in damping the fast and medium-frequency oscillation modes seen in the temporal responses of the DC-link voltages at the charging stations following sudden plug-ins and plug-outs of the EV loads. The co-design was developed, however, assuming an infinite time horizon for the LQR, meaning that vehicles were assumed to arrive at EVCSs randomly over time without following any predetermined schedule. In this paper, we study how the additional flexibility of 
+
+scheduling EVs for charging at different charging stations at different times of the day can help in improving grid dynamics even further. We present a finite-horizon, greedy heuristic-based co-optimization and optimal control framework that jointly determines the charging rates, charging times, and a LQR control law to improve voltage stability and small-signal dynamic performance by encouraging EV drivers to be flexible in choosing their charging rates and times in exchange for monetary incentives. Unlike [9], however, the incentivization now must compensate for not only wait-and-save but also 
+
+time-shifting when the operator decides to change the time of charging for any EV driver from their preferred option. The optimization variables include the charging rate setpoint, the LQR controller, and a binary variable that decides if a given EV should charge at a given time slot or otherwise. The resulting problem is solved in two stages: the first stage optimizes the charging rates and LQR controllers for the preferred charging times, while the second stage greedily explores feasible time-slot reassignments and re-optimizes the affected variables. In summary, the two primary contributions of this work are: 1) We develop a finite-horizon, greedy-heuristic-based co-optimization and control algorithm for EV charging that optimizes both small-signal dynamic performance and steady-state VSI of a distribution grid while evaluating the right incentives for flexible participation of EV users. 2) We propose a deployment strategy with multiple incen-tive options that accounts for uncertainty in EV user se-lection and evaluates its impact on system performance while enabling users the best possible ways to engage with the proposed scheme. We demonstrate our algorithm using a variant of the IEEE 33-bus radial feeder distribution system model with multiple EVCSs distributed across different buses. The rest of the paper is organized as follows. Section II recapitulates the nonlinear state-space model of the EVCS-integrated distribution grid. Sections III and IV present the problem formulation and solu-tion strategy of the proposed approach, followed by numerical results in Section V. Section VI concludes the paper. II. M ODEL OF EVCS-INTEGRATED POWER SYSTEM 
+
+Consider a power distribution system with n buses and p
+
+EVCSs. We assume that each EVCS has a fixed capacity and only operates in grid-to-vehicle (G2V) mode. Each EVCS consists of a centralized AC/DC converter with a front-end LCL filter for creating a common DC bus, and DC/DC converters, which act as the charging ports. For more details about the model, please see [9], [10]. The synchronization between the EVCS and the network is ensured by a phase-locked loop (PLL), which provides the synchronous phase angle required for designing the controller of the converter. Each EVCS may have multiple charging ports connected to its respective DC bus, where every charging port has similar internal dynamics [11]. As shown in [9], the dynamics of 3
+
+the charging ports are ignored for simplicity, as the time-scale of those dynamics is significantly faster than that of the dominant oscillations exhibited in typical EV plug-in or plug-out responses of the DC-link voltage of the EVCS. Short-line models are considered for tie-lines between consecutive buses. The operating point of the distribution system model de-pends on which EV is connected to which EVCS, and also on the charging current used for charging the EVs at each EVCS. Each EV is assumed to charge at a single pre-specified EVCS (which is connected to a fixed bus) at a time. We denote the 
+
+preferred EVCS for the vth EV as epv for v ∈ V . If multiple EVs share the same EVCS, they cannot charge at the same time. Accordingly, we partition time into multiple time-slots 
+
+(e.g., time-slot 1 can mean 9 AM-10 AM), and schedule the time at which each EV charges at its preferred EVCS under the constraint that each EVCS can serve at most one EV per time-slot. To this end, for each EV v ∈ V and time-slot τ ∈ T ,we define a binary variable μ(τ ) 
+
+> v
+
+indicating whether the EV is charging at the preferred EVCS or not. In other words, 
+
+μ(τ ) 
+
+> v
+
+= 1 means that EV v connects to its preferred EVCS 
+
+epv at time slot τ . Let the charging current of this EVCS at that time-slot be denoted as i∗(τ ) 
+
+> v
+
+. We define the following two vectors for τ ∈ T :
+
+μ(τ ) := [ μ(τ )1 , . . . , μ (τ ) 
+
+> NV
+
+]⊤ ∈ { 0, 1}NV (1) 
+
+i∗(τ ) := [ i∗(τ )1 , . . . , i ∗(τ ) 
+
+> NV
+
+]⊤ ∈ RNV . (2) The state-space model of the power system can then be written in a compact form by the following differential-algebraic equations (DAEs) 
+
+Σ(τ ) :
+
+(
+
+˙x(τ ) = f (x(τ ), y (τ ), u (τ ); i∗(τ ), μ (τ ))0 = g(x(τ ), y (τ ); i∗(τ ), μ (τ )), (3) where, 
+
+x(τ ) :=[[( x(τ ) 
+
+> e
+
+)⊤]⊤ 
+
+> e∈E
+
+, [id(τ ) 
+
+> kh
+
+, i q(τ ) 
+
+> kh
+
+]⊤ 
+
+> k∈Nsend ,h ∈N k
+
+]⊤
+
+∈Rnx
+
+x(τ ) 
+
+> e
+
+:= [ δ(τ ) 
+
+> e
+
+, ζ (τ ) 
+
+> e
+
+, i gd (τ ) 
+
+> e
+
+, i gq (τ ) 
+
+> e
+
+, i cd (τ ) 
+
+> e
+
+, i cq (τ ) 
+
+> e
+
+, v cd (τ ) 
+
+> e
+
+, v cq (τ ) 
+
+> e
+
+,
+
+Ψ(τ ) 
+
+> e
+
+, χ d(τ ) 
+
+> e
+
+, χ q(τ ) 
+
+> e
+
+, v dc (τ ) 
+
+> e
+
+]⊤∈ R12 
+
+u(τ ) := 
+
+h
+
+∆md(τ ) 
+
+> e
+
+, ∆mq(τ ) 
+
+> e
+
+, ∆i(τ )
+
+> e
+
+i⊤
+
+> e∈E
+
+∈ R3NE
+
+y(τ ) := 
+
+h
+
+V d(τ ) 
+
+> k
+
+, V q(τ )
+
+> k
+
+i⊤
+
+> k∈N
+
+∈ R2n,
+
+with nx := 12 NE + 2 |Nsend |. Here, x(τ ) 
+
+> e
+
+denotes the state vector for the EVCS that is indexed as e (simply referred to as EVCS e). The state vector consists of states from the phase-locked loop δ(τ ) 
+
+> e
+
+, ζ (τ ) 
+
+> e
+
+, from the front-end LCL filter 
+
+igd (τ ) 
+
+> e
+
+, i gq (τ ) 
+
+> e
+
+, i cd (τ ) 
+
+> e
+
+, i cq (τ ) 
+
+> e
+
+, v cd (τ ) 
+
+> e
+
+, v cq (τ ) 
+
+> e
+
+, states of the inner-loop and outer-loop current controller of the AC/DC converter 
+
+Ψ(τ ) 
+
+> e
+
+, χ d(τ ) 
+
+> e
+
+, χ q(τ ) 
+
+> e
+
+, and the DC-link voltage vdc (τ ) 
+
+> e
+
+. The cur-rents id(τ ) 
+
+> kh
+
+and iq(τ ) 
+
+> kh
+
+are the d-q axis branch currents of the network. V d(τ ) 
+
+> k
+
+and V d(τ ) 
+
+> k
+
+are d-and q-axis components of the bus voltage Vk for k ∈ N. Finally, ∆md(τ ) 
+
+> e
+
+, ∆mq(τ ) 
+
+> e
+
+, and ∆i(τ )
+
+> e
+
+are the controllable modulation indices and charging current inputs, respectively, that will be used as control inputs for our design. The exact definitions of the nonlinear functions f (·)
+
+and g(·) follow respectively from the converter model and the power flow equations, detailed expressions for which can be founded in [9], and are skipped here for brevity. 
+
+A. Linearized Model 
+
+To simplify the subsequent design process, we consider a reduced-order linearized model of (3) around i∗(τ ) in (1)-(2) based on a singular-perturbation-based model reduction that extracts the dominant (i.e., slow) dynamics from the linearized model of Σ(τ ) [12]. The operating point {x∗(τ ), u ∗(τ )} de-pends on the choice of {i∗(τ ), μ (τ )}. The algebraic variable 
+
+y(τ ) in (3) is eliminated, and the model is then linearized around the equilibrium point {x∗(τ ), u ∗(τ )} by Jacobian lin-earization to obtain a small-signal state-variable model, where, the control input u(τ ) is already in the small-signal form, i.e., 
+
+u∗(τ ) = 0 . For a given {i∗(τ ), μ (τ )}, the linearized model of (3) with the performance output ˆz(τ ) is uniquely determined as 
+
+Gi∗(τ ),μ (τ ) :
+
+( ˙ˆx(τ ) = A(i∗(τ ), μ (τ ))ˆ x(τ ) + B(i∗(τ ), μ (τ ))u(τ ),
+
+ˆz(τ ) = Qˆx(τ ) + Ru (τ ),
+
+(4) with ˆx(τ )(0) = ˆ x(τ )0 where, 
+
+ˆx(τ ) := P(τ )(x(τ )−x∗(τ )), Q := [ Q 12 
+
+> ˆx
+
+, 0] ⊤
+
+, R := [0 , R 12 
+
+> u
+
+]⊤, (5) and ˆz(τ ) represents an output signal of interest that can help the operator in evaluating the damping performance of the small-signal model. ˆx(τ ) ∈ R7NE is a reduced-dimensional state vector that consists of only the physical state variables of the EVCSs, and excludes the five non-physical states per EVCS, namely, (δ(τ ) 
+
+> e
+
+, ζ (τ ) 
+
+> e
+
+) coming from the PLL, and 
+
+(Ψ (τ ) 
+
+> e
+
+, χ d(τ ) 
+
+> e
+
+, χ q(τ ) 
+
+> e
+
+) coming from the internal PI controllers of the converter, as well as the two line states (id(τ ) 
+
+> kh
+
+, i q(τ ) 
+
+> kh
+
+)
+
+per line. This dimensionality reduction phenomenon is de-tailed in [9]. An equivalent interpretation is that the time constants associated with these states are remarkably faster than those with the physical states of the EVCSs, indicating that they can be eliminated using a time-scale separation. Elimination of these unimportant states facilitates both com-putation and communication needed for the state feedback controller that will be designed in the forthcoming sections. The matrix P(τ ) ∈ R7NE×(12 NE+2 |Nsend |) is constructed ac-cordingly using singular perturbation theory [12], resulting in 
+
+ˆx(τ ) := [igd (τ ) 
+
+> e
+
+, i gq (τ ) 
+
+> e
+
+, i cd (τ ) 
+
+> e
+
+, i cq (τ ) 
+
+> e
+
+, v cd (τ ) 
+
+> e
+
+, v cq (τ ) 
+
+> e
+
+, v dc (τ ) 
+
+> e
+
+]⊤
+
+for e ∈ E. The matrices Qˆx ≥ 0 ∈ R7NE×7NE , and 
+
+Ru > 0 ∈ R3NE×3NE are constant weight matrices that can be designed by the system operator. 
+
+B. VSI 
+
+We close this section by recalling the definition of VSI that will be used in the problem formulation in the next section. The VSI represents the voltage stability margin at any given bus of the distribution network and is defined at each receiving end bus. For a radial network, every receiving end bus only has one sending end bus.Since the EVCS to which EV v connects is fixed, for each EVCS e, the identity of the EV that connects to EVCS e at time slot τ is uniquely determined. We denote this EVCS as vp(τ ) 
+
+> e
+
+∈ V 1. Moreover, the bus to which EVCS                                         
+
+> 1In contrast to epv,vp(τ)
+> edepends on τbecause multiple EVs may prefer the same EVCS at different time slots. 4
+> Fig. 1. Example of EV assignment to EVCSs based on user preferences
+> {epv, τ pv}v∈V ,V={1,2,3},E={1,2,3}. EV 1, 2, and 3 prefer (ep
+> 1=2, τ p
+> 1= 1) ,(ep
+> 2= 3 , τ p
+> 2= 1) , and (ep
+> 3= 3 , τ p
+> 3= 2) , respectively. The resulting preferred assignment is unique: μp(1) = [1 1 0] ⊤(EVs 1 and 2 at slot 1) and μp(2) = [0 0 1] ⊤(EV 3 at slot 2).
+
+e is connected is also unique; we denote this bus as ke ∈ NE.The steady-state charging power at EVCS e at time slot τ is then defined as 
+
+P Ch ∗(τ ) 
+
+> ke
+
+:= μ(τ ) 
+
+> vp(τ)
+> e
+
+i∗(τ ) 
+
+> vp(τ)
+> e
+
+vdc ∗(τ ) 
+
+> e
+
+, e ∈ E , (6) where, vdc ∗ 
+
+> e
+
+is the steady-state DC-link voltage of the EVCS e.Based on the above definition, for h ∈ Nrec and kh ∈ Nsend ,following [13], we define the VSI at the h-th bus as 
+
+VSI h := V ∗4 
+
+> kh
+
+− 4
+
+h
+
+(P L∗ 
+
+> h
+
++ ahP Ch ∗(τ ) 
+
+> h
+
+)rkhh − QL∗ 
+
+> h
+
+Xkhh
+
+i2
+
+− 4
+
+h
+
+(P L∗ 
+
+> h
+
++ ahP Ch ∗(τ ) 
+
+> h
+
+)rkhh + QL∗ 
+
+> h
+
+Xkhh
+
+i
+
+V (τ )∗2 
+
+> h
+
+, (7) where, rkhh and Xkhh := 2 π ¯ωl khh are the resistance and reactance between kth  
+
+> h
+
+and hth buses, respectively, and ah ∈{0, 1} is a binary variable such that ah = 1 if h ∈ NE and 
+
+ah = 0 otherwise. Note that VSI h ∈ [0 , 1] from the definition. Since VSI h depends on i∗(τ ), μ(τ ) and τ , the stacked version of VSI h for h ∈ Nrec can be written as VSI( i∗(τ ), μ (τ ), τ ).The closer the VSI is to unity, the less susceptible the bus is to a voltage collapse. III. P ROBLEM FORMULATION 
+
+A. Problem Setup 
+
+We assume that the distribution system operator, referred to here onward as the central point operator (CPO), runs a day-ahead planning problem for determining which EV at any given day and at any given EVCS will charge at which time-slot and for how long. On the day before charging, each EV 
+
+v ∈ V submits the following information: (i) its preferred EVCS index epv ∈ E ,(ii) its preferred arrival time slot τ pv ∈ T , and (iii) its energy request EDv [kWh]. The triple {epv , τ pv , E Dv } for v ∈ V constitutes the so-called 
+
+consumer’s objective [14]. It is worth noting that all three quantities dictate the operating point (via power flow) of the grid model, and therefore, the small-signal stability and small-signal performance of of (4). Fig. 1 shows a simple example of this triple in which each EV v is connected to epv at time slot τ pv . In response to this information, the owner of EVCS e ∈ E sends {imax  
+
+> e
+
+, imin  
+
+> e
+
+, π e} to the CPO, where imax  
+
+> e
+
+is the maximum charging-current rate defined as 
+
+imax  
+
+> e
+
+:= P max  
+
+> e
+
+/v dc ∗ 
+
+> e
+
+, imax  
+
+> e
+
+is its minimum value, and πe is the per-kWh energy price. Based on the declared epv for each EV 
+
+v ∈ V and imax  
+
+> e
+
+for e ∈ E , the CPO then defines the maximum (resp. minimum) charging current rate per EVs as imax  
+
+> v
+
+:= imax 
+
+> epv
+
+(resp. imin  
+
+> v
+
+:= imin  
+
+> epv
+
+). Based on {τ pv , i max  
+
+> v
+
+, i min  
+
+> v
+
+} for v ∈ V , the CPO determines the optimized charging-current vector i∗(τ )
+
+in (2) (the value of whose elements will be less than or equal to the corresponding demanded value imax ) for each τ ), and simultaneously designs a state-feedback controller u(τ )(t) in (3) in a way that their combined effect improves the small-signal dynamic performance of z(τ )(t). This improvement comes in exchange of monetary incentivization that the CPO must provide to each EV driver at every time slot τ . We present a detailed formulation of the CPO’s objective function in the following subsections. 
+
+B. CPO’s Objective Function 
+
+We linearize Σ(τ ) around the setpoint {i∗(τ ), μ (τ )} for each time slot τ , and quantify the damping performance of the output variable by the objective function 
+
+J0(i∗(τ ), μ (τ )) := ∥Gi∗(τ ),μ (τ ) ∥2 
+
+> H2
+
+, (8) where, Gi∗(τ ),μ (τ ) is the transfer function from ˆx(τ )(0) to 
+
+ˆz(τ )(i∗(τ ), μ (τ )) in (4), under the state-feedback control 
+
+u(τ )(t) = −K(τ ) ˆx(τ )(t). (9) To keep the VSI at relevant buses to be close to unity following (7), we consider an additional objective function 
+
+J1(i∗(τ ), μ (τ ), τ ) := ∥1|Nrec | − VSI( i∗(τ ), μ (τ ), τ )∥∞,β VSI 
+
+(10) where βVSI ∈ R|Nrec |≥0 is a given constant penalty for the deficit in the VSI. It follows from power flow that both J0
+
+and J1 are monotonically increasing functions of i∗(τ ) 
+
+> v
+
+, with their minima at i∗(τ ) 
+
+> v
+
+= 0 . To avoid this trivial solution, we introduce a third objective function that ensures that i∗(τ )
+
+> v
+
+does not deviate too much from the demanded current. The optimal (to be designed) and maximum charging power rates for EV v at time slot τ are P ∗(τ ) 
+
+> epv
+
+:= i∗(τ ) 
+
+> v
+
+vdc ∗ 
+
+> epv
+
+and 2 P max  
+
+> epv
+
+:= 
+
+imax  
+
+> v
+
+vdc ∗ 
+
+> epv
+
+. The charging durations (in minutes) at these rates are T ∗(τ ) 
+
+> v
+
+:= 60 EDv /P ∗(τ ) 
+
+> epv
+
+and T min  
+
+> v
+
+:= 60 EDv /P max  
+
+> epv
+
+,respectively. We design an incentive proportional to the time difference T ∗(τ ) 
+
+> v
+
+− T min  
+
+> v
+
+. To price this extra time, we adopt a “wait & save” strategy, similar to ride-sharing protocols (e.g., Lyft; for details, please see [9]). Let the charging cost at the demanded rate be CDv := EDv πepv . Under these settings, the incentive payment for wait-and-save can be written as 
+
+M C 
+
+> v
+
+(i∗(τ ) 
+
+> v
+
+) := CDv
+
+T ∗(τ ) 
+
+> v
+
+− T min 
+
+> v
+
+T min 
+
+> v
+
+= βC
+
+> v
+
+ 1
+
+i∗(τ )
+
+> v
+
+− 1
+
+imax 
+
+> v
+
+
+
+,
+
+(11) for v ∈ V with βC 
+
+> v
+
+:= imax  
+
+> v
+
+CDv . Note that M C 
+
+> v
+
+is always non-negative because i∗(τ ) 
+
+> v
+
+≤ imax  
+
+> v
+
+, which is imposed later. Besides wait-and-save, the CPO may also shift the time-slot                
+
+> 2In the following we will impose i∗(τ)
+> v= 0 if μ(τ)
+> v= 0 as in (17), thus
+> P∗(τ)
+> epv
+> =μ(τ)
+> vi∗(τ)
+> vvdc ∗
+> epv
+> holds. 5
+
+for charging any EV from its preferred slot in case the latter is already crowded with too many requests. In other words, the CPO may assign τ̸ = τ pv for EV v. This gives rise to another incentive, namely the incentive for time shifting , which is defined as 
+
+M S 
+
+> v
+
+(τ ) := βS 
+
+> v
+
+EDv |τ − τ pv |, (12) for v ∈ V , and βS 
+
+> v
+
+∈ R≥0. The total incentivization objective can be summarized as 
+
+J2(i∗(τ ), μ (τ ), τ ) := X
+
+> v∈V
+
+μ(τ )
+
+> v
+
+
+
+M C 
+
+> v
+
+(i∗(τ ) 
+
+> v
+
+) + M S 
+
+> v
+
+(τ )
+
+
+
+. (13) The pre-multiplying factor μ(τ ) 
+
+> v
+
+∈ {0, 1} ensures that the incentivization should be zero when μ(τ ) 
+
+> v
+
+= 0 , i.e., EV v is not connected to the corresponding EVCS at the time slot 
+
+τ . By balancing the three objective functions J0, J1 and J2
+
+with constant weights γ1 ∈ [0 , 1] and γ2 ∈ [0 , 1] such that 
+
+γ1 + γ2 ≤ 1, the CPO’s objective function can be written as 
+
+J(τ )(i∗(τ ), μ (τ )) := (1 − γ1 − γ2)J0(i∗(τ ), μ (τ ))+ γ1J1(i∗(τ ), μ (τ ), τ ) + γ2J2(i∗(τ ), μ (τ ), τ ). (14) Changing the weighting coefficients can lead to different Pareto-preferred outcomes, as verified in [9]. In our forthcom-ing simulations, we will only show the case for equal priority of the three objectives for brevity. 
+
+Constraints: Each EV is assigned to exactly one time slot at a specified EVCS. Thus, the binary variable μ(τ ) 
+
+> v
+
+must satisfy 
+
+X 
+
+> τ∈T
+
+μ(τ ) 
+
+> v
+
+= 1 , μ(τ ) 
+
+> v
+
+∈ { 0, 1}, v ∈ V , τ ∈ T . (15) In addition, each EVCS connects at most one EV during a specified time slot. To represent this, we define the set of all EVs that use EVCS e as Ve := {v′ ∈ V | epv′ = e}. This leads to the following constraint: 
+
+X
+
+> v∈V e
+
+μ(τ ) 
+
+> v
+
+≤ 1, ∀e ∈ E , ∀τ ∈ T . (16) Moreover, if EV v is not connected to the corresponding EVCS, no charging will occur, whereas if it is connected, then the charging rate must be limited to the allowable range. This constraint can be represented as 
+
+(
+
+i∗(τ ) 
+
+> v
+
+= 0 , if μ(τ ) 
+
+> v
+
+= 0 
+
+i∗(τ ) 
+
+> v
+
+∈ imin  
+
+> v
+
+, i max 
+
+> v
+
+, otherwise , v ∈ V , τ ∈ T . (17) 
+
+C. Main Problem Statement 
+
+We are now ready to state the main problem. The CPO solves the following day-ahead planning problem: 
+
+min {K(τ ), i ∗(τ ), μ (τ )}τ ∈T 
+
+P  
+
+> τ∈T
+
+J(τ )(i∗(τ ), μ (τ ))subject to (4) , (9) , (15) , (16) , (17) (18) where, J(τ ) is defined in (14), and K(τ ) is included in (9). Equation (18) is a non-convex optimization problem and involves binary decision variables, so obtaining a global optimum can be difficult. Instead, we numerically find an approximate stationary point of (18) using a two-stage greedy framework, which may yield improved values of 
+
+{K(τ ), i ∗(τ ), μ (τ )}τ ∈T , as detailed in the next section. IV. P ROPOSED METHOD 
+
+Based on the declared customer information {epv , τ pv }v∈V ,the CPO can uniquely construct the assignment of all EVs for each time slot τ as 
+
+μp(τ ) 
+
+> v
+
+:= 
+
+ 1 if τ = τ pv
+
+0 otherwise , v ∈ V , τ ∈ T , (19) and μp(τ ) := [ μp(τ )1 , . . . , μ p(τ ) 
+
+> NV
+
+]⊤ ∈ { 0, 1}NV . We refer to 
+
+μp(τ ) as the preferred assignment , which is assumed to satisfy (15) and (16). To solve the optimization problem in (18), we develop the following two-stage algorithm: (1) Co-optimization under fixed preferred assignments of EVs. That is, we solve (18) under μ(τ ) ← μp(τ ) for each 
+
+τ ∈ T .(2) Given the result of Stage (1) as an initial solution, we improve {μ(τ ), i ∗(τ ), K (τ )}τ ∈T using a greedy algorithm. The purpose of the proposed two-stage approach is therefore computational tractability for day-ahead operation rather than guaranteed global optimality. We describe the two stages in detail as follows. 
+
+A. Stage (1): Co-optimization under fixed preferred assign-ment 
+
+When μ(τ ) 
+
+> v
+
+= μp(τ ) 
+
+> v
+
+, the EVCS constraint in (17) can be written as 
+
+(
+
+i∗(τ ) 
+
+> v
+
+= 0 , if μp(τ ) 
+
+> v
+
+= 0 
+
+i∗(τ ) 
+
+> v
+
+∈ imin  
+
+> v
+
+, i max 
+
+> v
+
+, otherwise , v ∈ V , τ ∈ T . (20) Although the original problem (18) couples all time slots through the assignment constraints (15) and (16), in Stage (1), the assignment is fixed. Therefore, the problem can be decomposed into slot-wise independent subproblems. Based on this observation, in Stage (1), the CPO would solve 
+
+min K(τ ), i ∗(τ ) J(τ )(i∗(τ ), μ p(τ ))subject to (4) , (9) , (20) (21) for each τ ∈ T , where J(τ ) is defined in (14). Following our previous work in [9], we use a gradient-based algorithm for solving this optimization, as well be shown in the numerical results in Section V. A brief overview of the method is provided in Remark 1. Note that the term μ(τ ) 
+
+> v
+
+M S 
+
+> v
+
+(τ ) in (13) when μ(τ ) 
+
+> v
+
+= μp(τ ) 
+
+> v
+
+is always zero, following the definition of μp(τ ) 
+
+> v
+
+in (19). However, we still include this term because we will use the resultant cost in Stage (2). Let the optimized charging current be denoted as i⋆(τ ), and the resultant cost at time slot τ be denoted as 
+
+J⋆(τ ) := J(τ )(i⋆(τ ), μ p(τ )), τ ∈ T . (22) We store 
+
+P⋆(τ ) := 
+
+n
+
+i⋆(τ ), μ p(τ ), K ⋆(τ ), J ⋆(τ )o
+
+, τ ∈ T (23) as the output of Stage (1). The entire procedure is summarized in Algorithm 1. 
+
+Remark 1: A brief overview for the execution of Step 3 in Algorithm 1 is as follows. Given {i∗(τ ), μ p(τ )}, we first compute A(i∗(τ ), μ p(τ )) and B(i∗(τ ), μ p(τ )) in (4) by taking the numerical derivative of Σ(τ ) in (3) along i∗(τ ). Next, we 6
+
+Algorithm 1: Co-Optimization of Charging Set-Points and Control Gains at the Preferred Time Slots of EVs                                                                            
+
+> Input: {epv, τ pv, E Dv}v∈V ,{imax
+> e,imin
+> e, π e}e∈E ,Qˆx≥0,Ru>0,
+> γ1, γ 2∈[0 ,1] satisfying γ1+γ2≤1,βS∈RNV
+> ≥0,
+> βVSI ∈R|Nrec |≥0. Define imax
+> v:= imax
+> epv
+> ,imin
+> v:= imin
+> epv
+> ,βC
+> vin (11), and μp(τ)
+> vin (19) for each v.
+> 1Initialize: For each τ∈ T and v∈ V , let i∗(τ)
+> v←imax
+> vif
+> μp(τ)
+> v= 1 , otherwise i∗(τ)
+> v←0.
+> 2for τ∈ T do
+> 3Solve (21) using a gradient-based algorithm in [9]; see Remark 1 for a brief overview.
+> 4Compute P⋆(τ)in (23).
+> Output: {P ⋆(τ)}τ∈T
+
+design K(τ ) as the LQR for the linearized system Gi∗(τ ),μ p(τ )
+
+in (4). For the closed loop of Gi∗(τ ), μ p(τ ) and (9), the exact gradient of J(τ ) with respect to i∗(τ ) is not readily available; we, therefore, use an approximate gradient , and update i∗(τ )
+
+via a line search. By repeating this procedure, we find i∗(τ ).Please see [9] for further details onthe implementation of these steps. 
+
+Remark 2: Step 1 provides an initial solution for i∗(τ ) using the gradient-based method in Step 3. Note that we do not need an initial solution for K(τ ) because K(τ ) is uniquely 3
+
+determined from the Algebaric Riccati Equation. 
+
+B. Stage (2) - Greedy algorithm for reassignment and re-optimization 
+
+Once Stage (1) is completed, i.e., {i⋆(τ ), K ⋆(τ )}τ ∈T is obtained under the assumption that all EVs are assigned to their preferred time slot, the CPO next sequentially reassigns each EV to the unoccupied time slot that yields the largest reduction in the cost while simultaneously re-optimizing the set {i⋆(τ ), K ⋆(τ )}. The algorithm starts with the reassignment of EV 1, followed by EV 2, EV 3, and so on, till all EVs are covered. Let μnew( τ ) ∈ { 0, 1}NV , inew ⋆(τ ), Knew( τ )
+
+and Jnew( τ ) be the reassignment pattern of all EVs, the re-optimized charging current setpoint, the re-optimized state-feedback gain, and the re-optimized cost at time slot τ ∈ T ,respectively. We initialize them as 
+
+μnew( τ ) := μp(τ ), inew ⋆(τ ) := i⋆(τ ),Knew( τ ) := K⋆(τ ), Jnew( τ ) := J⋆(τ ), (24) for τ ∈ T by using P⋆(τ ) in (23). Considering that EVs 
+
+{1, . . . , v − 1} are already reassigned (if v = 1 then no EVs are reassigned), we reassign EV v using the steps listed in Algorithm 2. In the following, we refer to step numbers exactly as in Algorithm 2, and describe each step. 
+
+[Step 4] For EV v, its preferred EVCS is specified as epv ∈ E 
+
+as described in Section III. However, note that other EVs may use the same EVCS in different time slots. The set of all EVs      
+
+> 3The uniqueness of the LQR solution is guaranteed if (A, B )is stabilizable and (A, Q 1/2ˆx)is detectable. In distribution grid models, these conditions are typically satisfied because the open-loop dynamics near the operating point are asymptotically stable. Both stabilizability and detectability conditions are satisfied for our system model in (4).
+
+that use epv is denoted as Vepv . We define the set of feasible (unoccupied) slots at its preferred EVCS as 
+
+T feas  
+
+> v
+
+:= 
+
+n
+
+τ ∈ T τ̸ = τ pv ∧ μnew( τ ) 
+
+> v′
+
+= 0 , ∀v′ ∈ V epv
+
+o
+
+, (25) where the operation “ μnew( τ ) 
+
+> v′
+
+= 0 , ∀v′ ∈ V epv ” enumerates all currently unoccupied slots at the target EVCS epv under the latest reassignment pattern. 
+
+[Step 6] Let τ cv ∈ T feas  
+
+> v
+
+, which is a candidate time slot for EV v. Suppose the time slot of EV v is hypothetically changed from its preferred time slot τ pv to the candidate slot τ cv . Then the latest reassignment vector μnew( τ ) for τ ∈ { τ pv , τ cv } is updated as 
+
+μc(τ cv ) = μnew( τ cv ) + ev , μc(τ pv ) = μnew( τ pv ) − ev , (26) where ev ∈ RNV denotes the v-th column vector of Iv . Note that μnew( τ ) for other time slots is not changed. 
+
+[Step 7] For τ ∈ {τ pv , τ cv }, since the reassignment is different from μnew( τ ), the optimization result will be changed. Therefore, we re-solve 
+
+min K(τ ), i ∗(τ ) J(τ )(i∗(τ ), μ c(τ ))subject to (4) , (9) , (20) , τ ∈ { τ pv , τ cv }, (27) by using a gradient-based algorithm as in [9], where the initial solution of i∗(τ ) is now chosen as inew ∗(τ ).
+
+[Step 8] For τ ∈ { τ pv , τ cv }, let the optimized variables be denoted as {˜i⋆(τ ), ˜K⋆(τ )}, and the new cost be denoted as 
+
+˜J⋆(τ ) := J(τ )(˜ i⋆(τ ), μ c(τ )). (28) Note here that the term μ(τ ) 
+
+> v
+
+M S 
+
+> v
+
+(τ ) in (13) when μ(τ ) 
+
+> v
+
+= μc(τ )
+
+> v
+
+and τ = τ cv is not zero. In other words, ˜J⋆(τ cv ) includes the incentivization cost caused by the time shifting. 
+
+[Step 9] The total cost variation caused by the reassignment can be defined as the sum of cost variations at each time slot 
+
+τ pv and τ cv , i.e., 
+
+∆( τ cv ) := 
+
+ ˜J⋆(τ pv ) − Jnew( τ pv )
+
++
+
+ ˜J⋆(τ cv ) − Jnew( τ cv )
+
+, (29) where the first term represents the cost variation caused by disconnecting EV v from EVCS epv at its preferred time slot τ pv
+
+under the latest reassignment, while the second term represents the cost variation caused by connecting it to the same EVCS at the new time slot τ cv under the latest reassignment. 
+
+[Steps 10-12] Repeating the above procedure for each τ cv ∈T feas  
+
+> v
+
+, we determine the time slot τ new  
+
+> v
+
+satisfying 
+
+∆( τ new  
+
+> v
+
+) ≤ ∆( τ cv ), ∀τ cv ∈ T feas  
+
+> v
+
+, (30) if there exists τ cv such that ∆( τ cv ) < 0 4. In addition, we update the decision variables and cost as 
+
+μnew( τ ) ← μc(τ ), inew ⋆(τ ) ← ˜i⋆(τ ), (31) 
+
+Knew( τ ) ← ˜K⋆(τ ), Jnew( τ ) ← ˜J⋆(τ ), (32) for τ ∈ { τ pv , τ new  
+
+> v
+
+}. If not, (i.e., if all candidates increase the cost), then we retain τ pv , μnew( τ pv ), inew ⋆(τ pv ), Knew( τ pv ), and 
+
+Jnew( τ pv ).7
+
+Algorithm 2: Greedy Algorithm for Reassignment and Re-optimization                                                                                                                                            
+
+> Input: Same inputs in Algorithm 1. Output {P ⋆(τ)}τ∈T by Algorithm 1.
+> 1Initialize: {μnew( τ), i new ⋆(τ), K new( τ), J new( τ)}τ∈T by (24). In addition, perform a random permutation of {1,2, . . . , N V}and assign the resulting indices as the EV identification numbers.
+> 2for v∈ V do
+> 3Construct the set of feasible slots Tfeas
+> vby (25).
+> 4for τcv∈ T feas
+> vdo
+> 5Construct μc(τcv)and μc(τpv)by (26).
+> 6Solve (27) for τ∈ { τpv, τ cv}.
+> 7Compute ˜J⋆(τ)in (28) for τ∈ { τpv, τ cv}.
+> 8Compute ∆( τcv)in (29).
+> 9if there exists τcvsuch that ∆( τcv)<0then
+> 10 Determine τnew
+> vsatisfying (30) and update
+> {μnew( τ), i new ⋆(τ), K new( τ), J new( τ)}τ∈{ τpv,τ new
+> v}
+> by (31)-(32).
+> 11 else
+> 12 Keep τpv,μnew( τpv),inew ⋆(τpv),Knew( τpv), and
+> Jnew( τpv).
+> Output: Overwrite μ⋆(τ)←μnew( τ),i⋆(τ)←inew( τ),
+> K⋆(τ)←Knew( τ),J⋆(τ)←Jnew( τ). Let
+> τ⋆v:= P
+> τ∈T μ⋆(τ)
+> vτ. Output
+> {μ⋆(τ), i ⋆(τ), K ⋆(τ), J ⋆(τ)}τ∈T and {τ⋆v}v∈V .
+
+We repeat these steps for all v ∈ V . The entire procedure is summarized in Algorithm 2, where τ ⋆v denotes the reassigned time slot of EV v.
+
+Remark 3: In Step 1 of Algorithm 2, we randomly assign ID numbers to the EVs to ensure fairness of the reassignment. 
+
+C. Practical Implementation of Algorithms 1-2 
+
+As mentioned in Section III, EV drivers and EVCS owners submit their respective information, namely {epv , τ pv , E Dv }v∈V 
+
+and {imax  
+
+> e
+
+, imin  
+
+> e
+
+, π e}e∈E one day ahead of time. Based on this information, the CPO runs Algorithm 1 to compute slot-wise optimized charging currents at the preferred assignment τ pv ,and subsequently runs Algorithm 2 to obtain the optimized charging rates i⋆(τ ), state-feedback gain K⋆(τ ), reassignment 
+
+μ⋆(τ ), and the reassigned time slots {τ ⋆v }v∈V . Using these results, the CPO computes the incentives as follows. 
+
+Incentive Computation: For EV v, the optimized charging current is i⋆(τ ⋆v ) 
+
+> v
+
+. The incentive for wait-and-save and time-shifting are determined, respectively, as 
+
+M C⋆v := M C 
+
+> v
+
+(i⋆(τ ⋆v ) 
+
+> v
+
+), M S⋆v := M S 
+
+> v
+
+(τ ⋆v ), v ∈ V , (33) where M C 
+
+> v
+
+(·) and M S 
+
+> v
+
+(·) are defined in (11)-(12). Subtracting these incentives from the original charging cost CDv , the net 
+
+amount of money offered to EV v is then calculated as 
+
+Cnet  
+
+> v
+
+:= CDv − M ⋆v , M ⋆v := M C⋆v + M S⋆v . (34) The calculations in (33) and (34) can be integrated into a mobile app, enabling direct communication between the CPO and the EV drivers. The owner of every EV v can view three offers from the CPO, and choose one of the following:    
+
+> 4If there exist multiple τnew
+> vsatisfying (30), we choose the one randomly among those.
+
+(1) Charge at the consumer’s preferred rate imax  
+
+> v
+
+at the preferred time slot τ pv with no incentive; (2) Charge at the optimized rate i⋆(τ pv ) 
+
+> v
+
+at the preferred time slot with the incentive M C⋆v ;(3) Charge at the optimized rate i⋆(τ ⋆v ) 
+
+> v
+
+at the reassigned time slot with the total incentive M ⋆v .Based on each selection, the CPO must update the reassign-ment μ⋆(τ ) and the charging current i⋆(τ ) for τ ∈ T . The updated quantities are denoted as {μ⋆′(τ ), i ⋆′(τ )}τ ∈T . Finally, for the time slot τ , the CPO implements the charging time assignment, wait-and-save strategy, and state feedback control using the triple {μ⋆′(τ ), i ⋆′(τ ), K ⋆(τ )}τ ∈T . Figure 2 illustrates EV-CPO interaction and the implementation of the proposed method. In summary, the current incentive formulation can be viewed as a stability-aware correction layer that complements, rather than replaces, economically driven EV scheduling, which includes charging station revenue, network operation cost, and so on. V. N UMERICAL RESULTS 
+
+We validate our proposed method using the IEEE 33-bus radial feeder model with 10 EVCSs. Details of this model can be found in [15]. The EVCS buses are represented as NE := 
+
+{3, 5, 9, 11 , 15 , 17 , 19 , 21 , 26 , 32 }, while the EVCS themselves are indexed as E = {1, 2, . . . , 10 }. For instance, EVCS at bus 3 is indexed as 1, that at bus 5 is numbered as 2, and so on. The model parameters of each EVCS are considered following [9]. For EVCS e ∈ E , its maximum capacity P max  
+
+> e
+
+is given as {50 , 75 , 150 , 175 , 100 , 75 , 50 , 100 , 150 , 50 } kW, or equiva-lently as imax  
+
+> e
+
+= {62 .5, 93 .75 , 187 .5, 218 .75 , 125 , 93 .75 , 62 .5,
+
+125 , 187 .5, 62 .5} Amps. Let imin  
+
+> e
+
+= 0 .85 imax  
+
+> e
+
+Amps, and its charging price be πe = $0 .45 /kWh if P max  
+
+> e
+
+= 50 kW and $0.5/kWh otherwise. Following [9], let βS 
+
+> v
+
+= $0 .04 /kWh in (12) if P max  
+
+> e
+
+∈ {50 , 75 } kW and βS 
+
+> v
+
+= $0 .02 /kWh otherwise. We consider γ1 = γ2 = 0 .33 , Qˆx = 0 .0001 I
+
+in (5), Ru = I10 ⊗ diag(100 , 100 , 1) , βVSI = 0 .005 1|Nrec |,and vdc ∗ 
+
+> e
+
+= 800 V for any e. All simulations are done using MATLAB/Simulink ® on a PC equipped with an Intel(R) Core(TM) i7-11390H @ 3.40GHz processor and 16GB RAM. Please note that although the two-stage algorithm is solved using the small-signal model, all simulations reported in the following subsections pertain to the nonlinear model of the 33-bus test system. Fig. 3 shows the load profile for three typical non-EV loads, namely - industrial, commercial, and residential. The loads peak between hours 09:00 and 17:00, so we partition this window into eight one-hour slots. Therefore, 09:00-10:00 hours is indexed as time slot 1, while 16:00-17:00 hours is indexed as time slot 8, with T = {1, . . . , 8}.We assume that 20 EVs will be connected to the grid for charging over the day spanning 9:00 hours to 17:00 hours. i.e., 
+
+V = {1, 2, . . . , 20 }. The ID numbers of EVs are randomly assigned per planning period, as mentioned in Remark 3. For v ∈ V , let EDv = 45 kWh if P max  
+
+> epv
+
+∈ { 50 , 75 } kW and 
+
+EDv = 90 kWh otherwise. Every consumer sends its preferred information {epv , τ pv , E Dv } to the CPO one day before. To account for the uncertainty of charging preference, we consider 8
+
+Fig. 2. A schematic illustrating how EV owners submit their preferred charging station and time slot, how a proposed strategy evaluates grid conditions and offers incentives to adjust charging rates or reschedule time slots if needed, and how the final, agreed-upon charging plan is implemented into distribution grid. 
+
+two cases as in Fig. 4, namely, random-hour charging and early-morning charging. 
+
+A. Co-optimization under fixed preferred assignment 
+
+We apply Algorithm 1 to compute the optimized charg-ing current setpoints i⋆(τ ), the control gain K⋆(τ ), and the objective function J⋆(τ ) for each of the eight time slots, as shown in Fig. 4. For Case 1 (random hour charging), in time slot 1, the original charging currents of EVCS 1, 3, and 9 are 
+
+62 .5 A, 187 .5 A, and 187 .5 A, while the optimized values are 
+
+59 .51 A, 181 .38 A, and 182 .43 A, respectively. For Case 2 (early morning charging), in time slot 1, the original charging currents of EVCS 1, 3, 9, and 10 are 62 .5 A, 187 .5 A, 187 .5
+
+A, and 62 .5 A, while the optimized values are 58 .31 A, 182 .11 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23  
+
+> Time (h)
+> 00.2 0.4 0.6 0.8 1
+> Demand (p.u.)  Off-peak hours Off-peak hours
+> Industrial Residential Commercial
+> (DC fast chargers)
+> Charging time slots
+
+Fig. 3. Typical daily load profiles for industrial (blue), residential (red), and commercial (green) load models. Case 1                       
+
+> 612 15 13 14 9219 11 17 7520 18 138410 16
+> EVCS ID
+> 12345678
+> Time slot ID
+> Case 2
+> 15 510 14 471620 17 816 311 13 19 9218 12
+> EVCS ID
+> Time slot ID
+> Preferred time slot-EVCS pairs Unoccupied time slot-EVCS pairs
+
+Fig. 4. EV consumers’ preferred charging slots at specified EVCSs under two cases: (1) random-hour charging, and (2) early-morning charging. 
+
+A, 181 .4 A, and 57 .92 A, respectively. Algorithm 1 optimizes 
+
+{i⋆(τ ), K ⋆(τ ), J ⋆(τ )} for all 20 EVs at every time slot for both cases. The resultant information is then utilized and re-optimized as follows. 
+
+B. Greedy Algorithm for Reassignment and Re-optimization 
+
+In this stage, we reassign μ⋆(τ ) and re-optimize 
+
+{i⋆(τ ), K ⋆(τ )}. For Case 1, we start by testing the reassign-ment of EV 1, and find that the preferred time slots for EVs 1, 2, and 3 are also the optimized time slots. Fig. 5 shows the greedy slot-search process (Steps 3-12 of Algorithm 2) for EV 4. The top-left assignment map shows the initial assignment. We hypothetically move EV 4 from its preferred slot τ c 
+
+> 4
+
+= 7 to τ c 
+
+> 4
+
+= 2 and compute the resulting cost difference. In slot 7, originally EVs {4, 8, 10 } are connected at their preferred EVCSs (as shaped by the blue box), after the time shift, two EVs {8, 10 } are connected, thereby changing the cost at slot 7. Similarly, in slot 2, originally three EVs 
+
+{9, 13 , 14 } are connected; after moving EV 4 into slot 2, four EVs {4, 9, 13 , 14 } are connected, thereby changing the cost at slot 2. The sum of these changes yields the cost difference 
+
+∆(2) = 0 .052 × 10 −5 (as defined in (29)). We repeat the same computation for all feasible time slots τ c 
+
+> 4
+
+= {3, 4, 5, 8}
+
+because slots 6 and 7 are occupied, and move EV 4 to the time slot that minimizes ∆( τ cv ) (slot 8 in this example). We then update the assignment map with EV 4 moved to slot 8 and apply the same procedure to subsequent EVs. The results for all 20 EVs are shown in Fig. 6. 
+
+C. Negotiation via Incentivization 
+
+We next evaluate the incentivization rules listed in Section IV-C), offered by the CPO. The results for each options are summarized in Table I, where M C⋆ := P M C⋆v and 9
+
+TABLE I COMPARISON OF THREE DIFFERENT OPTIONS VIA LEVERAGING THE PROPOSED APPROACH FOR CASE 1. H ERE , g(τ )1 := ∥Gimax    
+
+> v,μ p(τ)
+
+∥H2 ,
+
+g(τ )2 := ∥Gi⋆′(τ ),μ p(τ ) ∥H2 , AND g(τ )3 := ∥Gi⋆′(τ ),μ ⋆′(τ ) ∥H2 , WHERE G IS DEFINED IN (4), AND V := VSI min .
+
+τ
+
+At the preferred charging rate and time slot (Option 1) At the preferred time slot with optimized charging rate (Option 2) At optimized charging rate and time slot (Option 3) 
+
+v imax  
+
+> v
+
+g(τ )1 V M C⋆ v i⋆′(τ ) 
+
+> v
+
+g(τ )2 V M C⋆v M C⋆ τ v i⋆′(τ ) 
+
+> v
+
+g(τ )3 V M ⋆v M ⋆
+
+16 62.5 1.09e-3 0.681 06 59.51 5.98e-4 0.709 1.02 31.51 113 89.37 4.35e-4 0.718 2.90 50.96 12 187.5 12 181.38 1.52 14 120.54 3.46 15 187.5 15 182.43 1.25 15 182.23 1.25 213 93.75 1.14e-3 0.701 13 89.38 5.87e-4 0.713 1.71 2 12 180.92 3.58e-4 0.724 3.46 14 125 14 121.43 1.32 9 120.05 1.85 9 125 9 120.05 1.85 36 58.91 5.85e-4 0.694 3.03 32 187.5 1.31e-3 0.662 2 178.1 7.92e-4 0.681 2.37 2 178.1 2.37 19 93.75 19 89.67 1.02 11 59.45 1.04 11 62.5 11 59.45 1.04 17 58.4 1.42 17 62.5 17 58.4 1.42 418 57.54 6.81e-4 0.691 3.54 4 7 187.5 1.16e-3 0.665 7 177.43 8.54e-4 0.685 2.55 5 210.93 1.67 5 218.75 5 210.93 1.67 19 89.11 2.97 5 20 218.75 1.13e-3 0.691 20 210.51 8.33e-4 0.715 2.27 5 7 176.35 5.83e-4 0.728 4.64 63 187.5 1.14e-3 0.661 3 176.65 7.53e-4 0.682 2.76 68 58.45 5.84e-4 0.692 3.76 18 62.5 18 57.95 1.59 1 89.45 1.1 1 93.75 1 89.45 1.1 3 176.65 2.76 78 62.5 1.19e-3 0.659 8 59.25 7.25e-4 0.683 1.1 7 20 209.6 5.52e-4 0.695 3.76 4 187.5 4 181.83 1.4 10 58.52 1.4 10 62.5 10 58.52 1.4 8 16 121.87 5.45e-4 0.731 1.15 8 16 125 1.01e-3 0.71 16 121.87 6.93e-4 0.72 1.15 4 180.93 3.43 
+
+Fig. 5. Illustration of the step-by-step time-slot search for EV 4 in Case 1. In each subfigure, gray/white boxes indicate occupied/unoccupied slot pairs; the blue box denotes the target time slot, and the orange box marks the slot that is currently being tested for shifting. 
+
+M ⋆ := P M ⋆v . Due to page limit, we list the values of the charging currents only for a specific set of EVs. In option 1, each EV charges at their preferred time slot pairs {epv , τ pv } (as shown in Fig 4) with the maximum charging rate imax 
+
+v . For instance, EVs 6, 12, and 15 in time slot 1 of case 1 requested charging rates of 62.5 A, 187.5 A, and 187.5 A, respectively. This rate yields the system H2-norm to be 1.09 × 10 −3
+
+and VSI min = 0 .681 , which indicates a deteriorating system performance with M C⋆ = 0 , as consumer preferences are fully prioritized. In option 2, the consumer preference is held fixed while charging the EVs at optimized charging rates. Finally, in option 3, we prioritize grid stability over consumer preferences by reassigning EVs and adjusting their charging rates. For instance, in time slot 1 of case 1, option 3 suggests EV 6 and Case 1           
+
+> 15 9211 17 518 1310 16 618 813 12 720 14 19 4
+> EVCS ID
+> 12345678
+> Time slot ID
+> Case 2
+> 510 14 7120 17 3218 12 15 11 413 19 98616
+> EVCS ID
+> Time slot ID
+> Stay at preferred time slot-EVCS pairs Move to optimal time slot-EVCS pairs
+
+Fig. 6. Day-ahead EV charging preferences (gray) and suggested optimized time slots (green) for two cases. In total, only 10 and 9 of the 20 EVs were shifted from their preferred time slots in Case 1, and 2, respectively. 
+
+EV 12 to move to slots 3 and 2, and to charge at 58 .91 A and 
+
+180 .92 A, respectively, while asking EV 13 and 14 to move from time slot 2 to 1. This improves both the system H2-norm and the VSI to 4.35 × 10 −4 and 0.718, respectively. We repeat this process across the eight time slots, which shows a total incentive of M ⋆ = $50 .96 . The damping performance improves by 26.3%-48.51% with option 2 ( M C⋆ = $31 .51 )and by 20.25% -39% further with option 3 in exchange for an additional incentive of $19.45. The computation time for Case 1 is 195 seconds, as is similar for Case 2, which is compatible with day-ahead planning. 
+
+D. Closed-loop transient response 
+
+Fig. 7(a) compares the transient response of the DC link voltage at EVCS 1 in Case 2 during the plug-in and plug-out of EV 15 for the three charging options. The figure shows that choosing the optimized charging rate, even at the preferred time slot (which is option 2), substantially enhances the damping of the voltage response compared to option 1. Charging EV 15 at time slot 2 instead of its preferred time slot 1 with optimized charging rate (option 3) shows even better transient performance than option 2. Similarly, EVs 12 10 
+
+and 7 are intended to charge at time slots 1 and 4, respec-tively; however, the proposed optimized scheduling strategy suggests charging them at time slots 2 and 5, respectively. To demonstrate possible uncertainties in the customer behavior, we consider three types of responses from EV users under Case 2, namely: (i) both EVs reject the optimized scheduling and discount offer and choose option 1, (ii) only EV 12 accepts the offer in option 3, and (iii) both EVs accept the offer in option 3. The voltage profiles are shown in Fig. 7 (b), which testifies that the damping of the DC link voltage oscillations is best when every driver accepts the CPO’s offer. ;ďͿ 
+
+> WůƵŐŐĞĚŝŶ
+> WůƵŐŐĞĚŽƵƚ
+> ;ĂͿ
+
+Fig. 7. Transient DC link voltage profiles under representative EV charging scenarios: (a) comparison of system response under three options, (b) impact on system response based on EV consumer decision for EV charging. 
+
+VI. C ONCLUSIONS 
+
+In this paper, we presented a two-stage optimization frame-work for scheduling the charging of large fleets of EVs in a power distribution grid. Unlike conventional scheduling methods that are usually based on steady-state objectives, our approach ensures improvement of small-signal stability, small-signal dynamic performance, and voltage stability of the dis-tribution system model. This is enabled by an incentivization strategy that encourages EV drivers to shift their preferred time-slots for charging as well as waiting in the queue at the charging station for a few additional minutes in exchange for money. The framework can be especially useful for heavy-duty vehicles such as electric buses and trucks that have more flexibility in terms of charging time while driving on the highway during peak hours. Numerical results show that grid operators can benefit from this approach by enhancing their operating margins during heavy-load conditions. Our future work will extend this algorithm to flexible scheduling of other power-electronics-driven loads, such as AI data centers. REFERENCES [1] P. V. Dahiwale, Z. H. Rather, and I. Mitra, “A comprehensive review of smart charging strategies for electric vehicles and way forward,” IEEE Transactions on Intelligent Transportation Systems , vol. 25, no. 9, pp. 10 462–10 482, 2024. [2] H. Wang, M. Shi, P. Xie, C. S. Lai, K. Li, and Y. Jia, “Electric vehicle charging scheduling strategy for supporting load flattening under uncertain electric vehicle departures,” Journal of Modern Power Systems and Clean Energy , vol. 11, no. 5, pp. 1634–1645, 2023. [3] T. Mao, W.-h. Lau, C. Shum, H. S.-H. Chung, K.-F. Tsang, and N. C.-F. Tse, “A regulation policy of EV discharging price for demand scheduling,” IEEE Transactions on Power Systems , vol. 33, no. 2, pp. 1275–1288, 2018. [4] C. Goebel and H.-A. Jacobsen, “Aggregator-controlled EV charging in pay-as-bid reserve markets with strict delivery constraints,” IEEE Transactions on Power Systems , vol. 31, no. 6, pp. 4447–4461, 2016. [5] W.-L. Liu, Y.-J. Gong, W.-N. Chen, Z. Liu, H. Wang, and J. Zhang, “Coordinated charging scheduling of electric vehicles: A mixed-variable differential evolution approach,” IEEE Transactions on Intelligent Trans-portation Systems , vol. 21, no. 12, pp. 5094–5109, 2020. [6] H. Li, Z. Wan, and H. He, “Constrained EV charging scheduling based on safe deep reinforcement learning,” IEEE Transactions on Smart Grid ,vol. 11, no. 3, pp. 2427–2439, 2020. [7] Z. Ding, J. Guo, K. Lai, and W.-J. Lee, “Spatial-temporal demand management and benefit allocation for geo-distributed charging station and EV aggregators,” IEEE Transactions on Industry Applications ,vol. 56, no. 6, pp. 6238–6249, 2020. [8] C. Yao, S. Chen, M. Salazar, and Z. Yang, “Joint routing and charging problem of electric vehicles with incentive-aware customers consider-ing spatio-temporal charging prices,” IEEE Transactions on Intelligent Transportation Systems , vol. 24, no. 11, pp. 12 215–12 226, 2023. [9] A. K. Podder, T. Sadamoto, and A. Chakrabortty, “Co-optimization of EV charging control and incentivization for enhanced power system stability,” IEEE Transactions on Control Systems Technology , vol. 34, no. 1, pp. 203–214, 2026. [10] A. Arancibia and K. Strunz, “Modeling of an electric vehicle charging station for fast DC charging,” in IEEE International Electric Vehicle Conference , March 2012. [11] M. M. Mahfouz and M. R. Iravani, “Grid-integration of battery-enabled DC fast charging station for electric vehicles,” IEEE Transactions on Energy Conversion , vol. 35, no. 1, pp. 375–385, March 2020. [12] H. K. Khalil, Nonlinear Systems , 3rd ed. Upper Saddle River, NJ: Prentice Hall, December 2007. [13] S. Sivakumar, S. B. Ramasamy Gunaseelan, M. V. Reddy Krishnakumar, N. Krishnan, A. Sharma, and A. Aguila T´ ellez, “Analysis of distribution systems in the presence of electric vehicles and optimal allocation of distributed generations considering power loss and voltage stability index,” IET Generation, Transmission & Distribution , vol. 18, no. 6, pp. 1114–1132, March 2024. [14] Y. Xu, “Optimal Distributed Charging Rate Control of Plug-In Elec-tric Vehicles for Demand Management,” IEEE Transactions on Power Systems , vol. 30, no. 3, pp. 1536–1545, May 2015. [15] M. S. Suliman, H. Hizam, and M. L. Othman, “Determining penetration limit of central PVDG topology considering the stochastic behaviour of PV generation and loads to reduce power losses and improve voltage profiles,” IET Renewable Power Generation , vol. 14, no. 14, pp. 2629– 2638, 2020. 
+
+Amit Kumer Podder received the B.S. and M.S. degrees in electrical engineering from Khulna University of Engineering & Technology, Khulna, Bangladesh, in 2016 and 2019, respectively. He received a Ph.D. degree from North Carolina State University in Raleigh, USA, in 2025. His research interests include power systems dynamic stability analysis and control with high penetration of grid-interactive converters. 
+
+Tomonori Sadamoto received his Ph.D. degree from the Tokyo Institute of Technology, Tokyo, Japan, in 2015. From November 2018 to October 2023, he was an Assistant Professor with the Department of Mechanical and Intelligent Systems Engineering at the University of Electro-Communications. Since Nov. 2023, he has been an Associate Professor with the same department. In 2014, he was named a finalist for the 13th European Control Conference Best Student Paper Award. In 2020, he received the IEEE Control Systems Magazine Outstanding Paper Award. 
+
+Aranya Chakrabortty (F’25) received his PhD in Electrical Engineering from Rensselaer Polytechnic Institute in 2008. He is currently a Professor in the Electrical and Computer Engineering department at North Carolina State University, Raleigh, NC. His research interests are in all branches of control theory with applications to electric power systems. He received the NSF CAREER award in 2011 and was chosen as a Faculty Scholar by the NC State Provost’s office in 2019.

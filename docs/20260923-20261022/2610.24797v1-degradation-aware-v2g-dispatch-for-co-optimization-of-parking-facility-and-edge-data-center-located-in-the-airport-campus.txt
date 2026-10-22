@@ -1,0 +1,960 @@
+Title: Degradation Aware V2G Dispatch for Co-Optimization of Parking Facility and Edge Data Center Located in the Airport Campus
+
+URL Source: https://arxiv.org/pdf/2610.24797v1
+
+Published Time: Tue, 20 Oct 2026 01:16:01 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Degradation Aware V2G Dispatch for Co-Optimization of Parking Facility and Edge Data Center Located in the Airport Campus 
+
+Abdullah Al Mehadi 1, Hamed Haggi 2, Member, IEEE , and Chinmay Morankar 2, Senior Member, IEEE 
+
+> 1
+
+Dept. of Electrical and Computer Engineering, Utah State University, Logan, Utah, USA 
+
+> 2
+
+WSP USA Inc., Houston, TX, USA Email: abdullah.mehadi@usu.edu, {hamed.haggi, chinmay.morankar }@wsp.com 
+
+Abstract —This paper studies an airport campus where long stay EV parking, airport buildings, and an AI data center share a single grid connection. The campus pays a commercial electricity tariff that charges for both the energy used and the highest power drawn during peak hours. Parked EVs can send power back to the campus through vehicle to grid (V2G) chargers and lower this peak. This paper proposes a two stage method. In the first stage, a linear program schedules EV charging and discharging to maximize the operator’s profit and also sets a fixed daily payment to EV owners. In the second stage, a search chooses the share of energy savings paid to owners. The model guarantees that every owner is paid enough to take part, pays for battery wear so that EVs discharge only when it is worth the wear, and assigns charging ports on a first come, first served basis. In the case study, 400 V2G chargers are added to 1200 existing Level 2 chargers, serving 5000 expected sessions under summer and winter rates. In a summer week, V2G raises operator profit by $4978 compared with smart charging and lowers the high peak demand by 4400 kW (9 %). The best contract gives owners 70 % of the energy savings and earns 21 % more than a fixed payment alone. Doubling the V2G ports to 800 lowers the peak further but reduces profit, because owner payments grow faster than the savings. V2G pays back within 10 years if a bidirectional charger costs less than about $1800 more than a standard one. Compared with a 5 MW/10 MWh stationary battery, V2G cuts more peak demand at $409 of investment per kW instead of $1522 and needs no extra land, while the battery does not pay back within its lifetime. 
+
+Index Terms —Vehicle to Grid (V2G), Electric Vehicle charg-ing, Demand Charge management, Peak shaving, Techno Eco-nomic Analysis, DER Aggregation, Edge Data Center 
+
+NOMENCLATURE 
+
+Sets and Indices 
+
+t Time step, t ∈ { 1, . . . , T }.
+
+e Index over all EVs. 
+
+i Index over V2G EVs, i ∈ M .
+
+p Index over charger ports. 
+
+M Set of V2G capable EVs. 
+
+A Candidate set of energy shares. 
+
+HP , LP High and low peak demand windows. 
+
+p(t) TOU period of step t, ∈ { HP , LP , base }.
+
+Decision Variables 
+
+gt Grid import at step t (kW). 
+
+pch  
+
+> e,t
+
+Charging power of EV e (kW). 
+
+pdch  
+
+> i,t
+
+Discharging power of V2G EV i (kW). 
+
+soc e,t Stored energy of EV e (kWh). 
+
+P fac Facilities peak demand (kW). 
+
+P HP High peak demand (kW). 
+
+P LP Low peak demand (kW). 
+
+F, α Contract: fixed credit ($/EV-day) and energy share. 
+
+bch  
+
+> t
+
+, bdch  
+
+> t
+
+BESS charge/discharge power (kW). 
+
+eB 
+
+> t
+
+BESS stored energy (kWh). 
+
+Parameters 
+
+λt A-3 energy price at step t ($/kWh). 
+
+λTOU  
+
+> p(t)
+
+TOU rate of period p(t) ($/kWh). 
+
+λECA Energy cost adder ($/kWh). 
+
+∆t Time step length (h). 
+
+D Horizon length (days), D = 7 .
+
+s Demand charge proration, s = D/ 30 .
+
+δEV Commercial EV energy credit ($/kWh). 
+
+cfac Facilities demand rate ($/kW-mo). 
+
+cHP High peak demand rate ($/kW-mo). 
+
+cLP Low peak demand rate ($/kW-mo). 
+
+csvc Service charge ($/mo). 
+
+cdeg ,i Wear cost of EV i ($/kWh discharged). 
+
+rt Retail price for non-V2G sessions ($/kWh). 
+
+di Parked duration of EV i (days). 
+
+Ldc  
+
+> t
+
+Data center load (kW). 
+
+Lbldg  
+
+> t
+
+Building load (kW). 
+
+¯P ch  
+
+> e
+
+Charge power rating of EV e (kW). 
+
+¯P dch  
+
+> i
+
+Discharge power rating of EV i (kW). 
+
+Ae,t Plugged in indicator, ∈ { 0, 1}.
+
+Me Big-M bound, max( ¯P ch  
+
+> e
+
+, ¯P dch  
+
+> e
+
+).
+
+ηch , ηdch Charge/discharge efficiencies. 
+
+Qe Battery capacity of EV e (kWh). 
+
+cap i Usable capacity of V2G EV i (kWh). 
+
+SOC min Minimum SOC (fraction). 
+
+SOC max Maximum SOC (fraction). 
+
+ae, d e Arrival and departure steps of EV e.
+
+soc 0 
+
+> e
+
+Arrival SOC of EV e (fraction). arXiv:2610.24797v1 [eess.SY] 17 Oct 2026 soc tgt  
+
+> e
+
+Departure target SOC of EV e (fraction). 
+
+Nmax Discharge cycle limit over the horizon. 
+
+DoD Reference depth of discharge. 
+
+ρ Risk premium in the participation reserve. 
+
+Ws, W w Summer and winter weeks per year. 
+
+Battery Degradation 
+
+ˆV , ˆz Mean cell voltage (V) and mean SOC. 
+
+β Cyclic aging factor. 
+
+cAh kWh to Ah conversion factor. 
+
+QEOL  
+
+> i
+
+End of life charge throughput (Ah). 
+
+cBdeg BESS wear cost ($/kWh). 
+
+Cost Terms and Payoffs 
+
+Cenergy Grid energy cost ($). 
+
+CEV Commercial EV credit ($). 
+
+Cdemand Demand charges ($). 
+
+Cpay Payments to V2G owners ($). 
+
+Rret Dispatch dependent retail revenue ($). 
+
+BA3 Total A-3 bill over the horizon ($). 
+
+EEV EV energy eligible for the EV credit (kWh). 
+
+Edch  
+
+> i
+
+Energy discharged by EV i (kWh). 
+
+Emax  
+
+> i
+
+Largest allowed discharge of EV i (kWh). 
+
+Πop Operator profit with V2G ($). 
+
+ΠnoV2G op Operator profit without V2G ($). 
+
+∆Π Profit gain over smart charging ($). 
+
+πi Net payoff to owner i ($). 
+
+Ures ,i Participation reserve of owner i ($). 
+
+Charger Port Queueing 
+
+N V2G Number of bidirectional V2G ports. 
+
+N L2 Number of Level 2 ports. 
+
+N DCFC Number of DC fast charge ports. 
+
+Hmin  
+
+> e
+
+Fewest full power steps EV e needs. 
+
+ϕp Earliest step at which port p is free. 
+
+a′ 
+
+> e
+
+Assigned start step of EV e.
+
+we Waiting time of EV e (steps). 
+
+wmax Longest allowed wait (steps). 
+
+T Horizon length (steps). 
+
+bp,t Port busy indicator, ∈ { 0, 1}.
+
+occ( t) Number of busy ports at step t.I. I NTRODUCTION 
+
+Transportation is moving to electric power, and data centers are growing at the same time. Both add large loads at the same locations on the distribution network. At large commercial sites such as airports, these two loads often share one grid connection. Their combined peak raises the site’s demand charges and exposes the operator to time of use (TOU) energy prices. At the same time, electric vehicles (EVs) that stay parked at such sites for days form a large pool of batteries that would otherwise sit idle. Using these batteries through vehicle to grid (V2G) operation can flatten the site peak, shift energy to cheaper hours, and delay the purchase of stationary storage. Two linked problems must be solved to use this potential. The first is operational: thousands of different EVs must be scheduled together with the data center and building loads under a real commercial tariff [1], while each vehicle’s arrival state of charge, departure target, parking time, and charger availability are respected. The second is economic: EV owners will only let their batteries be discharged if they are paid for the battery wear and for the trouble of taking part [2]. A payment scheme that ignores battery wear either cycles the fleet too much, which hurts owners, or fails to attract them at all [3]. Rahman et al. [4] designed fixed term V2G contracts together with online EV scheduling for virtual power plants that take part in electricity markets. Their method raised profit while still meeting each owner’s charging need before departure. Orfanoudakis et al. [5] built EV2Gym, an open source V2G simulator that includes EV, charger, transformer, user behavior, and battery wear models for smart charging and reinforcement learning research. Brinkel et al. [6] built a multi objective V2G model with battery wear and transformer limits that cut costs by 32.4% and emissions by 23.6%, and questioned whether grid reinforcement is needed. In [7], the same group compared six grid tariff designs for EV charging and found that capacity based tariffs lower grid expansion costs and are fairer, but that no single design is best for efficiency, fairness, and predictability at once. Only a few studies look at EV scheduling in airport parking. The ALIGHT report [8] studied smart charging and V2G at Copenhagen Airport. It found frequency reserve (FCR-D) to be the most profitable service, worth about C250– C350 per year per destination charger and about C2,500 per well used fast charger, with little effect on users. A study at Harry Reid International Airport compared MILP and deep reinforcement learning (DDPG) for EV scheduling with V2G [9]. MILP gave higher profit and customer satisfaction, while reinforcement learning was faster and caused less battery wear but handled the peak less well. Guo et al. [10] planned an airport microgrid with electric aircraft, parking lot EVs, and V2G using NSGA-II, and showed that V2G lowers operating cost. Vereno et al. [11] showed that automated airport garages can provide fast frequency reserve while still fully charging cars, but that regulatory approval is the main barrier. Yan et al. [12] combined LSTM forecasting and MILP to size PV, ground service vehicle fleets, and chargers at Guangzhou Baiyun airport, cutting annual cost by 624,042.60 CNY with a 3.04 year payback. None of these studies combines an airport parking fleet with a colocated AI data center under a demand charge tariff, or designs the owner payment as part of the dispatch. The main contributions of this paper are:  
+
+> •
+
+An airport campus is modeled in which long stay EV parking, airport buildings, and a real trace AI data center share one grid connection under a commercial tariff with (a) Behind the meter campus on one grid connection                      
+
+> Utility grid
+> TOU energy + demand charge
+> PCC
+> Airport buildings
+> base facility load
+> AI inference data center
+> real trace, volatile compute load
+> EV parking (V2G)
+> 1200 L2 + 400/800 V2G ports, 5000 sessions
+> (b) Two stage contract optimization
+> First stage: profit maximizing LP for a given ααα
+> $
+> Fixed daily credit F
+> found together with the dispatch
+> Owner payment
+> payoff ≥participation reserve
+> Battery wear
+> discharge only if benefit >wear
+> 123
+> Port allocation
+> first come, first served
+> max profit = demand charge cut + TOU arbitrage + retail revenue −owner pay −wear
+> profit( α)fix α
+> Second stage: choose energy share ααα
+> Energy value split
+> Owners: α
+> Operator: 1 −α
+> Search over α∈ { 0,0.1, . . . , 1}
+> profit
+> αα⋆
+
+Fig. 1. Overview of the campus and the two stage method. 
+
+both energy and demand charges. Earlier airport V2G studies consider the parking load on its own.  
+
+> •
+
+A two stage method is proposed that designs a two part V2G contract (a fixed daily credit and a share of the energy value) together with the dispatch. Owner participation and battery wear are built into the first stage, so every owner is paid enough to take part and EVs discharge only when the benefit is larger than the wear. Because the fixed credit is found inside the LP, the second stage is a simple one variable search.  
+
+> •
+
+Each vehicle is modeled with its own arrival state of charge, departure target, and parking time, and is as-signed a charger port on a first come, first served basis. A comparison of 400 and 800 bidirectional ports shows that the profitable number of V2G vehicles is set by the demand charges and owner payments, not by the number of ports.  
+
+> •
+
+V2G is compared with a stationary BESS as an invest-ment, using the same optimization, both tariff seasons, and the land cost of the BESS. The rest of the paper is organized as follows. Section II describes the method, Section III presents the case study and results, and Section IV concludes the paper. The overall method is shown in Fig. 1. II. M ETHODOLOGY 
+
+A. Two Stage Framework 
+
+The proposed framework has two stages, as shown in Fig. 1. The first stage is a linear program (LP) that schedules all EVs for the week ahead, together with the data center and building loads, so that the operator’s net profit is maximized. For a given energy share α, this stage also chooses the fixed daily credit F paid to V2G owners. The second stage searches over 
+
+α and keeps the value that gives the highest profit. Together, 
+
+(F, α ) form the two part V2G contract offered to owners. 
+
+B. First Stage: Dispatch and Fixed Credit 
+
+The first stage minimizes the operator’s net cost, which is the A-3 bill of (22) plus the owner payments, minus the retail revenue that depends on the dispatch, 
+
+min Cenergy − CEV + Cdemand + Cpay − Rret , (1) where each term is 
+
+Cenergy = X
+
+> t
+
+λt gt ∆t, (2) 
+
+CEV = δEV 
+
+X
+
+> e
+
+X
+
+> t
+
+pch  
+
+> e,t
+
+∆t, (3) 
+
+Cdemand = s cfac P fac + cHP P HP + cLP P LP  , (4) 
+
+Cpay = X
+
+> i∈M
+
+h
+
+F d i + X
+
+> t
+
+(αλ t + cdeg ,i ) pdch  
+
+> i,t
+
+∆t
+
+i
+
+, (5) 
+
+Rret = X
+
+> e / ∈M
+
+X
+
+> t
+
+rt pch  
+
+> e,t
+
+∆t. (6) The owner payment Cpay has three parts: a fixed credit for each parked day, a share α of the energy value of each discharged kWh, and a wear payment for each discharged kWh. The wear coefficient cdeg ,i is derived in Section II-E. Non-V2G sessions pay the retail price rt, which is $0.54/kWh in the A-3 high peak window and $0.45/kWh otherwise. V2G owners pay a flat $0.45/kWh only for the energy they actually need, (soc tgt  
+
+> i
+
+−soc 0 
+
+> i
+
+)Qi/η ch . This is the same amount they would pay without V2G, so an owner is never billed for energy that the operator discharges and later recharges. This revenue and the $2 per session fee do not depend on the dispatch, so they are left out of (1) but are included in the reported profit. As a result, the first stage, the second stage, and the results in Section III-B all use the same profit measure. The grid import must cover both site loads and the net battery charging. Export to the grid is not allowed, 
+
+gt = Ldc  
+
+> t
+
++ Lbldg  
+
+> t
+
++ X
+
+> e
+
+ pch  
+
+> e,t
+
+− pdch 
+
+> e,t
+
+ + bch  
+
+> t
+
+− bdch  
+
+> t
+
+, gt ≥ 0.
+
+(7) The BESS terms bch  
+
+> t
+
+, b dch  
+
+> t
+
+are zero except in the BESS benchmark of Section II-F. The peak variables track the highest import in each demand window, 
+
+P fac ≥ gt ∀t, P HP ≥ gt ∀t ∈ HP , P LP ≥ gt ∀t ∈ LP .
+
+(8) Each EV can charge or discharge only while it is plugged in, and only V2G EVs can discharge [13], [14], 
+
+0 ≤ pch  
+
+> e,t
+
+≤ ¯P ch  
+
+> e
+
+Ae,t , (9) 
+
+0 ≤ pdch  
+
+> i,t
+
+≤ ¯P dch  
+
+> i
+
+Ai,t , i ∈ M . (10) A vehicle cannot charge and discharge at full power in the same step, 
+
+pch  
+
+> e,t
+
++ pdch  
+
+> e,t
+
+≤ MeAe,t . (11) The stored energy changes with the charge and discharge efficiencies, 
+
+soc e,t +1 = soc e,t + ηch pch  
+
+> e,t
+
+− pdch  
+
+> e,t
+
+/η dch 
+
+∆t, (12) and stays within the allowed range, 
+
+SOC min Qe ≤ soc e,t ≤ SOC max Qe. (13) Each session starts at its arrival level and must end exactly at its departure target, 
+
+soc e,a e = soc 0
+
+> e
+
+Qe, soc e,d e+1 = soc tgt  
+
+> e
+
+Qe. (14) The target is an equality so that the operator cannot raise its retail revenue by charging a vehicle beyond what the owner asked for. The total discharge of each V2G EV is limited by the allowed number of cycles, 
+
+X
+
+> t
+
+pdch  
+
+> i,t
+
+∆t ≤ Nmax DoD cap i, i ∈ M . (15) Finally, every V2G owner must receive at least a minimum payoff, called the participation reserve, 
+
+F d i + α X
+
+> t
+
+λt pdch  
+
+> i,t
+
+∆t ≥ Ures ,i ∀i ∈ M . (16) The left side is the owner’s net payoff, explained in (17). Because (16) is a constraint of the LP, and not a check made after solving, every solution pays every owner enough to take part. The owner’s net payoff is the fixed credit, plus the energy share, plus the wear payment, minus the wear the owner actually suffers, 
+
+πi = F d i +α X
+
+> t
+
+λt pdch  
+
+> i,t
+
+∆t+cdeg ,i Edch  
+
+> i
+
+−cdeg ,i Edch  
+
+> i
+
+. (17) The wear payment cancels the wear cost, so πi equals the left side of (16). The participation reserve is set from the largest wear the owner could face, plus a risk premium ρ = 0 .30 
+
+[15], 
+
+Ures ,i = (1 + ρ) cdeg ,i Emax  
+
+> i
+
+,Emax  
+
+> i
+
+= Nmax DoD cap i. (18) 
+
+C. Second Stage: Energy Share Search 
+
+When α is fixed, (16) is linear in F and in the discharge powers. For this reason, F is a decision variable of the first stage LP and is found together with the dispatch. The second stage then only needs to search over one variable, α, and picks the value that gives the largest profit gain over smart charging, 
+
+α⋆ = arg max 
+
+> α∈A
+
+Πop (F ⋆(α), α ) − ΠnoV2G op 
+
+ . (19) With A = {0, 0.1, . . . , 1}, the contract is found from 11 LP solves instead of a full search over a two dimensional (F, α )
+
+grid. Since every solve enforces (16), all candidate contracts are acceptable to the owners. 
+
+D. LADWP A-3 Commercial Tariff 
+
+The campus meter is billed under the LADWP A-3(A) time of use (TOU) schedule [16]. The bill has an energy part, a demand part, and a fixed service part. The energy price in each step is the seasonal TOU rate plus a fixed energy cost adjustment (ECA), 
+
+λt = λTOU  
+
+> p(t)
+
++ λECA , (20) 
+
+λTOU  
+
+> p(t)
+
+=
+
+
+
+λHP , weekday, 13:00 ≤ t < 17:00 ,λLP , weekday, t ∈ [10 , 13) ∪ [17 , 20) ,λbase , otherwise. (21) The total A-3 bill over the horizon is 
+
+BA3 = X
+
+> t
+
+λt gt ∆t + s cfac P fac + cHP P HP + cLP P LP 
+
++ s c svc − δEV EEV .
+
+(22) The rates for both seasons are listed in Section III-A. Annual values are found by weighting the weekly results by the number of weeks in each season, 
+
+∆Π yr = Ws ∆Π wk s + Ww ∆Π wk w , (23) with Ws = 122 /7 ≈ 17 .4 and Ww = 365 /7 − Ws ≈ 34 .7.
+
+E. Battery Degradation Model 
+
+The wear cost follows the linearized Ecker–Schmalstieg aging model [5], [17], with 108 × 95 cells per pack. The mean cell voltage is taken as a linear function of the mean state of charge, 
+
+ˆV = Vmin + κ ˆz, (24) and the cyclic aging factor is 
+
+β = ζ0( ˆV − ζ1)2 + ζ2 + ζ3 ∆DoD . (25) The optimization works in kWh while the aging model works in Ah, so the pack level conversion factor is 
+
+cAh = 1000 
+
+Ns Vcell 
+
+≈ 2.57 Ah kWh . (26) The total charge a pack can pass before the end of its life is 
+
+QEOL  
+
+> i
+
+= Ncyc ∆DoD cAh cap i, (27) and the wear cost per kWh discharged is 
+
+cdeg ,i = 0 .5 β Nmax cAh crep cap i
+
+pQEOL 
+
+> i
+
+. (28) This coefficient enters the objective through the wear payment in (5). The payment is linear in the discharged energy, so the first stage stays an LP. Because wear is priced inside the objective, the cycle limit is set to its largest value, Nmax = 3 ,instead of a fixed number of cycles as is common in the literature. An EV then discharges only when the campus benefit is larger than the wear cost. F. Stationary BESS Benchmark 
+
+To test whether the parked fleet can replace owned storage, a benchmark case is solved with no V2G and with a stationary BESS behind the same meter, connected through (7). Its operation is limited by 
+
+bch  
+
+> t
+
++ bdch  
+
+> t
+
+≤ ¯P B, bch  
+
+> t
+
+, b dch  
+
+> t
+
+≥ 0,eB 
+
+> t+1
+
+= eB 
+
+> t
+
++  ηB bch  
+
+> t
+
+− bdch  
+
+> t
+
+/η B
+
+ ∆t, sB ¯EB ≤ eB 
+
+> t
+
+≤ sB ¯EB, eB0 = eB 
+
+> T
+
+= s0B ¯EB.
+
+(29) The end condition stops the BESS from discharging energy that it did not store during the week. BESS wear is added to (1) as cBdeg 
+
+P 
+
+> t
+
+bdch  
+
+> t
+
+∆t, with cBdeg = cB 
+
+> E
+
+/ N Bcyc (sB − sB).The BESS is solved for both seasons and compared with V2G using the same profit measure. 
+
+G. Charger Port Queueing 
+
+Charging demand is served from three separate port pools: 
+
+N V2G bidirectional ports for V2G vehicles, N L2 Level 2 ports for commuters, and N DCFC fast charge ports for fast sessions. In each pool, EVs are served in order of arrival and take the first free port. The smallest number of full power steps that an EV needs to reach its target is 
+
+Hmin  
+
+> e
+
+=
+
+&   soc tgt  
+
+> e
+
+− soc 0
+
+> e
+
+ Qe
+
+ηch ¯P ch  
+
+> e
+
+∆t
+
+'
+
+. (30) The EV starts on the first free port p, and its start step and waiting time are 
+
+a′ 
+
+> e
+
+= max( ae, ϕ p) , we = a′ 
+
+> e
+
+− ae. (31) An EV is turned away if it waits too long, cannot start within the horizon, or cannot finish charging before it leaves, reject if we > w max or a′ 
+
+> e
+
+≥ T or (de − a′
+
+> e
+
+) < H min  
+
+> e
+
+.
+
+(32) The number of busy ports in a pool at each step is 
+
+occ( t) = X
+
+> p
+
+bp,t . (33) 
+
+H. Vehicle Availability 
+
+An EV can be used only between its arrival and departure, 
+
+Ae,t =
+
+(
+
+1, ae ≤ t < d e (vehicle present ),
+
+0, otherwise. (34) The arrival and departure profiles and the fleet data are given in Section III-A. III. S IMULATION RESULTS 
+
+A. Case Study Setup and Input Data 
+
+The campus has 1200 existing Level 2 chargers and 16 DC fast chargers. In the main case, 400 V2G chargers are added, giving 1600 Level 2 class chargers in total. The study covers 5000 expected EVs over the week of Monday 10 to Sunday 16 July 2023, with first come, first served port allocation. This week is first solved under the A-3 summer rates and then solved again under the winter rates, with its own contract                                                                            
+
+> TABLE I LADWP A-3 T ARIFF PARAMETERS
+> Symbol Description Summer Winter
+> λHP High peak energy ($/kWh) 0.05991 0.05464
+> λLP Low peak energy ($/kWh) 0.05365 0.05464
+> λbase Base energy ($/kWh) 0.03356 0.03798
+> λECA Energy cost adder ($/kWh) 0.05690 0.05690
+> cHP High peak demand ($/kW-mo) 9.70 4.30
+> cLP Low peak demand ($/kW-mo) 3.30 0.00
+> cfac Facilities demand ($/kW-mo) 4.56 4.56
+> csvc Service charge ($/mo) 75.00 75.00
+> δEV EV charging credit ($/kWh) 0.025 0.025 TABLE II DEGRADATION MODEL PARAMETERS
+> Symbol Description Value
+> Vmin Cell voltage at 0% SOC 3.3324 V
+> κOCV slope, OCV(1) −OCV(0) 0.8263 V
+> ˆzMean SOC operating point 0.5
+> ζ0, ζ 1Cyclic coefficients 7.348 ×10 −3,3.667
+> ζ2, ζ 3Cyclic coefficients 7.600 ×10 −4,4.081 ×10 −3
+> ∆DoD Assumed depth of discharge 0.75
+> NsCells in series 108
+> Vcell Nominal cell voltage 3.6V
+> Ncyc Rated cycle life 4000 [18]
+> crep Pack replacement cost 98 $ /kWh [19]
+> Nmax Maximum discharge cycle limit 3
+
+search, so that the seasonal difference comes from the tariff alone. The summer rates apply from June to September and the winter rates from October to May. All tariff, battery, and fleet inputs are listed in Tables I–IV. Three operating modes are compared: uncontrolled (greedy) charging, smart charging without V2G, and V2G under the optimized two part contract. A sensitivity analysis then tests the main assumptions, and V2G is finally compared with a stationary BESS as an investment. 
+
+EV fleet: The fleet has three groups, listed in Table IV. Commuters, mostly airport employees, make up the largest group and stay 8 or 20 hours. Long stay V2G vehicles belong to air passengers and stay about four days. Fast charging vehicles belong to people dropping off friends or family and stay about one hour. Arrival and departure times are drawn from a two peak distribution that follows airport activity, with a morning peak near 09:00–10:00 and an evening peak near 21:00 [20], as shown in Fig. 2. 
+
+Data center load: The AI data center load is taken from the model of Fan et al. [21], which describes a 430 GPU data center. It is scaled up 20 times to represent 8600 GPUs. 
+
+BESS size: The BESS power rating of 5 MW is chosen to be close to the 4.4 MW that the 400 V2G vehicles can discharge together (400 × 11 kW). Both resources can then lower the peak by a similar amount, so the comparison is about cost rather than size. The 2 hour duration (10 MWh) is one of the standard durations in the NREL Annual Technology Baseline [22]. The cost of a BESS grows almost in proportion to its size, while the peak reduction shows diminishing returns, as TABLE III STATIONARY BESS B ENCHMARK PARAMETERS                                           
+
+> Symbol Description Value
+> ¯PB,¯EBPower / energy rating 5 MW / 10 MWh
+> ηBOne way efficiency 0.95
+> sB, s B, s 0BSOC limits / initial SOC 0.05 / 0.95 / 0.50
+> cB
+> PPower related capital cost 432.64 $/kW
+> cB
+> EEnergy related capital cost 254.67 $/kWh
+> NBcyc Rated cycle life 6000
+> cBO&M Fixed O&M 4.322 $/kWh-yr TABLE IV EV F LEET SEGMENTS , S IZING ,AND AVAILABILITY
+> Segment Share Batt. (kWh) Charger Arr. SOC Dwell
+> V2G 23% 60–80 11 kW L2 0.30–0.60 ∼4 d Commuter 75% 55–70 7.4 kW L2 0.45–0.55 8/20 h DCFC 2% 60–90 150 kW DC 0.30–0.35 1 h
+
+seen for V2G in Section III-F. A larger BESS is therefore not expected to lower its cost per kW of peak reduction. 
+
+B. Selected Deployment: 400 V2G Ports 
+
+Table V gives the operator cost, the charging station rev-enue, and the net cost for the three operating modes over the summer week. Figs. 3 and 4 show the campus and EV power profiles. In total, 4250 sessions are served, of which 400 are V2G vehicles. Non-V2G sessions pay $0.54/kWh in the weekday high peak window (1:00–5:00 PM), which is 20 % more than the $0.45/kWh off peak price. V2G vehicles pay a flat $0.45/kWh only for the energy they need. The net cost, which is the operator cost minus the station revenue, is used as the bottom line. Smart charging lowers the net cost by $5658 (0.69 %) compared with uncontrolled charging. The grid bill falls by $3202 (0.36 %), mostly because of lower demand charges: the campus peak drops from 49394 kW to 48580 kW, and the facility and TOU demand charges fall by $866 and $2284. The other $2456 comes from higher station revenue (+3.61 %). Because the dispatch maximizes profit, it places some non-V2G charging in the high peak window to earn the 20 % price premium. This raises the high peak energy bill, but the extra revenue is larger, and the high peak demand still stays at the campus peak of 48580 kW. V2G lowers the net cost by a further $4978 (0.61 %) compared with smart charging, and by $10636 (1.30 %) compared with uncontrolled charging. The grid bill falls by $16339 (1.85 %) against smart charging. Of this saving, $10192 (62 %) is paid to the vehicle owners, including $4508 of wear payment, and $1169 of station revenue is lost because less non-V2G charging falls in the premium window. Again, most of the saving comes from demand charges. The TOU and facility demand charges fall by $11047 and $2243 (6.7 % in total) against smart charging, because the high peak demand 0 6 12 18 23                                                                     
+
+> Hour of day
+> 0.00 0.01 0.02
+> PMF
+> Fig. 2. Probability mass function of the EV arrival time. TABLE V OPERATOR COST AND NET COST AFTER CHARGING REVENUE ACROSS
+> OPERATING REGIMES (400 V2G P ORTS , S UMMER WEEK )
+> Component ($) Uncontrolled Smart V2G
+> TOU energy 687 ,545 687 ,493 686 ,321
+> Facility demand 52 ,556 51 ,689 49 ,446
+> TOU demand 149 ,109 146 ,825 135 ,778
+> Service charge 18 18 18
+> EV discount credit −3,277 −3,277 −5,154
+> A-3 grid bill 885 ,950 882 ,748 866 ,409
+> Owner payments ––10 ,192
+> Operator cost 885 ,950 882 ,748 876 ,601
+> Station revenue 68 ,019 70 ,475 69 ,306
+> Net cost 817 ,931 812 ,273 807 ,295
+> Campus peak (kW) 49394 48580 46472 High peak (kW) 49076 48580 44180
+> Change vs. uncontrolled (%)
+> Demand charges –−1.56 −8.15
+> A-3 grid bill –−0.36 −2.21
+> Net cost –−0.69 −1.30
+> Campus peak –−1.65 −5.92
+> High peak –−1.01 −9.98
+> Revenue / operator cost (%) 7.68 7.98 7.91 Net cost is the operator cost minus the charging station revenue. The EV discount credit is a negative entry. Owner payments include the $4508 wear payment and are part of the V2G operator cost. Demand charges are the facility plus TOU demand rows.
+
+drops by 4400 kW (9.1 %), from 48580 kW to 44180 kW. The campus peak falls to 46472 kW, which is 2923 kW below the uncontrolled case. Fig. 3 shows V2G shaving the daily peaks, and Fig. 4 shows the daily charge and discharge cycles, with 67761 kWh discharged by the V2G fleet over the week. The energy share search is summarized in Table VI and Fig. 5. For each energy share, F ⋆(α) is the smallest fixed credit that still gives all 400 owners at least their reserve. It falls as α rises, because the energy share covers more of the reserve. The profit gain is highest at α⋆ = 0 .70 with 
+
+F ⋆ = $0 .12 /EV-day. This is $867 per week (21 %) more than a contract with only a fixed credit ( α = 0 ). Above α⋆, the fixed credit is already zero, so a larger share only gives more money to the owners and the gain falls. The best contract is therefore a real two part contract in which the energy share carries most of the owner payment. The winter curve in Fig. 5 has the same shape and the same best share, α⋆ = 0 .70 , but D0 D2 D4 D6 35000 37500 40000 42500 45000 47500 50000 Total campus power [kW]          
+
+> Uncontrolled Peak 49,394 kW
+> D0 D2 D4 D6
+> Smart Charging (no V2G) Peak 48,580 kW
+> D0 D2 D4 D6
+> V2G Enabled Peak 46,472 kW ( 2,108 kW)
+> Building Data center EV charging Total draw
+
+Fig. 3. Total campus power over the 7 day horizon under uncontrolled, smart charging, and V2G enabled operation (400 ports). D0 D2 D4 D6 4000         
+
+> 2000
+> 02000 4000 6000 EV power [kW]
+> Uncontrolled Peak ch: 4,852 kW
+> D0 D2 D4 D6
+> Smart Charging (no V2G) Peak ch: 4,664 kW
+> D0 D2 D4 D6
+> V2G Enabled Peak ch: 6,002 kW | Peak dch: 4,400 kW
+> EV charging Net EV power V2G discharge
+
+Fig. 4. EV charging/discharging power profiles for the three operating regimes (400 ports). 
+
+stays below zero, so no energy share makes V2G profitable in winter (Section III-C). All 400 owners take part. Their mean payoff is $14.21 against a mean reserve of $13.68, and 208 owners receive exactly their reserve. This is expected when the operator knows each owner’s reserve, since the operator then keeps all the value above it. With first come, first served port allocation, 4250 of the 5000 expected sessions are served, and no served vehicle has to wait. All 750 rejected sessions are V2G vehicles, while all commuter and fast charging demand is met. The 400 bidirectional ports are all in use at the busiest time, while the Level 2 and DCFC ports are only 18.9 % and 3.7 % used on average. The number of bidirectional ports, and not the total number of chargers, is therefore the limit. Section III-F tests whether adding more bidirectional ports is worthwhile. 
+
+C. Seasonal and Annual Assessment 
+
+Table VII repeats the comparison with the winter rates, in which the high peak demand rate falls from $9.70 to $4.30/kW-month and the low peak demand charge is removed. The value of V2G depends strongly on the season. In winter, V2G still lowers the high peak demand by 2177 kW, but the demand charge savings no longer cover the owner payments required by the participation constraint. Even the best winter contract ( α⋆ = 0 .70 , F ⋆ = $0 .27 /EV-day) lowers the operator profit by $1095 per week. Smart charging needs no owner payments and stays profitable in both seasons. Over a full year, smart charging alone gains $237478, and V2G adds $48741 on top of it if it also runs in winter. An operator 
+
+TABLE VI ENERGY SHARE SEARCH UNDER THE SUMMER TARIFF (400 P ORTS )
+
+α F ⋆(α) ($/EV-day) ∆Π vs. smart ($/wk) Binding owners 0.0 3.70 4111 19 0.2 2.67 4359 19 0.4 1.65 4614 25 0.6 0.63 4863 63 
+
+0.7 0.12 4978 208 
+
+0.8 0.00 4464 208 1.0 0.00 3214 400 0.0 0.2 0.4 0.6 0.8 1.0 
+
+Energy share   
+
+> 2
+> 024
+> Profit gain vs. smart [k$/week]
+> , summer
+> , winter
+> F( ) , summer
+> F( ) , winter
+> 0123
+> Optimal fixed credit  F [$/EV-day]
+
+Fig. 5. Second stage energy share search: operator profit gain over smart charging (solid, left axis) and the fixed credit F ⋆(α) found in the first stage (dashed, right axis) versus the energy share α for the summer and winter rates (400 ports). Stars mark the best contracts. 
+
+would not run a program that loses money, so V2G is offered in summer only, which raises its annual gain to $86761. Only this summer only value is used in the rest of the paper. 
+
+D. Sensitivity Analysis 
+
+To test how much the results depend on the assumptions, the four inputs that drive the owner payments and the demand charge savings are changed one at a time. For each case, both seasons are solved again with the full energy share search. The battery replacement cost crep , which scales the wear cost and the participation reserve, is changed from 98 to 70 and 130 $/kWh. All demand charge rates, including the facilities charge, are scaled by 0.75 and 1.25. The 20 % high peak retail premium is removed, and the cycle limit Nmax is set to 2 and 4. The results are shown in Table VIII. The base case matches Sections III-B–III-C, and every owner meets the participation constraint in every case. Two results hold in every case. First, V2G is profitable in summer, with weekly gains between $1686 and $8319. Second, the summer high peak reduction stays at 4400 kW, except with lower demand charges (4311 kW) and with the tighter cycle limit (3636 kW). Since 4400 kW equals 400 vehicles discharging at 11 kW each, the peak reduction is limited by the fleet’s discharge power, not by its stored energy. TABLE VII PROFIT GAIN BY SEASON AND ANNUALIZED (400 P ORTS )                                                                               
+
+> Comparison Summer ($/wk) Winter ($/wk) Annual ($/yr)
+> Smart vs. uncontrolled 5658 4000 237478 V2G vs. smart 4978 −1095 48741 High peak cut, V2G (kW) 4400 2177 –Annual values follow (23) with 17.4 summer and 34.7 winter weeks. The V2G high peak cut is measured against smart charging. TABLE VIII SENSITIVITY OF THE V2G P ROFIT GAIN OVER SMART CHARGING (400 PORTS )
+> Case (α⋆, F ⋆)aSummer Winter Annual bPrem. c
+> $/wk $/wk $/yr $/port
+> Base (0.7, 0.12) 4978 −1095 86761 1808
+> crep = 70 (0.5, 0.09) 7922 1695 196892 4102
+> crep = 130 (0.9, 0.31) 1724 −4272 30038 626 Demand ×0.75 (0.7, 0.12) 1686 −2220 29393 612 Demand ×1.25 (0.7, 0.12) 8319 92 148184 3087 No HP premium (0.7, 0.13) 6038 −1104 105231 2192
+> Nmax = 2 (0.7, 0.07) 4692 −138 81778 1704
+> Nmax = 4 (0.7, 0.21) 4369 −2617 76154 1587
+> aSummer contract, F⋆in $/EV-day.
+> bV2G suspended in any season with a negative gain, weighted by (23).
+> cLargest bidirectional premium per port, over a unidirectional port, that gives a 10 year simple payback with 2 % annual O&M.
+
+The winter loss in Section III-C, however, does not hold in every case. It turns into a gain of $1695 per week when the replacement cost falls to 70 $/kWh, because both the reserve and the wear payment fall with battery cost. It reaches break even when the demand charges rise by 25 %. The two most important inputs are therefore the battery replacement cost, which sets the cost of paying owners, and the demand charge level, which sets the value of lowering the peak. A 25 % change in demand charges shifts the summer gain by about $3300 per week. This equals 25 % of the $13290 per week of demand charge savings in the base case, so the gain changes linearly with the tariff. The retail premium has only a small effect, since it moves the smart charging and V2G cases by similar amounts. The cycle limit shows a seasonal trade off. Three cycles is close to the best choice in summer, since both two and four cycles lower the gain. In winter, two cycles cut the loss from $1095 to $138 per week, because the reserve owed to owners falls with the cycle allowance while the extra winter cycles bring little demand relief. A contract with a different cycle allowance in each season would therefore recover most of the winter loss. Finally, smart charging also needs ports for the 400 long stay vehicles, so the cost that V2G must recover is only the extra price of a bidirectional port over a standard one. In the base case, V2G pays back in 10 years if this extra price is below $1808 per port. Across the sensitivity cases, this limit ranges from $612 to $4102. Whether V2G is worthwhile                                             
+
+> TABLE IX INVESTMENT COMPARISON AGAINST SMART CHARGING (400 P ORTS )
+> Metric V2G V2G aBESS BESS b
+> (summer) + land
+> Equipment CAPEX ($) 1800000 1800000 4709880 4709880 Land ($) 000591667 Annual gain ($/yr) 48741 86761 203278 203278 Annual O&M ($/yr) 36000 36000 43220 43220 Annual net ($/yr) 12741 50761 160058 160058 Simple payback (yr) 141.3 35.5 29.4 33.1 Summer high peak cut (kW) 4400 4400 3095 3095 CAPEX per kW cut ($/kW) 409 409 1522 1713
+> aV2G offered in summer only. V2G CAPEX conservatively assumes the full $4500 per installed bidirectional EVSE and 2 % annual O&M.
+> b0.083 acre at the 120 MWh per acre density of an operating utility installation [23] and $7.1 M per acre for industrial land in the Los Angeles South Bay [24].
+
+at the campus therefore depends mainly on the bidirectional hardware price, the battery replacement cost, and the demand charge level. The contract itself matters less, because the second stage adjusts it to each case. 
+
+E. Investment Comparison: V2G Versus Stationary BESS 
+
+The stationary BESS described in Section II-F is scheduled by the same LP, this time without V2G. In the summer week it raises the operator’s profit by $6732.93 compared with smart charging and lowers the high peak demand by 3095 kW, from 48580 kW to 45485 kW, at a battery wear cost of $1715.53. Because the BESS has no owners to pay, it also stays profitable in winter, earning $2475.44 per week. Over a full year it gains $203278, more than V2G. A higher yearly gain, however, does not make the BESS a good investment for the campus, as the cost comparison in Table IX shows. First, the BESS is a much more expensive way to lower the peak. The 5 MW/10 MWh unit costs $4.71 M to buy, plus $43220 per year to operate and maintain [22]. The 400 bidirectional chargers cost $1.80 M. V2G lowers the summer high peak demand by 4400 kW at $409 of investment per kW, while the BESS lowers it by only 3095 kW at $1522 per kW, nearly four times as much. Second, V2G uses parking spaces that already exist, but the BESS needs its own land next to the campus. The 120 MWh Escondido battery fits on about one acre, including its supporting equipment [23]. At the same density, a 10 MWh unit needs about 0.083 acres. Industrial land in the Los Angeles South Bay, the area around the airport, has sold for $7.1 M per acre [24], which adds $0.59 M, or 12.6 %, to the cost of the BESS. This is the lowest likely estimate. Recent planning guidelines allow 3 acres per 100 MWh once container spacing, power equipment, and safety clearances are included [25], which would raise the land cost to $2.13 M. In addition, the NFPA 855 fire code requires minimum distances between battery units and from nearby buildings, which are hard to provide at a crowded airport site [26]. With land TABLE X V2G P ORT SIZING : 400 V ERSUS 800 B IDIRECTIONAL PORTS (5000 EXPECTED SESSIONS )                                        
+
+> Metric 400 ports 800 ports
+> Served sessions 4,250 4,650 V2G rejected 750 350 V2G utilization (%) a64.0 64.0 V2G energy discharged (kWh/wk) 67,761 129,908 Summer contract (α⋆, F ⋆)(0.70, $0.12) (0.70, $0.14) Binding owners 208/400 800/800 Owner payments ($/wk) 10,192 19,608 High peak cut vs. smart (kW) 4,400 5,249
+> ∆Π vs. smart, summer ($/wk) 4,978 4,091
+> ∆Π vs. smart, winter ($/wk) −1,095 −4,951 Annual net, summer only ($/yr) b50,761 −700 CAPEX ($) 1,800,000 3,600,000 CAPEX per kW cut ($/kW) 409 686 Simple payback, summer only (yr) 35.5 –
+> aMean utilization; the peak is NV2G /N V2G (fully committed) in both cases.
+> bV2G offered in summer only, after 2 % annual O&M. CAPEX assumes $4500 per installed bidirectional EVSE.
+
+included, the time for the BESS to pay for itself grows from 29.4 years to between 33.1 and 42.7 years. Third, the BESS never pays for itself within its lifetime in any of the cases studied. Large lithium-ion batteries are usu-ally expected to last about 15 years [22], but the BESS needs 29.4 years to pay back even before land is counted. Across the demand charge and retail premium cases of Section III-D, its yearly gain ranges from $141514 to $275183. Even in the best case, with demand charges 25 % higher, it needs 20.3 years to pay back without land. Finally, the V2G numbers in Table IX are cautious. They charge V2G the full cost of each charger, even though smart charging would need chargers for the same vehicles anyway. The cost V2G really adds is only the extra price of abidirectional charger over a standard one. If V2G is charged only this extra price and is run in summer only, it pays back faster than the BESS with land whenever the extra price is below $4320 per charger. With the higher land estimate, V2G pays back faster even at the full charger cost of $4500 (35.5 years versus 42.7 years). As Section III-D shows, an extra price below $1808 per charger brings the V2G payback down to 10 years. The parked EVs therefore lower the peak more, for a fraction of the investment, without buying land or meeting battery siting rules. A stationary BESS is not a suitable investment for this campus under the current tariff. 
+
+F. V2G Port Sizing: 400 Versus 800 Ports 
+
+Table X compares 400 and 800 bidirectional ports. The number of expected sessions is kept at 5000, so only the port count changes. The extra ports serve 400 more long stay vehicles and nearly double the discharged energy (from 67761 to 129908 kWh). The high peak reduction against smart charging grows from 4400 kW (9.1 %) to 5249 kW (10.8 %). D1 D2 D3 D4    
+
+> 7-day horizon
+> 10
+> 5
+> 0510
+> EV power [kW]
+> Charge Discharge SOC
+> 020 40 60 80 100
+> SOC [%]
+> Fig. 6. Charge, discharge, and state of charge trajectory of a representative long stay V2G vehicle over the 7 day horizon.
+
+However, the weekly profit gain over smart charging falls from $4978 to $4091 (17.8 % lower). There are two reasons. First, the demand charge savings show diminishing returns: once the first 400 ports have flattened the peak, the next 400 ports remove only 849 kW more. Second, every owner must be paid at least their reserve, so owner payments nearly double, from $10192 to $19608 per week (+92 %), and all 800 owners are paid exactly their reserve. The extra ports therefore cost more in owner payments than they save in demand charges. In winter, the weekly loss grows from $1095 to $4951. As a result, even with V2G run in summer only, the 800 port case does not cover its O&M cost, and its capital cost per kW of peak reduction rises from $409 to $686. The 400 port case is therefore the better choice. In both cases, all V2G ports are in use at the busiest time, the mean V2G port use is 64.0 %, and every rejected session is a V2G vehicle (750 with 400 ports and 350 with 800 ports). The number of ports limits how many vehicles can join, but the number that is profitable is set by the demand charges and the owner payments, not by the port count. 
+
+G. Representative Vehicle Dispatch and Compensation 
+
+Fig. 6 shows how the contract works for one long stay vehicle. The vehicle has a 75 kWh battery and stays parked for 111 hours (4.62 days). It arrives at 31.1 % state of charge and leaves at its 95.0 % target. Over the week, 241.7 kWh is charged and 172.6 kWh is sent back to the campus, which equals 2.88 full cycles, with peak rates of 10.6 kW charging and 11.0 kW discharging. The wear from this cycling is valued at $11.72 and is fully paid back, so the owner loses nothing by taking part. On top of the wear payment, the owner receives $14.11 from the energy share and $0.56 from the fixed credit. The net payoff of $14.67 equals the owner’s reserve, so the participation constraint is tight for this vehicle: the owner is paid just enough to take part, and the operator keeps the rest. Fig. 6 also shows that discharge happens in the daily high peak windows and is always followed by recharging, so the departure target is met while the demand charge savings are still delivered. IV. C ONCLUSION 
+
+This paper modeled an airport campus where long stay EV parking, airport buildings, and an AI data center share one grid connection. A two stage method was proposed that schedules V2G and designs the payment to EV owners at the same time. The method makes sure that every owner is paid enough to take part, pays for battery wear, and respects the number of available chargers. With 400 V2G chargers, V2G raised the operator’s profit by $4978 per week in summer compared with smart charging and lowered the high peak demand by 4400 kW (9 %). The best contract gives owners 70 % of the energy value plus a small daily payment, and earns 21 % more than a fixed payment alone. All 400 owners take part, and no served vehicle has to wait for a charger. Doubling the ports to 800 lowered the peak by a further 849 kW, but reduced the profit, since the owner payments grew faster than the demand charge savings. The value of V2G depends on the season. In winter, the lower demand charges no longer cover the owner payments, so V2G is best offered in summer only, which gives an annual gain of $86,761. The sensitivity analysis confirmed the summer benefit in every case and showed that V2G pays back within 10 years if a bidirectional charger costs less than about $1800 more than a standard charger. A 5 MW/10 MWh stationary battery earns more per year, but costs nearly four times as much per kW of peak reduction, needs land that adds 13 % to 45 % to its cost, and does not pay back within its lifetime. V2G is therefore the better choice for lowering the summer peak at this campus. Future work will add other revenue sources, such as ancillary services. REFERENCES [1] S. Li, S. Yuan, S. Guo, J. Yu, X. Pei, and Z. Zhang, “Collaborative optimization scheduling strategy of electric vehicle load cluster and data center for multi-station integration,” IEEE Access , 2026. [2] R. Sen, F. Liu, J. P. Talusan, A. Pettet, Y. Suzue, M. Bailey, A. Mukhopadhyay, and A. Dubey, “Consent: A negotiation framework for leveraging user flexibility in vehicle-to-building charging under uncertainty,” arXiv preprint arXiv:2601.01581 , 2026. [3] L. Calearo, “Grid integration of electric vehicles: battery degradation and user needs,” 2022. [4] S. Rahman, J. Sales-Ortiz, and O. Ardakanian, “Making a virtual power plant out of privately owned electric vehicles: From contract design to scheduling,” in Proceedings of the 14th ACM International Conference on Future Energy Systems , 2023, pp. 459–472. [5] S. Orfanoudakis, C. Diaz-Londono, Y. E. Yılmaz, P. Palensky, and P. P. Vergara, “Ev2gym: A flexible v2g simulator for ev smart charging research and benchmarking,” IEEE Transactions on Intelligent Trans-portation Systems , vol. 26, no. 2, pp. 2410–2421, 2024. [6] N. Brinkel, W. Schram, T. AlSkaif, I. Lampropoulos, and W. Van Sark, “Should we reinforce the grid? cost and emission optimization of electric vehicle charging under different transformer limits,” Applied Energy , vol. 276, p. 115285, 2020. [7] N. Brinkel and F. van Montfoort, “Can grid tariffs be fair and efficient? a comprehensive evaluation of tariff designs for smart electric vehicle integration,” Energy Economics , p. 109407, 2026. [8] A. B. Thingvad, A. F. Noureddine, M. H. Monin, V. Anna, L. S. Ingvardsen, K. Nørregaard, and L. K. Askholm, “Potential of smart charging and v2g,” Hybrid Greentech, Danish Technological Institute, and Copenhagen Airports, ALIGHT Project White Paper WP4.3, Oct. 2023, version 1.0, ISBN 978-87-975041-0-9. [Online]. Available: https://www.teknologisk.dk/ /media/89220 ALIGHT-WP4 3 white paper about smart charging and V2G.pdf [9] A. Al Mehadi, O. Watson, and A. Kamineni, “Comparative analysis of milp and rl algorithms for ev charging scheduling at airport parking,” in 2024 IEEE Kansas Power and Energy Conference (KPEC) . IEEE, 2024, pp. 1–6. [10] Z. Guo, B. Li, G. Taylor, and X. Zhang, “Infrastructure planning for airport microgrid integrated with electric aircraft and parking lot electric vehicles,” Etransportation , vol. 17, p. 100257, 2023. [11] D. Vereno, R. Sch¨ utz, K. Polanec, F. Maldonato, F. Mielke-Sulz, D. K¨ ogler, R. Nicodemus, J. Weber, J.-A. Gross, C. Neureiter et al. ,“Utilizing autonomous airport parking facilities as virtual power plants to provide frequency containment reserve,” ACM SIGENERGY Energy Informatics Review , vol. 4, no. 4, pp. 49–64, 2025. [12] N. Yan, T. Tang, J. He, and Y. Lin, “Optimal vehicle fleet and charging strategy for electric ground service equipment at airports based on flight schedule,” Transport Policy , p. 104123, 2026. [13] A. Al Mehadi and C. Morankar, “An milp-based optimization frame-work for integrated charging and ships-to-grid energy management: A case study of lake travis, texas,” in 2025 IEEE Electric Ship Technologies Symposium (ESTS) . IEEE, 2025, pp. 330–335. [14] A. Al Mehadi, A. Sultana, J. Morgan, M. Harper, H. Wang, and R. Zane, “Benchmarking milp guided bc-ppo for grid constrained ev charging and v2g charging,” in 2026 IEEE Green Technologies Conference (GreenTech) . IEEE, 2026, pp. 1–6. [15] Y. Wang, D. Xie, C. Gu, P. Zhao, and X. Wang, “Electric vehicle scheduling model with strategic siting and incentive pricing considering participation willingness,” IEEE Transactions on Smart Grid , 2025. [16] Los Angeles Department of Water and Power (LADWP), “Electric vehicle commercial charging service – monthly rates,” 2026, accessed: Jul. 20, 2026. [Online]. Available: https://www.ladwp.com/account/ customer-service/electric-rates/special-commercial-industrial-rates/ electric-vehicle-commercial-charging-service-monthly-rates [17] C. F. Lee, K. Bjurek, V. Hagman, Y. Li, and C. Zou, “Vehicle-to-grid optimization considering battery aging,” IFAC-PapersOnLine , vol. 56, no. 2, pp. 6624–6629, 2023. [18] Jason. (2025, Feb.) How ev battery chemistry af-fects performance and lifespan. Midtronics. Accessed: Jul. 17, 2026. [Online]. Available: https://www.midtronics.com/blog/ how-ev-battery-chemistry-affects-performance-lifespan/ [19] BloombergNEF, “Electric vehicle outlook 2023,” BloombergNEF, Tech. Rep., 2023. [20] San Francisco International Airport, “Sfo electric vehicle charging load analysis: Final report,” San Francisco International Airport (SFO), Final Report, Jan. 2023, accessed: Jul. 24, 2026. [Online]. Available: https://sustainability.flysfo.com/wp-content/uploads/2024/ 03/2023-SFO-Electric-Vehicle-Charging-Load-Analysis.pdf [21] Y. Fan, X. Tao, Z. Ye, K. Kumar, and R. Gadh, “From co-location to coordination: Ev aggregator dispatch for voltage regulation of ai data center-integrated distribution systems,” Available at SSRN 7032060 ,2026. [22] National Renewable Energy Laboratory, “Annual technology baseline 2024: Utility-scale battery storage,” 2024. [Online]. Available: https://atb.nlr.gov/electricity/2024/data [23] San Diego Gas & Electric Company and Southern California Gas Company, “Pipeline safety & reliability project (A.15-09-013): Responses to CPUC data request no. 06 follow up,” California Public Utilities Commission, Dec. 2017, item 3-17, Response 8: Escondido ESS is 120 MWh on approximately 1 acre including balance of plant. [Online]. Available: https://ia.cpuc.ca.gov/environment/info/ene/ sandiego/Documents/Data%20Request%20No.%206.pdf [24] G. Cornfield, “Turnbridge equities pays $7.1M per acre for industrial site in LA’s south bay,” Commercial Observer, May 2023. [Online]. Available: https://commercialobserver.com/2023/05/ la-turnbridge-equities-7-1m-per-acre-industrial/ [25] Mercom India, “CTUIL proposes 3 acre/100 MWh as land requirement for BESS projects,” May 2025. [Online]. Available: https://mercomindia.com/ ctuil-proposes-3-acre-100-mwh-as-land-requirement-for-bess-projects [26] National Fire Protection Association, NFPA 855: Standard for the Installation of Stationary Energy Storage Systems , Std., 2023.

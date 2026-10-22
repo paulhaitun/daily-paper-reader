@@ -1,0 +1,507 @@
+Title: Adaptive Operator Selection in Bilevel Large Neighborhood Search for Electric Autonomous Dial-a-Ride Problem under Uncertainty
+
+URL Source: https://arxiv.org/pdf/2610.04219v1
+
+Published Time: Tue, 06 Oct 2026 00:31:24 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# ADAPTIVE OPERATOR SELECTION IN BILEVEL LARGE 
+
+# NEIGHBORHOOD SEARCH FOR ELECTRIC AUTONOMOUS 
+
+# DIAL -A-R IDE PROBLEM UNDER UNCERTAINTY 
+
+Ishara Hewa Pathiranage 
+
+Machine Learning and Optimisation, School of Computer Science and Information Technology, Adelaide University, Adelaide, Australia 
+
+Aneta Neumann 
+
+Machine Learning and Optimisation, School of Computer Science and Information Technology, Adelaide University, Adelaide, Australia 
+
+ABSTRACT 
+
+The electric autonomous dial-a-ride problem (EADARP) extends the classical dial-a-ride problem by incorporating battery and charging constraints for electric vehicles. In practice, travel-time un-certainty can cause violations of time-window constraints. Large neighborhood search is effective for solving the EADARP, but its performance can depend on the choice of insertion operator during the repair phase. This paper investigates insertion-operator selection within a bilevel large neighbor-hood search framework for deterministic and chance-constrained variants of the EADARP. In the chance-constrained variant, arc travel times are modeled as independent normally distributed ran-dom variables, and upper time-window constraints are enforced probabilistically. We consider six selection methods, namely fixed greedy insertion, fixed regret-based insertion, random selection, a deterministic state-based rule, performance-adaptive ALNS selection, and LLM-based state-aware selection. Experimental results show comparable performance on smaller instances, while differ-ences become more evident on larger and more constrained instances. There is no single strategy that performs best across all instances, and the relative performance of the LLM-based, rule-based, and ALNS strategies varies with the problem instance and experimental setting. 
+
+Keywords Electric Autonomous Dial-a-Ride Problem · Large Neighborhood Search · Uncertainty · Chance Constraints · Large Language Models 
+
+1 Introduction 
+
+The growing demand for urban transportation has increased interest in on-demand ride-sharing systems [1]. Com-pared with fixed-schedule public transportation, these services offer greater flexibility. They may also reduce oper-ating costs and environmental impacts relative to privately owned vehicles and conventional taxi services. Recent advances in electric and autonomous vehicle technologies enable energy-efficient and scalable operations. Electric vehicles introduce constraints related to battery capacity and charging, while autonomous vehicles enable continuous operation without human drivers and improve fleet utilization. The integration of these technologies leads to the elec-tric autonomous dial-a-ride problem (EADARP) [2], which extends the classical dial-a-ride problem (DARP) [3, 4] by incorporating battery and charging constraints. These additional constraints further increase the complexity of the already NP-hard DARP. Moreover, travel times in ride-sharing networks can vary due to traffic congestion, incidents, weather, and time-of-day effects. Ignoring such uncertainty may lead to time-window violations, particularly in tightly scheduled services with limited time buffer. To address this problem, chance constraints [5] can be incorporated into optimization problems such that stochastic constraints are satisfied with high probability, usually denoted by α. It has been successfully applied to optimization problems in domains such as mining [6, 7, 8] and logistics [9, 10, 11]. arXiv:2610.04219v1 [cs.NE] 3 Oct 2026 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Large neighborhood search (LNS) is a well-established local search heuristic that uses a destroy operator to remove part of the current solution and a repair operator to reconstruct the resulting partial solution at each iteration [12]. In the literature, a variety of operators have been proposed for request removal and insertion. Common removal operators include random and worst removal, while popular insertion operators include greedy, deep-greedy, and regret-based insertion [13, 14]. LNS is an established method to solve DARP [15, 16, 17], EADARP [18, 19, 20, 21], and other routing, scheduling, and location problems [22, 23]. Furthermore, recent advances in artificial intelligence and natural language processing have led to the rapid devel-opment of large language models (LLMs). These models have been successfully applied across a wide range of applications, including decision support systems [24, 25, 26] and tools for algorithm design [27, 28, 29]. In this paper, we investigate insertion-operator selection within a bilevel large neighborhood search framework for deterministic and chance-constrained EADARP variants. We compare fixed greedy, fixed regret, random, deterministic rule-based, performance-adaptive ALNS, and LLM-based state-aware selection while keeping all other components of the BI-LNS framework unchanged. 
+
+1.1 Related Work 
+
+Several exact and metaheuristic approaches have been proposed for solving the EADARP. Bongiovanni et al. [30] introduced the problem and proposed three- and two-index MILP formulations, demonstrating improved scalability of the two-index model. Subsequently, Bongiovanni et al. [31] investigated the dynamic EADARP using a greedy construction combined with a machine learning–assisted large neighborhood search. Due to the limited scalability of exact methods, several metaheuristic approaches have been developed, including deterministic annealing with battery-restricted fragments [32] and the bilevel large neighborhood search (BI-LNS) framework [18]. In BI-LNS, an outer level optimizes charging schedules, while an inner level optimizes pickup and delivery requests. More recent studies further extended LNS-based approaches with dynamic charging-station insertion strategies [19, 20, 21, 33, 34]. More-over, early work by Ropke and Pisinger [13] examined operator selection in LNS, proposing adaptive mechanisms that choose among multiple heuristics using historical performance information. Chance-constrained optimization [5] provides a promising framework for handling uncertainty by ensuring that con-straints are satisfied with a specified probability [35, 36, 37]. In the mining domain, Stimson et al. [8] applied a single-objective evolutionary algorithm to chance-constrained open-pit mine scheduling. More recently, a bi-objective evolutionary formulation was developed for dynamic chance-constrained open-pit mine scheduling, where block eco-nomic values are stochastic and mining and processing capacities vary over time [38]. In the context of DARP, Johnsen et al. [11] investigated a stochastic variant with interrelated trips. They proposed a chance-constrained formulation that approximates arrival- and service-time distributions and evaluates probabilistic feasibility within an adaptive variable neighborhood search framework. Recent studies have also explored LLMs as tools for decision support and automated algorithm design in optimization. Zhong et al. [26] integrated LLMs into hyper-heuristic evolutionary frameworks, where the LLM acts as a high-level controller for selecting or sequencing low-level heuristics. Liu et al. [27] provided a systematic review outlining the roles and limitations of LLMs across the algorithm design pipeline. In addition, language-driven hyper-heuristics have been proposed for NP-hard combinatorial optimization, enabling automated heuristic generation and adaptation with minimal manual intervention [29]. Despite these advances, most EADARP studies consider deterministic travel times, and the effect of insertion-operator selection within BI-LNS remains underexplored. In particular, fixed, random, rule-based, and adaptive selection strategies have not been compared for deterministic and chance-constrained EADARP variants. 
+
+1.2 Contribution 
+
+This paper investigates inner-level insertion-operator selection within BI-LNS for classical and chance-constrained variants of the EADARP. Building on the BI-LNS framework introduced in [18], we study how different selection strategies affect feasibility and solution quality while keeping the remaining components of the algorithm unchanged. We compare six insertion-operator selection strategies, including greedy insertion, regret-based insertion, random selection, deterministic rule-based selection, adaptive ALNS selection, and LLM-based state-aware selection. We introduce BI-LNS-LLM, in which an LLM selects between greedy and regret-based insertion using compact features that describe the current search state. The LLM does not construct routes, check feasibility, or evaluate objective values. 2Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty We also consider a chance-constrained EADARP in which arc travel times are modeled as independent, normally distributed random variables, while all other problem parameters remain deterministic. Upper time-window constraints are enforced probabilistically using chance constraints. The remainder of this paper presents the deterministic and chance-constrained EADARP formulations in Sections 2 and 3, respectively. Section 4 describes the BI-LNS framework and operator-selection strategies. Sections 5 and 6 present the experimental setup and results, respectively, and Section 7 concludes the paper. 
+
+2 Problem Definition 
+
+This section defines the electric autonomous dial-a-ride problem, including its objective function and constraints. 
+
+2.1 Problem Setting 
+
+The EADARP extends the classical DARP by incorporating battery and charging constraints for electric autonomous vehicles (EAVs). The problem considered in this work is based on the deterministic EADARP variant of Limmer [18], itself derived from the formulation introduced by Bongiovanni et al. [30]. We define the EADARP as a complete directed graph G = ( V, A ), where V denotes the set of locations and A = {(i, j ) | i, j ∈ V, i ̸ = j} denotes the set of arcs. A fleet of K electric autonomous vehicles is available to serve N transportation requests over a planning horizon of length T .Let K = {1, . . . , K } denote the set of vehicles. The vertex set V is partitioned into five disjoint subsets: the set of pickup locations P = {1, . . . , N }, the corresponding set of drop-off locations D = {N + 1 , . . . , 2N }, the set of start depots O, the set of end depots F , and the set of charging stations S. Each transportation request i ∈ P consists of a pickup at location i and a corresponding drop-off at location i + N ∈ D. Each vehicle k ∈ K starts its route at a designated start depot ok ∈ O and must terminate at an end depot fk ∈ F .
+
+2.2 Travel Times, Time Windows, and Loads 
+
+Each arc (i, j ) ∈ A has a travel time ti,j , defined as the Euclidean distance between the corresponding locations, and an energy consumption ei,j = β t i,j , where β is the energy consumption rate per unit travel time. Each location 
+
+i ∈ V has a time window [wstart  
+
+> i
+
+, w end  
+
+> i
+
+] within which service must begin. Service at each pickup and drop-off location 
+
+i ∈ P ∪ D requires a positive duration di > 0, while di = 0 for depots and charging stations. Let ai and si denote the arrival time and the service start time at location i, respectively. Vehicle loads are defined by li, li > 0 for pickup locations, li+N = −li for the corresponding drop-off locations, and 
+
+li = 0 for all other locations. Each vehicle k ∈ K has a maximum load capacity Ck.
+
+2.3 Battery and Charging Constraints 
+
+Each vehicle k ∈ K has battery capacity Q and starts its route with an initial battery level Q0
+
+> k
+
+. The battery level upon arrival at the destination depot must satisfy Qend  
+
+> k
+
+≥ γQ , where γ ∈ [0 , 1] . Each charging station s ∈ S has a charging rate ρs. Vehicles may partially recharge when visiting charging stations. Let gk,h denote the charging gain obtained by vehicle k at its h-th visited location, which is zero if the location is not a charging station. Note that only vehicles without passengers may visit charging stations. In this work, we consider a relaxed EADARP variant in which charging stations may be visited an unlimited number of times, as also assumed in [30, 18, 19]. We model this by allowing charging station locations to appear multiple times within a route, while all other locations may be visited at most once. 
+
+2.4 Routes and Feasibility 
+
+A route for a vehicle k ∈ K is defined as an ordered sequence of locations that starts at ok ∈ O, may visit pickup, drop-off, and charging station locations, and ends at fk ∈ F . A solution to the EADARP consists of one route per vehicle together with the service start times at all visited locations. A solution is feasible if the following conditions are satisfied. Each request is served exactly once. For every request 
+
+i ∈ P , exactly one route visits the pickup location i and the corresponding drop-off location i + N , with the pickup occurring before the drop-off. The load of each vehicle k ∈ K never exceeds its capacity Ck, and the maximum ride time constraint is satisfied for every request. Service at each location i ∈ V starts within its time window [wstart  
+
+> i
+
+, w end  
+
+> i
+
+];vehicles can arrive before wstart  
+
+> i
+
+and wait, but service may not start after wend  
+
+> i
+
+.3Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Each vehicle starts its route with battery level Q0
+
+> k
+
+, never depletes its battery, never charges beyond its battery capacity 
+
+Q, and satisfies the minimum final battery requirement upon arrival at its end depot. Vehicles may visit charging stations only when they carry no passengers. A physical charging station may be visited multiple times, whereas each pickup and drop-off location may be visited only once. 
+
+2.5 Objective Function 
+
+The objective of the EADARP is to find a feasible solution that minimizes a weighted sum of total travel time across vehicle routes and total passenger excess ride time for all transportation requests, i ∈ P , i.e., 
+
+min w1
+
+X
+
+> k∈K
+
+X
+
+> (i,j )∈A
+
+ti,j xki,j + w2
+
+X
+
+> i∈P
+
+ri. (1) Here, w1 and w2 denote the weight factors associated with routing cost and passenger inconvenience, respectively, and xki,j ∈ { 0, 1} is a binary decision variable that equals 1 if vehicle k travels directly from location i to j, and 0
+
+otherwise. The excess ride time ri of request i ∈ P measures the additional delay experienced by a passenger relative to a direct trip from pickup to drop-off and is defined as ri = si+N − si − di − ti,i +N , where si and si+N denote the service start times at the pickup and drop-off locations, respectively, di is the service duration at the pickup location, and ti,i +N
+
+denotes the direct travel time from pickup location i to its corresponding drop-off location i + N .
+
+3 Chance-Constrained EADARP with Stochastic Travel Times 
+
+We extend the deterministic EADARP by incorporating travel-time uncertainty while keeping all remaining problem parameters deterministic. Travel-time uncertainty propagates along vehicle routes through stochastic travel times and deterministic service and charging durations. For each arc (i, j ) ∈ A, we model the travel time as an independent normally distributed random variable ˜ti,j ∼N (ti,j , σ 2 
+
+> i,j
+
+), where ti,j denotes the mean travel time and σi,j = CV · ti,j such that CV ≥ 0 is the coefficient of variation controlling the level of travel-time uncertainty. We assume that travel times on different arcs are mutually independent. Consider a route of vehicle k ∈ K visiting the ordered sequence (vk 
+
+> 0
+
+, v k 
+
+> 1
+
+, . . . , v kLk ), where vk 
+
+> 0
+
+= ok
+
+denotes its start depot. Let ˜avkℓ denote the random arrival time at location vkℓ . Because service cannot begin before the lower bound of the corresponding time window, the random service-start time is ˜si = max  ˜ai, w start 
+
+> i
+
+.Let qvkℓ denote the effective deterministic charging duration used in the stochastic time propagation when vkℓ is a charging station, and let qvkℓ = 0 otherwise. The implementation limits this duration so that the expected charging-completion time does not exceed the charging station’s upper time-window bound. Because charging durations are deterministic, they do not add variance to the propagated time. The arrival time at the next location is eavkℓ+1 =
+
+esvkℓ + dvkℓ + qvkℓ + etvkℓ ,v kℓ+1 .In the chance-constrained EADARP, lower time-window bounds are enforced through waiting, while upper time-window bounds at pickup and drop-off locations are enforced probabilistically. For a given confidence level α, each passenger location must satisfy 
+
+Pr  esi ≤ wend 
+
+> i
+
+ ≥ α, ∀i ∈ P ∪ D. (2) We apply chance constraints only at pickup and drop-off locations, where lateness directly affects passenger service. Time-window constraints at depots and charging stations remain deterministic. Specifically, charging must finish by the charging station’s upper bound, and each vehicle must reach its end depot within the planning horizon. We assume 
+
+α ∈ [αl, α h], where αl > 1/2 and αh < 1.If no waiting has occurred at location i or any earlier location on its route, the service-start time at i is a sum of independent normally distributed travel times and deterministic durations. In this case, the chance constraint has the exact deterministic representation 
+
+μi + zα
+
+√vi ≤ wend  
+
+> i
+
+, ∀i ∈ P ∪ D, (3) where μi = E[esi] and vi = Var( esi) denote the mean and variance of the service-start time, respectively. Furthermore, 
+
+zα denotes the α-quantile of the standard normal distribution [39, 8]. When waiting occurs, the service-start time is no longer normally distributed because all arrival times before the applicable lower bound are replaced by that bound. We therefore calculate its first two moments and use a normal distribution with the same mean and variance to approximate the uncertainty at subsequent locations. 4Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Let A ∼ N (μ, v ), B = max( A, c ), where A denotes the arrival time and c denotes the applicable deterministic lower bound. At a pickup location, c may also include a later service-time bound introduced by the nominal scheduling procedure to satisfy the maximum ride-time constraint. For v > 0, the mean and the second moment of B are E[B] = 
+
+μΦ( −η) + cΦ( η) + √v ϕ (η), E[B2] = ( μ2 + v)Φ( −η) + c2Φ( η) + ( μ + c)√v ϕ (η), where η = ( c − μ)/√v. Here, ϕ
+
+and Φ denote the probability density function and cumulative distribution function of the standard normal distribution, respectively [40]. The resulting moments of the service-start time are μi = E[B], and vi = Var( B) = E[B2] − E[B]2.
+
+4 Insertion-Operator Selection in Bilevel Large Neighborhood Search 
+
+This section presents the baseline BI-LNS framework and the six insertion-operator selection strategies. 
+
+4.1 BI-LNS framework 
+
+To solve both the deterministic and chance-constrained variants of the EADARP, we adapt the bilevel large neighbor-hood search framework introduced by Limmer [18]. BI-LNS separates charging and request-routing decisions. The outer level inserts, removes, or modifies charging sessions, while the inner level arranges pickup and drop-off locations around the fixed charging sessions. Each charging session specifies a station, a charging duration, and an upper bound on its completion time. The algorithm starts with one empty route for each vehicle and generates Cinit charging sessions for each route. It then calls the inner search to insert the passenger requests. At each outer iteration, it selects charging session modification, insertion, or removal with probabilities pmod , pins , and prem , respectively. If the solution contains no charging sessions, it selects insertion. After changing a route, the algorithm removes all passenger requests from that route and calls the inner search to reinsert them. We consider unlimited charging-station visits where a station can appear in multiple charging sessions. The outer search prioritizes the number of served requests until it finds a complete solution. 
+
+4.2 Inner-level search 
+
+For fixed charging sessions, the inner level applies a destroy-and-repair search. It first orders the requests by increasing lower bound of their pickup time windows and attempts to insert them. Requests that cannot be inserted remain rejected. Each inner iteration starts from the best retained solution. The destroy step randomly removes qout served requests. The algorithm combines these requests with the rejected set and selects up to qin requests for reinsertion. It orders the selected requests by their pickup time-window lower bounds and applies the insertion operator chosen by the corresponding selection strategy. Before a complete solution is found, the algorithm starts with Qin and Qout and adjusts these values according to the number of rejected requests. After all requests are served, it sets qin = qout = Q. We use the same adjustment in all six variants. The inner search follows a feasibility-first acceptance rule. While the best solution is incomplete, it accepts a route-feasible candidate if the candidate does not increase the number of rejected requests. It accepts a route-infeasible candidate only when the candidate strictly reduces that number. After finding a complete solution, it accepts only complete candidates that do not increase the objective value. Algorithm 1 summarizes the inner search. For the deterministic EADARP, the algorithm applies the feasibility conditions in Section 2. For the chance-constrained variant, it uses the time-window evaluation in Section 3. Therefore, the selection strategy changes only the insertion operator, not the constraints or their evaluation. 
+
+4.3 Insertion operators 
+
+We use greedy and regret-based insertion because they provide different repair behaviors. Greedy insertion focuses on the best immediate move, while regret insertion prioritizes requests that may become difficult to insert later. 
+
+4.3.1 Greedy insertion 
+
+The greedy operator processes requests sequentially. For each request, it finds feasible pickup and drop-off positions across the vehicle routes and selects the positions with the smallest increase in the objective value. If it finds no feasible insertion, the request remains rejected. 5Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty 
+
+Algorithm 1 Inner-level BI-LNS with insertion-operator selection 
+
+Require: Routes R with fixed charging sessions, requests R, iteration limit I, and selection strategy m
+
+Ensure: Best routes R∗ and rejected requests R∗ 
+
+> 1:
+
+Order R by pickup time-window lower bound  
+
+> 2:
+
+Select an initial operator using m and insert the requests  
+
+> 3:
+
+Store the result as (R∗, R ∗) 
+
+> 4:
+
+for h = 1 , . . . , I do  
+
+> 5:
+
+Set qout and qin from the current feasibility state  
+
+> 6:
+
+Copy (R∗, R ∗) to (R′, R ′) 
+
+> 7:
+
+Remove qout served requests and add them to R′ 
+
+> 8:
+
+Select and order up to qin requests from R′ 
+
+> 9:
+
+Select o ∈ { GREEDY , REGRET } using m 
+
+> 10:
+
+Apply o using the feasibility test for the relevant EADARP variant  
+
+> 11:
+
+if the candidate satisfies the acceptance rule then  
+
+> 12:
+
+(R∗, R ∗) ← (R′, R ′) 
+
+> 13:
+
+end if  
+
+> 14:
+
+Update the information required by m 
+
+> 15:
+
+end for  
+
+> 16:
+
+return (R∗, R ∗)
+
+Table 1: Insertion-operator selection strategies. Variant State History Selection BI-LNS-Greedy No No Fixed greedy BI-LNS-Regret No No Fixed regret-k
+
+BI-LNS-Random No No Uniform random BI-LNS-Rule Yes No Fixed thresholds BI-LNS-ALNS No Yes Adaptive weights BI-LNS-LLM Yes No Model preference 
+
+4.3.2 Regret-based insertion 
+
+The regret operator first ranks the rejected requests and then passes the resulting order to greedy insertion [41]. For each request, it estimates the added travel time for a restricted set of insertion positions. These estimates rank the requests but do not determine feasibility. Let ec1(r) ≤ · · · ≤ ecm(r) denote the approximate insertion costs for request r. With k = 3 , we calculate Regret k(r) = 
+
+Pmin {k,m } 
+
+> j=2
+
+(ecj (r) − ec1(r)) . If a request has fewer than two estimated insertion options, we assign it an infinite regret value so that the algorithm considers it first. We rank requests by decreasing regret and randomly shuffle the highest ranked subset to add diversity. Greedy insertion then processes this order and applies the full deterministic or chance-constrained feasibility test. 
+
+4.4 Insertion-operator selection strategies 
+
+We compare the six insertion-operator selection strategies summarized in Table 1. They differ only in how they select between greedy and regret-k insertion. The State column indicates whether the selector uses features of the current search state. The History column indicates whether it uses the past performance of the insertion operators. The 
+
+Selection column specifies the operator-selection mechanism. 
+
+Fixed and random selection. BI-LNS-Greedy always uses greedy insertion, as in the original BI-LNS. BI-LNS-Regret always uses regret-k insertion. BI-LNS-Random selects either operator with equal probability at each decision point, including during the initial construction. 
+
+Rule-based selection. BI-LNS-Rule uses the unrouted request ratio ru, the mean time-window tightness τ of un-routed requests, and the recent rejection rate ρ. It selects regret-k insertion when ru > 0.30 , τ > 0.60 , or ρ > 0.15 .Otherwise, it selects greedy insertion. It uses greedy insertion during the initial construction. 6Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Table 2: Search-state features supplied to the LLM selector. Feature Definition 
+
+rejected Number of currently rejected requests. 
+
+rejected_ratio Ratio of rejected requests to all requests. 
+
+delta_rejected Normalized change in the rejected-request count from the previous iteration. 
+
+delta_obj Normalized objective improvement from the previous iteration. 
+
+stagnation Normalized number of consecutive iterations without improvement. 
+
+progress Fraction of completed inner-search iterations. 
+
+tw_tightness Mean normalized time-window tightness of rejected requests. 
+
+unrouted_hardness Product of rejected_ratio and tw_tightness .
+
+gap_best_rejected Normalized difference from the best rejected-request count. 
+
+gap_best_obj Normalized difference from the best objective value. 
+
+cs_count Mean number of charging sessions per vehicle. 
+
+Performance-adaptive selection. Inspired by adaptive operator selection in ALNS [13], BI-LNS-ALNS assigns a weight wo to each insertion operator and selects operator o with probability Pr( o) = wo/ P 
+
+> o′
+
+wo′ . The operator weights are initialized to 1 and updated throughout the search. After each repair iteration, it updates the weight of the selected operator as wo ← 0.9wo +0 .1π, where π is 33 for an accepted improvement, 1 for an accepted non-improving result, and 0 for a rejected result. 
+
+LLM-based selection. BI-LNS-LLM uses an LLM as an online hyper-heuristic. The model receives a compact summary of the current inner-search state and returns pgreedy ∈ [0 , 1] , which represents its preference for greedy insertion. For each run and discretized search state, the algorithm deterministically generates u ∈ [0 , 1) . It selects greedy insertion if u < p greedy and regret-k insertion otherwise. The LLM does not receive complete routes, construct solutions, or evaluate solutions. BI-LNS performs route modi-fication, feasibility checking, objective calculation, charging decisions, and acceptance. The model receives only the aggregated features listed in Table 2. The features capture the current feasibility status, recent search progress, re-quest difficulty, distance from the best-known solution, and charging activity. They provide the LLM with a compact representation of the search state without exposing complete solutions. We cache the LLM preference for each discretized search state to reduce repeated API calls and reuse the most recently selected operator between model queries. If the model is unavailable or returns an invalid response, BI-LNS-LLM uses the rule-based selector. Figure 1 illustrates the role of the LLM selector. 
+
+5 Experimental Setting 
+
+In this section, we present the experimental setup used to evaluate our approach on deterministic and chance-constrained EADARP instances. We use two benchmark sets derived from classical DARP instances. The first set contains ten instances introduced in [42], and the second contains ten instances introduced in [43]. Following [30], we extend these instances by adding battery constraints and three charging stations. We denote an instance by aK -N , where K is the number of vehicles and N is the number of transportation requests. For the deterministic experiments, consistent with prior EADARP studies [18, 19], we set the minimum final battery ratio to γ = 0.7. We also examine the effect of this parameter on the Ropke instances using γ ∈{0.2, 0.4, 0.5, 0.7, 0.8, 0.9}. Following previous EADARP studies [18, 19], we set the objective weights in Equa-tion (1) to w1 = 0 .75 and w2 = 0 .25 .For the chance-constrained experiments, we use coefficients of variation CV ∈ { 0.1, 0.3} and confidence levels 
+
+α ∈ { 0.99 , 0.9999 , 0.999999 }. We consider minimum final battery ratios γ ∈ { 0.4, 0.7}.We implement all methods in Python 3.11 using the BI-LNS framework described in Section 4. We set the initial number of charging sessions per vehicle to Cinit = 1 . At the outer level, we select charging-session modification, insertion, and removal with probabilities 0.55 , 0.225 , and 0.225 , respectively. Each call to the inner-level search performs I = 300 iterations, and each run has a time limit of 120 minutes. 7Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty 
+
+Figure 1: Role of the LLM selector in the BI-LNS inner-level repair process. Before a complete solution is found, we initially set Qin = 2 and Qout = 1 . As explained in Section 4.2, the algorithm may increase these values according to the number of rejected requests. After a complete deterministic solution is found, we set Q = max {10 , ⌊0.4N ⌋} . The reported chance-constrained experiments use Q = 19 . We apply a noise factor of η = 0 .01 to the insertion costs [18] and use k = 3 for regret insertion [41]. These settings follow the main structure of BI-LNS but include changes to the number of inner iterations and the request-removal and reinsertion rules. Therefore, we treat the method as an adapted Python implementation of BI-LNS rather than an exact reproduction of the implementation in [18]. We compare six variants: BI-LNS-Greedy, BI-LNS-Regret, BI-LNS-Random, BI-LNS-Rule, BI-LNS-ALNS, and BI-LNS-LLM. The variants use the same problem representation, outer-level search, feasibility tests, acceptance rule, parameter settings, and stopping criteria. They differ only in the method used to select the inner-level insertion operator. For BI-LNS-LLM, we use the Gemini API 1 and use the gemini-2.5-flash-lite model. We set the temperature to zero and limit the response to 50 tokens. We run the experiments on single nodes of a high-performance computing cluster equipped with Intel ® Xeon ® Plat-inum 8360Y processors. Each job is allocated eight CPU cores and 1 GB of memory. For each experimental configu-ration, we conduct ten independent runs. We report the feasibility rate and the minimum, mean, and standard deviation of the objective values obtained from feasible runs. Objective statistics should therefore be interpreted together with the feasibility rate. 
+
+6 Experimental Results 
+
+This section compares the six operator-selection strategies on both the deterministic and chance-constrained EADARP, focusing on solution quality, feasibility recovery, and search dynamics across benchmark instances. 
+
+> 1Google AI Studio
+
+8Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Table 3: Final best feasible objective values for the deterministic EADARP on the Cordeau and Ropke instances with  γ = 0 .7. For each method, we report the minimum, mean, and standard deviation over the feasible runs among 10 independent runs, together with the feasibility count. Best conditional mean values per instance are highlighted in bold. NA indicates that no feasible run was obtained, and - indicates that the standard deviation is undefined because only one feasible run was obtained. 
+
+> Instance  BI-LNS-Greedy [18]  BI-LNS-Regret  BI-LNS-Random  BI-LNS-Rule  BI-LNS-ALNS  BI-LNS-LLM Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas. a2-16  257 .6 258 .0 0.4 10/10  256 .4 257 .6 0.8 10/10  256 .6 257 .4 0.5 10/10  256 .7 257 .9 0.7 10/10  256 .5 258 .1 0.8 10/10  257 .3 257 .9 0.6 10/10 a3-18  250 .1 250 .3 0.1 10/10  250 .3 250 .3 0.0 10/10  250 .1 250 .3 0.1 10/10  250 .1 250 .3 0.1 10/10  250 .2 250 .3 0.1 10/10  250 .1 250 .3 0.1 10/10 a3-24  276 .3 276 .3 0.0 10/10  275 .2 276 .2 0.3 10/10  275 .2 276 .2 0.3 10/10  275 .2 276 .2 0.3 10/10  275 .2 275 .9 0.5 10/10  276 .3 276 .3 0.0 10/10 a4-16  226 .8 227 .4 0.8 10/10  226 .8 227 .4 0.8 10/10  226 .8 227 .3 0.8 10/10  226 .8 227 .0 0.5 10/10  226 .8 227 .0 0.5 10/10  226 .8 227 .5 0.7 10/10 a4-24  322 .8 324 .5 3.8 10/10  322 .4 322 .8 0.2 10/10  322 .4 322 .8 0.2 10/10  322 .4 322 .8 0.2 10/10  322 .8 322 .9 0.1 10/10  322 .8 323 .0 0.1 10/10 a4-32  417 .9 421 .2 2.4 10/10  417 .9 420 .7 1.3 10/10  418 .3 420 .5 1.3 10/10  419 .6 421 .9 1.0 10/10  417 .9 420 .6 1.9 10/10  417 .9 420 .2 1.8 10/10 a4-40  498 .1 514 .5 11 .3 10/10  490 .5 509 .7 10 .4 10/10  497 .8 513 .5 12 .0 10/10  501 .9 512 .1 10 .1 9/10  501 .8 515 .4 9.2 10/10  502 .9 508 .0 3.9 10/10 a4-48  603 .2 610 .7 6.3 10/10  601 .1 607 .6 3.9 10/10  601 .0 610 .7 7.1 10/10  599 .5 609 .4 8.5 10/10  605 .5 609 .8 4.1 10/10  602 .9 609 .8 5.4 10/10 a5-40  420 .7 424 .3 2.3 10/10  423 .0 424 .8 2.2 10/10  422 .7 426 .2 3.7 10/10  423 .0 425 .4 2.4 10/10  420 .3 424 .7 3.0 10/10  423 .0 427 .0 4.7 10/10 a5-50  588 .6 595 .2 4.3 10/10  590 .6 601 .7 8.2 10/10  590 .5 597 .4 6.8 10/10  591 .4 598 .7 8.5 10/10  593 .2 600 .1 4.4 10/10  589 .6 594 .2 2.8 10/10 a5-60  770 .5 794 .8 30 .6 8/10  769 .6 782 .3 16 .5 8/10  753 .1 779 .7 15 .0 8/10  756 .4 783 .5 15 .0 9/10  755 .9 776 .6 17 .2 10/10  770 .3 790 .3 21 .5 8/10 a6-48  528 .6 534 .6 5.1 10/10  527 .6 534 .6 4.8 10/10  527 .7 535 .2 5.0 10/10  529 .8 533 .1 3.2 10/10  530 .4 537 .0 5.0 10/10  527 .6 532 .9 2.4 10/10 a6-60  738 .4 755 .2 15 .2 10/10  741 .7 757 .3 10 .2 10/10  743 .1 753 .3 11 .0 10/10  739 .7 754 .2 19 .6 10/10  743 .2 752 .3 7.2 10/10  741 .6 758 .7 15 .1 10/10 a6-72  874 .1 888 .7 18 .3 5/10  875 .2 894 .5 16 .5 8/10  877 .8 899 .5 15 .5 10/10  859 .8 891 .5 19 .6 10/10  859 .4 901 .9 29 .4 9/10  867 .6 888 .6 18 .8 9/10 a7-56  647 .4 667 .5 13 .7 10/10  651 .7 661 .2 5.1 10/10  646 .0 658 .5 6.3 10/10  649 .0 665 .9 13 .2 10/10  656 .9 667 .2 11 .7 10/10  653 .8 666 .0 8.2 10/10 a7-70  837 .1 851 .2 15 .4 10/10  835 .3 853 .4 13 .4 10/10  827 .2 847 .5 13 .5 10/10  833 .4 843 .5 11 .5 10/10  832 .3 847 .0 10 .0 10/10  844 .5 868 .1 37 .6 10/10 a7-84  970 .3 1030 .1 31 .9 8/10  974 .3 1005 .7 21 .9 10/10  983 .3 1035 .0 52 .1 7/10  968 .1 1004 .9 31 .5 9/10  982 .5 1008 .9 19 .5 8/10  966 .6 998 .2 20 .0 7/10 a8-64  681 .3 697 .0 11 .6 10/10  689 .7 695 .7 4.7 10/10  683 .9 697 .3 7.6 10/10  681 .7 696 .1 8.4 10/10  685 .7 693 .5 6.1 10/10  679 .7 691 .4 10 .6 10/10 a8-80  889 .5 917 .5 16 .3 8/10  890 .8 915 .3 15 .3 9/10  891 .5 918 .9 25 .6 9/10  897 .2 931 .8 27 .6 9/10  880 .5 920 .6 22 .7 9/10  911 .5 924 .7 12 .1 8/10 a8-96  NA  NA  NA  0/10  1229 .1 1261 .3 45 .1 3/10  1211 .9 1211 .9 - 1/10  1252 .9 1253 .0 0.2 2/10  1278 .0 1278 .0 - 1/10  1203 .1 1203 .1 - 1/10
+
+9Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty 0.2 0.4 0.5 0.7 0.8 0.9 
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM
+> Algorithm
+> 731.7 738.9 759.1 794.8 --731.8 737.2 758.6 782.3 --733.5 739.8 751.8 779.7 798.7 801.5 733.5 739.0 744.6 783.5 781.9 -732.4 741.2 744.0 776.6 778.9 -732.2 736.0 748.3 790.3 829.2 -
+
+Instance a5-60      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM 525.6 524.0 526.4 534.6 548.1 567.2 524.3 523.8 524.0 534.6 543.6 567.6 524.5 524.7 525.9 535.2 544.1 566.2 523.1 523.4 524.7 533.1 542.6 571.1 523.7 523.5 523.9 537.0 543.9 570.4 523.7 524.2 525.9 532.9 552.0 564.6
+
+Instance a6-48      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM 726.3 728.1 738.8 755.2 782.8 786.6 727.4 727.8 735.8 757.3 765.0 780.7 726.5 726.7 734.1 753.3 764.0 792.7 728.0 727.2 733.6 754.2 764.8 783.5 728.5 731.1 731.3 752.3 775.4 787.1 726.4 730.3 753.0 758.7 773.5 782.1
+
+Instance a6-60      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM
+> Algorithm
+> 840.6 844.8 851.9 888.7 929.7 -836.6 846.2 859.4 894.5 922.6 -837.0 847.1 852.9 899.5 910.8 946.8 839.3 842.3 860.0 891.5 914.1 -835.4 848.5 860.8 901.9 922.2 -835.2 846.0 861.4 888.6 920.9 -
+
+Instance a6-72      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM 640.3 639.4 637.2 667.5 710.4 737.6 636.8 637.7 636.2 661.2 692.9 -640.2 636.5 638.7 658.5 697.6 729.9 637.8 638.9 637.4 665.9 712.9 -638.4 638.2 638.0 667.2 689.7 -637.2 636.2 638.2 666.0 708.4 -
+
+Instance a7-56      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM 819.1 818.1 820.9 851.2 877.7 890.7 816.0 817.8 818.9 853.4 875.2 900.2 823.2 817.5 824.8 847.5 866.4 897.0 814.0 814.3 823.2 843.5 868.6 910.6 813.7 815.1 817.0 847.0 874.8 946.0 814.7 817.9 819.7 868.1 881.6 902.9
+
+Instance a7-70      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM
+> Algorithm
+> 954.5 961.1 980.5 1030.1 1069.9 -949.1 961.6 969.5 1005.7 1054.6 1046.7 954.8 966.3 983.7 1035.0 1026.6 -950.9 953.6 968.2 1004.9 1029.9 1063.7 950.4 956.0 969.9 1008.9 1038.2 -947.3 962.3 966.8 998.2 1027.8 -
+
+Instance a7-84      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM 677.4 680.1 679.4 697.0 714.0 732.7 677.7 677.7 681.4 695.7 708.4 737.6 682.1 680.2 676.5 697.3 711.4 735.4 677.5 678.4 676.6 696.1 710.4 749.6 682.2 677.6 679.3 693.5 710.8 740.6 679.4 683.7 680.7 691.4 709.8 736.9
+
+Instance a8-64      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM 865.4 864.5 875.0 917.5 952.3 -863.5 861.7 870.9 915.3 972.8 -868.4 865.6 873.2 918.9 963.3 -864.5 860.8 869.0 931.8 940.6 -864.9 864.9 884.6 920.6 954.0 -861.1 861.4 877.8 924.7 955.3 -
+
+Instance a8-80      
+
+> 0.2 0.4 0.5 0.7 0.8 0.9
+
+Battery level ( )                               
+
+> Greedy Regret Random Rule ALNS LLM
+> Algorithm
+> 1122.8 1172.3 1206.2 ---1125.9 1160.5 1197.1 1261.3 --1131.9 1154.5 1208.4 1211.9 1280.2 -1119.3 1149.2 1181.0 1253.0 --1129.1 1152.7 1210.9 1278.0 --1132.2 1158.7 1208.2 1203.1 --
+
+Instance a8-96 
+
+> 740 760 780 800 820
+> 530 540 550 560 570
+> 740 760 780
+> 840 860 880 900 920 940
+> 640 660 680 700 720
+> 825 850 875 900 925
+> 950 975 1000 1025 1050
+> 680 700 720 740
+> 880 900 920 940 960
+> 1150 1200 1250
+
+Figure 2: Mean objective values over feasible runs for the Ropke instances under different minimum final battery ratios γ ∈ { 0.2, 0.4, 0.5, 0.7, 0.8, 0.9}. Colours are scaled independently within each instance. Rows represent BI-LNS variants and columns represent battery levels. Lower values are better, and - indicates that no feasible run was obtained. 
+
+6.1 Results for the Deterministic EADARP 
+
+We first evaluate the performance of different inner-level insertion-operator selection methods within BI-LNS on the deterministic EADARP. Table 3 presents results for both Cordeau and Ropke instances with γ = 0 .7. For each instance and method, we report the minimum, mean, and standard deviation of the best feasible objective values over 10 recorded runs, together with the feasibility rate (feasible/total runs). Best mean values per instance are highlighted in bold. Entries marked as NA 
+
+indicate that no feasible solution was found within the time limit. When feasibility is not achieved in all runs, objective statistics are computed over feasible runs only and should be interpreted jointly with the feasibility rate. Across the small and medium-sized instances, the conditional mean differences among the strategies are generally small. On the larger instances, the method with the lowest conditional mean varies by instance. BI-LNS-ALNS obtains the lowest mean on a5-60 and a6-60, BI-LNS-Random on a7-56, BI-LNS-Rule on a7-70, and BI-LNS-Regret on a8-80. BI-LNS-LLM obtains the lowest mean on a6-48, a6-72, a7-84, a8-64, and a8-96. However, a lower conditional mean does not necessarily indicate better overall performance because the objective statistics exclude infeasible runs and the feasibility rates differ across methods. The feasibility rates further illustrate this trade-off. On a6-72, BI-LNS-Random and BI-LNS-Rule obtain 10/10 fea-sible runs, whereas BI-LNS-LLM obtains 9/10 with a marginally lower conditional mean. On a7-84, BI-LNS-Regret obtains 10/10 feasible runs, whereas BI-LNS-LLM obtains 7/10 with the lowest conditional mean. Thus, the results suggest that operator selection affects post-feasibility solution quality on some difficult instances, but they do not show that BI-LNS-LLM consistently improves feasibility recovery. Instance a8-96 is particularly difficult. BI-LNS-Greedy finds no feasible solution, while the other methods obtain only one to three feasible runs. Therefore, the objective 10 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty 
+
+Figure 3: Convergence behavior over time on representative hard instances (a6-72 and a7-84), comparing BI-LNS-Greedy, BI-LNS-ALNS, and BI-LNS-LLM. The plots show median best feasible objective values over 10 runs with IQR bands. Only feasible solutions are considered; curves start at the first feasible solution. values for this instance provide limited comparative evidence. Overall, no selection method performs best across all instances. 
+
+6.1.1 Impact of Minimum Final Battery Ratio γ
+
+We analyze the effect of the minimum final battery ratio γ on the Ropke instances. Figure 2 shows the conditional mean objective value for each BI-LNS variant and battery level. Lower values are better, and blank cells indicate that the corresponding method obtained no feasible run. For γ ≤ 0.5, most methods obtain similar objective values within each instance. This indicates that the insertion-operator selection strategy has a limited effect when the battery requirement is relatively weak. From γ = 0 .7,objective values generally increase because solutions must preserve a higher battery level at the end of each route. Meeting this requirement restricts request allocation, route construction, and charging decisions. The effect of increasing γ depends strongly on the instance. All six methods obtain feasible solutions at γ = 0 .9
+
+on a6-48, a6-60, a7-70, and a8-64. In contrast, only BI-LNS-Random obtains a feasible run at γ = 0 .9 on a5-60 and a6-72, while only BI-LNS-Greedy and BI-LNS-Random do so on a7-56. On a7-84, only BI-LNS-Regret and BI-LNS-Rule obtain feasible runs at this battery level. No method obtains a feasible run at γ = 0 .9 on a8-80 or a8-96. At γ = 0 .8 on a8-96, only BI-LNS-Random obtains a feasible run. These results show that stricter battery requirements increase both objective values and the difficulty of feasibility recovery. However, the method that remains feasible under the strictest setting varies across instances. Therefore, there is no single selection strategy that performs best across all instances and battery settings. We provide detailed objective values and feasibility rates in the Appendix A. 
+
+6.1.2 Search Dynamics and Convergence Behavior 
+
+To examine search behavior, we compare BI-LNS-Greedy, BI-LNS-ALNS, and BI-LNS-LLM on the difficult in-stances a6-72 and a7-84. Figure 3 shows the median best feasible objective and interquartile range over time. At each time point, we include only runs that have found a feasible solution. On a6-72, BI-LNS-Greedy obtains a lower median during the middle stage of the search, while BI-LNS-LLM contin-ues to improve during the final stage and obtains the lowest median at the time limit. BI-LNS-ALNS also improves, but its late-stage interquartile range is wider. On a7-84, the three methods show substantial variation after recovering feasibility. After approximately 80 minutes, BI-LNS-LLM and BI-LNS-ALNS achieve lower median objective values than BI-LNS-Greedy. BI-LNS-LLM obtains the lowest median at the end of the search, while BI-LNS-Greedy shows the widest late-stage interquartile range. 
+
+6.2 Results for the Chance-Constrained EADARP 
+
+Next, we evaluate the performance of different inner-level operator selection strategies for BI-LNS on the chance-constrained EADARP. Table 4 reports results on a subset of Cordeau and Ropke benchmark instances for varying confidence levels α under CV = 0 .1, with results shown for γ ∈ { 0.4, 0.7}. The selected instances vary from small 11 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Table 4: Final best feasible objective values for the chance-constrained EADARP with CV = 0 .1 and γ ∈ { 0.4, 0.7}.For each method and confidence level α, we report the mean and standard deviation over the feasible runs among 10 independent runs, together with the feasibility count. Best conditional mean values per (instance , γ, α ) combination are highlighted in bold. Instance αγ = 0 .4 γ = 0 .7
+
+BI-LNS-Greedy [18] BI-LNS-ALNS BI-LNS-LLM BI-LNS-Greedy [18] BI-LNS-ALNS BI-LNS-LLM Mean Std Feas. Mean Std Feas. Mean Std Feas. Mean Std Feas. Mean Std Feas. Mean Std Feas. a3-18 0.99 253 .1 0.0 10/10 253 .1 0.0 10/10 253 .1 0.0 10/10 255 .1 2.2 10/10 255 .2 1.9 10/10 255 .3 2.0 10/10 0.9999 255 .7 0.0 10/10 255 .7 0.0 10/10 255 .7 0.0 10/10 258 .5 2.3 10/10 257 .8 1.9 10/10 257 .8 1.9 10/10 0.999999 255 .7 0.0 10/10 255 .7 0.0 10/10 255 .7 0.0 10/10 257 .9 2.0 10/10 258 .8 2.6 10/10 258 .1 1.8 10/10 a3-24 0.99 278 .9 1.4 10/10 279 .9 2.2 10/10 278 .5 1.2 10/10 282 .4 3.5 10/10 280 .3 2.3 10/10 281 .3 3.8 10/10 0.9999 279 .3 1.7 10/10 278 .2 1.5 10/10 279 .5 1.7 10/10 283 .3 4.7 10/10 281 .9 4.1 10/10 281 .1 3.0 10/10 0.999999 279 .7 1.6 10/10 280 .1 1.5 10/10 278 .9 1.1 10/10 284 .2 4.2 10/10 282 .8 3.7 10/10 282 .2 3.5 10/10 a4-16 0.99 228 .4 0.0 10/10 228 .3 0.5 10/10 228 .4 0.2 10/10 228 .4 1.3 10/10 228 .4 0.0 10/10 228 .3 0.3 10/10 0.9999 232 .5 0.5 10/10 232 .5 0.5 10/10 232 .6 0.3 10/10 232 .4 0.5 10/10 232 .5 0.5 10/10 232 .4 0.7 10/10 0.999999 232 .5 0.5 10/10 232 .5 0.5 10/10 232 .7 0.0 10/10 232 .7 0.0 10/10 232 .2 0.7 10/10 232 .3 0.7 10/10 a4-24 0.99 324 .5 0.3 10/10 324 .5 0.3 10/10 324 .5 0.3 10/10 341 .5 6.2 10/10 342 .1 6.6 10/10 340 .0 4.5 10/10 0.9999 342 .0 0.0 10/10 342 .0 0.0 10/10 342 .0 0.0 10/10 359 .2 7.3 4/10 358 .8 4.6 9/10 357 .4 6.3 8/10 0.999999 342 .0 0.0 10/10 342 .0 0.0 10/10 342 .0 0.0 10/10 363 .4 13 .7 4/10 354 .8 4.0 8/10 351 .3 2.1 3/10 a5-40 0.99 430 .5 2.4 10/10 428 .1 1.8 10/10 429 .5 2.1 10/10 439 .4 5.5 10/10 438 .0 4.9 10/10 438 .5 5.7 10/10 0.9999 444 .2 3.6 10/10 444 .0 4.5 10/10 443 .0 3.1 10/10 458 .5 6.5 10/10 455 .6 3.2 10/10 458 .4 8.0 10/10 0.999999 443 .4 4.3 10/10 443 .6 4.2 10/10 443 .2 2.7 10/10 460 .2 6.2 10/10 461 .2 7.1 10/10 457 .0 7.8 10/10 a5-50 0.99 588 .8 4.8 10/10 589 .9 4.8 10/10 586 .1 4.2 10/10 628 .6 17 .4 8/10 627 .1 18 .4 9/10 623 .4 17 .2 10/10 0.9999 594 .8 5.8 10/10 590 .3 5.1 10/10 591 .9 5.9 10/10 637 .0 12 .5 5/10 630 .0 13 .1 9/10 630 .5 9.8 10/10 0.999999 598 .6 5.3 10/10 592 .5 4.7 10/10 596 .4 3.6 10/10 649 .7 18 .8 7/10 648 .6 13 .1 10/10 650 .1 23 .2 8/10 a6-48 0.99 537 .4 5.7 10/10 538 .1 5.8 10/10 535 .1 3.4 10/10 555 .5 9.3 10/10 556 .4 10 .4 10/10 556 .9 10 .1 10/10 0.9999 543 .3 6.2 10/10 541 .7 5.9 10/10 539 .9 6.0 10/10 562 .1 10 .9 10/10 558 .4 5.1 10/10 560 .5 8.3 10/10 0.999999 551 .5 5.8 10/10 551 .1 7.3 10/10 547 .5 5.4 10/10 572 .4 9.1 10/10 572 .0 12 .0 10/10 565 .0 9.2 10/10 a6-60 0.99 747 .2 6.9 10/10 743 .8 6.2 10/10 743 .9 5.7 10/10 797 .9 20 .6 10/10 799 .1 23 .9 10/10 785 .7 12 .8 10/10 0.9999 793 .9 5.1 6/10 784 .9 3.1 10/10 787 .6 9.3 10/10 830 .8 20 .5 7/10 845 .3 34 .0 10/10 848 .4 19 .6 9/10 0.999999 815 .4 19 .7 6/10 799 .0 6.5 9/10 803 .1 19 .8 8/10 861 .0 12 .4 4/10 878 .4 16 .6 4/10 888 .9 28 .0 3/10 a7-56 0.99 646 .8 5.7 10/10 644 .9 4.9 10/10 646 .2 3.9 10/10 686 .7 18 .2 10/10 682 .8 10 .5 10/10 681 .4 12 .2 10/10 0.9999 662 .2 3.9 10/10 661 .3 4.4 10/10 661 .7 3.4 10/10 711 .5 18 .1 8/10 706 .1 15 .2 10/10 703 .2 14 .4 9/10 0.999999 664 .5 5.4 10/10 660 .6 5.5 10/10 661 .9 4.8 10/10 715 .0 24 .0 8/10 703 .9 17 .2 9/10 705 .0 26 .6 10/10 a7-70 0.99 838 .6 6.1 9/10 835 .4 6.8 10/10 834 .2 5.5 10/10 893 .2 24 .5 10/10 879 .9 21 .9 10/10 888 .3 14 .5 10/10 0.9999 843 .2 10 .0 10/10 846 .4 7.4 10/10 843 .8 6.6 10/10 899 .0 15 .6 8/10 891 .3 15 .1 10/10 901 .4 24 .7 8/10 0.999999 876 .1 5.6 10/10 869 .4 9.9 10/10 870 .8 6.9 10/10 940 .4 14 .3 7/10 936 .9 25 .1 7/10 934 .0 21 .5 8/10 a8-64 0.99 698 .7 4.5 10/10 698 .4 5.7 10/10 699 .3 9.8 10/10 719 .5 7.1 10/10 719 .6 14 .8 10/10 715 .9 8.5 10/10 0.9999 701 .5 6.5 10/10 704 .4 6.5 10/10 702 .1 5.8 10/10 724 .7 11 .0 10/10 732 .8 12 .1 10/10 722 .5 7.7 10/10 0.999999 707 .7 6.8 10/10 703 .9 6.3 10/10 703 .3 7.9 10/10 729 .6 11 .3 10/10 727 .7 5.5 10/10 732 .7 12 .8 10/10 to large problem sizes. We compare the performance of BI-LNS-Greedy [18], BI-LNS-ALNS and BI-LNS-LLM methods. For γ = 0 .4, all methods achieve high feasibility across small- and medium-sized instances for all considered con-fidence levels. In this case, there are no clear differences in objective values between operator selection strategies, indicating that operator choice has a relatively minor impact when battery constraints are loose and feasibility is easy to maintain. As γ increases to 0.7, the problem becomes more constrained and feasibility decreases, particularly for larger instances and higher confidence levels. Under these conditions, objective values generally increase. BI-LNS-Greedy shows lower feasibility in several difficult configurations, while BI-LNS-ALNS and BI-LNS-LLM recover feasibility more often in some of these cases. Across the considered instances, both BI-LNS-ALNS and BI-LNS-LLM obtain the best mean objective values in several configurations, while BI-LNS-Greedy performs best in a smaller number of cases. However, the method with the best mean does not always achieve the highest feasibility rate. BI-LNS-ALNS provides higher feasibility in several strict settings, whereas BI-LNS-LLM obtains better conditional means in others. Thus, no method consistently performs best in terms of solution quality, feasibility, and variability. As the confidence level α increases, feasibility decreases due to stricter chance constraints. However, objective values do not vary monotonically with α because the objective is evaluated using mean travel times, while higher confidence levels only restrict the feasible set without directly penalizing the objective. Overall, as α, γ, and problem size increase, the chance-constrained EADARP becomes more challenging, and the impact of operator selection becomes more pronounced. Results for higher uncertainty levels ( CV = 0 .3) show near-zero feasibility at strict confidence levels across all methods within the given time limit and are presented in the Appendix B. 12 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty 
+
+7 Conclusions 
+
+In this paper, we investigated the deterministic and chance-constrained variants of the electric autonomous dial-a-ride problem. In the chance-constrained setting, we modeled travel times as independent normal random variables and enforced upper time-window constraints using deterministic approximations of chance constraints. We compared fixed greedy, fixed regret-k, random, rule-based, performance-adaptive, and LLM-based inner level insertion operator selection within a common BI-LNS framework. In the deterministic problem, the computational results show that operator selection has little effect on small instances, where all methods recover feasibility. Its effect is larger on more constrained instances. No strategy consistently achieves both the highest feasibility rate and the lowest conditional mean objective. BI-LNS-LLM obtains the low-est conditional mean on several instances, while the other strategies perform best on others and sometimes recover feasibility more frequently. In the chance-constrained experiments, feasibility generally decreases as the final battery requirement, confidence level, and travel-time variability increase. BI-LNS-ALNS and BI-LNS-LLM obtain competitive conditional objective values in several configurations, but neither method consistently dominates in solution quality or feasibility. Overall, LLM-based selection provides a state-aware alternative for choosing insertion operators, but it does not consistently outperform simpler selection strategies. Future work will explore enhanced state representations, alternative prompting strategies, and extensions to other stochastic and dynamic vehicle routing problems. 
+
+References 
+
+[1] Susan Shaheen and Adam Cohen. Chapter 3 – mobility on demand (MOD) and mobility as a service (MaaS): early understanding of shared mobility impacts and public transit partnerships. In Demand for Emerging Trans-portation Systems , pages 37–59. Elsevier, 2020. [2] Santhanakrishnan Narayanan, Emmanouil Chaniotakis, and Constantinos Antoniou. Shared autonomous vehicle services: A comprehensive review. Transportation Research Part C: Emerging Technologies , 111:255–293, 2020. [3] Yves Molenbruch, Kris Braekers, and An Caris. Typology and literature review for dial-a-ride problems. Annals of Operations Research , 259(1):295–325, 2017. [4] Sin C. Ho, W.Y. Szeto, Yong-Hong Kuo, Janny M.Y. Leung, Matthew Petering, and Terence W.H. Tou. Asurvey of dial-a-ride problems: Literature review and recent developments. Transportation Research Part B: Methodological , 111:395–421, 2018. [5] Abraham Charnes and William W Cooper. Chance-constrained programming. Management Science , 6(1):73–79, 1959. [6] Hossein Mirzaei-Nasirabad Mehrnaz Mohtasham and Behrooz Alizadeh. Optimization of truck-shovel allocation in open-pit mines under uncertainty: A chance-constrained goal programming approach. Mining Technology , 130 (2):81–100, 2021. [7] Yue Xie, Aneta Neumann, and Frank Neumann. Heuristic strategies for solving complex interacting stockpile blending problem with chance constraints. In Proceedings of the Genetic and Evolutionary Computation Con-ference, (GECCO 2021) , page 1079–1087. ACM, 2021. [8] Michael Stimson, William Reid, Aneta Neumann, Simon Ratcliffe, and Frank Neumann. Improving confidence in evolutionary mine scheduling via uncertainty discounting. In IEEE Congress on Evolutionary Computation (CEC 2023) , pages 1–10, 2023. [9] Andrew J. Wang and Brian C. Williams. Chance-constrained scheduling via conflict-directed risk allocation. In Proceedings of the Twenty-Ninth AAAI Conference on Artificial Intelligence (AAAI 2015) , page 3620–3627. AAAI Press, 2015. [10] Marcello Farina, Luca Giulioni, and Riccardo Scattolini. Stochastic linear model predictive control with chance constraints – a review. Journal of Process Control , 44:53–67, 2016. [11] Lennart C. Johnsen, Frank Meisel, and Jan F. Ehmke. Stochastic stay times for interrelated trips in the rural dial-a-ride problem. Transportation Research Part E: Logistics and Transportation Review , 195:103968, 2025. [12] David Pisinger and Stefan Ropke. Large neighborhood search , pages 399–419. Springer US, 2010. [13] Stefan Ropke and David Pisinger. An adaptive large neighborhood search heuristic for the pickup and delivery problem with time windows. Transportation Science , 40(4):455–472, 2006. 13 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty [14] Sven Vallée, Ammar Oulamara, and Wahiba Ramdane Cherif-Khettaf. Maximizing the number of served requests in an online shared transport system by solving a dynamic darp. In Computational Logistics , pages 64–78. Springer International Publishing, 2017. [15] Kris Braekers, An Caris, and Gerrit K. Janssens. Exact and meta-heuristic approach for a general heterogeneous dial-a-ride problem with multiple depots. Transportation Research Part B: Methodological , 67:166–186, 2014. [16] Mohamed Amine Masmoudi, Manar Hosny, Kris Braekers, and Abdelaziz Dammak. Three effective meta-heuristics to solve the multi-depot multi-trip heterogeneous dial-a-ride problem. Transportation Research Part E: Logistics and Transportation Review , 96:60–80, 2016. [17] Yves Molenbruch, Kris Braekers, and An Caris. Benefits of horizontal cooperation in dial-a-ride services. Trans-portation Research Part E: Logistics and Transportation Review , 107:97–119, 2017. [18] Steffen Limmer. Bilevel large neighborhood search for the electric autonomous dial-a-ride problem. Transporta-tion Research Interdisciplinary Perspectives , 21:100876, 2023. [19] Maria Bresich, Günther R. Raidl, and Steffen Limmer. Letting a large neighborhood search for an electric dial-a-ride problem fly: On-the-fly charging station insertion. In Proceedings of the Genetic and Evolutionary Computation Conference (GECCO 2024) , page 142–150. ACM, 2024. [20] Maria Bresich, Günther R. Raidl, and Steffen Limmer. Improvements in large neighborhood search for the electric autonomous dial-a-ride problem. In Computer Aided Systems Theory (EUROCAST 2024) , pages 211– 220. Springer Nature Switzerland, 2025. [21] Maria Bresich, Günther R. Raidl, and Steffen Limmer. Revisiting large neighborhood search with on-the-fly charging station insertion for the electric autonomous dial-a-ride problem. ACM Transactions on Evolutionary Learning and Optimization , 2025. [22] Thomas Jatschka, Tobias Rodemann, and Günther R. Raidl. A large neighborhood search for a cooperative optimization approach to distribute service points in mobility applications. In Metaheuristics and Nature Inspired Computing , pages 3–17. Springer International Publishing, 2022. [23] Paul Shaw. Using constraint programming and local search methods to solve vehicle routing problems. In 
+
+Principles and Practice of Constraint Programming CP 1998 , pages 417–431. Springer Berlin Heidelberg, 1998. [24] Anna Kalyuzhnaya, Sergey Mityagin, Elizaveta Lutsenko, Andrey Getmanov, Yaroslav Aksenkin, Kamil Fatkhiev, Kirill Fedorin, Nikolay O. Nikitin, Natalia Chichkova, Vladimir Vorona, and Alexander Boukhanovsky. Llm agents for smart city management: enhancing decision support through multi-agent ai systems. Smart Cities ,8(1), 2025. [25] Abram Handler, Kai R. Larsen, and Richard Hackathorn. Large language models present new questions for decision support. International Journal of Information Management , 79:102811, 2024. [26] Rui Zhong, Abdelazim G. Hussien, Jun Yu, and Masaharu Munetomo. Llmoa: A novel large language model assisted hyper-heuristic optimization algorithm. Advanced Engineering Informatics , 64:103042, 2025. [27] Fei Liu, Yiming Yao, Ping Guo, Zhiyuan Yang, Xi Lin, Zhe Zhao, Xialiang Tong, Kun Mao, Zhichao Lu, Zhenkun Wang, Mingxuan Yuan, and Qingfu Zhang. A systematic survey on large language models for algorithm design. ACM Computing Surveys , 2024. [28] Zhengxin Fang, Hui Ma, Gang Chen, Sven Hartmann, and Chen Wang. Leveraging llm in genetic programming hyper-heuristics for dynamic microservice deployment. In AI 2024: Advances in Artificial Intelligence , pages 86–97. Springer Nature Singapore, 2025. [29] Haoran Ye, Jiarui Wang, Zhiguang Cao, Federico Berto, Chuanbo Hua, Haeyeon Kim, Jinkyoo Park, and Guojie Song. Reevo: large language models as hyper-heuristics with reflective evolution. In Proceedings of the 38th International Conference on Neural Information Processing Systems (NIPS 2024) . Curran Associates Inc., 2024. [30] Claudia Bongiovanni, Mor Kaspi, and Nikolas Geroliminis. The electric autonomous dial-a-ride problem. Trans-portation Research Part B: Methodological , 122:436–456, 2019. [31] Claudia Bongiovanni, Mor Kaspi, Jean-François Cordeau, and Nikolas Geroliminis. A machine learning-driven two-phase metaheuristic for autonomous ridesharing operations. Transportation Research Part E: Logistics and Transportation Review , 165:102835, 2022. [32] Yue Su, Nicolas Dupin, and Jakob Puchinger. A deterministic annealing local search for the electric autonomous dial-a-ride problem. European Journal of Operational Research , 309(3):1091–1111, 2023. [33] Ishara Hewa Pathiranage and Aneta Neumann. On the use of bi-objective evolutionary algorithms for the stochas-tic multiple knapsack problem under dynamic constraints. In Genetic and Evolutionary Computation Conference, GECCO 2026 , page 428–437. ACM, 2026. 14 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty [34] Ishara Hewa Pathiranage, Frank Neumann, Denis Antipov, and Aneta Neumann. Using 3-objective evolutionary algorithms for the dynamic chance constrained knapsack problem. In Genetic and Evolutionary Computation Conference, GECCO 2024 , page 520–528. ACM, 2024. [35] Frank Neumann and Carsten Witt. 3-objective pareto optimization for problems with chance constraints. In 
+
+Genetic and Evolutionary Computation Conference, GECCO 2023 , page 731–739. ACM, 2023. [36] Ishara Hewa Pathiranage, Frank Neumann, Denis Antipov, and Aneta Neumann. Effective 2- and 3-objective MOEA/D approaches for the chance constrained knapsack problem. In Proceedings of the Genetic and Evolu-tionary Computation Conference, GECCO 2024 , page 187–195. ACM, 2024. [37] Aneta Neumann and Frank Neumann. Optimizing monotone chance-constrained submodular functions using evolutionary multiobjective algorithms. Evolutionary Computation , 33(3):363–393, 2025. [38] Ishara Hewa Pathiranage and Aneta Neumann. On the use of evolutionary optimization for the dynamic chance constrained open-pit mine scheduling problem. In IEEE Congress on Evolutionary Computation, CEC 2026 ,pages 1–8, 2026. [39] Frank Neumann and Carsten Witt. Runtime analysis of single- and multi-objective evolutionary algorithms for chance constrained optimization problems with normally distributed random variables. In International Joint Conference on Artificial Intelligence (IJCAI 2022) , pages 4800–4806. International Joint Conferences on Artificial Intelligence Organization, 2022. [40] Saralees Nadarajah and Samuel Kotz. Exact distribution of the max/min of two gaussian random variables. IEEE Transactions on Very Large Scale Integration (VLSI) Systems , 16(2):210–212, 2008. [41] Vera C. Hemmelmayr, Jean-François Cordeau, and Teodor Gabriel Crainic. An adaptive large neighborhood search heuristic for two-echelon vehicle routing problems arising in city logistics. Computers & Operations Research , 39(12):3215–3228, 2012. [42] Jean-François Cordeau. A branch-and-cut algorithm for the dial-a-ride problem. Operations Research , 54(3): 573–586, 2006. [43] Stefan Røpke, Jean-François Cordeau, and Gilbert Laporte. Models and a branch-and-cut algorithm for pickup and delivery problems with time windows. Networks , 49(4):258 – 272, 2007. 
+
+A Results for Impact of Different Batteries Levels 
+
+Tables 5- 10, show the results corresponding to the Figure 2 in the main paper for the different minimum final battery ratios from γ = 0 .2 to 0.9. We report the minimum, mean, and standard deviation of the best feasible objective values over 10 independent runs, together with the feasibility rate (feasible/total runs). Best mean values per instance are highlighted in bold. Entries marked as NA indicate that no feasible solution was found within the time limit. 15 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Table 5: Final best feasible objective values for Ropke instances for unlimited CS visits ( γ = 0 .2). 
+
+> Instance  BI-LNS-Greedy  BI-LNS-Regret  BI-LNS-Random  BI-LNS-Rule  BI-LNS-ALNS  BI-LNS-LLM Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas. a5-60  723 .9 731 .7 4.3 10/10  726 .0 731 .8 3.2 10/10  724 .7 733 .5 8.9 10/10  727 .5 733 .5 4.1 10/10  724 .9 732 .4 4.5 10/10  726 .3 732 .2 6.2 10/10 a6-48  522 .9 525 .6 1.9 10/10  522 .0 524 .3 3.4 10/10  521 .8 524 .5 2.3 10/10  522 .0 523 .1 1.5 10/10  522 .0 523 .7 2.1 10/10  521 .8 523 .7 2.1 10/10 a6-60  720 .0 726 .3 4.4 10/10  723 .9 727 .4 2.5 10/10  721 .1 726 .5 4.0 10/10  724 .3 728 .0 3.9 10/10  722 .8 728 .5 5.0 10/10  722 .1 726 .4 4.9 10/10 a6-72  829 .5 840 .6 9.5 10/10  828 .1 836 .6 5.8 10/10  828 .8 837 .0 6.0 10/10  824 .7 839 .3 10 .9 10/10  830 .0 835 .4 3.4 10/10  827 .0 835 .2 6.7 10/10 a7-56  635 .4 640 .3 4.1 10/10  634 .2 636 .8 2.6 10/10  632 .1 640 .2 4.5 10/10  633 .1 637 .8 2.6 10/10  635 .9 638 .4 2.8 10/10  634 .4 637 .2 2.0 10/10 a7-70  809 .3 819 .1 8.2 10/10  806 .1 816 .0 7.4 10/10  809 .5 823 .2 9.3 10/10  805 .6 814 .0 6.2 10/10  800 .6 813 .7 7.2 10/10  803 .9 814 .7 11 .0 10/10 a7-84  936 .8 954 .5 10 .2 10/10  933 .1 949 .1 13 .3 10/10  938 .2 954 .8 13 .2 10/10  937 .3 950 .9 8.5 10/10  934 .7 950 .4 11 .3 10/10  938 .1 947 .3 8.8 10/10 a8-64  669 .5 677 .4 6.2 10/10  667 .4 677 .7 4.7 10/10  675 .7 682 .1 4.7 10/10  671 .2 677 .5 4.9 10/10  676 .9 682 .2 6.1 10/10  668 .4 679 .4 6.7 10/10 a8-80  856 .6 865 .4 7.5 10/10  857 .6 863 .5 6.7 10/10  856 .7 868 .4 12 .6 10/10  855 .6 864 .5 7.9 10/10  855 .0 864 .9 7.5 10/10  850 .4 861 .1 7.2 10/10 a8-96  1096 .4 1122 .8 13 .9 10/10  1107 .3 1125 .9 17 .0 10/10  1096 .3 1131 .9 17 .4 10/10  1095 .9 1119 .3 13 .8 10/10  1102 .9 1129 .1 20 .5 10/10  1106 .0 1132 .2 12 .0 10/10
+> Table 6: Final best feasible objective values for Ropke instances for unlimited CS visits ( γ = 0 .4).
+> Instance  BI-LNS-Greedy  BI-LNS-Regret  BI-LNS-Random  BI-LNS-Rule  BI-LNS-ALNS  BI-LNS-LLM Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas. a5-60  731 .1 738 .9 7.6 10/10  728 .6 737 .2 5.4 10/10  728 .6 739 .8 9.5 10/10  731 .3 739 .0 4.4 10/10  726 .8 741 .2 8.1 10/10  731 .4 736 .0 3.2 10/10 a6-48  521 .8 524 .0 1.6 10/10  522 .0 523 .8 1.5 10/10  522 .9 524 .7 0.9 10/10  521 .8 523 .4 1.5 10/10  521 .8 523 .5 1.0 10/10  521 .8 524 .2 1.6 10/10 a6-60  722 .6 728 .1 4.3 10/10  721 .4 727 .8 3.7 10/10  720 .8 726 .7 4.0 10/10  722 .6 727 .2 2.7 10/10  725 .9 731 .1 3.6 10/10  722 .2 730 .3 4.9 10/10 a6-72  834 .6 844 .8 8.1 10/10  835 .2 846 .2 7.5 10/10  837 .0 847 .1 7.6 10/10  830 .7 842 .3 7.3 10/10  838 .1 848 .5 7.7 10/10  831 .1 846 .0 11 .4 10/10 a7-56  633 .5 639 .4 3.6 10/10  633 .5 637 .7 3.5 10/10  634 .2 636 .5 2.0 10/10  632 .5 638 .9 4.8 10/10  634 .4 638 .2 4.2 10/10  631 .8 636 .2 2.9 10/10 a7-70  809 .3 818 .1 5.1 10/10  806 .2 817 .8 8.5 10/10  808 .8 817 .5 6.9 10/10  805 .8 814 .3 5.8 10/10  804 .6 815 .1 7.3 10/10  806 .8 817 .9 8.1 10/10 a7-84  939 .1 961 .1 10 .3 10/10  951 .7 961 .6 9.6 10/10  948 .7 966 .3 11 .3 10/10  944 .1 953 .6 7.3 10/10  940 .4 956 .0 10 .3 10/10  951 .1 962 .3 7.6 10/10 a8-64  671 .0 680 .1 7.8 10/10  671 .6 677 .7 5.1 10/10  675 .0 680 .2 3.3 10/10  671 .4 678 .4 5.3 10/10  669 .0 677 .6 5.3 10/10  676 .7 683 .7 3.8 10/10 a8-80  848 .1 864 .5 8.0 10/10  855 .3 861 .7 4.4 10/10  852 .4 865 .6 6.3 10/10  853 .8 860 .8 4.8 10/10  852 .1 864 .9 8.8 10/10  848 .6 861 .4 6.7 10/10 a8-96  1129 .0 1172 .3 29 .4 10/10  1124 .9 1160 .5 28 .5 10/10  1134 .2 1154 .5 13 .8 10/10  1130 .2 1149 .2 10 .1 10/10  1118 .1 1152 .7 17 .3 10/10  1139 .7 1158 .7 14 .5 10/10
+> Table 7: Final best feasible objective values for Ropke instances for unlimited CS visits ( γ = 0 .5).
+> Instance  BI-LNS-Greedy  BI-LNS-Regret  BI-LNS-Random  BI-LNS-Rule  BI-LNS-ALNS  BI-LNS-LLM Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas. a5-60  741 .8 759 .1 10 .9 10/10  733 .0 758 .6 20 .8 10/10  731 .4 751 .8 13 .5 10/10  735 .4 744 .6 6.0 10/10  732 .7 744 .0 6.7 10/10  738 .0 748 .3 6.5 10/10 a6-48  523 .8 526 .4 2.3 10/10  521 .8 524 .0 1.7 10/10  522 .0 525 .9 2.9 10/10  522 .3 524 .7 2.0 10/10  521 .8 523 .9 1.4 10/10  522 .3 525 .9 2.6 10/10 a6-60  733 .1 738 .8 4.4 10/10  724 .6 735 .8 8.0 10/10  728 .3 734 .1 4.2 10/10  725 .4 733 .6 5.7 10/10  724 .4 731 .3 4.8 10/10  727 .1 732 .5 3.4 10/10 a6-72  840 .1 851 .9 9.6 9/10  841 .1 859 .4 12 .5 10/10  844 .8 852 .9 6.7 10/10  840 .2 860 .0 11 .1 10/10  844 .4 860 .8 12 .9 10/10  845 .8 861 .4 8.8 10/10 a7-56  633 .5 637 .2 2.5 10/10  631 .7 636 .2 3.2 10/10  633 .2 638 .7 3.1 10/10  633 .3 637 .4 3.3 10/10  634 .5 638 .0 3.1 10/10  635 .2 638 .2 3.1 10/10 a7-70  804 .8 820 .9 11 .5 10/10  809 .5 818 .9 7.4 10/10  806 .4 824 .8 11 .6 10/10  814 .2 823 .2 7.2 10/10  807 .7 817 .0 6.6 10/10  810 .0 819 .7 6.0 10/10 a7-84  965 .5 980 .5 15 .0 10/10  952 .3 969 .5 9.3 10/10  957 .5 983 .7 19 .3 10/10  954 .0 968 .2 12 .9 10/10  958 .7 969 .9 8.6 10/10  952 .6 966 .8 11 .4 10/10 a8-64  671 .2 679 .4 5.4 10/10  669 .3 681 .4 9.0 10/10  669 .1 676 .5 5.7 10/10  668 .7 676 .6 5.5 10/10  673 .1 679 .3 4.4 10/10  672 .0 680 .7 7.6 10/10 a8-80  864 .5 875 .0 6.2 10/10  860 .4 870 .9 7.4 10/10  852 .4 873 .2 12 .5 10/10  855 .0 869 .0 8.1 10/10  873 .7 884 .6 10 .2 10/10  866 .4 877 .8 8.2 10/10 a8-96  1164 .4 1206 .2 27 .3 8/10  1170 .3 1197 .1 26 .9 10/10  1165 .9 1208 .4 35 .6 9/10  1144 .1 1181 .0 24 .3 9/10  1167 .6 1210 .9 36 .0 9/10  1174 .2 1208 .2 30 .6 9/10
+
+16 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty Table 8: Final best feasible objective values for Ropke instances for unlimited CS visits ( γ = 0 .7). 
+
+> Instance  BI-LNS-Greedy  BI-LNS-Regret  BI-LNS-Random  BI-LNS-Rule  BI-LNS-ALNS  BI-LNS-LLM Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas. a5-60  770 .5 794 .8 30 .6 8/10  769 .6 782 .3 16 .5 8/10  753 .1 779 .7 15 .0 8/10  756 .4 783 .5 15 .0 9/10  755 .9 776 .6 17 .2 10/10  770 .3 790 .3 21 .5 8/10 a6-48  528 .6 534 .6 5.1 10/10  527 .6 534 .6 4.8 10/10  527 .7 535 .2 5.0 10/10  529 .8 533 .1 3.2 10/10  530 .4 537 .0 5.0 10/10  527 .6 532 .9 2.4 10/10 a6-60  738 .4 755 .2 15 .2 10/10  741 .7 757 .3 10 .2 10/10  743 .1 753 .3 11 .0 10/10  739 .7 754 .2 19 .6 10/10  743 .2 752 .3 7.2 10/10  741 .6 758 .7 15 .1 10/10 a6-72  874 .1 888 .7 18 .3 5/10  875 .2 894 .5 16 .5 8/10  877 .8 899 .5 15 .5 10/10  859 .8 891 .5 19 .6 10/10  859 .4 901 .9 29 .4 9/10  867 .6 888 .6 18 .8 9/10 a7-56  647 .4 667 .5 13 .7 10/10  651 .7 661 .2 5.1 10/10  646 .0 658 .5 6.3 10/10  649 .0 665 .9 13 .2 10/10  656 .9 667 .2 11 .7 10/10  653 .8 666 .0 8.2 10/10 a7-70  837 .1 851 .2 15 .4 10/10  835 .3 853 .4 13 .4 10/10  827 .2 847 .5 13 .5 10/10  833 .4 843 .5 11 .5 10/10  832 .3 847 .0 10 .0 10/10  844 .5 868 .1 37 .6 10/10 a7-84  970 .3 1030 .1 31 .9 8/10  974 .3 1005 .7 21 .9 10/10  983 .3 1035 .0 52 .1 7/10  968 .1 1004 .9 31 .5 9/10  982 .5 1008 .9 19 .5 8/10  966 .6 998 .2 20 .0 7/10 a8-64  681 .3 697 .0 11 .6 10/10  689 .7 695 .7 4.7 10/10  683 .9 697 .3 7.6 10/10  681 .7 696 .1 8.4 10/10  685 .7 693 .5 6.1 10/10  679 .7 691 .4 10 .6 10/10 a8-80  889 .5 917 .5 16 .3 8/10  890 .8 915 .3 15 .3 9/10  891 .5 918 .9 25 .6 9/10  897 .2 931 .8 27 .6 9/10  880 .5 920 .6 22 .7 9/10  911 .5 924 .7 12 .1 8/10 a8-96  NA  NA  NA  0/10  1229 .1 1261 .3 45 .1 3/10  1211 .9 1211 .9 - 1/10  1252 .9 1253 .0 0.2 2/10  1278 .0 1278 .0 - 1/10  1203 .1 1203 .1 - 1/10
+> Table 9: Final best feasible objective values for Ropke instances for unlimited CS visits ( γ = 0 .8).
+> Instance  BI-LNS-Greedy  BI-LNS-Regret  BI-LNS-Random  BI-LNS-Rule  BI-LNS-ALNS  BI-LNS-LLM Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas. a5-60  NA  NA  NA  0/10  NA  NA  NA  0/10  781 .9 798 .7 23 .7 2/10  781 .9 781 .9 - 1/10  778 .1 778 .9 1.1 2/10  801 .3 829 .2 39 .5 2/10 a6-48  537 .0 548 .1 10 .0 10/10  533 .3 543 .6 7.5 10/10  536 .3 544 .1 7.0 10/10  535 .3 542 .6 3.7 10/10  535 .7 543 .9 6.0 10/10  538 .5 552 .0 14 .9 10/10 a6-60  754 .7 782 .8 25 .4 9/10  748 .1 765 .0 15 .0 10/10  747 .8 764 .0 10 .3 10/10  750 .7 764 .8 9.0 10/10  759 .3 775 .4 17 .6 10/10  749 .5 773 .5 20 .7 10/10 a6-72  928 .6 929 .7 1.7 2/10  864 .0 922 .6 48 .2 5/10  861 .4 910 .8 32 .4 6/10  901 .6 914 .1 11 .9 3/10  900 .2 922 .2 19 .2 5/10  913 .1 920 .9 11 .1 2/10 a7-56  685 .4 710 .4 19 .0 7/10  655 .9 692 .9 23 .1 8/10  670 .9 697 .6 18 .3 7/10  684 .7 712 .9 25 .1 5/10  673 .7 689 .7 13 .5 7/10  682 .6 708 .4 16 .0 7/10 a7-70  846 .2 877 .7 19 .2 10/10  845 .3 875 .2 21 .0 8/10  835 .7 866 .4 29 .7 9/10  845 .1 868 .6 12 .7 8/10  832 .0 874 .8 40 .4 8/10  855 .0 881 .6 28 .3 4/10 a7-84  1030 .2 1069 .9 25 .3 5/10  1037 .2 1054 .6 22 .7 3/10  1008 .5 1026 .6 20 .2 4/10  990 .1 1029 .9 31 .1 5/10  1029 .0 1038 .2 10 .2 5/10  1005 .7 1027 .8 31 .2 2/10 a8-64  695 .2 714 .0 17 .8 10/10  694 .2 708 .4 10 .1 10/10  694 .1 711 .4 10 .3 10/10  702 .0 710 .4 7.6 10/10  701 .9 710 .8 8.3 10/10  696 .3 709 .8 11 .5 10/10 a8-80  937 .8 952 .3 16 .2 4/10  972 .8 972 .8 - 1/10  940 .8 963 .3 28 .5 3/10  905 .8 940 .6 30 .8 3/10  943 .3 954 .0 11 .2 4/10  937 .3 955 .3 24 .7 3/10 a8-96  NA  NA  NA  0/10  NA  NA  NA  0/10  1280 .2 1280 .2 - 1/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10
+> Table 10: Final best feasible objective values for Ropke instances for unlimited CS visits ( γ = 0 .9).
+> Instance  BI-LNS-Greedy  BI-LNS-Regret  BI-LNS-Random  BI-LNS-Rule  BI-LNS-ALNS  BI-LNS-LLM Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas.  Min  Mean  Std  Feas. a5-60  NA  NA  NA  0/10  NA  NA  NA  0/10  801 .5 801 .5 - 1/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10 a6-48  554 .8 567 .2 12 .2 6/10  551 .5 567 .6 11 .5 8/10  554 .0 566 .2 9.2 9/10  551 .4 571 .1 20 .7 8/10  555 .0 570 .4 10 .4 8/10  551 .9 564 .6 7.5 8/10 a6-60  779 .7 786 .6 6.8 7/10  768 .9 780 .7 8.9 5/10  777 .3 792 .7 20 .4 6/10  768 .0 783 .5 12 .2 8/10  760 .2 787 .1 21 .4 10/10  763 .4 782 .1 20 .6 5/10 a6-72  NA  NA  NA  0/10  NA  NA  NA  0/10  946 .8 946 .8 - 1/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10 a7-56  737 .6 737 .6 - 1/10  NA  NA  NA  0/10  729 .9 729 .9 - 1/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10 a7-70  890 .7 890 .7 - 1/10  862 .9 900 .2 42 .2 3/10  865 .2 897 .0 23 .8 5/10  893 .6 910 .6 17 .6 3/10  936 .4 946 .0 13 .6 2/10  884 .8 902 .9 17 .1 3/10 a7-84  NA  NA  NA  0/10  1046 .7 1046 .7 - 1/10  NA  NA  NA  0/10  1063 .7 1063 .7 - 1/10  NA  NA  NA  0/10  NA  NA  NA  0/10 a8-64  721 .5 732 .7 10 .0 4/10  714 .7 737 .6 19 .9 7/10  701 .5 735 .4 19 .4 7/10  703 .3 749 .6 34 .9 6/10  717 .9 740 .6 17 .5 6/10  713 .3 736 .9 32 .8 4/10 a8-80  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10 a8-96  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10  NA  NA  NA  0/10
+
+17 Adaptive Operator Selection in BI-LNS for Electric Autonomous Dial-a-Ride Problem under Uncertainty 
+
+B Results for the Chance-Constrained EADARP under CV=0.3 
+
+Table 11 shows the results for the chance-constrained EADARP under CV = 0 .3 and γ ∈ { 0.4, 0.7}. Results for higher uncertainty levels exhibit near-zero feasibility at strict confidence levels across all methods. Table 11: Final best feasible objective values for the chance-constrained EADARP under CV = 0 .3 and γ ∈{0.4, 0.7}. For each method and confidence level α, the mean and standard deviation over 10 runs are reported together with the feasibility rate (feasible runs / total runs). Best mean values per (instance, γ, α) combination are highlighted in bold. Instance αγ = 0 .4 γ = 0 .7
+
+BI-LNS-Greedy BI-LNS-ALNS BI-LNS-LLM BI-LNS-Greedy BI-LNS-ALNS BI-LNS-LLM Mean Std Feas. Mean Std Feas. Mean Std Feas. Mean Std Feas. Mean Std Feas. Mean Std Feas. a3-18 0.99 263 .2 0.0 10/10 263 .2 0.0 10/10 263 .2 0.0 10/10 265 .1 0.0 10/10 265 .1 0.0 10/10 265 .1 0.0 10/10 0.9999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 a4-24 0.99 342 .4 0.0 10/10 342 .4 0.0 10/10 342 .4 0.0 10/10 363 .8 6.4 4/10 357 .5 5.0 5/10 357 .3 5.4 3/10 0.9999 360 .8 5.2 9/10 357 .3 0.0 10/10 357 .3 0.0 10/10 377 .6 4.1 4/10 364 .1 2.4 2/10 372 .8 6.0 5/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 a5-50 0.99 594 .7 4.7 10/10 594 .8 4.8 10/10 593 .9 4.0 10/10 661 .0 22 .0 3/10 653 .9 9.7 5/10 659 .9 33 .5 3/10 0.9999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 a6-48 0.99 559 .5 9.0 10/10 562 .5 5.3 10/10 558 .9 7.7 10/10 594 .6 20 .3 10/10 588 .3 11 .2 10/10 584 .3 7.4 10/10 0.9999 583 .1 7.2 10/10 583 .3 5.8 10/10 580 .2 5.6 10/10 619 .5 7.9 9/10 605 .9 8.4 10/10 604 .9 11 .4 9/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 a6-60 0.99 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 0.9999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 a7-56 0.99 672 .0 5.1 10/10 668 .0 5.3 10/10 670 .0 4.4 10/10 722 .2 14 .1 6/10 723 .6 20 .9 8/10 720 .7 19 .9 9/10 0.9999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 a7-70 0.99 873 .0 5.7 10/10 874 .6 8.8 10/10 875 .5 5.7 10/10 953 .4 44 .0 2/10 930 .4 15 .3 5/10 944 .5 28 .3 6/10 0.9999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 a8-64 0.99 720 .7 7.2 10/10 720 .1 8.8 10/10 723 .3 5.6 10/10 757 .1 15 .2 8/10 752 .7 11 .6 10/10 766 .3 20 .1 10/10 0.9999 724 .1 7.9 10/10 721 .3 7.0 10/10 724 .1 7.9 10/10 766 .0 15 .6 10/10 765 .4 19 .2 10/10 768 .9 20 .4 9/10 0.999999 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 - - 0/10 18

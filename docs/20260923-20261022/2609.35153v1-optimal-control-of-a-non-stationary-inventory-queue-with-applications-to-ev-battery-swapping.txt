@@ -1,0 +1,1391 @@
+Title: Optimal Control of a Non-Stationary Inventory-Queue, with Applications to EV-Battery Swapping
+
+URL Source: https://arxiv.org/pdf/2609.35153v1
+
+Published Time: Tue, 29 Sep 2026 04:33:14 GMT
+
+Number of Pages: 41
+
+Markdown Content:
+# Optimal Control of a Non-Stationary Inventory-Queue, with Applications to EV-Battery Swapping 
+
+Hanyu Cheng ∗ and David D. Yao †
+
+September 2026 
+
+Abstract 
+
+We study a non-stationary queueing system with multiple parallel servers and a finite buffer capacity, over a finite planning horizon. Motivated by an operation that is central to an EV (electric vehicle) battery-swapping station — how to best manage the charging of batteries swapped off from EVs, we develop a continuous-time MDP (Markov decision process) approach to the problem. The main technical challenge is to allow both the arrival rate and the service-cost rate to be functions of time with jumps at discrete time points, key features of the EV swapping station’s operation. We derive an exact and explicit threshold structure that charac-terizes the optimal control policy. Moreover, we give conditions under which the thresholds are monotone over time, and with respect to key system parameters such as service and buffer ca-pacities. Extensive numerical experiments are carried out to supplement as well as validate the theoretical results, and also to illustrate the robustness of the threshold structure in practical implementations. 
+
+Key words: continuous-time MDP, inventory replenishment, base-stock control. 
+
+> ∗
+
+Department of Industrial Engineering, Tsinghua University. hanyucheng2026@gmail.com. 
+
+> †
+
+Department of Industrial Engineering and Operations Research, Columbia University. yao@columbia.edu. arXiv:2609.35153v1 [math.OC] 28 Sep 2026 1 Introduction 
+
+We study a non-stationary queueing system over a finite time horizon, t ∈ [0 , T ], with K ≥ 1 parallel servers and a buffer capacity of N ≥ K. Jobs requiring service arrive at the system following a non-stationary Poisson process with rate λ(t). Any job that arrives at a time when the system is full (i.e., occupied by N jobs, including both in service and in waiting) will be blocked and lost, with a penalty cost π > 0. Service times follow an exponential distribution, i.i.d. among the servers; and the service-cost rate e(t) — per time-unit cost charged to each server’s time while actively serving — is also time-dependent. Our goal is to find an optimal policy that specifies the number of active servers at any time 
+
+t ∈ [0 , T ], so as to minimize the expected total cost over the entire horizon [0 , T ] — service cost plus penalty cost for any lost demand. In terms of applications, we are primarily motivated by optimizing an operation that is central to an EV (electric vehicle) battery-swapping station: The station keeps a fixed number of N batteries, some of which, at any time t, can be depleted (e.g., swapped off from an EV, and waiting to be charged); others can be fully charged (and hence ready to supply the demand of any arriving EV that requires battery swapping), or in the process of being charged. The station is equipped with 
+
+K chargers (“servers”); hence, can charge up to K batteries at any time. Viewed this way, the station is maintaining an inventory of up to N fully-charged batteries; and the process of charging one or more batteries is effectively the process of inventory replenishment. On the other hand, if/when all N batteries are either depleted or in the process of being charged (and hence, are not ready to supply demand), any arriving EV will leave the station, resulting in a lost demand. This corresponds to the case of “blocking” (due to a full buffer) in the queueing context. Since the demand arrival rates λ(t) and the charging-cost rate e(t) (the cost rate of electricity) are time-dependent — both are key features of the EV battery-swapping station’s operation, it becomes highly non-trivial what the optimal charging (or, inventory-replenishment) strategy is. To find the optimal strategy as stated above, we will pursue a stochastic control approach, more specifically, a continuous-time MDP (Markov decision process). Our study is also motivated by the work of Yang, Yao and Ye (2020) [23], where the focus is on a broad class of so-called “inventory-queues” for which the optimal control, for a long-run average objective, has a threshold structure. (An inventory-queue is a system where the server(s) can still be active even when the system is empty, so as to produce finished products to supply future demand. Thus, the system operates in a mixed make-to-order and make-to-stock modes.) The paper shows that this threshold structure not only applies to an inventory-queue when it 2operates as a continuous-time Markov chain, but also to the diffusion limit of the original queue when it is non-Markovian (e.g., with renewal arrivals and non-exponential service times). One of our objectives here is to explore similar threshold structures, in a non-stationary setting along with a finite time horizon, as motivated by the EV application stated above. With the results highlighted below, we believe we have successfully completed this first step. 
+
+Related Literature 
+
+The related literature on service control/optimization in queues predominantly concerns stationary models, e.g., Stidham and Weber (1989) [21], and George and Harrison (2001) [6], with a focus on monotone optimal policies; refer to Glasserman and Yao (1994) [7] (Chapter 6). The problem becomes much more difficult under non-stationarity and known results are limited. For instance, Fu, Marcus and Wang (2000) [5] establish monotone staffing policies for a transient multi-period queue, but staffing decisions are made only at period boundaries. Miller (2009) [16] studies access and service-rate control over a finite horizon with non-stationary arrivals, and provides a dynamic-programming characterization and numerical solution procedure, but does not derive any explicit structural characterization of the state-dependent service policy. The main technical challenge is that non-stationarity and the terminal (end-of-horizon) effect couple the evolution of the value function and the optimal policy over time, making it difficult to characterize the optimal policy analytically. For non-stationary finite-buffer Mt/M/c/N queues, a substantial body of research develops approximations for performance evaluation, e.g., Jagerman (1975) [9] and Massey and Whitt (1996) [14], as analytical results under non-stationary arrivals are generally difficult to obtain due to the transient evolution of the system, see Davis, Massey and Whitt (1995) [4]. This challenge clearly carries over to the EV battery-swapping problem. For example, Qi, Zhang and Zhang (2023) [19], and Ai, Cheng and Qi (2026) [1] integrate steady-state/stationary queueing theory and inventory analysis with long-term station-location and capacity decisions. Yet, in practice demand (EV traffic) certainly varies, over time of the day and days of the week, and so does charging cost. Thus, operational decisions such as when to charge depleted batteries and what the right number of fully charged batteries (“inventory level”) to keep at the swapping station is clearly require non-stationary models, and often over a finite horizon (e.g., a month or a quarter) which may consist of several similar cycles (e.g., weeks). Studies in this regard appear rather rare. A notable exception is a recent work: Li et al (2026) [12] study the optimal charger-activation policy over a finite time horizon, and derive the optimal policy with a two-threshold structure, similar to our study. The differences are, a) theirs is a discrete-time model ( t = 1 , 2, . . . , T ), with 3a deterministic single-period charging time; b) they consider a dual source of power for charging: from solar panel (locally installed at the station) and from the power grid, which is a feature not considered in our model. Notably, our basic model (detailed in §2 below) goes beyond the Mt/M/c/N queues in that we allow the service-cost rate to be time-dependent, as well as the arrival rate. Moreover, we allow these time-dependent rates to have jumps at discrete time points over the horizon, so as to capture key features, such as higher rush-hour traffic and lower electricity cost for off-peak (e.g., overnight) charging, that are critical in the applications that motivate our study. Indeed, these discontinuities are among the main technical challenges in our analyses. 
+
+Key Contributions 
+
+• Applying continuous-time MDP to study the optimal control of a non-stationary inventory-queue over a finite time horizon, we obtain an exact and explicit threshold structure (Theorem 1) that characterizes the optimal control policy, using a combination of Dynkin’s formula and Nagumo’s theorem. Specifically, the optimal replenishment strategy, for each time-state pair, has a bang-bang structure: either replenish all idle/depleted units (up to K) or no unit at all. Furthermore, the optimal control exhibits a (stronger) threshold structure, i.e., activating the replenishment process if and only if the number of depleted units have reached (or exceeded) a threshold imin  
+
+> t
+
+(which only depends on time). 
+
+• We give both necessary and sufficient conditions (in Theorem 2), based on comparing the charging-cost rate versus the demand rate, for the threshold imin  
+
+> t
+
+to be increasing (non-decreasing) in t. In addition, we also show (in Theorem 3) the threshold’s monotonicity w.r.t. system capacities ( K and N ). 
+
+• For non-exponential charging times, we use the phase-type (PH) distribution, which is known to be dense in the class of distributions of non-negative valued random variables. Since the PH distribution can be represented as the absorbing time of a Markov chain, the MDP framework still applies, and numerical experiments demonstrate that the optimal control still exhibits a threshold structure, thus, supporting the robustness of the structure. The rest of the paper is organized as follows. In §2 we first derive the bang-bang structure of the optimal control and then strengthen it to a threshold structure (as highlighted above). We then continue to reveal in §3 the monotonicity of thresholds both over time and in terms of the capacity parameters, the number of servers K and the buffer capacity N . §4 focuses on the case when the planning horizon [0 , T ] consists of cycles (such as peak-to-off-peak), where we reveal certain cyclic 4monotonicity of the thresholds. In §5 we extend the exponential charging-time distribution to the general class of phase-type distributions, for which the threshold structure of the optimal control is difficult to pin down analytically, but readily demonstrated numerically in the extensive numerical experiments detailed in §6. Concluding remarks are summarized in §7. 
+
+# 2 Optimal Replenishment Control 
+
+2.1 Model and Problem Formulation 
+
+We study an inventory system of N units, where N ≥ 1 is a given integer. At any time, each of the N units is either in an “active/ready” state or in an “idle/not ready” state, according to whether or not it can be used to supply a demand. In the earlier motivating example of an EV battery swapping station, N corresponds to the total number of batteries at the station: some are fully charged, ready to supply any incoming EV that requires a swap; others are being charged or waiting to be charged. Hence, the charging process corresponds to inventory replenishment. Time is continuous: t ∈ [0 , T ], with T > 0 given and finite; and we shall refer to [0 , T ] as the planning horizon. Let I(t) denote the number of idle/not ready units, which will be treated as a state variable, with state space S = {0, 1, . . . , N }. Specifically, when I(t) = i, there are N − i
+
+units ready to satisfy demand. To the extent that N is the maximal number of ready units, this corresponds to what is traditionally called a “base-stock” inventory replenishment system, with 
+
+N being the base-stock level. Note that any one of the I(t) idle units may or may not be under replenishment, depending on the replenishment strategy. Demands arrive at the system following a non-stationary Poisson process with time-varying intensity λ(t), where λ(t) is deterministic, bounded, right-continuous, inf t∈[0 ,T ] λ(t) > 0, and con-tinuously differentiable except at finitely many time points. Each arriving demand requires one ready unit. If I(t) = i < N , the demand is fulfilled immediately, and the state changes from i
+
+to i + 1; if I(t) = N , i.e., no ready unit is available, the demand is lost and the state remains unchanged. In the EV example, these correspond to swapping times being negligible (demand fulfilled immediately), and no EV will wait for swapping if there’s no ready battery (lost demand when inventory is empty). The idle units can be replenished simultaneously (i.e., in parallel), up to K at any time, where 
+
+K ≥ 1 is a given integer. Thus, K can represent the number of battery chargers installed at the swapping station. In this application context, we shall refer to a charger as a “server”, and an “active server” means a charger that is in the process of charging a battery. In the more general inventory setting, an active server corresponds to a unit of the depleted inventory being replenished 5(by a “server”) – a replenishment order has been issued and the unit is on its way. For each idle unit, the replenishment time follows an independent and identically distributed (iid) exponential distribution with rate μ, which is also independent of the demand process. The replenishment control is to decide the number of active servers from the following feasible set: 
+
+U(i) = {0, 1, . . . , i ∧ K}, (1) where ∧ denotes the min operator. A control (or “action”), u(t) = k, means activating k ≤ K
+
+servers. Under this action, replenishment completions occur at an aggregate rate kμ , and each completion decreases the state from i to i−1. By measuring time in units of the mean replenishment time, we normalize μ = 1 without loss of generality. Server activation and deactivation are assumed to be instantaneous and incur no additional (switching) cost. A control u = {u(t) : t ∈ [0 , T ]}
+
+is admissible if it is non-anticipative (i.e., independent of any future information) and satisfies 
+
+u(t) ∈ U (I(t)) at all times. Under an admissible control, the state process {I(t) : t ∈ [0 , T ]} is a controlled birth-death process, of which the infinitesimal generator Q(t, u ) = [ qij (t, u )] Ni,j =0 takes the following form. Its (non-zero) off-diagonal elements of the infinitesimal generator are: 
+
+qi,i +1 (t, u ) = λ(t), qi,i −1(t, u ) = u; (2) and the diagonal elements are: 
+
+qii (t, u ) = − X 
+
+> j̸=i
+
+qij (t, u ).
+
+(All other entries of Q(t, u ) are zero). An arrival in state N leaves the state unchanged (hence not affecting Q). As this corresponds to a lost demand, it will incur a penalty cost π > 0. Let e(t) : [0 , T ] → (0 , ∞) denote the operating cost per active server per time unit (the charging cost rate). Same as the assumptions on the arrival rate λ(t), we assume the function e(t) is deterministic, bounded, right-continuous, inf t∈[0 ,T ] e(t) > 0, and continuously differentiable except at finitely many time points. Thus, when the system is in state i and action u is chosen, the expected instantaneous cost rate is 
+
+c(t, i, u ) = e(t)u + πλ (t)1{i=N }. (3) For an admissible control u, denote the (expected) cost-to-go function by 
+
+Ju(t, i ) = E
+
+Z Tt
+
+c s, I (s), u (s, I (s))  ds 
+
+
+
+. (4) 6This definition applies to ( t, i ) ∈ [0 , T ] × S , where the expectation is with respect to the state I(s). Moreover, denote the value function as follows, along with the terminal condition: 
+
+V (t, i ) := inf  
+
+> u
+
+Ju(t, i ), (t, i ) ∈ [0 , T ] × S ,V (T, i ) := 0 , i ∈ S . (5) Finding the optimal replenishment strategy is to dynamically adjust the number of active servers – call it “activation strategy” – based on comparing the (current) operating cost rate e(t) against the (future) cost marginal (of having one fewer ready unit), with the latter denoted by ∆0(t) := V (t, 0) ,
+
+∆i(t) := V (t, i ) − V (t, i − 1) , i = 1 , . . . , N. (6) Having set up the model and the control problem, in what follows we will first show in §2.2 that the optimal activation strategy, for each time-state pair, has a bang-bang structure: either replenish all idle units (up to K) or no unit at all. We then examine in §2.3 how this decision varies across states and establish a threshold on the number of idle units. 
+
+2.2 Bang–Bang Structure 
+
+Proposition 1. For the optimal control problem in (3), (4) and (5), there exists an optimal Markovian policy u∗:
+
+u∗(t, i ) = 
+
+(
+
+i ∧ K, if ∆ i(t) > e (t),
+
+0, if ∆ i(t) ≤ e(t), (7) where ∆ i(t) follows (6). □
+
+Intuitively, since ∆ i(t) represents the marginal continuation cost of having one fewer ready unit available to satisfy demand, if ∆ i(t) > e (t) it certainly makes sense to activate all available servers. To derive the optimal control in (7) from the HJB (Hamilton-Jacobi-Bellman) equations, the technical challenge is to handle the discontinuities of both λ(t) and e(t), which are essential features of our model. Specifically, let 0 = τ0 < τ 1 < · · · < τ m < τ m+1 = T (8) be all the discontinuity points of λ and e, so that at least one of the two functions will have jumps at these points, even though both are continuously differentiable on each open interval ( τk, τ k+1 ). The proof of the above proposition in Appendix A will focus on a piecewise solution to the HJB system: W = ( W0, . . . , W N ), with each component Wi being continuously differentiable on 7(τk, τ k+1 ). With the boundary conventions WN +1 (t) = WN (t) and W−1(t) = W0(t), the HJB equations can be written uniformly as 
+
+− ˙Wi(t) = min 
+
+> u∈U (i)
+
+n
+
+c(t, i, u ) + λ(t) Wi+1 (t) − Wi(t) + u Wi−1(t) − Wi(t)o
+
+, (9) Specifically, Wi will be constructed as follows: Start from the terminal condition Wi(T ) = 0, working backward over the intervals: k = m, . . . , 0. For the k-th interval ( τk, τ k+1 ), solve the HJB equation in (9), with the boundary condition Wi(τ −
+
+> k+1
+
+) = Wi(τk+1 ). Next, repeat the same for the interval ( τk−1, τ k), with the boundary condition Wi(τ − 
+
+> k
+
+) = Wi(τk). What remains is to argue that W so constructed is continuous on [0 , T ] and C1 on each of the 
+
+m + 1 open intervals, and to verify that Wi(t) = V (t, i ) for all t ∈ [0 , T ] and all i ∈ S . The full proof is detailed in Appendix A. 
+
+2.3 Threshold Structure 
+
+Given the bang-bang structure of the optimal control in each state i in Proposition 1, i.e., activate all available servers if ∆ i(t) > e (t), we shall call a state i that satisfies this condition an “activation state”. Moreover, denote for each t ∈ [0 , T ], the set of all activation states: 
+
+It := {i ∈ S \ { 0} : ∆ i(t) > e (t)}. (10) It turns out that the marginal continuation costs ∆ i(t) := V (t, i ) − V (t, i − 1), i ∈ S , are increasing in i; or equivalently, V (t, i ) is convex in i.
+
+Lemma 1. The marginal costs ∆ i(t) := V (t, i ) − V (t, i − 1) satisfy: 
+
+π ≥ ∆N (t) ≥ ∆N −1(t) ≥ · · · ≥ ∆1(t) ≥ 0, t ∈ [0 , T ]. (11) Hence, V (t, i ) is convex in i. Furthermore, all inequalities in (11), except the last one ∆ 1(t) ≥ 0, hold strictly for t ∈ [0 , T ). □
+
+Intuitively, as i increases, the system has fewer ready units and is closer to stockout. Losing one more ready unit is more likely to result in lost demand: when many ready units are available, losing one unit has little effect because the system has enough buffer; when only a few ready units remain, losing one more unit is more likely to cause lost demand. Hence, losing one more ready unit has a larger marginal continuation cost as i increases. This marginal cost cannot exceed π,since one additional ready unit can avoid at most one lost-demand penalty. To prove the ordering in Lemma 1, the technical challenge is that the optimal control enters the HJB system through Ψ i(t) := ( i ∧ K) min {0, e (t) − ∆i(t)}, making the sign of Ψ i(t) − 2Ψ i−1(t) + 8Ψi−2(t) difficult to determine. We analyze it on the boundary faces (e.g., ∆ i(t) = ∆ i−1(t)) and apply Nagumo’s theorem. In the proof of the above lemma in Appendix B, we reverse time and consider the region 
+
+C := {(∆ 1, . . . , ∆N ) : 0 ≤ ∆1 ≤ · · · ≤ ∆N ≤ π} . (12) What remains to prove is that the backward-time trajectory remains in C, starting from ∆ i(T ) = 0. We verify that the backward-time derivatives of the marginal costs do not point outside C on any boundary face. For example, 
+
+− ddt 
+
+ ∆i − ∆i−1
+
+ ≥ 0 when ∆i − ∆i−1 = 0 .
+
+Nagumo’s theorem then implies that C is invariant, which yields the ordering in (11). The full proof is detailed in Appendix B. This monotonicity leads to the threshold structure of the optimal control in Theorem 1. 
+
+Theorem 1. Denote imin  
+
+> t
+
+:= min It as the lowest/smallest state among all the activation states. The optimal control in Proposition 1 can be strengthened as follows: for all t ∈ (0 , T ) and all i ∈ S ,
+
+u∗(t, i ) = i ∧ K, if i ≥ imin  
+
+> t
+
+; otherwise, u∗(t, i ) = 0. (If It = ∅, then u∗(t, i ) = 0 by default.) 
+
+Proof. Fix t ∈ [0 , T ]. By Proposition 1, the selected optimal action is 
+
+u∗(t, i ) = 
+
+(
+
+i ∧ K, ∆i(t) > e (t),
+
+0, ∆i(t) ≤ e(t).
+
+By Lemma 1, ∆ i(t) is increasing in i. Thus, if k ∈ I t, then, for every j > k ,∆j (t) ≥ ∆k(t) > e (t), (13) so j ∈ I t. Hence, It is an upper interval of {1, . . . , N }. If It̸ = ∅, then imin  
+
+> t
+
+= min It is well defined. By the definition of imin  
+
+> t
+
+,∆i(t) ≤ e(t), i < i min  
+
+> t
+
+,
+
+∆i(t) > e (t), i ≥ imin  
+
+> t
+
+. (14) Proposition 1 therefore gives 
+
+u∗(t, i ) = 
+
+(
+
+i ∧ K, i ≥ imin  
+
+> t
+
+,
+
+0, i < i min  
+
+> t
+
+.
+
+If It = ∅, then ∆ i(t) ≤ e(t) for every i = 1 , . . . , N , and Proposition 1 gives u∗(t, i ) = 0 in every state. Under the convention imin  
+
+> t
+
+= N + 1, the same threshold representation remains valid. This proves the theorem. 9The intuition behind the above theorem is the combination of Proposition 1 and Lemma 1: if replenishment is worthwhile (i.e., ∆ i(t) > e (t)) at a given state, it remains worthwhile whenever fewer ready units are available, as replenishment is more valuable when the system is closer to stockout (i.e., ∆ i(t) > ∆i−1(t)). The above theorem strengthens the earlier bang–bang characterization of the optimal action via ∆ i(t), which depends on both time and state, to a threshold imin  
+
+> t
+
+that only depends on time. At any time t, the threshold is the lowest activation state, i.e., the smallest number of idle units that warrant activation. Having been already identified as the lowest (among all activation states), the threshold has removed any state dependency. 
+
+# 3 Monotonicity of the Threshold 
+
+3.1 Temporal Monotonicity 
+
+As time advances, there is less time to use replenished units. This motivates us to examine how the threshold imin  
+
+> t
+
+evolves over time. Specifically, we identify conditions under which imin  
+
+> t
+
+is increasing in time. Under this temporal monotonicity, the set It will shrink as t increases to T . Consequently, for any given state i, the optimal action can only switch from activation to inaction at most once and cannot subsequently be reactivated. 
+
+Lemma 2. Denote δi(t) := ∆ i(t) − ∆i−1(t), for i = 2 , . . . , N , and let Λ( t, s ) := R st λ(r) dr . For every i = 2 , . . . , N and t ∈ [0 , T ], 
+
+δi(t) ≥ δi(t) := πe −Λ( t,T )−K(T −t) Λ( t, T )N −i+1 
+
+(N − i + 1)! . (15) Moreover, these bounds satisfy δi(t) ≥ δ(t) where 
+
+δ(t) := πe −Λ( t,T )−K(T −t)min 
+
+
+
+Λ( t, T ), Λ( t, T )N −1
+
+(N − 1)! 
+
+
+
+. (16) 
+
+□
+
+Observe that δi(t) measures the increase in the marginal value of replenishment as inventory becomes more depleted. Without replenishment, exactly N − i + 1 arrivals cause one lost demand from state i, but none from states i − 1 and i − 2. The difference between the two marginal losses is therefore π. The probability of this event is the Poisson arrival probability 
+
+e−Λ( t,T ) Λ( t, T )N −i+1 
+
+(N − i + 1)! 10 multiplied by e−K(T −t), the probability of no completion at the maximum replenishment rate K.Multiplying this probability by π gives the state-dependent lower bound δi(t). The technical challenge in proving Lemma 2 lies in controlling the second difference of the term Ψi(t) := ( i ∧ K) min {0, e (t) − ∆i(t)} in the HJB equations. The proof will first bound this second difference from below, and then integrate the HJB system with this bound, yielding the lower bounds on δi(t) in (15). The full proof is detailed in Appendix C. The lower bound δ(t) leads to a sufficient condition under which the threshold imin  
+
+> t
+
+is increasing in time, as stated in the theorem below. 
+
+Theorem 2. Suppose the operating cost has no downward jumps, i.e., e(τk) ≥ e(τ − 
+
+> k
+
+) at every discontinuity point τk in (8). (i) ( Sufficient ) If ˙ e(t) > −λ(t) min δ(t), πe −Λ( t,T ) , then imin  
+
+> t
+
+is increasing in t.(ii) ( Necessary ) If imin  
+
+> t
+
+is increasing in t, then ˙ e(t) ≥ − λ(t) π − e(t) whenever ∆ imin  
+
+> t−1
+
+(t) = e(t). 
+
+Proof. For i = 1 , . . . , N , at any differentiability point where ∆ i(t) = e(t), Lemma 1 implies Ψ i(t) = Ψi−1(t) = 0, with Ψ 0(t) = 0. The HJB system therefore gives 
+
+ddt 
+
+ ∆i(t) − e(t) = − ˙e(t) − λ(t)
+
+(
+
+δi+1 (t), i < N, π − e(t), i = N. (17) We first prove the sufficient condition. By Lemma 2 and π − ∆N (t) ≥ πe −Λ( t,T ) (see (59) in Appendix B), condition (i) makes the derivative in (17) strictly negative. More generally, whenever ∆i(t) ≥ e(t), the HJB system and the same bounds give ˙∆i(t) − ˙e(t) = ui
+
+ ∆i(t) − e(t) + Ψ i−1(t) − λ(t)δi+1 (t) − ˙e(t) < u i
+
+ ∆i(t) − e(t). (18) Suppose that ∆ i(t) − e(t) becomes positive after being nonpositive within a continuity interval. By continuity, there exist t0 < t 1 such that ∆ i(t0) − e(t0) = 0 and ∆ i(s) − e(s) > 0 for every s ∈ (t0, t 1]. Integrating (18) with the factor e−uis gives 
+
+e−uit1  ∆i(t1) − e(t1) =
+
+Z t1
+
+> t0
+
+e−uish ˙∆i(s) − ˙e(s) − ui
+
+ ∆i(s) − e(s)i
+
+ds < 0. (19) This contradicts ∆ i(t1) − e(t1) > 0. Thus, an inactive state cannot become active within a con-tinuity interval. At a discontinuity point, ∆ i(t) is continuous and e(t) has no downward jump, so their difference cannot jump upward either. Thus, an inactive state remains inactive, and imin  
+
+> t
+
+is increasing. For the necessity condition, fix a differentiability point t such that i := imin  
+
+> t
+
+− 1 ∈ { 1, . . . , N }
+
+and ∆ i(t) = e(t). Since the threshold is increasing, state i remains inactive after t, implying 11 ˙∆i(t)− ˙e(t) ≤ 0. For i < N , (17) gives ˙ e(t) ≥ − λ(t)δi+1 (t). Since δi+1 (t) = ∆ i+1 (t)−e(t) ≤ π −e(t), we obtain ˙ e(t) ≥ − λ(t)( π − e(t)). For i = N , the same conclusion follows directly from (17). The sufficient and necessary conditions differ in how the relevant marginal gap is bounded. The sufficient condition uses the common lower bound in Lemma 2, which uniformly rules out reactivation at every possible state boundary: the operating cost may decrease, but more slowly than the marginal value of replenishment. The necessary condition instead uses the universal upper bound π − e(t) at the state boundary actually reached by the optimal control: the operating cost cannot decrease faster than the marginal value can possibly decline, since doing so would make replenishment worthwhile again. An increasing operating cost e(t) guarantees temporal monotonicity of the threshold. The following corollary states this consequence on any interval of the planning horizon and will be used in later sections. 
+
+Corollary 1. Let [ a, b ] ⊆ [0 , T ]. Suppose that ˙ e(t) ≥ 0 at every continuity point t ∈ (a, b ) and that 
+
+e(τk) ≥ e(τ − 
+
+> k
+
+) at every discontinuity point τk ∈ (a, b ]. Then imin  
+
+> t
+
+is increasing on [ a, b ]. 
+
+Proof. For every t < T , the assumption inf s∈[0 ,T ] λ(s) > 0 implies Λ( t, T ) > 0. Hence, Lemma 2 gives δ(t) > 0, while clearly πe −Λ( t,T ) > 0. Therefore, at every continuity point t ∈ (a, b ), ˙e(t) ≥ 0 > −λ(t) min 
+
+n
+
+δ(t), πe −Λ( t,T )o
+
+. (20) Thus, the sufficient condition in Theorem 2 holds. This proves that imin  
+
+> t
+
+is increasing on [ a, b ]. 
+
+3.2 Monotonicity in Resource Capacity 
+
+Inventory provides a buffer against demand, while replenishment capacity determines how many depleted units can be replenished simultaneously. We examine how these two capacities, N and 
+
+K, affect the activation threshold in Theorem 1. To make this dependence explicit, let V N,K (t, i )denote the value function for a system with N units and at most K replenishment servers, and define ∆N,K i (t) := V N,K (t, i ) − V N,K (t, i − 1) , (21) for i = 1 , . . . , N . Following (10), denote the corresponding set of activation states by 
+
+IN,K t := 
+
+n
+
+i ∈ S \ { 0} : ∆ N,K i (t) > e (t)
+
+o
+
+. (22) Let imin  
+
+> N,K
+
+(t) denote the smallest activation state in a system with capacities N and K, with the convention that imin  
+
+> N,K
+
+(t) = N + 1 if IN,K t = ∅.12 Proposition 2. For every t ∈ [0 , T ], the following statements hold. 1. For every fixed K, every N ≥ 1, and every common state i = 1 , . . . , N , ∆ N +1 ,K i (t) ≤ ∆N,K i (t). 2. For every fixed N , every K ≥ 1, and every state i = 1 , . . . , N , ∆ N,K +1  
+
+> i
+
+(t) ≤ ∆N,K i (t). □
+
+At a fixed state i, increasing N provides more ready units and a larger buffer against demand. Losing one additional ready unit is less likely to cause stockout and has a smaller marginal con-tinuation cost. Increasing K instead gives the system greater capacity to replenish depleted units before stockout occurs. The effect of losing one ready unit can thus be more readily offset by replenishment, reducing its marginal continuation cost. The main technical challenge is that changing N or K changes the HJB system itself, so the marginal continuation costs of the two systems cannot be compared directly. The proof provided in Appendix D uses Nagumo’s theorem to establish the invariance of the region in which the larger-capacity system has no greater marginal continuation costs. On each boundary face, we show that the backward-time derivative points into this region; for example, 
+
+− ddt 
+
+ ∆N,K i (t) − ∆N +1 ,K i (t) ≥ 0whenever ∆ N,K i (t) = ∆ N +1 ,K i (t) and ∆ N,K j (t) ≥ ∆N +1 ,K j (t) for every common state j. The key distinction between the two comparisons lies in where their HJB systems differ. For the comparison in N , the two marginal-cost HJB systems have the same interior structure over their common states, but differ at the upper boundary because the ( N + 1)-unit system has one additional state. For the comparison in K, the maximum feasible actions i ∧ K and i ∧ (K + 1) coincide for i ≤ K and differ for i ≥ K + 1. The full proof is detailed in Appendix D. The above proposition directly leads to the following Theorem 3. 
+
+Theorem 3. Denote imin  
+
+> N,K
+
+(t) := min IN,K t as the lowest/smallest state among all the activation states in a system with capacities N and K. If IN,K t = ∅, set imin  
+
+> N,K
+
+(t) := N + 1. Then, for every 
+
+t ∈ [0 , T ], the following statements hold. 1. For every fixed K and every N ≥ 1, imin   
+
+> N+1 ,K
+
+(t) ≥ imin  
+
+> N,K
+
+(t). 2. For every fixed N and every K ≥ 1, imin 
+
+> N,K +1
+
+(t) ≥ imin  
+
+> N,K
+
+(t). 
+
+Proof. Fix t ∈ [0 , T ]. If i ∈ I N +1 ,K t ∩ { 1, . . . , N }, then ∆ N +1 ,K i (t) > e (t). By Proposition 2, ∆N,K i (t) ≥ ∆N +1 ,K i (t) > e (t), so i ∈ I N,K t . The comparison between K and K + 1 follows analogously. Hence, 
+
+IN +1 ,K t ∩ { 1, . . . , N } ⊆ I N,K t , IN,K +1  
+
+> t
+
+⊆ I N,K t . (23) 13 Under the convention for an empty activation set, the first inclusion implies imin   
+
+> N+1 ,K
+
+(t) ≥ imin  
+
+> N,K
+
+(t). Indeed, if imin   
+
+> N+1 ,K
+
+(t) ≤ N , then it belongs to IN,K t ; otherwise, it equals N + 1 or N + 2, while 
+
+imin  
+
+> N,K
+
+(t) ≤ N + 1. Since the systems with K and K + 1 servers have the same state space, the second inclusion directly implies imin 
+
+> N,K +1
+
+(t) ≥ imin  
+
+> N,K
+
+(t). This proves the theorem. The above theorem translates the marginal-cost comparisons in Proposition 2 into monotonicity of the activation threshold with respect to resource capacities. Increasing N provides a larger inventory buffer, while increasing K provides greater replenishment capacity. Both reduce the marginal continuation cost of an additional depleted unit and thereby increase the number of depleted units required to trigger replenishment. 
+
+# 4 Cyclic Models 
+
+Many replenishment systems face demand and operating costs that vary over time but repeat over daily, weekly, or other cycles. In the EV example, electricity prices follow daily time-of-use (TOU) schedules, while EV arrivals (at a battery-swapping station) vary with the time of day. Suppose that the planning horizon consists of M cycles of equal length L, so that T = M L . We assume that the arrival rate and operating cost repeat the same profiles in every cycle. Specifically, there exist functions eλ and ee such that 
+
+λ(( m − 1) L + s) = eλ(s), e(( m − 1) L + s) = ee(s); s ∈ [0 , L ), m = 1 , . . . , M. (24) Similarly, following the definition of It in (10) and imin  
+
+> t
+
+in Theorem 1, denote the cycle-dependent set of activation states as I(m−1) L+s, and imin (m−1) L+s the minimal state thereof. Below, in §4.1, we examine how the optimal control changes from one cycle to the next. In §4.2, we show that the optimal control can reduce to a simple peak-period shutdown and off-peak full activation form under certain conditions, for piecewise-constant e.
+
+4.1 Threshold Ordering across Cycles 
+
+Theorem 4. Under (24), for every m = 1 , . . . , M − 1, i = 1 , . . . , N , and s ∈ [0 , L ], ∆i(( m − 1) L + s) ≥ ∆i(mL + s). (25) Consequently, for every m = 1 , . . . , M − 1 and s ∈ [0 , L ), we have I(m−1) L+s ⊇ I mL +s; and hence, 
+
+imin (m−1) L+s ≤ imin 
+
+> mL +s
+
+. □
+
+14 The intuition behind the above theorem is straightforward: at the same relative time in two consecutive cycles, the earlier cycle has a longer remaining horizon and faces more future demand, increasing the risk of stockout and making replenishment more valuable. To derive this ordering from the non-stationary HJB system, the main technical challenge is to compare marginal continuation costs at two times one full cycle apart, e.g., ∆ i(( m − 1) L + s)and ∆ i(mL + s). The marginal costs evolve according to a non-stationary HJB system and do not have explicit-form solutions. Although the model parameters are identical at these two times, the remaining horizons are different. A direct comparison is therefore not available. The proof in Appendix E will address this challenge through a recursive comparison across cycles. For two consecutive cycles, we subtract the marginal-cost HJB equations evaluated at corresponding times and apply Nagumo’s theorem to the resulting difference system. This shows that if ∆ i(mL ) ≥ ∆i(( m + 1) L) at the ends of the two cycles, then ∆i(( m − 1) L + s) ≥ ∆i(mL + s), s ∈ [0 , L ]. (26) Starting from ∆ i(( M −1) L) ≥ 0 = ∆ i(T ) and applying this comparison recursively backward across cycles yields (25). The full proof is given in Appendix E. 
+
+4.2 Peak–Off-Peak Control 
+
+Piecewise-constant operating costs often follow recurring patterns, such as daily peak and off-peak electricity prices in the EV example. Let a fraction ρ ∈ (0 , 1) of each cycle be designated as the peak period. For m = 1 , . . . , M , define 
+
+Hm = [( m − 1) L, (m − 1 + ρ)L),Lm = [( m − 1 + ρ)L, mL ). (27) The operating cost follows 
+
+e(t) = 
+
+(
+
+eH, t ∈ Hm,eL, t ∈ Lm, eH > e L > 0. (28) Recall that Λ( t, s ) = R st λ(r) dr . By periodicity, the cumulative demand during every peak period is Λ H := Λ  mL, (m + ρ)L = R ρL  
+
+> 0
+
+eλ(r) dr for m = 0 , . . . , M − 1. In practice, a common way to reduce operating costs under time-varying operating costs (e.g., TOU electricity prices) is load shifting, where operations are shifted from peak to off-peak periods. An extreme form of load shifting shuts down all available servers during peak periods and fully activates them during off-peak periods. We shall call this a “peak-period shutdown and off-peak full activation” policy. The following proposition gives these two conditions using model primitives. 15 Proposition 3. Fix a nonterminal cycle m ∈ { 1, . . . , M − 1}. If 
+
+eH ≥ π
+
+
+
+1 − e−Λ(( m−1) L,T )
+
+≥ ∆N
+
+ (m − 1) L,eL < π 
+
+"
+
+1 − e−ΛH 
+
+> N−1
+
+X
+
+> k=0
+
+Λk
+
+> H
+
+k!
+
+#
+
+≤ ∆1(mL ),
+
+(29) then cycle m exhibits peak-period shutdown and off-peak full activation: 
+
+u∗(t, i ) = 
+
+(
+
+0, t ∈ Hm,i ∧ K, t ∈ Lm, i = 0 , . . . , N. □
+
+The first condition in (29) requires the peak-period operating cost to be high relative to the future demand exposure from the beginning of cycle m to the end of the horizon. The term 1 − e−Λ(( m−1) L,T ) is the probability that at least one demand arrives during this remaining horizon. Thus, the peak-period operating cost is high enough that replenishment is not worthwhile even when future demand is likely. This leads to shutdown during the peak periods. The second condition compares the off-peak operating cost with the probability that at least 
+
+N demands arrive during Hm+1 , which is the probability that the entire resource pool can be exhausted during that peak period. If the off-peak operating cost is below the expected penalty associated with this event, it is worthwhile to replenish as much as possible before entering the next peak period. This gives full activation during Lm.The first condition is relatively straightforward, as the second inequality there gives a primitive upper bound on ∆ N (t), which follows from Lemma 1 (and its proof in Appendix B). The main difficulty is to obtain a primitive lower bound on ∆ 1(mL ) for the second condition. The proof in Appendix E will first use the first condition to show that the system shuts down during Hm+1 .With no replenishment in this period, two systems starting one state apart can be coupled under the same demand arrivals. This gives an exact decomposition of ∆ i(mL ) into the probability of one additional lost demand and a nonnegative continuation term. Dropping the continuation term yields the Poisson-tail lower bound on ∆ 1(mL ) used in the second condition. The full proof is detailed in Appendix E. 
+
+# 5 Extension to Phase-type Distributions 
+
+The exponential replenishment-time assumption makes the number of depleted units a one-dimensional Markov state. We now extend the model to phase-type replenishment times. As discussed in §4.2.1 (p. 76) of [3], a phase-type distribution is the absorption time of a finite-state continuous-time Markov chain. Phase-type distributions are dense in the class of distributions on the nonnegative 16 real line under weak convergence; indeed, finite mixtures of Erlang distributions with a common scale parameter already form a dense subclass [2] (Theorem III.4.2). Thus, the finite-state repre-sentation below can approximate general replenishment-time distributions arbitrarily closely while preserving a finite-state continuous-time MDP formulation. Let J = {1, . . . , J } denote the set of transient replenishment phases. A newly depleted unit enters phase j with probability αj , where αj ≥ 0 and PJj=1 αj = 1. While a phase-j unit is actively replenished, it moves to phase ℓ̸ = j at rate νjℓ and completes replenishment at rate 
+
+νj0. All transition rates are nonnegative, and the resulting transient Markov chain is assumed to reach replenishment completion with probability one. The phase occupied by each depleted unit is observable and remains unchanged whenever replenishment is interrupted. Thus, the control is preemptive-resume at the phase level. Let x = ( x1, . . . , x J ) record the numbers of depleted units in the respective phases, and write 
+
+i = PJj=1 xj . The state and action spaces are 
+
+X =
+
+x ∈ ZJ 
+
+> +
+
+:
+
+> J
+
+X
+
+> j=1
+
+xj ≤ N
+
+ ,
+
+U(x) = 
+
+u ∈ ZJ 
+
+> +
+
+: 0 ≤ uj ≤ xj ,
+
+> J
+
+X
+
+> j=1
+
+uj ≤ K
+
+ ,
+
+(30) where uj is the number of phase-j units being replenished. Let ej be the jth unit vector. For 
+
+xj > 0, define the state following a transition from phase j to phase ℓ by 
+
+Sjℓ (x) = 
+
+(
+
+x − ej + eℓ, ℓ ∈ J \ { j},
+
+x − ej , ℓ = 0 . (31) Accordingly, the nonzero transition rates are 
+
+qx,x+ej (t, u) = λ(t)αj , i < N, j ∈ J ,qx,S jℓ (x)(t, u) = uj νjℓ , xj > 0, j ∈ J , ℓ ∈ J \ { j},qx,S j0(x)(t, u) = uj νj0, xj > 0, j ∈ J .
+
+(32) An arrival in a state with i = N is lost and leaves the state unchanged. The instantaneous cost rate is 
+
+c(t, x, u) = e(t)
+
+> J
+
+X
+
+> j=1
+
+uj + πλ (t)1{i=N }. (33) Let V (t, x) denote the minimum expected cost from state x at time t. On each continuity 17 interval of λ(t) and e(t), its HJB equation is 
+
+− ˙V (t, x) = πλ (t)1{i=N } + λ(t)1{i<N }
+
+> J
+
+X
+
+> j=1
+
+αj [V (t, x + ej ) − V (t, x)] (34) + min 
+
+> u∈U (x)
+
+X 
+
+> j:xj>0
+
+uj
+
+n
+
+e(t) + X
+
+> ℓ∈J \{ j}
+
+νjℓ [V (t, S jℓ (x)) − V (t, x)] + νj0 [V (t, S j0(x)) − V (t, x)] 
+
+o
+
+,
+
+with V (T, x) = 0, for all x ∈ X . Although the optimal action now depends on the complete phase composition, the minimization in (34) admits an exact ranking structure. For each occupied phase, define its phase-specific marginal value rate by 
+
+Rj (t, x) := X
+
+> ℓ∈J \{ j}
+
+νjℓ [V (t, x) − V (t, S jℓ (x))] + νj0 [V (t, x) − V (t, S j0(x))] , xj > 0. (35) Thus, Rj (t, x) is the instantaneous expected reduction in continuation cost generated by actively replenishing a phase-j unit, accounting for all of its possible successor phases. 
+
+Proposition 4. At every time-state pair ( t, x), rank all depleted units in decreasing order of the marginal value rate Rj (t, x) associated with their current phases. An optimal Markov policy activates the first min 
+
+K, X 
+
+> j:xj>0
+
+xj 1{Rj (t, x)>e (t)}
+
+ (36) units in this ranking. Ties may be resolved arbitrarily, and units with Rj (t, x) = e(t) are left inactive by convention. 
+
+Proof. By (35), the action-dependent part of the HJB objective is 
+
+X 
+
+> j:xj>0
+
+uj [e(t) − Rj (t, x)] . (37) Activating a phase-j unit reduces this objective if and only if Rj (t, x) > e (t). Since every activated unit consumes one unit of replenishment capacity, the objective is minimized by activating at most 
+
+K such units in decreasing order of Rj (t, x). The pointwise minimizer is optimal by the same HJB verification argument used for Proposition 1. Equivalently, the controller ranks every depleted unit according to the marginal value rate of its current phase and assigns the available servers to the units with the largest rates above the operating-cost rate. When J = 1 and ν10 = μ, the ranking index reduces to R1(t, i ) = 
+
+μ[V (t, i ) − V (t, i − 1)] = μ∆i(t). After the normalization μ = 1, Proposition 4 therefore reduces to the bang–bang policy in Proposition 1. 18 With multiple phases, however, the total optimal activation P 
+
+> j
+
+u∗ 
+
+> j
+
+(t, x) may lie strictly between 0 and i ∧ K, because only some phases may have marginal value rates above e(t). The resulting structure is therefore a phase-ranking policy rather than the one-dimensional bang–bang policy. The numerical results in §6.3 examine whether this composition-dependent policy nevertheless exhibits a threshold-like structure after aggregation by the total depleted state i.
+
+# 6 Numerical Experiments 
+
+To validate the theoretical results developed in the previous sections, and in particular to illustrate the robustness of the threshold structure in practical implementations, in this section we report several numerical experiments using a representative set of parameters calibrated from data on EV battery-swapping systems detailed in §6.1. This is followed by three subsections, where we examine the optimal charger-activation policy and its performance across different charging-power levels and seasonal electricity-price schedules in §6.2, and under non-exponential replenishment times in §6.3, followed by a brief summary of the key insights garnered from the experiments in §6.4. 
+
+6.1 Data and Problem Setup 
+
+The demand profile is calibrated using the battery-swapping data reported in [1, 19]. The hourly EV arrival rate is set to λL = 5 .68 from 0:00 to 8:59 and λH = 14 .51 from 9:00 to 23:59. The electricity-price profile follows Rate Option 1 of Rocky Mountain Power’s Electric Vehicle Time-of-Use Pilot (Schedule 2E), as reported by Meredith (2017) [15] and adopted in [8]. Under the summer schedule, the on-peak period is 15:00–20:00 for (non-holiday) weekdays; and electricity prices are 
+
+ceH = $0 .223 /kWh and ceL = $0 .068 /kWh for on-peak and off-peak hours, respectively. Following [1, 19], the baseline-power setting uses a charging power of P = 41 kW and a mean replenishment time of 1 /μ = 0 .78 hours. These values give μ ≈ 1.282 per hour and operating costs of eH = P c eH = $9 .143 and eL = $2 .788 per active charger-hour. We set N = 23 based on the battery capacity of a fourth-generation NIO swapping station [18], and set K = 20 to represent its effective parallel replenishment capacity. The lost-demand penalty is π = $3 .01 per unserved request, based on the operating data in [13]. To examine the optimal control under different operating conditions, we vary the charging power and seasonal electricity-price schedule. Following [19], the lower-power setting uses P = 7 kW and 1/μ = 4 .7 hours, representing slower replenishment under limited grid capacity. These values give 
+
+μ ≈ 0.213 per hour, eH = $1 .561, and eL = $0 .476 per active charger-hour. For the electricity-price profile, we consider both the summer schedule described above and the winter schedule, which adds another on-peak period from 8:00–10:00 [15]. Combining the two charging-power levels and two 19 seasonal schedules yields four parameter settings. All other parameters remain at their baseline values. Unless otherwise stated, the experiments use a five-day horizon with the daily demand and electricity-price profiles repeated every 24 hours. We solve the finite-state HJB system backward from the terminal condition V (T, i ) = 0, i =0, . . . , N , on a uniform time grid with step size ∆ t = 0 .01 hours. At each grid point, the optimal action is obtained through the pointwise minimization in the HJB equation. The resulting value functions are used to compute ∆ i(t) = V (t, i )−V (t, i −1) and the corresponding activation threshold according to the condition μ∆i(t) > e (t). 
+
+6.2 Optimal Charger-Activation Control 
+
+Implementing the optimal control, which is a time- and state-dependent feedback rule, requires the station to monitor the inventory level of depleted batteries and adjust charger-activation decisions accordingly. Here our focus is on the peak–off-peak rule characterized in Proposition 3, which has the distinct advantage of simplicity and ease of implementation, and we compare its performance with the fully dynamic optimal policy. In Figure 1, we illustrate that the simple peak–off-peak rule coincides with the optimal policy over most of the planning horizon. Specifically, Figure 1a compares the marginal continuation costs ∆i(t) with the expected replenishment cost e(t)/μ . Figure 1b compares the optimal policy with the actions specified in (29) of Proposition 3: during peak-price periods, the optimal threshold is 
+
+imin  
+
+> t
+
+= N +1 = 24, implying complete charger shutdown; during (non-terminal) off-peak periods, the threshold becomes imin  
+
+> t
+
+= 1, implying full-activation whenever depleted batteries are present. The given data correctly certify the optimality of “peak-period shutdown and off-peak full-activation”, with the only exception being the final off-peak interval as the planning horizon ends. (Also note that close to the terminal time, the optimal threshold rises, consistent with Corollary 1). Next, we examine whether the peak–off-peak structure is sensitive to charging power and to electricity-price schedules. In Figure 2 the charging power is reduced from 41 kW to 7 kW, which changes both the level and the temporal evolution of the marginal continuation costs. Neverthe-less, the optimal policy retains the same peak–off-peak structure, and the optimality of the latter continues to be certified by the given data. Figures 3 and 4 consider the winter schedule under the baseline and lower charging powers, respectively. Under both charging-power settings, the optimal policy shuts down all chargers during the 8:00–10:00 morning peak, while the primitive conditions provide only partial certification of the surrounding off-peak full-activation pattern. The partial certification reflects the conservative nature of the primitive sufficient conditions. 20 (a) Marginal continuation costs and e(t)/μ (b) Optimal control and primitive certificates 
+
+Figure 1: Optimal peak–off-peak charger activation under the baseline setting.     
+
+> Note: A threshold of 1 indicates full feasible activation, whereas N+ 1 = 24 indicates complete shutdown. The gray-hatched interval in panel (b) is not covered by the primitive sufficient conditions.
+
+(a) Marginal continuation costs and e(t)/μ (b) Fully dynamic vs. primitive-based control 
+
+Figure 2: Peak–off-peak charger-activation control with lower charging power and the summer electricity-price schedule. 21 (a) Marginal continuation costs and e(t)/μ (b) Fully dynamic vs. primitive-based control 
+
+Figure 3: Peak–off-peak charger-activation control with the winter electricity-price schedule and the baseline charging power.   
+
+> (a) Marginal continuation costs and e(t)/μ (b) Fully dynamic vs. primitive-based control
+
+Figure 4: Peak–off-peak charger-activation control under fixed resource capacities with the winter electricity-price schedule and lower charging power. 
+
+6.3 Non-Exponential Replenishment Times 
+
+In practice, replenishment/charging times need not follow an exponential distribution. Their vari-ability can be summarized by the squared coefficient of variation (SCV), with the exponential distribution corresponding to SCV = 1, whereas less variable distributions correspond to SCV < 1, and more variable distributions to SCV > 1. Consequently, the optimal control and system per-formance may depend on the charging-time distribution, as will be demonstrated in the following three subsections. First, we numerically examine whether the optimal control of phase-type mod-els discussed in §5 will exhibit a threshold-like pattern. Second, within the phase-type family, we illustrate how the optimal expected cost varies with the SCV while holding the mean fixed. Third, 22 we study the robustness of the phase-type model serving as a proxy, or approximation , for general non-exponential charging times. 
+
+6.3.1 Threshold-Like Optimal Control under Phase-Type Charging Times 
+
+Consider two phase-type charging-time distributions while keeping all other parameters at their baseline values under the summer electricity-price schedule. Both distributions have a mean charging-time of 0 .78 hours. The Erlang-3 ( E3) distribution consists of three sequential phases, each with rate 3 /0.78 (hence, SCV= 1 /3). In this case, with the notation of §5, we have J = 3, 
+
+α1 = 1, α2 = α3 = 0, and ν12 = ν23 = ν30 = 3 /0.78, with all other transition rates equal to zero. The hyperexponential-2 ( H2) distribution is an equal-probability mixture of two expo-nential branches with respective means 0 .26 and 1 .30 hours (hence, SCV = 17 /9); with J = 2, 
+
+α1 = α2 = 1 /2, ν10 = 1 /0.26, ν20 = 1 /1.30, and ν12 = ν21 = 0. Starting from X(0) = 0, let ϱn(x) denote the proportion of phase state x at time tn under the optimal policy. For each aggregate depleted state i, we classify ( tn, i ) as an activation pair if some phase composition with positive proportion induces positive activation. The corresponding projected threshold is 
+
+uagg  
+
+> n
+
+(i) := X   
+
+> x:PJj=1 xj=i
+
+ϱn(x)
+
+> J
+
+X
+
+> j=1
+
+u∗ 
+
+> n,j
+
+(x),iproj  
+
+> n
+
+:= min {i ∈ { 1, . . . , N } : uagg  
+
+> n
+
+(i) > 0} ,
+
+(38) with iproj  
+
+> n
+
+= N + 1 when the set is empty. Figure 5 reports the resulting activation regions. Under both distributions, the aggregated positive-activation regions exhibit a clear threshold-like pattern in the number of depleted batteries (even though the exact optimal action depends on the phase composition). 
+
+6.3.2 Impact of Replenishment-Time Variability 
+
+We examine how charging-time variability affects system performance within the phase-type family. All charging-time distributions have the same mean of m = 0 .78 hours. To cover SCVs below one, we consider Erlang-k distributions with k ∈ { 2, 3, 5}, phase rate k/m , and SCV 1 /k . We use the exponential distribution with rate 1 /m as the benchmark with SCV one. For SCV c > 1, we consider moment-matched two-branch hyperexponential distributions ( H2). Let r = p(c − 1) /(c + 1), with branch probabilities pf = (1 + r)/2 and ps = (1 − r)/2, and corresponding rates μf = 2 pf /m and 
+
+μs = 2 ps/m . This construction has mean m and SCV c exactly. We consider c ∈ { 2, 3, 5, 10 }. For each distribution, we solve the corresponding phase-composition continuous-time MDP. 23 Figure 5: Threshold-like aggregated activation under phase-type replenishment times.       
+
+> Note: The shaded cells indicate aggregate state–time pairs for which at least one phase composition has positive optimal activation, and the red curve denotes their lower boundary iproj
+> n.A projected threshold of N+ 1 = 24 indicates no positive activation.
+
+Figure 6 reports the optimal total expected cost and its decomposition into charging and lost-demand costs under two parameter settings. The left panel, Figure 6a, reports the baseline results, i.e., for the parameter setting considered above; whereas in the right panel, Figure 6b, we double the arrival rate and increase the lost-demand penalty from 3 .01 to 6, while keeping N = 23 and 
+
+K = 20 (same as in the baseline). 
+
+(a) Baseline setting. (b) Higher-demand and higher-penalty setting. 
+
+Figure 6: Optimal expected cost under different phase-type replenishment times.  
+
+> Note: The SCV axis is plotted on a logarithmic scale in both panels. (a) uses the baseline parameter setting. (b) doubles both arrival rates and the lost-demand penalty.
+
+24 The results in both panels show that for SCV < 1, deviation of the optimal total cost from the exponential benchmark is almost negligible. In other words, the continuous-time MDP control appears to be quite robust for non-exponential charging times with SCV < 1. As the SCV increases above 1, deviations from the exponential benchmark become more pro-nounced: in the left panel, the charging cost decreases whereas the penalty cost increases; by contrast, in the right panel, the charging cost increases whereas the penalty cost decreases. The underlying reason is as follows: 
+
+• In the left panel (baseline case), with the relatively low demand/arrival rate and low penalty cost (for lost demand), the optimal control weighs more heavily on saving charging cost, avoiding batteries with longer charging times, leaving them uncharged even during off-peak hours. This explains the increase in lost demand and penalty cost as the SCV increases. 
+
+• In the right panel, with both demand rate and penalty cost doubled, the optimal control shifts its focus so as to avoid losing demand and incurring penalty cost, by charging more aggressively, including charging batteries with shorter charging times even during peak hours. This leads to the decrease in penalty cost, at the price of increased charging cost. In both cases, the decrease in one cost component outweighs the increase in the other, so the overall net effect is the total cost decreasing in the SCV of charging times. 
+
+6.3.3 Robustness of the Phase-Type Approximation 
+
+We next examine the performance of phase-type approximations when the true charging-time distri-bution is not phase type. Here we focus on cases with SCV > 1, where the queueing approximations tend to be more sensitive to service-time variability [10, 11] (which is similar to what we have ob-served in the last subsection, although for a different reason — phase-type as approximation for a general distribution). For computational tractability, we consider a smaller system with N = 4 batteries and K = 3 chargers and use a bimodal distribution as the true replenishment-time distri-bution. To preserve the baseline demand load per battery, both arrival rates are scaled by 4 /23. For each target SCV c ∈ { 2, 4, 6, 8, 10 }, the replenishment time has mean 0 .78 hours and is distributed as 
+
+P(S = 0 .39) = 4c
+
+4c + 1 , P S = (4 c + 2) × 0.39  = 14c + 1 . (39) This construction gives E[S] = 0 .78 hours with SCV = c.We compare two approximations of the bimodal distribution: a) an exponential approximation that matches only the mean E[S] = 0 .78; and b) an H2 approximation with the same mixture 25 probabilities as the bimodal in (39), while replacing the point mass of each branch of the bimodal by an Erlang-2 with the same mean. Thus, the H2 approximation matches the bimodal in both the mixture probabilities and the length of the two branches (the latter in mean values, equal to 0.39 and (4 c + 2) × 0.39 hours, respectively). Note that this H2 approximation matches the mean of the bimodal but not the variance; in particular, the H2 has an SCV = (3 c + 1) /2. We solve the optimal control problem with the charging times following the three distributions — bimodal, exponential and H2 as specified above — all using the same decision grid with interval ∆ = 0 .195 hours. Figure 7a compares the three optimized objective values, and shows that the 
+
+H2 model follows the bimodal quite closely; and both optimized objective values decrease as the SCV increases; in contrast, the exponential model stays constant, as expected, unable to capture the variability of charging times. Next, in Figure 7b, we treat both exponential and H2 as approximations to the bimodal dis-tribution, by applying their optimal control policies to the bimodal charging times. While the bimodal curve remains the same as in Figure 7a, the H2 curve shows a slightly widened gap from the bimodal curve, and the exponential curve remains substantially off from bimodal, even though it now decreases in SCV. The performance of both approximations is as expected: H2 is a good ap-proximation for non-exponential charging times, whereas exponential is not a good approximation when the charging-time variability is high.  
+
+> (a) Optimal expected costs. (b) Policy costs under the bimodal model.
+
+Figure 7: Comparison of the approximations and bimodal models over varying SCVs of the true bimodal distribution. In terms of computational effort, the solution times for both the exponential and H2 approx-imations remain nearly unchanged across the SCV values considered, as shown in Figure 8. In contrast, solving the bimodal model exactly becomes increasingly expensive as the SCV increases (since we need to track the residual charging times in order to derive the optimal policy). 26 Figure 8: Computational times of the approximation and exact bimodal models. 
+
+6.4 Insights 
+
+The experiments provide three main insights. First, under real-world parametric settings, the optimal policy exhibits a clear peak-period shutdown and off-peak full activation structure across different charging-power levels and seasonal electricity-price schedules. The sufficient conditions in Proposition 3 recover most of this pattern, which supports the robustness of these conditions and illustrates the versatility of the non-stationary Poisson process; in particular, the time-dependent arrival rate (with jumps) appears to compensate well for the limitations of Poisson. Second, under non-exponential replenishment/charging times, the optimal phase-dependent pol-icy continues to exhibit a clear threshold-like pattern; and more importantly, it effectively quantifies the impact of the variability of replenishment times. Furthermore, the PH distribution, even with a small number of phases (e.g., H2), can serve as a highly accurate approximation for general replenishment-time distributions. Third, the results illustrate how electricity-pricing mechanisms affect the structure of optimal charging policies. Under the TOU (time-of-use) scheme considered here, high peak-period costs induce charger shutdown, whereas low off-peak costs induce full activation. This temporal load shifting is consistent with industry practice, as well as prior studies, e.g., [22]. Furthermore, it also resembles the optimal policies under other pricing schemes, such as the one in Li et al. (2026) [12], which associates in-house electricity (from solar panels installed at the station) with more aggressive charging and grid electricity with more conservative charging. 27 7 Conclusions 
+
+In this study we address one of the primary challenges in stochastic control: obtaining exact structural characterizations of the optimal policy in a non-stationary finite-horizon continuous-time MDP setting; particularly when certain rate functions involve jump discontinuities. Our contributions include a verification of the optimality of bang–bang control using Dynkin’s formula, a proof of its threshold structure using Nagumo’s theorem, and the derivation of sufficient conditions for the temporal monotonicity of the threshold. Motivated by addressing certain operating environments in EV battery-swapping stations where the rate functions exhibit cyclic behavior, we further derive a cross-cycle ordering of the thresholds and, under piecewise-constant parameters, sufficient conditions for peak-period shutdown and off-peak (full) activation. To accommodate non-exponential charging-time distributions, we extend the model to phase-type charging times and characterize the optimal control through a phase-ranking policy. Through extensive numerical experiments, we demonstrate the robustness as well as practical effectiveness of the class of threshold policies identified by our study. 
+
+# References 
+
+[1] Ai, W., Cheng, H., and Qi, W. (2026). Optimizing urban electric vehicle charging and battery swapping infrastructure: A location-inventory-grid model. Transportation Research Part E: Logistics and Transportation Review , 214:104897. [2] Asmussen, S. (2003). Applied Probability and Queues , vol. 51 of Stochastic Modeling and Applied Probability series. Springer, New York, 2nd edition. [3] Chen, H. and Yao, D. D. (2001). Fundamentals of Queueing Networks: Performance, Asymptotics, and Optimization . Springer, New York. [4] Davis, J.L., Massey, W.A., and Whitt, W. (1995). Sensitivity to the service-time distri-bution in the nonstationary Erlang loss model. Management Science , 41(6):1107–1116. [5] Fu, M.C., Marcus, S.I., and Wang, I.-J. (2000). Monotone optimal policies for a transient queueing staffing problem. Operations Research , 48(2):327–331. [6] George, J.M. and Harrison, J.M. (2001). Dynamic control of a queue with adjustable service rate. Operations Research , 49(5):720-731. [7] Glasserman, P. and Yao, D.D. (1994). Monotone Structure in Discrete-Event Systems ,Wiley Inter-Science, Series in Probability and Mathematical Statistics, 1994. 28 [8] He, Y., Liu, Z., and Song, Z. (2022). Integrated charging infrastructure planning and charg-ing scheduling for battery electric bus systems. Transportation Research Part D: Transport and Environment , 111:103437. [9] Jagerman, D.L. (1975). Nonstationary blocking in telephone traffic. Bell System Technical Journal , 54(3):625–661. [10] Johnson, M. A. (1993). An empirical study of queueing approximations based on phase-type distributions. Communications in Statistics—Stochastic Models , 9(4), 531–561. [11] Johnson, M. A. and Luhman, J. A. (1994). Behaviour of queueing approximations based on sample moments. Applied Stochastic Models and Data Analysis , 10(4), 233–246. [12] Li, Z., Ouyang, H., Sun, Z., and Yuan, Q. (2026). When peak usage becomes capac-ity: Optimal charging of battery swapping stations under demand charges. Technical Report 7190119, SSRN. [13] Liang, Y. and Zhang, X. (2018). Battery swap pricing and charging strategy for electric taxis in China. Energy , 147:561–577. [14] Massey, W. A. and Whitt, W. (1996). Stationary-process approximations for the nonsta-tionary Erlang loss model. Operations Research , 44(6):976–983. [15] Meredith, R. M. (2017). Direct Testimony of Robert M. Meredith. Direct Testimony Docket No. 16-035-36, Rocky Mountain Power. Filed before the Public Service Commission of the State of Utah. [16] Miller, B. M. (2009). Optimization of queuing system via stochastic control. Automatica ,45(6):1423-1430. [17] Nagumo, M. (1942). ¨Uber die Lage der Integralkurven gew¨ ohnlicher Differentialgleichungen. 
+
+Proceedings of the physico-mathematical society of Japan , 3rd Series, 24:551–559. [18] NIO (2024). NIO Power Swap Station 4.0 Now Operational. NIO Newsroom. [19] Qi, W., Zhang, Y., and Zhang, N. (2023). Scaling up electric-vehicle battery swapping services in cities: A joint location and repairable-inventory model. Management Science ,69(11):6855–6875. [20] Song, Y. (2022). Positive invariance condition for continuous dynamical systems based on Nagumo theorem. arXiv preprint arXiv:2207.05429. 29 [21] Stidham, S., Jr. and Weber, R.R. (1989). Monotonic and insensitive optimal policies for control of queues with undiscounted costs. Operations Research , 37(4):611–625. [22] Widrick, R.S., Nurre, S.G., and Robbins, M.J. (2018). Optimal policies for the man-agement of an electric vehicle battery swap station. Transportation Science , 52(1):59–79. [23] Yang, J., Yao, D.D., and Ye, H.Q. (2020). On the optimality of reflection control, Oper-ations Research , 68(6): 1668–1677. 30 A Proof of Proposition 1. 
+
+Proof. Let W be the function constructed in §2.2. We first show that this construction is well defined and yields a unique function W that is continuous on [0 , T ], absolutely continuous componentwise, and continuously differentiable on each continuity interval ( τk, τ k+1 ). Fix k ∈ { 0, . . . , m } and suppose that the right-end value W (τk+1 ) has been specified. Writing the HJB system as − ˙W(t) = Fk(t, W(t)), extend e and λ to the endpoints of [ τk, τ k+1 ] using their one-sided limits from within the interval. This does not change the HJB equation on the open interval and makes Fk continuous in t.For any w, z ∈ RN +1 , we use 
+
+min  
+
+> u
+
+au − min  
+
+> u
+
+bu ≤ max  
+
+> u
+
+|au − bu|.
+
+Together with the bound u ≤ K, this gives 
+
+∥Fk(t, w) − Fk(t, z)∥∞ ≤ 2 λ(t) + K∥w − z∥∞.
+
+Since λ is bounded on [0 , T ], Fk is uniformly Lipschitz in its second argument. The Picard– Lindel¨ of theorem therefore guarantees a unique solution to the terminal-value problem on [ τk, τ k+1 ]. Moreover, the identity ˙W(t) = −Fk(t, W(t)) implies that the derivative has continuous one-sided limits at the endpoints. Starting from W (T ) = 0 and applying this argument successively backward over the finitely many intervals yields a unique intervalwise C1 solution. Because consecutive pieces are joined using the common value W (τk), the resulting function is continuous on [0 , T ]. Each component is also absolutely continuous, since it is continuous and piecewise C1 over a finite partition. We next prove that this function coincides with the value function and that a pointwise mini-mizing Markov policy is optimal. For i ≥ 1, the terms in the HJB objective that depend on u are u e(t) + Wi−1(t) − Wi(t). Since 
+
+U(i) = {0, 1, . . . , i ∧ K}, a pointwise minimizing action is 
+
+uW (t, i ) = 
+
+(
+
+i ∧ K, Wi(t) − Wi−1(t) > e (t),
+
+0, Wi(t) − Wi−1(t) ≤ e(t). (40) At equality, every feasible action is a minimizer, and we select 0 by convention. For i = 0, the only feasible action is uW (t, 0) = 0. Let u be any admissible control and let I(t) = i. Since W is C1 on every continuity interval and continuous at each τk, Dynkin’s formula can be applied separately on these intervals. Summing the 31 resulting identities causes all boundary terms at the discontinuity points to cancel, giving 
+
+EWI(T )(T ) = Wi(t) + E
+
+hZ Tt
+
+( ˙WI(s)(s) + Lu(s) 
+
+> s
+
+WI(s)(s)) ds 
+
+i
+
+. (41) Here, 
+
+Lus Wj (s) = λ(s) Wj+1 (s) − Wj (s) + u Wj−1(s) − Wj (s).
+
+By the HJB equation, for every feasible action v ∈ U (j), ˙Wj (s) + Lvs Wj (s) + c(s, j, v ) ≥ 0 (42) at every continuity point. The finitely many discontinuity points do not affect the integral. Since 
+
+Wj (T ) = 0, it follows that 
+
+Wi(t) ≤ E
+
+Z Tt
+
+c s, I (s), u (s) ds 
+
+
+
+= Ju(t, i ).
+
+(43) As u was arbitrary, Wi(t) ≤ V (t, i ). Under the Markov policy uW , the pointwise minimum in the HJB equation is attained, so ˙Wj (s) + LuW (s,j ) 
+
+> s
+
+Wj (s) + c s, j, u W (s, j ) = 0 . (44) Applying the same interval-by-interval Dynkin argument gives Wi(t) = JuW
+
+(t, i ). Hence, 
+
+V (t, i ) = inf  
+
+> u
+
+Ju(t, i ) ≤ JuW
+
+(t, i ) = Wi(t). (45) Combining the two inequalities yields 
+
+Wi(t) = V (t, i ) = JuW
+
+(t, i ), (t, i ) ∈ [0 , T ] × S . (46) Thus, uW is optimal. Finally, since Wi(t) = V (t, i ), we have Wi(t) − Wi−1(t) = ∆ i(t). Therefore, the selected optimal Markov policy is 
+
+u∗(t, i ) = 
+
+(
+
+i ∧ K, ∆i(t) > e (t),
+
+0, ∆i(t) ≤ e(t), (47) which proves the asserted bang–bang characterization. 
+
+# B Proof of Lemma 1 
+
+Proof. Let ui := i ∧ K, i = 1 , . . . , N , and define Ψi(t) := ui min {0, e (t) − ∆i(t)}, i = 1 , . . . , N, (48) 32 with Ψ 0(t) := 0. Using ∆ i(t) = V (t, i ) − V (t, i − 1), the HJB system can be written as 
+
+− ddt V (t, i ) = πλ (t)1{i=N } + λ(t)∆ i+1 (t) + Ψ i(t), i = 0 , . . . , N, (49) where ∆ N +1 (t) := 0. Taking first differences gives 
+
+− ˙∆1(t) = λ(t) ∆2(t) − ∆1(t) + Ψ 1(t),
+
+− ˙∆i(t) = λ(t) ∆i+1 (t) − ∆i(t) + Ψ i(t) − Ψi−1(t), i = 2 , . . . , N − 1,
+
+− ˙∆N (t) = λ(t) π − ∆N (t) + Ψ N (t) − ΨN −1(t).
+
+(50) The terminal condition implies ∆ i(T ) = 0, i = 1 , . . . , N .We first establish the weak inequalities in (11). Reverse time by setting τ = T − t. To simplify notation, we continue to write ∆ i, Ψi, e , and λ for the time-reversed functions, and use a prime to denote differentiation with respect to τ . Then (50) becomes ∆′ 
+
+> 1
+
+= λ(∆ 2 − ∆1) + Ψ 1,
+
+∆′ 
+
+> i
+
+= λ(∆ i+1 − ∆i) + Ψ i − Ψi−1, i = 2 , . . . , N − 1,
+
+∆′ 
+
+> N
+
+= λ(π − ∆N ) + Ψ N − ΨN −1,
+
+(51) with ∆ i(0) = 0. Consider the region C := {(∆ 1, . . . , ∆N ) : 0 ≤ ∆1 ≤ · · · ≤ ∆N ≤ π}. We verify that C is invari-ant under the backward-time dynamics. On the boundary face ∆ 1 = 0, the positivity of e gives Ψ1 = 0, and hence ∆ ′ 
+
+> 1
+
+= λ∆2 ≥ 0. For i = 2 , . . . , N , let δi := ∆ i − ∆i−1. At a boundary point where δi = 0, we have ∆ i = ∆ i−1.Let f (x) := min {0, e − x}. Since f is decreasing and nonpositive, for i ≥ 3, we have f (∆ i−2) ≥
+
+f (∆ i−1) = f (∆ i). Because Ψ j = uj f (∆ j ), it follows that Ψi − 2Ψ i−1 + Ψ i−2 ≥ (ui − 2ui−1 + ui−2)f (∆ i) ≥ 0. (52) The last inequality holds because ui = i ∧ K is discretely concave and f (∆ i) ≤ 0. For i = 2, the same conclusion follows directly from u0 = Ψ 0 = 0: when ∆ 2 = ∆ 1,Ψ2 − 2Ψ 1 + Ψ 0 = ( u2 − 2u1)f (∆ 2) ≥ 0. (53) Subtracting adjacent equations in (51) gives 
+
+δ′ 
+
+> i
+
+= λ(δi+1 − δi) + Ψ i − 2Ψ i−1 + Ψ i−2, i = 2 , . . . , N − 1,δ′ 
+
+> N
+
+= λ(π − ∆N ) − λδ N + Ψ N − 2Ψ N −1 + Ψ N −2. (54) Therefore, on the boundary face δi = 0, 
+
+δ′ 
+
+> i
+
+≥
+
+(
+
+λδ i+1 ≥ 0, i = 2 , . . . , N − 1,λ(π − ∆N ) ≥ 0, i = N. (55) 33 It remains to consider the upper boundary ∆ N = π. Within C, ∆ N ≥ ∆N −1. Since f is decreasing and nonpositive and uN ≥ uN −1,ΨN = uN f (∆ N ) ≤ uN −1f (∆ N −1) = Ψ N −1.
+
+Consequently, whenever ∆ N = π,∆′ 
+
+> N
+
+= Ψ N − ΨN −1 ≤ 0. (56) The set C, defined by finitely many linear inequalities, is a closed convex polyhedron. By Nagumo’s theorem [17], or its polyhedral characterization in Theorem 3.7 of [20], its invariance follows if (i) the backward-time dynamics have a unique solution and (ii) the vector field satisfies the tangent condition on every active boundary face. The latter has been verified above: on ∆ 1 = 0, (51) gives ∆ ′ 
+
+> 1
+
+= λ∆2 ≥ 0; on ∆ i − ∆i−1 = 0, (55) gives δ′ 
+
+> i
+
+≥ 0; and on ∆ N = π, (56) gives ∆ ′ 
+
+> N
+
+≤ 0. Moreover, the function f (x) = min {0, e − x} defined above is 1-Lipschitz. Since Ψ i = uif (∆ i)and all the other terms in (51) are linear in the marginal costs, the right-hand side of (51) is Lipschitz in (∆ 1, . . . , ∆N ) on each continuity interval of e and λ. The Picard–Lindel¨ of theorem therefore guarantees a unique solution to the backward-time system for any given initial condition. Since ∆ i(0) = 0 for all i, the backward-time trajectory starts in C. Nagumo’s theorem therefore implies that the trajectory remains in C. Thus, 0 ≤ ∆1(t) ≤ ∆2(t) ≤ · · · ≤ ∆N (t) ≤ π, t ∈ [0 , T ]. (57) This argument applies on every interval between consecutive discontinuity points of e and λ. The value function, and hence its marginal differences, is continuous at these points, so the inequalities are preserved when the intervalwise solutions are joined. We next strengthen the upper bound for ∆ N . The weak ordering and the argument above imply ΨN ≤ ΨN −1. Hence, in backward time, ∆′ 
+
+> N
+
+≤ λ(π − ∆N ). (58) Since ∆ N (0) = 0, the scalar comparison theorem gives, in the original time variable, ∆N (t) ≤ π
+
+
+
+1 − exp 
+
+
+
+−
+
+Z Tt
+
+λ(s) ds 
+
+ 
+
+< π (59) for t < T , where the strict inequality follows from inf s∈[0 ,T ] λ(s) > 0. We finally prove the strict ordering. Continue to work in backward time. If δN (τ0) = 0 for some 
+
+τ0 > 0, then the nonnegative function δN attains its minimum at τ0. However, (52), (54), and (59) imply 
+
+δ′ 
+
+> N
+
+(τ0) ≥ λ(τ0) π − ∆N (τ0) > 0, (60) 34 contradicting the first-order condition at an interior minimum. If τ0 is a discontinuity point of the primitives or the endpoint of an interval, the same contradiction follows from the left derivative: at a minimum it is nonpositive, whereas the backward dynamics make it strictly positive. Therefore, 
+
+δN (τ ) > 0, τ > 0. (61) Now suppose that δi+1 (τ ) > 0 for every τ > 0, where i ∈ { 2, . . . , N − 1}. If δi(τ0) = 0 for some 
+
+τ0 > 0, then (52) and (54) give 
+
+δ′
+
+> i
+
+(τ0) ≥ λ(τ0)δi+1 (τ0) > 0,
+
+which yields the same contradiction. Backward induction over i = N − 1, N − 2, . . . , 2 therefore gives 
+
+δi(t) > 0, i = 2 , . . . , N, t < T. (62) Returning to the original time variable, we obtain 0 ≤ ∆1(t) < ∆2(t) < · · · < ∆N (t) < π, t ∈ [0 , T ), (63) whereas ∆ i(T ) = 0 for every i = 1 , . . . , N . Therefore, the value function is discretely convex in i,and strictly so for t < T .
+
+# C Proof of Lemma 2 
+
+Proof. Let ui := i ∧ K and Ψ i(t) := ui min {0, e (t) − ∆i(t)}, with u0 := 0 and Ψ 0(t) := 0. Recall that δi(t) := ∆ i(t) − ∆i−1(t). Taking adjacent differences in (50) gives 
+
+− ˙δi(t) = λ(t) δi+1 (t) − δi(t) + Ψ i(t) − 2Ψ i−1(t) + Ψ i−2(t), i = 2 , . . . , N − 1,
+
+− ˙δN (t) = λ(t) π − ∆N (t) − δN (t) + Ψ N (t) − 2Ψ N −1(t) + Ψ N −2(t), (64) with δi(T ) = 0. Fix t and let ft(x) := min {0, e (t) − x}. Since ft is decreasing and 1-Lipschitz, Lemma 1 implies ft(∆ i(t)) − ft(∆ i−1(t)) ≥ − δi(t) and ft(∆ i−2(t)) ≥ ft(∆ i−1(t)). Therefore, Ψi(t) − Ψi−1(t) ≥ − uiδi(t) + ( ui − ui−1)ft(∆ i−1(t)) , (65) and Ψi−2(t) − Ψi−1(t) ≥ − (ui−1 − ui−2)ft(∆ i−1(t)) . (66) Inequality (66) also holds for i = 2 because u0 = Ψ 0(t) = 0. Since ui = i ∧ K is discretely concave and ft ≤ 0, we obtain from (65) and (66) Ψi(t) − 2Ψ i−1(t) + Ψ i−2(t) ≥ − uiδi(t), i = 2 , . . . , N. (67) 35 Combining (64) and (67) yields 
+
+− ˙δi(t) +  λ(t) + ui
+
+δi(t) ≥ λ(t)δi+1 (t), i = 2 , . . . , N − 1, (68) and 
+
+− ˙δN (t) +  λ(t) + uN
+
+δN (t) ≥ λ(t) π − ∆N (t). (69) By (59), 
+
+π − ∆N (t) ≥ πe −Λ( t,T ). (70) Using δN (T ) = 0 and applying the integrating-factor formula to (69), we obtain 
+
+δN (t) ≥
+
+Z Tt
+
+e−Λ( t,s )−uN (s−t)λ(s)πe −Λ( s,T ) ds = bδN (t). (71) Similarly, (68) implies 
+
+δi(t) ≥
+
+Z Tt
+
+e−Λ( t,s )−ui(s−t)λ(s)δi+1 (s) ds, i = 2 , . . . , N − 1. (72) Starting with the bound for δN and applying (72) recursively gives 
+
+δi(t) ≥ bδi(t), i = 2 , . . . , N, (73) and 
+
+bδi(t) = πe −Λ( t,T )
+
+Z 
+
+> t≤si≤···≤ sN≤T
+
+e− PNm=i um(sm−sm−1)
+
+> N
+
+Y
+
+> m=i
+
+λ(sm) ds N · · · ds i, (74) where si−1 := t. These inequalities hold on each continuity interval of e and λ. Since the marginal costs are continuous at their finitely many discontinuity points, the intervalwise inequalities combine to give (73) on all of [0 , T ]. Since um ≤ K,
+
+> N
+
+X
+
+> m=i
+
+um(sm − sm−1) ≤ K(sN − t) ≤ K(T − t). (75) Moreover, the simplex integral identity gives 
+
+Z 
+
+> t≤si≤···≤ sN≤TN
+
+Y
+
+> m=i
+
+λ(sm) ds N · · · ds i = Λ( t, T )N −i+1 
+
+(N − i + 1)! . (76) It follows from (74) that 
+
+bδi(t) ≥ πe −Λ( t,T )e−K(T −t) Λ( t, T )N −i+1 
+
+(N − i + 1)! = δi(t). (77) As i ranges from 2 to N , n := N − i + 1 ranges from 1 to N − 1. The ratios of consecutive terms in the sequence {Λ( t, T )n/n !}N −1 
+
+> n=1
+
+are Λ( t,T )n+1 /(n+1)! Λ( t,T )n/n ! = Λ( t,T ) 
+
+> n+1
+
+, which are non-increasing in 36 n. Hence, the sequence first increases and then decreases, so its minimum is attained at one of the endpoints. Therefore, min  
+
+> 1≤n≤N−1
+
+Λ( t, T )n
+
+n! = min 
+
+
+
+Λ( t, T ), Λ( t, T )N −1
+
+(N − 1)! 
+
+
+
+. (78) Combining this identity with (73) and (77) proves (16). 
+
+# D Proof of Proposition 2 
+
+Proof. For a system with capacities n and k, write 
+
+uki := i ∧ k, Ψn,k i (t) := uki min {0, e (t) − ∆n,k i (t)}, i = 1 , . . . , n, (79) with Ψ n,k  
+
+> 0
+
+(t) := 0. We first fix K and compare systems with N and N + 1 units. Define 
+
+δN,K i (t) := ∆ N,K i (t) − ∆N +1 ,K i (t), i = 1 , . . . , N. (80) Suppressing the argument t, subtracting the two marginal-cost systems gives 
+
+− ˙δN,K i = λ(t) δN,K i+1 − δN,K i
+
+ +  ΨN,K i − ΨN +1 ,K i
+
+ −  ΨN,K i−1 − ΨN +1 ,K i−1
+
+, i = 1 , . . . , N − 1,
+
+− ˙δN,K N = λ(t) π − ∆N +1 ,K N +1 − δN,K N
+
+ +  ΨN,K N − ΨN +1 ,K N
+
+ −  ΨN,K N −1 − ΨN +1 ,K N −1
+
+.
+
+(81) The terminal conditions imply δN,K i (T ) = 0 for every i.Consider the reversed-time dynamics at a boundary point where δN,K i = 0 and δN,K j ≥ 0 for every j. By (80), ∆ N,K i = ∆ N +1 ,K i , and hence Ψ N,K i = Ψ N +1 ,K i . Moreover, δN,K i−1 ≥ 0 and the map 
+
+z 7 → min {0, e (t) − z} is non-increasing, so Ψ N,K i−1 − ΨN +1 ,K i−1 ≤ 0. For i = 1, the latter difference is zero by the convention Ψ n,k  
+
+> 0
+
+= 0. Therefore, if i < N , the right-hand side of (81) is at least 
+
+λ(t)δN,K i+1 ≥ 0. If i = N , it is at least λ(t) π − ∆N +1 ,K N +1 (t) ≥ 0, where the last inequality follows from Lemma 1. Thus, the tangent condition holds on every boundary face of the nonnegative orthant. Since the vector field is Lipschitz, Nagumo’s theorem, applied successively on the continuity intervals of 
+
+e and λ, gives 
+
+δN,K i (t) ≥ 0,
+
+∆N +1 ,K i (t) ≤ ∆N,K i (t), i = 1 , . . . , N. 
+
+(82) The marginal costs are continuous at the finitely many discontinuity points, so (82) holds on all of [0 , T ]. 37 We next fix N and compare systems with K and K + 1 servers. Define 
+
+bδN,K i (t) := ∆ N,K i (t) − ∆N,K +1  
+
+> i
+
+(t), i = 1 , . . . , N. (83) Subtracting the corresponding marginal-cost systems gives 
+
+− ˙bδN,K i = λ(t) bδN,K i+1 − bδN,K i
+
+ +  ΨN,K i − ΨN,K +1 
+
+> i
+
+ −  ΨN,K i−1 − ΨN,K +1 
+
+> i−1
+
+, i = 1 , . . . , N − 1,
+
+− ˙bδN,K N = −λ(t)bδN,K N +  ΨN,K N − ΨN,K +1 
+
+> N
+
+ −  ΨN,K N −1 − ΨN,K +1  
+
+> N−1
+
+.
+
+(84) Again, bδN,K i (T ) = 0 for every i.Consider a boundary point where bδN,K i = 0 and bδN,K j ≥ 0 for every j. It suffices to show that ΨN,K i −ΨN,K +1  
+
+> i
+
+≥ ΨN,K i−1 −ΨN,K +1  
+
+> i−1
+
+. Write ft(z) := min {0, e (t)−z}. If i ≤ K, the feasible maximum actions coincide under the two server capacities, so ΨN,K i − ΨN,K +1  
+
+> i
+
+= 0 ,
+
+ΨN,K i−1 − ΨN,K +1  
+
+> i−1
+
+≤ 0.
+
+(85) If i = K + 1, then ΨN,K i − ΨN,K +1  
+
+> i
+
+= −ft
+
+ ∆N,K i
+
+ ≥ 0,
+
+ΨN,K i−1 − ΨN,K +1  
+
+> i−1
+
+≤ 0.
+
+(86) Finally, suppose i > K + 1. By Lemma 1 and bδN,K i−1 ≥ 0, we have ∆N,K +1  
+
+> i−1
+
+≤ ∆N,K i−1 ≤ ∆N,K i = ∆ N,K +1  
+
+> i
+
+.
+
+Since ft is non-increasing and nonpositive, ΨN,K i−1 − ΨN,K +1  
+
+> i−1
+
+= Kf t
+
+ ∆N,K i−1
+
+ − (K + 1) ft
+
+ ∆N,K +1 
+
+> i−1
+
+
+
+≤ − ft
+
+ ∆N,K i−1
+
+ ≤ − ft
+
+ ∆N,K i
+
+ = Ψ N,K i − ΨN,K +1  
+
+> i
+
+.
+
+(87) Hence, the reversed-time derivative in (84) is nonnegative on every boundary face. Applying Nagumo’s theorem successively on the continuity intervals and using continuity at the discontinuity points gives 
+
+bδN,K i (t) ≥ 0,
+
+∆N,K +1  
+
+> i
+
+(t) ≤ ∆N,K i (t), i = 1 , . . . , N. 
+
+(88) 38 E Proofs for §4
+
+Proof of Theorem 4. For m = 1 , . . . , M , define ∆ mi (s) := ∆ i(( m − 1) L + s), for s ∈ [0 , L ] and 
+
+i = 1 , . . . , N . Under (24), these functions satisfy the same marginal-cost HJB equations within every cycle. We first show that an ordering at the end of a cycle is preserved backward throughout the cycle. Consider two functions x = ( x1, . . . , x N ) and y = ( y1, . . . , y N ) satisfying the same marginal-cost HJB equations on [0 , L ], and suppose that xi(L) ≥ yi(L) for every i. Let ui := i ∧ K, u0 := 0, and define fi(s, z ) := ui min {0, ee(s) − z} and f0 := 0. Their HJB equations can be written as 
+
+− ˙xi(s) = eλ(s) π1{i=N } + xi+1 (s) − xi(s) + fi(s, x i(s)) − fi−1(s, x i−1(s)) , (89) and analogously for y.Reverse time by defining Ri(τ ) := xi(L − τ ) − yi(L − τ ). Consider a boundary point of the nonnegative orthant at which Ri(τ ) = 0 and Rj (τ ) ≥ 0 for every j. Setting s = L − τ and subtracting the two equations in (89) gives ˙Ri(τ ) = eλ(s)Ri+1 (τ ) −
+
+h
+
+fi−1(s, x i−1(s)) − fi−1(s, y i−1(s)) 
+
+i
+
+≥ 0. (90) Indeed, Ri+1 (τ ) ≥ 0, while fi−1(s, ·) is non-increasing, so Ri−1(τ ) ≥ 0 implies fi−1(s, x i−1(s)) ≤
+
+fi−1(s, y i−1(s)). The vector field is Lipschitz in the marginal costs on every continuity interval of eλ
+
+and ee. Nagumo’s theorem therefore implies that Ri(τ ) ≥ 0 for every i and τ ∈ [0 , L ]. Applying this argument successively across the finitely many discontinuity points, at which the marginal costs remain continuous, shows that 
+
+xi(L) ≥ yi(L) for all i =⇒ xi(s) ≥ yi(s) for all i and s ∈ [0 , L ]. (91) We now apply (91) recursively. For the last two cycles, the intercycle matching condition, Lemma 1, and the terminal condition give ∆M −1 
+
+> i
+
+(L) = ∆ Mi (0) ≥ 0 = ∆ Mi (L). (92) Hence, (91) yields ∆ M −1 
+
+> i
+
+(s) ≥ ∆Mi (s) for every i and s ∈ [0 , L ]. Proceeding backward, suppose that ∆ mi (s) ≥ ∆m+1  
+
+> i
+
+(s) for every i and s ∈ [0 , L ]. The intercycle matching conditions imply ∆m−1 
+
+> i
+
+(L) = ∆ mi (0) ≥ ∆m+1  
+
+> i
+
+(0) = ∆ mi (L). (93) Another application of (91) gives ∆ m−1 
+
+> i
+
+(s) ≥ ∆mi (s) throughout the preceding cycle. Repeating this argument proves ∆mi (s) ≥ ∆m+1  
+
+> i
+
+(s), m = 1 , . . . , M − 1, i = 1 , . . . , N, s ∈ [0 , L ], (94) 39 which is equivalent to (25). Finally, (24) gives e(( m − 1) L + s) = e(mL + s) = ee(s) for s ∈ [0 , L ). Therefore, ∆ i(mL + s) >e(mL + s) implies ∆ i(( m − 1) L + s) > e (( m − 1) L + s), and hence 
+
+I(m−1) L+s ⊇ I mL +s. (95) Taking the smallest elements under the convention for an empty activation set yields imin (m−1) L+s ≤
+
+imin 
+
+> mL +s
+
+.
+
+Proof of Proposition 3. By (59), ∆N (t) ≤ π 1 − e−Λ( t,T ). (96) The right-hand side is decreasing in t. Combining this bound with the first condition in (29) and Lemma 1 gives ∆i(t) ≤ ∆N (t) ≤ π
+
+
+
+1 − e−Λ( t,T )
+
+≤ eH, i = 1 , . . . , N, t ∈ { (m − 1) L, mL }. (97) At t = ( m − 1) L and t = mL , respectively, (97) implies that the activation threshold is N +1. Because e(t) = eH on Hm and Hm+1 , Corollary 1 implies that the threshold remains N + 1 throughout both intervals. Hence, Proposition 1 gives u∗(t, i ) = 0 for every i = 0 , . . . , N and 
+
+t ∈ Hm ∪ Hm+1 .It remains to establish full activation on Lm. Let A be the number of arrivals during Hm+1 .Because arrivals form a nonhomogeneous Poisson process, 
+
+A ∼ Poisson(Λ H), ΛH = Λ( mL, (m + ρ)L).
+
+Fix i ∈ { 1, . . . , N }, and couple two systems starting at time mL in states i and i − 1 under the same arrival process. Because replenishment is inactive throughout Hm+1 , the difference between their numbers of lost demands is [A − (N − i)] + − [A − (N − i + 1)] + = 1{A ≥ N − i + 1 }. (98) Conditional on A = k ≤ N − i, the two systems enter time ( m + ρ)L in states i + k and i + k − 1, respectively. If A ≥ N − i + 1, both systems enter that time in state N . Consequently, (98) yields ∆i(mL ) = π Pr {A ≥ N − i + 1 } + 
+
+> N−i
+
+X
+
+> k=0
+
+Pr {A = k}∆i+k
+
+ (m + ρ)L. (99) 40 The marginal continuation costs are nonnegative. Setting i = 1 in (99) therefore gives ∆1(mL ) ≥ π Pr {A ≥ N } = π
+
+"
+
+1 − e−ΛH 
+
+> N−1
+
+X
+
+> k=0
+
+Λk
+
+> H
+
+k!
+
+#
+
+. (100) The second condition in (29), together with (100), implies eL < ∆1(mL ). By continuity, ∆ 1(mL −) = ∆1(mL ) > e L, and Lemma 1 then gives ∆ i(mL −) > e L for every i = 1 , . . . , N . Hence, imin  
+
+> mL −
+
+= 1. Finally, Corollary 1 implies that the threshold is increasing on Lm. Thus, 1 ≤ imin  
+
+> t
+
+≤ imin  
+
+> mL −
+
+= 1 , t ∈ Lm,
+
+so imin  
+
+> t
+
+= 1 throughout Lm. Proposition 1 therefore gives u∗(t, i ) = min {K, i } for every i = 0 , . . . , N 
+
+and t ∈ Lm. Combining this result with shutdown on Hm proves the proposition. 41

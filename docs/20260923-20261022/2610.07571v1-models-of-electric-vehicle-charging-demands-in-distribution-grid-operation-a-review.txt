@@ -1,0 +1,453 @@
+Title: Models of Electric Vehicle Charging Demands in Distribution Grid Operation: A Review
+
+URL Source: https://arxiv.org/pdf/2610.07571v1
+
+Published Time: Wed, 07 Oct 2026 00:37:26 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Models of Electric Vehicle Charging Demands in Distribution Grid Operation: A Review 
+
+Dipayan Sarkar 
+
+Electrical and Computer Engineering University of Central Florida Orlando, USA dipayan.sarkar@ucf.edu 
+
+Qifeng Li 
+
+Electrical and Computer Engineering University of Central Florida Orlando, USA Qifeng.Li@ucf.edu 
+
+Abstract —The rapid integration of electric vehicles (EVs) into the transportation system has introduced a new class of load into power distribution systems (PDS), i.e., EV charging demand (EVCD). The spatiotemporal variability of EVCD poses fundamental challenges for distribution system operators (DSOs), particularly in ensuring secure and reliable network operation. Accurately representing EVCD as a parameter within the distri-bution optimal power flow (DOPF) problem is a prerequisite for reliable, cost-efficient PDS operation, yet no universally accepted modeling framework has emerged. The existing con-tributions span a wide spectrum of assumptions, mathematical formulations, and solution paradigms. This article presents a systematic review of methods and models employed to represent EVCD within DOPF frameworks from the DSO’s operational perspective. The existing EVCD modeling methods are classified into two primary categories based on EVCD representation: deterministic models and uncertainty-aware models. The two main categories are further divided into several subcategories. This paper aims to provide a comprehensive review on models for integrating EVCD into PDS operation and planning. 
+
+I. I NTRODUCTION 
+
+With the global transition toward clean energy, electric vehicle (EV) adoption has accelerated significantly in recent years. Global EV charging demand (EVCD) reached 250 TWh in 2025 and is projected to grow to 800 TWh by 2030, potentially exceeding 1500 TWh by 2035 [1], as illustrated in Fig. 1. This trajectory implies that EVCD, which accounted for approximately 1% of global electricity consumption in 2025, will increase nearly sixfold within a decade and will place a substantial stress on power distribution system (PDS). EVCD can be modeled based on driver mobility patterns [2], arrival time (AT) and departure time (DT) [3], initial state-of-charge (SOC) of the battery [4], and the required energy [5]. Researchers proposed different methods to model EVCD in some of the existing literature that are either from EV aggregator (EVA) perspective [6] or for EV charging station (EVCS) planning [7] without showing how to integrate them into the PDS operation [8]. However, if EVCD is not properly modeled and incorporated into the PDS operation, PDS will experience voltage violations, thermal overloading of lines and transformers, increased power losses, and degraded power quality [9], [10]. Therefore, this review focuses on models that explicitly formulate EVCD and integrate it into distribution optimal power flow (DOPF) models. 2025 2030 2035 0100 200 300 400 500 Million Vehicles   
+
+> EV Stock
+> PLDV_BEV PLDV_PHEV LCV_BEV LCV_PHEV Bus_BEV Bus_PHEV Truck_BEV Truck_PHEV
+> 2025 2030 2035 0200 400 600 800 1000 1200 1400 1600 TWh
+> Charging Demand
+> LDV 2/3W Bus Truck
+
+Fig. 1. Temporal Evolution of EV Stock and Charging Demand 
+
+> Notes: BEV = battery electric vehicle; PHEV = plug-in hybrid electric vehicle; LDV = light-duty vehicle; PLDV = passenger LDV; LCV = light commercial vehicle; 2/3W = Two/Three Wheeler
+
+To ensure that this review reflects recent developments in EV charging demand modeling, the literature was collected from Scopus, Web of Science, ScienceDirect, IEEE Xplore, and Google Scholar using combinations of terms including EV charging demand, uncertain EV demand, machine learning-based EV charging, EV demand uncertainty, EV demand in distribution systems, and EV charging loads. The search was conducted across titles, abstracts, and keywords of the databases, and only publications from 2018 onward were included. The remainder of this paper is organized as follows. Sec-tion II presents an overview of the reviewed EVCD models and the motivation behind their classification. Section III details the EVCD models across all categories. Section IV discusses research gaps and future directions before making concluding remarks in Section V. II. EVCD M ODELING : O VERVIEW AND CLASSIFICATION 
+
+The accurate representation of EVCD is essential for any credible DOPF formulation from the distribution system operator (DSO) perspective [33]. However, no generalized modeling framework currently exists that can capture EVCD with complete accuracy and certainty. As a result, EVCD modeling within DOPF spans a broad spectrum, ranging from deterministic representations [34] to sophisticated uncertainty-aware formulations that capture the stochastic and decision-dependent nature of EV charging behavior [32]. Deterministic EVCD models represent the most tractable class due to their computational simplicity, but they often fail arXiv:2610.07571v1 [eess.SY] 6 Oct 2026 TABLE I EVCD M ODEL CLASSIFICATION BASED ON UNCERTAIN EV PARAMETERS       
+
+> Ref. Uncertain Parameter DOPF Formulation Uncertainty Type
+> [11], [12], [13], [14] Arrival Time & Departure Time SO, RO, DRO ExU [15], [16], [17], [18] Travel distance SO, CCO, DRO Both ExU & EnU [19], [20], [21] EV Fleet Energy Bounds CCO, RO ExU [7], [22], [23], [24], [25] Charging Energy Demand SO, CCO, RO, DRO Both ExU & EnU [26], [27], [28] Traffic Flow / Spatial Demand SO, DRO ExU [29], [30], [31], [32] EV Owner Behavioral Param. CCO, DRO, DRCCO Both ExU & EnU
+
+to accurately reflect real-world variability in EVCD [35]. To improve prediction accuracy, machine learning (ML)-based approaches have been proposed, where historical data are utilized to forecast future charging demand [36], [37]. In addition, several deterministic formulations incorporate spe-cific EV characteristics, enabling EVCD to be modeled either by the EVA or the DSO, either directly [38] or through coordination with the transportation system operator (TSO) [39]. The resulting EVCD is subsequently treated as a known input parameter in the DOPF problem. However, in practical systems, complete information about EV-related parameters is not available to any system operator. Uncertainty arises from multiple sources, including, but not limited to AT, DT and SOC. Such uncertainties may origi-nate from external sources, i.e., exogenous uncertainty (ExU) [11]–[13], [15] or be induced by system-level decisions, i.e., endogenous uncertainty (EnU) [17], [29], [31], [32]. These uncertainties in EVCD are incorporated into DOPF formula-tions and addressed using established optimization paradigms, including stochastic optimization (SO), robust optimization (RO), chance-constrained optimization (CCO), distributionally robust optimization (DRO), and distributionally robust chance-constrained optimization (DRCCO). A taxonomy of EVCD modeling approaches is illustrated in Fig. 2. Furthermore, a detailed classification of EVCD models with respect to the uncertain parameters and associated type of uncertainty is summarized in Table I. III. M ATHEMATICAL MODELS USED IN DOPF Accurate modeling of EVCD within the DOPF framework is mandatory for DSO for proper operational decision-making. Given the spatiotemporal variability of EV charging loads, an inadequate representation of EVCD may lead to suboptimal dispatch decisions and potentially compromise the secure oper-ation of PDS. In this review, emphasis is placed on studies that explicitly integrate EVCD models into DOPF formulations. The principal modeling approaches are outlined as follows. EVCD Models in DOPF Deterministic Uncertain      
+
+> ML-Based Attribute-Based Centralized Decentralized
+> DSO–EVA Coordination DSO–TSO Coordination
+> SO RO CCO DRO
+
+Fig. 2. Taxonomy of EVCD Models in DOPF 
+
+A. Deterministic Models 1) Attribute-Based EVCD models: In addition to data-driven approaches, EVCD can be modeled using intrinsic characteristics of EV, such as AT, DT, SOC, and charging price. Depending on the system architecture, EVCD may be determined either directly by DSO or by EVA or by TSO, with possible coordination mechanisms among them. 
+
+a) Centralized Optimization: In this framework, the DSO has access to all the information required for determining EVCD and does not rely on coordination with external en-tities. The EVCD is modeled based on either unidirectional charging behavior [38], [40], [41] or bidirectional charging and discharging operations [42], [43]. The EVCD model is jointly formulated with the DOPF problem as a unified optimization framework. For brevity, the DOPF formulation is omitted, and only the EVCD model is presented as follows: 
+
+P load, agg  
+
+> t
+
+= P load  
+
+> t
+
+− P Cdis t + P Ccha t (1a) 
+
+P Cdis t = X 
+
+> w∈Wch
+
+P dis 
+
+> w,t
+
+Kw,t , t ∈ T ch (1b) 
+
+P Ccha t = X 
+
+> w∈Wch
+
+P cha 
+
+> w,t
+
+Kw,t , t ∈ T ch (1c) 
+
+SOC w,t = SOC w,t −1 +  P cha 
+
+> w,t
+
+ηcha − P dis 
+
+> w,t
+
+/η dis 
+
+ /E cap ,w (1d) 
+
+SOC w,T out ,w ≥ SOC exp  
+
+> w
+
+, w ∈ W ch (1e) 
+
+X 
+
+> w∈Wch
+
+Kw,t Hw,t ≤ S, t ∈ T ch (1f) where P Ccha t , P Cdis t , P load  
+
+> t
+
+, P load, agg  
+
+> t
+
+are the charging and discharging load of EV, normal load, and the aggregated load, respectively. The parameter Kw,t indicates if an EV 
+
+w is plugged in EVCS at time t, Hw,t indicates the charg-ing/discharging state at time t and Ecap ,w is the battery capacity. SOC exp  
+
+> w
+
+, SOC w,T out ,w , SOC min , SOC max are the ex-pected level, final SOC level while leaving the EVCS and the minimum and maximum SOC levels, respectively. The sets of EVs and time periods are indicated by W ch , T ch respectively. Constraint (1a) indicates the aggregated load with the normal load and EVs; constraints (1b) and (1c) give the integrated discharging and charging powers in the EVCS. Equation (1d) describes the energy storage process corresponding to the charging and discharging powers for the wth EV; (1e) indicates that the SOC for the wth EV should achieve a certain level once the EV leaves at Tout,w . Equation (1f) guarantees that the capacity of the EV load demand should be limited by the maximum allowable power S in the station. 
+
+b) DSO and EVA Coordination Model: In a decentralized optimization framework, DSO does not possess complete information regarding EV characteristics, such as AT, DT, and SOC. Instead, this information is available to the EVA, which manages the EV fleet. Consequently, the DSO coordinates with the EVA to obtain the aggregated EVCD at each time period [44]–[49]. The EVA pursues its own profit-maximization ob-jective by submitting energy bids for the managed EV fleet over the scheduling horizon and coordinating slow and fast charging operations to reduce peak demand. The overall pro-cess involves two interconnected optimization problems—one for the DSO and another for the EVA. EVA’s optimization model is formulated as follows: 
+
+max 
+
+> Pt
+
+Ueva = X
+
+> T
+
+(λtPt − μ (Pt − pt)2) (2a) s.t. Pt = 
+
+> Wch
+
+X
+
+> w=1
+
+xw,t (2b) 
+
+λt = ytPt + zt (2c) where xw,t is the required charging energy of an EV w, λt
+
+is the charging price, pt is the load target and Pt is the total charging demand at time t. A penalty parameter μ is used for deviation from the load target and yt and zt indicates the slope and intercept of the pricing function. The charging energy of an EV owner w is determined from EV owner’s optimization problem. 
+
+max 
+
+> xw,t
+
+X
+
+> T
+
+Uw,t = X
+
+> T
+
+(− 12 βw, 1x2 
+
+> w,t
+
++ βw, 2xw,t − λtxw,t ) (2d) s.t. X
+
+> t∈TGC
+
+xw,t = Ew (2e) where Uw,t is the utility of an EV owner, Ew is the charging requirement, and TGC is grid-connection window. 
+
+c) DSO and TSO Coordination Model: In this approach, the DSO and the TSO independently optimize the PDS and the transportation system (TS), respectively, while exchanging information through a defined coordination interface. The coupling between the two systems is captured via a boundary condition, which represents the EVCD generated from the TS owing to traffic flow dynamics [34], [39], [50]–[52]. This boundary condition serves as the information exchange variable between the two optimization problems, enabling the DSO to incorporate traffic-driven charging demand into the DOPF formulation without requiring direct access to transportation system information. The optimization problems of the TSO and DSO are formulated as follows: (TSO) min     
+
+> xv∈X v,α v∈{ 0,1}
+
+fv (xv) := X rC (3a) s.t. P T = z (3b) where xv, α v represents the set of all decision variables and binary variables, Xv indicates the set of all constraints of TS, 
+
+r indicates traffic flow and C is the travel cost. The EVCD is denoted by P T and is derived using the following equation: 
+
+PEV = z = X rE ch EV , (3c) where PEV is the total EVCD and Ech EV is the required charg-ing energy of an EV. This EVCD is used as a deterministic parameter in the DSO optimization model. DSO optimization model is as follows: (DSO) min  
+
+> xp∈X p,α p∈{ 0,1}
+
+fp (xp) := X cP (3d) s.t. P D = z (3e) where where xp, α p represents the set of all decision variables and binary variables in DOPF and Xp indicates the set of all constraints in PDS. The EVCD is denoted by P D .
+
+2) ML-Based Predictive Models: ML-based predictive models forecast future EVCD from historical load data, and this EVCD is used as a known parameter in the DOPF. ML model forecasting is a two-phase procedure: a training phase in which model parameters are estimated, followed by an inference phase in which demand forecasts are gen-erated over the dispatch horizon. Supervised methods such as extreme gradient boosting, linear regression [53], support vector machine, and random forest [54] have been widely employed for short-term forecasting, while unsupervised ap-proaches including autoregressive integrated moving average [55] and K-means clustering [56] have been applied to demand characterization and load profile extraction. Deep learning architectures including long short-term memory networks [57], [58], deep generative models [59], artificial neural networks [60], convolutional neural networks [61], transformer models [62], ensemble methods [63], and transfer learning approaches [64], have been proposed for spatiotemporal EVCD forecast-ing, owing to their capacity to capture nonlinear temporal dependencies. 
+
+B. Uncertainty-aware Models 
+
+In practical systems, EVCD is inherently uncertain due to variability in factors such as electricity price, SOC, AT, DT, EV owner preferences and decisions. To capture these uncer-tainties, a range of modeling approaches has been proposed in the literature. In this review, uncertainty-aware EVCD models are classified into four categories based on the underlying solution methodology. 
+
+1) SO Model: In SO-based EVCD models, key EV param-eters are treated as random variables characterized by known probability distributions. Parameters commonly modeled as stochastic include AT, DT, required charging energy, and initial SOC, which are represented using distributions such as Poisson [11], [65], uniform [11], normal [66], lognormal [18], or truncated normal [12], [26]. 
+
+ah,s ∼ Pois( ηa
+
+> h
+
+) dh,s ∼ Weib( k, η d
+
+> h
+
+) + ah,s (4a) 
+
+Eh,s ∼ U (e1, e 2) (4b) where ah,s , d h,s indicate AT and DT respectively and Eh,s 
+
+denote required charging energy. Monte Carlo simulation method is used to generate scenarios based on this known probability distribution, and DSO formulates the problem as a two-stage stochastic problem. TABLE II COMPARISON OF EVCD M ODELING APPROACHES                               
+
+> Attribute ML SO RO CCO DRO
+> Real-Time ✓✓××✓×
+> Planning ××✓✓✓✓
+> Comp. Low Low High Medium Medium High Scal. High High Medium High Medium Medium
+> Abbreviations: Comp. = Computational complexity; Scal. = Scalability;
+
+2) RO Model: In these models, either the initial energy of EV, SOC or EVCD is considered uncertain and an uncertainty set is declared. 
+
+Eini ≡
+
+Eini  
+
+> w
+
+: X 
+
+> w∈Wch
+
+Eini  
+
+> w
+
+− ¯Eini 
+
+> w
+
+ˆEini 
+
+> w
+
+≤ Γw;
+
+Eini  
+
+> w
+
+∈
+
+h ¯Eini  
+
+> w
+
+− ˆEini  
+
+> w
+
+, ¯Eini  
+
+> w
+
++ ˆEini 
+
+> w
+
+i
+
+; ∀w
+
+o
+
+(5a) where Eini  
+
+> w
+
+is the initial charge of an EV w, ¯Eini  
+
+> w
+
+is the average value, ˆEini  
+
+> w
+
+is the standard deviation, and Γw indicates 
+
+budget of uncertainty . The average and standard deviation are obtained from historical data. The EVCD is determined by the following equations: 
+
+EEV  
+
+> w, 1
+
+= Eini  
+
+> w
+
++ P EV  
+
+> w, 1
+
+∆t; ∀w (5b) 
+
+EEV  
+
+> w,t
+
+= EEV  
+
+> w,t −1
+
++ P EV  
+
+> w,t
+
+∆t; ∀w, t ≥ 1 (5c) 
+
+P EV  
+
+> t
+
+= X
+
+> ∀w
+
+P EV  
+
+> w,t
+
+(5d) where P EV  
+
+> t
+
+is the total EVCD for all EV at time t and is used in the power balance equation in DOPF. These models can be found in [4], [15], [17], [21], [22]. 
+
+3) CCO Model: In CCO-based EVCD models, uncertain parameters such as driving distance, charging availability, aggregate power injection, and EV owner response are in-corporated into the DOPF formulation through probabilistic constraints, which enforce operational feasibility up to a spec-ified confidence level. These chance constraints are rendered tractable via deterministic reformulation [3], [5], [14], [20], [28], conditional value-at-risk (CVaR) approximation [30], or binary variable representations [16]. 
+
+Pr 
+
+
+
+e− 
+
+> j
+
+≤ Ptt′=t0 (xw,t ′ − dw,t ′ ) + ew, 0
+
+Ptt′=t0 (xw,t ′ − dw,t ′ ) + ew, 0 ≤ e+
+
+> j
+
+xw,t ≤ p+sw,t 
+
+, ∀t ∈ T
+
+ ≥ 1 − ϵ
+
+∀w ∈ W ch (6a) where ew, 0, e − 
+
+> j
+
+, e + 
+
+> j
+
+indicate the initial, lower limit and upper limit of EV SOC level respectively. xw,t ′ , d w,t ′ is the charging energy and driving energy consumption respectively of the EV 
+
+w at time period t′. The parameter p+ indicates upper limit of charging and sw,t is the charging availability indicator of the EV w at time t. Sc is the scenario set and W ch is the set of EV owners. A binary variable zw,s is introduced, and the above equation is reformulated as follows: 
+
+e− 
+
+> j
+
+≤
+
+> t
+
+X
+
+> t′=t0
+
+(xw,t ′ − dw,s,t ′ ) + ew, 0 + zw,s tX
+
+> t′=t0
+
+dw,s,t ′ (6b) 
+
+> t
+
+X
+
+> t′=t0
+
+(xw,t ′ − dw,s,t ′ ) + ew, 0 ≤ e+ 
+
+> j
+
++ zw,s tX
+
+> t′=t0
+
+(p+ − dw,s,t ′ )
+
+∀w ∈ W ch , ∀s ∈ Sc, ∀t ∈ T (6c) 
+
+xw,t ≤ p+sw,s,t + p+zw,s ∀w ∈ W ch , ∀s ∈ Sc, ∀t ∈ T (6d) 
+
+X
+
+> s∈Sc
+
+(πw,s zw,s ) ≤ ϵ, zw,s ∈ { 0, 1}, ∀w ∈ W ch (6e) 
+
+4) DRO Model: Both DRO and DRCCO formulations are considered within this class. Rather than assuming a fully known probability distribution, these approaches construct an ambiguity set over which the worst-case expectation or chance constraint is optimized. The ambiguity set is commonly characterized using moment information [13], [29], [31], [32], norm-based divergence measures such as the 1-norm and inf-norm [25], [27], Wasserstein distance [19], [23], [67], or Kullback–Leibler (KL) divergence [24]. A representative moment-based ambiguity set is formulated as follows: 
+
+M1 =
+
+(
+
+P ∈ P  R|Nevcs | :
+
+ EP[pev s ] − ¯pev T Σ−1 EP[pev s ] − ¯pev  ≤ γ1,
+
+EP
+
+h pev s − ¯pev   pev s − ¯pev T i
+
+⪯ γ2 Σ
+
+)
+
+(7a) where P(R|Nevcs |) represents the set of all probability distri-butions on R|Nevcs | and Nevcs is total number of EVCS. The parameter pev s indicate the charging demand in scenario s, ¯pev 
+
+and Σ denote the empirical mean and covariance of EVCD. Parameters γ1 ≥ 0 and γ2 ≥ 1 reflect the confidence level in empirical estimates. The following equation indicates the probabilistic chance constraint. 
+
+P(Ymin ≤ ˜Y ≤ Y max ) ≥ 1 − ϵ (7b) where ˜Y is the set of uncertain variables, Ymin , Ymax are the lower and upper limits respectively, and ϵ is the violation level. The above equation is reformulated into deterministic and tractable equations using the ambiguity set. 
+
+Y + η(ϵ)( var ( ˜Y)1/2 ≤ Y max (7c) 
+
+Y − η(ϵ)( var ( ˜Y)) 1/2 ≥ Y min (7d) where var ( ˜Y) is the variance of ˜Y and η(ϵ) is worst-case quantile that is calculated using γ1, γ 2 and ϵ.IV. R ESEARCH GAP AND DISCUSSION 
+
+The reviewed literature reveals several persistent gaps in EVCD-DOPF frameworks. A comparison of EVCD modeling approaches is given in Table II. The overwhelming majority of uncertainty-aware formulations treat EVCD as an exogenous uncertain parameter independent of DSO decisions [11], [12], [15], [25], despite the fact that DSO pricing and dispatch sig-nals directly influence EV owner charging behavior. Although recent contributions have begun addressing this by modeling EVCD as endogenous uncertainty shaped by real-time DSO decisions [17], [29], [31], [32], such formulations remain scarce. Furthermore, existing models predominantly assume a homogeneous EV owner population; while isolated efforts have incorporated owner behavior through survey data [68] or willingness-to-charge formulations [69], explicit integration of behavioral heterogeneity into a coupled EVCD-DOPF frame-work remains largely absent. A further structural gap exists in the treatment of transportation-power system coupling: studies accounting for TS-PDS interactions have adopted deterministic EVCD representations [52], while uncertainty-aware formula-tions have largely omitted TS dynamics [14], [17]. Finally, the diversity of approaches reviewed reflects the absence of a generalized EVCD formulation encompassing all rele-vant EV parameters and system interactions. Future research should therefore prioritize the development of uncertainty-aware EVCD models that incorporate behavioral heterogeneity and explicitly capture TS-PDS coupling within a unified DOPF framework. V. C ONCLUSION 
+
+This paper has presented a systematic review of EVCD modeling and its integration into the DOPF framework, ex-amined exclusively from the DSO’s perspective. The reviewed literature was classified according to the nature of EVCD representation and the solution methodology employed. Ac-curate EVCD modeling remains a fundamentally challenging problem, as charging demand is governed by multiple inter-dependent parameters across different systems and cannot be reduced to a simple deterministic expression. Moreover, no consensus has emerged on whether EVCD should be treated as a deterministic parameter, an exogenous uncertainty, or an endogenous uncertainty, and no existing model compre-hensively accounts for all relevant parameters and system interactions. By systematically surveying and categorizing the existing methods and their solution approaches from the DSO’s perspective, this review provides a structured reference for researchers, and establishes a foundation for the develop-ment of a generalized, unified EVCD modeling framework. REFERENCES [1] IEA, “Global ev outlook 2026,” Available: https://www.iea.org/reports/global-ev-outlook-2026 , 2026. [2] J. Kang, H. Kong, Z. Lin, and A. Dang, “Mapping the dynamics of electric vehicle charging demand within beijing’s spatial structure,” 
+
+Sustainable Cities and Society , vol. 76, p. 103507, 2022. [3] K. Zhang, Y. Xu, and H. Sun, “Bilevel optimal coordination of active distribution network and charging stations considering ev drivers’ will-ingness,” Applied Energy , vol. 360, p. 122790, 2024. [4] Y. Ren, M. Tan, Y. Su, R. Wang, and L. Wang, “Two-stage adaptive robust charging scheduling of electric vehicle station based on hybrid demand response,” IEEE Transactions on Transportation Electrification ,vol. 11, no. 1, pp. 1442–1454, 2024. [5] J. Jian, M. Zhang, Y. Xu, W. Tang, and S. He, “An analytical polytope approximation aggregation of electric vehicles considering uncertainty for the day-ahead distribution network dispatching,” IEEE Transactions on Sustainable Energy , vol. 15, no. 1, pp. 160–172, 2023. [6] S. Sharma and P. Jain, “Risk-averse integrated demand response and dynamic g2v charge scheduling of an electric vehicle aggregator to support grid stability,” International Transactions on Electrical Energy Systems , vol. 31, no. 5, p. e12867, 2021. [7] Y. Jin, M. A. Acquah, M. Seo, and S. Han, “Optimal siting and sizing of ev charging station using stochastic power flow analysis for voltage stability,” IEEE Transactions on Transportation Electrification , vol. 10, pp. 777–794, 3 2024. [8] Q. Li, “Uncertainty-aware three-phase optimal power flow based on data-driven convexification,” IEEE Transactions on Power Systems , vol. 36, no. 2, pp. 1645–1648, 2021. [9] A. Tayri and X. Ma, “Grid impacts of electric vehicle charging: A review of challenges and mitigation strategies,” Energies , vol. 18, no. 14, p. 3807, 2025. [10] I. Nutkani, H. Toole, N. Fernando, and L. P. C. Andrew, “Impact of ev charging on electrical distribution network and mitigating solutions–a review,” IET Smart Grid , vol. 7, no. 5, pp. 485–502, 2024. [11] J. S. Giraldo, N. B. Arias, P. P. Vergara, M. Vlasiou, G. Hoogsteen, and J. L. Hurink, “Estimating risk-aware flexibility areas for electric vehicle charging pools via ac stochastic optimal power flow,” Journal of Modern Power Systems and Clean Energy , vol. 11, pp. 1247–1256, 7 2023. [12] T. Rawat, J. Singh, V. C. Pandey, and S. Sharma, “Planning renewables in distribution system with electric vehicles to improve hosting capac-ity and energy losses: Two-stage stochastic optimization framework,” 
+
+Sustainable Energy, Grids and Networks , vol. 39, 9 2024. [13] X. Shi, Y. Xu, Q. Guo, H. Sun, and X. Zhang, “Day-ahead distribu-tionally robust optimization-based scheduling for distribution systems with electric vehicles,” IEEE Transactions on Smart Grid , vol. 14, pp. 2837–2850, 7 2023. [14] Z. Li and C. Ma, “A temporal–spatial charging coordination scheme incorporating probability of ev charging availability,” Applied Energy ,vol. 325, p. 119838, 2022. [15] R. Shi, S. Li, P. Zhang, and K. Y. Lee, “Integration of renewable energy sources and electric vehicles in v2g network with adjustable robust optimization,” Renewable Energy , vol. 153, pp. 1067–1080, 6 2020. [16] Z. Liu, Q. Wu, S. S. Oren, S. Huang, R. Li, and L. Cheng, “Distribution locational marginal pricing for optimal electric vehicle charging through chance constrained mixed-integer programming,” IEEE Transactions on Smart Grid , vol. 9, pp. 644–654, 2018. [17] Z. Wang, H. Hu, X. Pan, Z. Zhang, L. Huang, and T. Yan, “Robust scheduling of fast-charging evs with exogenous and endogenous un-certainties for urban power congestion relief,” IEEE Transactions on Industry Applications , vol. 61, pp. 4530–4540, 2025. [18] D. A. Quijano, O. D. Melgar-Dominguez, C. Sabillon, B. Venkatesh, and A. Padilha-Feltrin, “Increasing distributed generation hosting capacity in distribution systems via optimal coordination of electric vehicle aggregators,” IET Generation, Transmission & Distribution , vol. 15, no. 2, pp. 359–370, 2021. [19] M. R. Feizi, M. E. Khodayar, and J. Li, “Data-driven distributionally robust unbalanced operation of distribution networks with high pene-tration of photovoltaic generation and electric vehicles,” Electric Power Systems Research , vol. 210, 9 2022. [20] J. Zhu, Y. Xu, and H. Sun, “Day-ahead joint chance-constrained optimal scheduling of the distribution network with electric vehicle aggregators,” 
+
+IEEE Transactions on Smart Grid , 2025. [21] J. A. A. Silva, J. C. Lopez, N. B. Arias, L. Z. Terada, and M. J. Rider, “Tri-level adaptive robust optimization for the optimal charging coordination of evs considering grid impact,” IEEE Access , vol. 12, pp. 169 755–169 767, 2024. [22] X. Liu, Z. Li, X. Yang, Z. Li, Z. Wei, and P. Wang, “Two-stage robust economic dispatch of distribution networks considering electric vehicles charging demand-price uncertainty correlations,” Electric Power Systems Research , vol. 248, 11 2025. [23] H. T. Nguyen and D. H. Choi, “Decentralized distributionally robust coordination between distribution system and charging station operators in unbalanced distribution systems,” IEEE Transactions on Smart Grid ,vol. 14, pp. 2164–2177, 5 2023. [24] J. Li, Y. Xu, J. Zhang, C. Gao, and H. Sun, “Distributed ev scheduling in distribution networks with reserve market participation under ambiguous probability distribution,” Applied Energy , vol. 383, 4 2025. [25] J. Zhao, J. Qu, H. Ji, J. Xu, H. M. Hasanien, R. A. Turky, and P. Li, “Robust operation of flexible distribution network with large-scale ev charging loads,” IEEE Transactions on Transportation Electrification ,vol. 10, pp. 2207–2219, 3 2024. [26] H. Wang, X. Xu, Y. Chen, Z. Yan, M. Shahidehpour, J. Li, and S. Xu, “Stochastic optimization of coupled power distribution-urban transportation network operations with autonomous mobility on demand systems,” IEEE Transactions on Smart Grid , vol. 15, no. 3, pp. 3040– 3053, 2023. [27] Y. Xiang, P. Xue, Y. Wang, L. Xu, W. Ma, M. Shafie-Khah, J. Li, and J. Liu, “Robust expansion planning of electric vehicle charging system and distribution networks,” CSEE Journal of Power and Energy Systems ,vol. 10, pp. 2457–2469, 2024. [28] L. Kong, H. Zhang, W. Li, H. Bai, and N. Dai, “Spatial–temporal scheduling of electric bus fleet in power-transportation coupled net-work,” IEEE Transactions on Transportation Electrification , vol. 9, no. 2, pp. 2969–2982, 2022. [29] J. Wang, Z. Wang, Q. Xu, B. Zhang, B. Yang, F. Liu, and X. Guan, “V2g regulation in distribution networks with decision-dependent un-certainties: A chance-constrained learning method,” IEEE Transactions on Transportation Electrification , 2025. [30] K. Zhang, Y. Xu, and H. Sun, “Joint chance-constrained program based electric vehicles optimal dispatching strategy considering drivers’ response uncertainty,” Applied Energy , vol. 356, p. 122313, 2024. [31] J. Wang, Z. Wang, B. Yang, F. Liu, W. Wei, and X. Guan, “V2g for frequency regulation service: A stackelberg game approach considering endogenous uncertainties,” IEEE Transactions on Transportation Elec-trification , vol. 11, pp. 463–475, 2025. [32] D. Sarkar and Q. Li, “Promethee-based modeling of endogenous behav-ioral uncertainty of ev owners,” in 2026 IEEE Power & Energy Society General Meeting (PESGM) . IEEE, 2026, pp. 1–5, accepted for publi-cation, in press. Preprint available at https://arxiv.org/abs/2604.19085. [33] S. Tirunagari, M. Gu, and L. Meegahapola, “Reaping the benefits of smart electric vehicle charging and vehicle-to-grid technologies: Regulatory, policy and technical aspects,” IEEE Access , vol. 10, pp. 114 657–114 672, 2022. [34] S. Sharma, Q. Li, and W. Wei, “An enhanced sd-gs-al algorithm for coordinating the optimal power and traffic flows with evs,” IEEE Transactions on Smart Grid , vol. 15, pp. 3904–3918, 7 2024. [35] S. Wang, Q. Tan, Q. Jiang, H. Shao, and M. Kouhi, “Stochastic carbon-aware planning of renewable dgs and ev charging stations with demand flexibility in smart urban grids,” Scientific Reports , vol. 15, no. 1, p. 34433, 2025. [36] M. Alaraj, M. Radi, E. Alsisi, M. Majdalawieh, and M. Darwish, “Machine learning-based electric vehicle charging demand forecasting: A systematized literature review,” Energies , vol. 18, no. 17, 2025. [37] M. Shokati, P. Mohammadi, and A. Amirinian, “Advancements in elec-tric vehicle charging optimization: A survey of reinforcement learning approaches,” in 2024 4th International Conference on Electrical Ma-chines and Drives, ICEMD 2024 . Institute of Electrical and Electronics Engineers Inc., 2024. [38] C. Shao, K. Li, T. Qian, M. Shahidehpour, and X. Wang, “Generalized user equilibrium for coordination of coupled power-transportation net-work,” IEEE Transactions on Smart Grid , vol. 14, no. 3, pp. 2140–2151, 2022. [39] W. Qiao, Y. Han, Q. Zhao, F. Si, and J. Wang, “A distributed coordination method for coupled traffic-power network equilibrium incorporating behavioral theory,” IEEE Transactions on Vehicular Technology , vol. 71, no. 12, pp. 12 588–12 601, 2022. [40] Y. Zheng, Y. Song, D. J. Hill, and K. Meng, “Online distributed mpc-based optimal scheduling for ev charging stations in distribution systems,” IEEE Transactions on Industrial Informatics , vol. 15, pp. 638– 649, 2 2019. [41] S. Das, P. Acharjee, and A. Bhattacharya, “Charging scheduling of elec-tric vehicle incorporating grid-to-vehicle and vehicle-to-grid technology considering in smart grid,” IEEE Transactions on Industry Applications ,vol. 57, no. 2, pp. 1688–1702, 2020. [42] P. Tian, S. Yan, B. Pan, and Y. Shi, “Two-stage optimization for efficient v2g coordination in distribution power system,” in 2024 IEEE International Conference on Communications, Control, and Computing Technologies for Smart Grids, SmartGridComm 2024 . Institute of Electrical and Electronics Engineers Inc., 2024, pp. 245–251. [43] T. Ding, Z. Zeng, J. Bai, B. Qin, Y. Yang, and M. Shahidehpour, “Optimal electric vehicle charging strategy with markov decision process and reinforcement learning technique,” IEEE Transactions on Industry Applications , vol. 56, pp. 5811–5823, 9 2020. [44] T. Wu, L. Tang, Q. Huang, and G. Liang, “A tri-level cooperative optimization framework for electric vehicle charging via a mean-field reverse stackelberg game,” International Journal of Electrical Power and Energy Systems , vol. 177, 4 2026. [45] T. Xiao, Y. Peng, and C. Chen, “A temporal and spatial electric vehicle charging optimization scheme with dso-eva coordination framework,” 
+
+International Journal of Electrical Power and Energy Systems , vol. 156, 2 2024. [46] Z. Wu and B. Chen, “Distributed electric vehicle charging scheduling with transactive energy management,” Energies , vol. 15, 1 2022. [47] J. Huang, C. Shao, C. Gu, S. Zhang, Q. Zhou, M. Leng, and X. Wang, “Facilitating unbalance mitigation in three-phase distribution network: A dso-eva coordination model using gnb-based cooperative framework,” 
+
+IEEE Transactions on Smart Grid , 2025. [48] V. Suri, N. Nagpal, P. Siano, R. Sharma, S. Agarwal, and W. Pak, “Eva-centric qubo optimization for active and reactive power coordination in dlmp-driven distribution systems,” Scientific Reports , 2026. [49] R. Ji, M. Niu, S. Ma, and H. Su, “Tri-level collaborative optimization strategy for coupled power and transportation networks considering energy scheduling of fast charging stations,” Applied Energy , vol. 401, p. 126806, 2025. [50] A. K. Yousuf, Z. Wang, R. Paranjape, and Y. Tang, “Optimal pricing model for electric vehicle charging stations considering competition,” in 
+
+International Conference on Renewable Energy and Power Engineering, REPE . Institute of Electrical and Electronics Engineers Inc., 2024, pp. 154–158. [51] H. Yuan, X. Xu, and Z. Yan, “Optimal capacity planning for active distribution network considering ev fast charging station,” Electric Power Systems Research , vol. 258, 9 2026. [52] K. Sadhu, K. Haghshenas, M. Rouhani, and M. Aiello, “Optimal joint operation of coupled transportation and power distribution urban networks,” Energy Informatics , vol. 5, no. 1, p. 35, 2022. [53] O. Frendo, N. Gaertner, and H. Stuckenschmidt, “Improving smart charging prioritization by predicting electric vehicle departure time,” 
+
+IEEE Transactions on Intelligent Transportation Systems , vol. 22, pp. 6646–6653, 10 2021. [54] Z. Zhang, P. Peng, Z. Wang, N. Lin, and Z. Wang, “A charging start time prediction method for electric vehicles based on improved svm and rf,” Journal of Energy Storage , vol. 152, p. 120457, 2026. [55] M. H. Amini, A. Kargarian, and O. Karabasoglu, “Arima-based decou-pled time series forecasting of electric vehicle charging demand for stochastic power system operation,” Electric Power Systems Research ,vol. 140, pp. 378–390, 11 2016. [56] Y. Xiong, B. Wang, C.-C. Chu, and R. Gadh, “Electric vehicle driver clustering using statistical model and machine learning,” in 2018 IEEE power & energy society general meeting (PESGM) . IEEE, 2018, pp. 1–5. [57] S. Wang, C. Zhuge, C. Shao, P. Wang, X. Yang, and S. Wang, “Short-term electric vehicle charging demand prediction: A deep learning approach,” Applied Energy , vol. 340, 6 2023. [58] Z. Yi, X. C. Liu, R. Wei, X. Chen, and J. Dai, “Electric vehicle charging demand forecasting using deep learning model,” Journal of Intelligent Transportation Systems: Technology, Planning, and Operations , vol. 26, pp. 690–703, 2022. [59] S. Wang, L. Du, J. Ye, and D. Zhao, “A deep generative model for non-intrusive identification of ev charging profiles,” IEEE Transactions on Smart Grid , vol. 11, pp. 4916–4927, 11 2020. [60] V. Singh, A. Singh, S. Kumar, and U. Singh, “Energizing the future: predicting ev charging demand to optimize pricing strategies,” Interna-tional Journal of System Assurance Engineering and Management , pp. 1–18, 2026. [61] X. Zhang, K. W. Chan, H. Li, H. Wang, J. Qiu, and G. Wang, “Deep-learning-based probabilistic forecasting of electric vehicle charging load with a novel queuing model,” IEEE Transactions on Cybernetics , vol. 51, pp. 3157–3170, 6 2021. [62] A. Hussain, Q.-C. Lu, S. S. Rizvi, S. Wang, and S. J. Kwon, “Short term demand forecasting of electric vehicle charging stations using context aware temporal transformer model,” Scientific Reports , vol. 15, no. 1, p. 36652, 2025. [63] S. Shahriar, A.-R. Al-Ali, A. H. Osman, S. Dhou, and M. Nijim, “Prediction of ev charging behavior using machine learning,” Ieee Access , vol. 9, pp. 111 576–111 586, 2021. [64] F. Roozkhosh, X. A. Yao, B. Tahmasbi, H. Yang, and G. Mai, “Bridging data gaps for ev demand estimation: A transfer learning approach,” 
+
+Journal of Transport Geography , vol. 131, p. 104539, 2026. [65] Y. Amara-Ouali, Y. Goude, and J.-M. Poggi, “Modelling the intensity of electric vehicle arrivals at charging points,” Transportation Research Procedia , vol. 70, pp. 372–379, 2023. [66] X. Yang, J. Yun, S. Zhou, T. T. Lie, J. Han, X. Xu, Q. Wang, and Z. Ge, “A spatiotemporal distribution prediction model for electric ve-hicles charging load in transportation power coupled network,” Scientific Reports , vol. 15, no. 1, p. 4022, 2025. [67] Y. Cao and Y. Wang, “Robust charging schedule for autonomous electric vehicles with uncertain covariates,” IEEE Access , vol. 9, pp. 161 565– 161 575, 2021. [68] M. Yao, X. Lu, and S. Cao, “Modeling ev charging behavior: The impact of service experience and user heterogeneity,” Travel Behaviour and Society , vol. 43, p. 101216, 2026. [69] L. Hu, J. Dong, and Z. Lin, “Modeling charging behavior of battery electric vehicle drivers: A cumulative prospect theory based approach,” 
+
+Transportation Research Part C: Emerging Technologies , vol. 102, pp. 474–489, 2019.

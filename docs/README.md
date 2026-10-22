@@ -51,14 +51,14 @@
       <span class="dpr-home-dashboard-kicker">2026-09-23 ~ 2026-10-22</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 46 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 62 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>35</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>41</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>21</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-22 15:48:15 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-22 16:22:55 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>一个月精读35篇、速读11篇共46篇论文，重点锁定具身智能与世界模型前沿。最值得看的是两篇满分之作：Thinker-WM以共享多模态表征统一世界模型，Physical AI系统梳理模型、学习与开放挑战。普通读者可先读这两篇综述建立框架，再按兴趣跟进具身编码智能体与调度优化等应用方向。</p>
+<p>本期完成 62 篇文献筛选，精读 41 篇、速读 21 篇。 最值得看的是两篇满分精读：Thinker-WM 的共享多模态世界模型，以及 Physical AI 综述。 普通读者可先读这两篇建立框架，再按兴趣跟进电动汽车充电与电网、家庭能量管理等速读应用。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">35 篇</strong>
+    <strong class="dpr-home-dashboard-count">41 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
 <ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Thinker-WM: A Unified World Model with Shared Multimodal Representations for Embodied Intelligence">Thinker-WM: A Unified World Model with Shared Multimodal Representations for Embodied Intelligence</span></li><li><span class="dpr-home-dashboard-paper-title" title="Physical AI: A Survey of Models, Learning, Systems, and Open Challenges">Physical AI: A Survey of Models, Learning, Systems, and Open Challenges</span></li><li><span class="dpr-home-dashboard-paper-title" title="LAW: Unifying Language, Action, and World Modeling for Agentic Physical Intelligence">LAW: Unifying Language, Action, and World Modeling for Agentic Physical Intelligence</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>35</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>35</strong></span><span class="dpr-home-dashboard-tag">ev-forecast <strong>6</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -91,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">11 篇</strong>
+    <strong class="dpr-home-dashboard-count">21 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="EmbodiedSWE: Coding Agents for Long Horizon Dexterous Robotics">EmbodiedSWE: Coding Agents for Long Horizon Dexterous Robotics</span></li><li><span class="dpr-home-dashboard-paper-title" title="Curriculum Learning with GNN-based Reinforcement Learning for Job Shop Scheduling">Curriculum Learning with GNN-based Reinforcement Learning for Job Shop Scheduling</span></li><li><span class="dpr-home-dashboard-paper-title" title="Strong NP-Hardness and Approximation Algorithm for Weighted Tardiness with Release Dates and Identical Processing Times">Strong NP-Hardness and Approximation Algorithm for Weighted Tardiness with Release Dates and Identical Processing Times</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Models of Electric Vehicle Charging Demands in Distribution Grid Operation: A Review">Models of Electric Vehicle Charging Demands in Distribution Grid Operation: A Review</span></li><li><span class="dpr-home-dashboard-paper-title" title="Distributionally Robust Chance-Constrained Reinforcement Learning for Home Energy Management under Electric Vehicle Uncertainty">Distributionally Robust Chance-Constrained Reinforcement Learning for Home Energy Management under Electric Vehicle Uncertainty</span></li><li><span class="dpr-home-dashboard-paper-title" title="Optimizing Airport Electric Ground Support Fleets with Digital-Twin-Guided Predictive Control">Optimizing Airport Electric Ground Support Fleets with Digital-Twin-Guided Predictive Control</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>11</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>11</strong></span><span class="dpr-home-dashboard-tag">ev-forecast <strong>10</strong></span></div>
 </section>
 </div>
 

@@ -1,0 +1,190 @@
+Title: OpenHail: An Event-Driven Gymnasium Environment for Electric Ride-Hailing Fleet Control
+
+URL Source: https://arxiv.org/pdf/2609.30628v1
+
+Published Time: Mon, 28 Sep 2026 00:29:22 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# OPEN HAIL : A N EVENT -D RIVEN GYMNASIUM ENVIRONMENT FOR ELECTRIC RIDE -H AILING FLEET CONTROL 
+
+A P REPRINT 
+
+Tommaso Schettini 1 Nicholas D. Kullman 2 Jorge E. Mendoza 3
+
+> 1
+
+Concordia University 
+
+tommaso.schettini@concordia.ca 
+
+> 2
+
+Université de Tours 
+
+nick.kullman@gmail.com 
+
+> 3
+
+HEC Montréal 
+
+jorge.mendoza@hec.ca 
+
+# ABSTRACT 
+
+Machine-learning policies have attracted increasing interest for ride-hailing fleet control in recent years. Reinforcement learning, in particular, requires a structured simulation environment that spec-ifies observations, actions, rewards, and decision epochs for training and evaluation. For electric fleets, this environment must also capture the interaction among stochastic demand, vehicle op-erations, and capacitated charging infrastructure. We present OpenHail, an open-source Gymna-sium environment for joint control of electric ride-hailing fleets. Its fixed-size observation–action interface exposes request assignment, repositioning, and charging to a single policy. The event-driven simulator represents requests with pickup deadlines, vehicle job queues, battery dynamics, and finite-capacity charging facilities with first-in–first-out queues. A configurable decision-epoch mechanism separates internal simulator events from policy interactions, supporting event-driven, periodic, hybrid, and policy-requested control within the same operational model. The software pro-vides seeded instances, feasible-action utilities, evaluation tools, operational metrics, and baseline policies. The source code is available at https://github.com/tommaso-schettini/openhail .
+
+Keywords ride-hailing; electric vehicles; discrete-event simulation; reinforcement learning; Gymnasium; open-source software 
+
+# 1 Introduction 
+
+Ride-hailing operators must respond to requests issued at uncertain times and locations while limiting empty travel and energy consumption. Traditional fleet-control problems focus on assigning vehicles to requests and repositioning idle vehicles in anticipation of future demand (Alonso-Mora et al. 2017, Lin et al. 2018). As ride-hailing fleets become electrified, these problems expand to include charging decisions and additional operational constraints (Kullman et al. 2022). The operator must determine when and where vehicles should charge while accounting for limited driving ranges, charging times, and competition for capacitated charging infrastructure. These decisions are highly related, since serving a request consumes energy and delays charging. Sending a vehicle to charge reduces the fleet available to serve current demand. Reinforcement learning (RL) is emerging as a promising approach to coordinated fleet repositioning and joint assign-ment, repositioning, and charging (Lin et al. 2018, Kullman et al. 2022, Dai et al. 2025). These methods shift part of the computational effort to offline training. While training can be costly, the learned policy or value-function approx-imations support rapid action selection at deployment. For instance, the Drafter controller of Kullman et al. (2022) selects assignment, repositioning, and charging actions by evaluating trained neural networks online. This avoids solving an optimization problem during action selection; for comparison, their reoptimization benchmark solves two mixed-integer programs at each scheduled decision epoch. arXiv:2609.30628v1 [cs.LG] 24 Sep 2026 OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 
+
+Training and evaluating RL policies requires a structured simulation environment that defines observations, actions, rewards, and decision epochs. Standard interfaces such as Gymnasium separate the implementation of these interac-tions from the learning algorithm, allowing different policies to use a common environment (Towers et al. 2024). In multi-agent settings, the Agent Environment Cycle (AEC) games model makes the sequence of agent actions and en-vironment updates explicit, with agents acting one at a time (Terry et al. 2021). Related efforts include MAEnvs4VRP, which provides modular environments for reinforcement-learning studies of vehicle routing problems (Gama et al. 2026). An electric-fleet environment must make service and charging decisions explicit and represent their effects on subsequent vehicle availability and energy reserves. It must also specify when the policy observes the system and acts, since requests, trips, and charging operations evolve asynchronously. The starting point for OpenHail is pyhailing , an open-source OpenAI Gym environment for controlling a homogeneous ride-hailing fleet (Kullman 2022). pyhailing was designed to support the DIMACS Challenge’s dynamic vehicle-routing variant, in which a controller manages a homogeneous fleet serving stochastic requests to maximize daily profit (Kullman 2022). This foundation provides the simulation logic for stochastic trip requests, vehicle job queues, request assignment, and repositioning using trip data from Manhattan. Building on pyhailing , we make four contributions: 1) We provide a Gymnasium interface with fixed-size observations and joint actions for request assignment, reposi-tioning, and charging. The interface includes action validation and reusable utilities for constructing feasible-action masks. 2) We separate internal simulator events from policy decision epochs, supporting event-driven, periodic, hybrid, and policy-requested interaction without changing the operational model. 3) We add battery dynamics and finite-capacity charging facilities with explicit travel and charging states and first-in– first-out waiting queues. 4) We provide seeded configurations, baseline policies, evaluation utilities, and automated tests. We use these tools to check operational invariants and measure computational scaling under three control workloads. The remainder of this paper is structured as follows. Section 2 positions OpenHail relative to existing simulation environments. Section 3 presents the architecture, interface, and decision-epoch mechanism of the software. Section 4 describes the verification and computational-performance experiments. Section 5 summarizes the contribution and identifies directions for further research. 
+
+# 2 Background and Related Software 
+
+2.1 Simulation Environments for Fleet-Control Research 
+
+Research on fleet control has produced a range of open-source tools for simulating transportation services and evaluat-ing operational policies. We distinguish three overlapping groups of open-source simulation software: transportation-system testbeds, fleet-service simulators, and controller-facing environments. The first group represents interactions among travelers, vehicles, and the surrounding network; the second concentrates on request and vehicle operations; the third organizes the simulation around a repeated observation–action interface for policy development. Transportation-system testbeds include AMoDeus and MaaSSim. Ruch et al. (2018) introduce AMoDeus as an exten-sion of MATSim for autonomous mobility-on-demand services, combining dynamic demand, dispatching algorithms, service-level analysis, and a graphical viewer with an agent-based transport representation. MaaSSim models the in-teractions within two-sided mobility platforms (Kucharski and Cats 2022). Travelers, drivers, and the platform act as separate decision makers whose behavior can be specified through user-defined Python modules. Fleet-service simulators focus more directly on the operational evolution of on-demand fleets. RidePy provides a modular event-based simulator for ride-hailing and ride-pooling, with replaceable request generators, dispatchers, transport spaces, and vehicle representations, as well as performance-critical components in Cython and C++ (Jung and Manik 2024). FleetPy combines assignment, repositioning, routing, and charging modules with support for mul-tiple operators, standardized data sets, and performance indicators (Engelhardt et al. 2026). It provides base classes and interfaces for implementing and testing fleet-control algorithms under different service configurations, including immediate- and batch-offer flows. The simulator proposed by Zhang and Varma (2024), which we refer to as EV-Sim, uses SimPy to represent asynchronous passenger matching, vehicle movements, and charging for electric ride-hailing fleets. It provides hooks for matching and charging algorithms and demonstrates them using New York City taxi data. Controller-facing environments expose observations and actions through an interface for policy development. py-hailing exposes request assignment and repositioning through OpenAI Gym (Kullman 2022). RideGym provides a 2OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 
+
+Table 1: Service scope and policy interfaces of open-source fleet-control software.                            
+
+> Software Service scope Policy interface Control decisions Electric operations AMoDeus Autonomous mobility MATSim modules Dispatching NR MaaSSim Two-sided platforms Behavioral modules Traveler, driver, platform NR RidePy Hailing and pooling Dispatcher modules Dispatching NR FleetPy Mobility-on-demand Fleet-control modules Assignment, repositioning, charging Battery, charging Gymnasium wrapper a
+> Zonal dispatching EV-Sim Electric ride-hailing Algorithm hooks Matching, charging Battery, charging
+> pyhailing Ride-hailing OpenAI Gym Assignment, repositioning None RideGym Ride-pooling Gym-like Pooling, dispatching None OpenHail Electric ride-hailing Gymnasium Assignment, repositioning, charging, decision timing Battery, charging, queues NR: not reported as a primary component in the cited source. aThe FleetPy wrapper exposes zonal dispatching; the electric operations listed above belong to the wider simulator.
+
+Gym-like environment and reproducible benchmark for large-scale ride-pooling and order dispatching, with road-network routing, passenger capacity, and impatient customers (Zhao et al. 2026). FleetPy also provides a Gymnasium wrapper with fixed observation and action spaces for zonal dispatching (FleetPy Developers 2026). 
+
+pyhailing supplies the principal non-electric operations on which OpenHail builds, but does not represent batteries or charging. Its observation and action dimensions also depend on the number of pending requests, whereas Open-Hail uses fixed-size spaces for compatibility with learning methods that require them. RideGym emphasizes pooling and dispatching without electric-vehicle or charging decisions; OpenHail instead exposes assignment, repositioning, and charging for an electric ride-hailing fleet. EV-Sim is close in operational scope, but its algorithm hooks are orga-nized around simulation processes and experiment scripts rather than a standardized joint observation–action interface. Among the systems reviewed, FleetPy is the closest comparison in terms of electric-fleet operations and Gymnasium support. Like OpenHail, it supports assignment, repositioning, and charging through fleet-control modules. However, its Gymnasium wrapper exposes only zonal dispatching. By comparison, OpenHail exposes joint request assignment, repositioning, and charging through a single Gymnasium interface with configurable decision epochs. Table 1 compares service scope, policy interfaces, control decisions, and electric operations. The control decisions refer to the listed interface, which may expose only part of the capabilities of the wider simulator. 
+
+# 3 The OpenHail Architecture 
+
+The architecture comprises six components (Figure 1): • OpenhailInstance defines the geographic, demand, fleet, charging, and economic inputs. • RequestManager generates the seeded request sequence and maintains the pending-request buffer. • VehicleManager advances vehicle jobs, battery states, and charging operations. • StateObserver constructs observations and checks their consistency with the declared space. • SummaryManager records request, vehicle, charging, and decision-epoch statistics. • OpenhailEnv coordinates these components through the Gymnasium reset and step methods. 
+
+3.1 Core Components and Event Dynamics 
+
+OpenhailInstance combines three forms of input. Geographic files define service zones and candidate reposition locations; historical trip records provide request times, origins, destinations, and trip distances; and configuration 3OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT OpenHail components   
+
+> Decision epochs Action Observation, reward, info Coordinates
+> Configuration
+> Demand, fleet, charging, decision epochs
+> Control policy
+> Assignment, repositioning, charging
+> OpenhailInstance
+> Instance data and parameters
+> OpenhailEnv
+> reset / step and event loop
+> RequestManager
+> Demand and request buffer
+> VehicleManager
+> Jobs, batteries, queues
+> StateObserver
+> Policy observations
+> SummaryManager
+> Operational statistics
+
+Figure 1: The OpenHail architecture. Configuration supplies instance data and decision-epoch settings; policies inter-act with OpenhailEnv , which coordinates the five supporting components. files specify fleet, charging, service, and reward parameters. The current implementation includes a request generator for New York City. Configurable parameters include the planning horizon, fleet size, battery capacity, travel speed, discharge and charging rates, passenger pickup limit, and charging capacities. For an environment constructed from these inputs, we denote by N the number of vehicles, M the maximum number of pending requests exposed to the policy, and D the number of reposition locations available for repositioning or charging. These dimensions remain fixed during an episode. 
+
+RequestManager uses the instance’s request generator to construct a seeded request sequence and maintains the fixed-size buffer exposed to the policy. It releases requests as simulation time advances, removes served requests, and manages unserved requests according to the configured retention and pickup limits. When new arrivals exceed the buffer capacity, older pending requests are discarded to make room. Empty positions contain dummy requests to ensure that the observation space remains fixed-size and compatible with learning methods that require fixed input dimensions. Request generation and vehicle initialization use separate random-number streams derived from the episode seed, allowing the demand realization to be held fixed across policies and decision-epoch configurations. The full request sequence is generated at the start of each episode, but observations expose only requests released by the current simulation time; future requests remain hidden from the policy. 
+
+VehicleManager represents each vehicle through its current location, battery level, job type, scheduled destination, expected completion time, and battery level at completion. The supported job types are idle, passenger service, repo-sitioning, travel to a charger, waiting for a charger, and charging. Travel times are obtained from spatial distances and a configured constant speed, while energy consumption and charging duration follow the configured linear discharge and charging rates. Network congestion and route choice are not modeled. A policy may send a vehicle to a reposition location without charging or may request charging upon arrival. If a charging post is available, the vehicle starts charging immediately; otherwise, it enters the station queue. Available posts are assigned to queued vehicles in first-in–first-out order. The policy can remove a vehicle from a charging queue by issuing a feasible repositioning action without charging or redirect it to another station by requesting charging there. 
+
+StateObserver constructs the policy observation from the request buffer, vehicle states, charging-facility states, simulation time, and current epoch type. It defines the observation space and provides consistency checks without 4OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 
+
+Table 2: Elements of the OpenHail observation space.                
+
+> Entry Shape Information
+> request Mrequest records Issue time, origin, destination, and trip distance for each pending request.
+> VNvehicle records Current and scheduled locations, times, and battery levels; job type; current and target charger; and next vehicle-event time.
+> chargers Dfacility records Reposition coordinates, charging capacity, current occupancy, and queue length.
+> time Scalar Current simulation time.
+> epoch_type Scalar Event type that produced the current decision epoch.
+
+advancing the simulated system. The returned vehicle arrays are copies of the internal state. Section 3.2 details their structure and dimensions. 
+
+SummaryManager accumulates request-service counts, vehicle activity times, charging statistics, and decision-epoch metrics when the corresponding tracking options are enabled. Requests arrive at customer-specific times, and vehicles complete trips, repositioning movements, and charging oper-ations after different durations. Event-driven decision models preserve this temporal order and allow a controller to respond when information or vehicle availability changes (Menda et al. 2019). However, some events must be pro-cessed to update the simulated system even when they do not warrant a new policy decision. We therefore distinguish between operational events , which update the system state, and decision epochs , at which the environment returns an observation and requests an action. In pyhailing , new requests and selected service completions trigger decisions, and a maximum interdecision time can prevent long intervals without policy interaction. OpenHail generalizes this mechanism through an exposure configu-ration that determines which operational events also produce decision epochs. Request arrivals, service completions, and charging completions can independently trigger decisions; repositioning completions remain internal state transi-tions. A periodic decision clock can operate alone or alongside these event triggers, while a maximum interdecision time limits the interval between policy interactions. A policy can also request an absolute future decision time in its action. When request epochs are disabled, arriving requests accumulate until the next exposed epoch, subject to the configured buffer and pickup limits. 
+
+OpenhailEnv initializes these components, applies policy actions, and advances the event process until the next exposed decision epoch. Each call to step consists of four stages. First, the environment decomposes the joint action and applies feasible service, repositioning, and charging instructions. Second, it allocates available charging posts and schedules the resulting vehicle jobs. Third, it advances to the earliest eligible time among the planning horizon, the next vehicle-job completion, a periodic or maximum-interdecision clock, a policy-requested time, and, when enabled, the next request arrival. Vehicle and charging events encountered before a decision epoch are processed internally, after which the event search continues. Fourth, the environment releases all requests issued by the selected time, constructs the new observation, and returns control to the policy. 
+
+3.2 Library Implementation and Interface 
+
+The controller-facing interface follows the Gymnasium application programming interface. Calling reset(seed=s) 
+
+initializes the demand and vehicle substreams and returns an observation, while step(action) returns the next ob-servation, the reward accumulated since the preceding decision epoch, termination and truncation indicators, and an information dictionary. The environment terminates at the configured planning horizon. Table 2 describes the five elements of the observation. Vehicle arrays contain one row per fleet vehicle, request arrays contain M rows, and charger arrays contain one row per reposition location. When fewer than M requests are pending, the unused rows contain designated dummy requests whose issue times fall beyond the episode horizon. The action is a tuple with three elements, as reported in Table 3. The service vector assigns at most one vehicle identifier to each pending-request position, with N serving as the sentinel for leaving a request unassigned. The repositioning vector contains one entry per vehicle. For a zero-indexed reposition location d, action 2d + 1 sends the vehicle to d without requesting charge, while action 2d + 2 sends it to the same location and requests charge. Finally, action zero leaves the current movement or charging intention unchanged. The final scalar requests the absolute time of a future decision epoch. A nonpositive value requests no additional epoch. A service assignment must satisfy the passenger pickup limit and the vehicle’s energy requirement. A repositioning instruction must be reachable with the available battery level. 5OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 
+
+Table 3: Elements of the OpenHail action space.          
+
+> Entry Gymnasium space Interpretation
+> serve MultiDiscrete ,length M
+> Vehicle assigned to each pending request, or the unassigned-request sentinel.
+> reposition MultiDiscrete ,length N
+> No-op, reposition-only, or reposition-and-charge instruction for each vehicle.
+> epoch Scalar Box Absolute future time at which the policy requests another decision opportunity.
+
+For convenience, OpenHail provides functions that compute assignment and repositioning masks from an observation, allowing a policy to filter infeasible choices before selecting an action. Strict-validation mode additionally checks service and repositioning feasibility as actions are processed by step . A detected violation raises an exception and interrupts the rollout. The scalar reward represents net operating value over the interval between decisions. Serving a request generates revenue with a fixed component and a distance-dependent component, from which pickup and passenger-carrying travel costs are deducted. Repositioning travel and charging energy generate additional costs as the event process advances. The accompanying information dictionary separates service and operating reward components and reports the elapsed simulation time, triggering epoch type, numbers of added and served requests, mean state of charge, and charger occupancy and queue lengths. The configuration runner automates experiments across policies, infrastructure alternatives, and random seeds. Re-searchers can compare decision schedules under common demand realizations to examine how the frequency of policy decisions affects computational workload and service outcomes. They can also vary charging capacity to study how policies allocate vehicles between passenger service, repositioning, and charging when vehicles compete for available posts. 
+
+# 4 Verification and Computational Performance 
+
+We measure wall-clock runtime per episode and per decision epoch as fleet size and the number of reposition locations increase, with request volume proportional to fleet size. 
+
+4.1 Software Verification 
+
+Unit and integration tests cover seeded demand, Gymnasium observations and actions, time bounds, energy and reward accounting, and charging queues, including simultaneous charging completions. Additional tests cover complete baseline-policy episodes, rendering without state mutation, and PPO checkpoint loading and saving. Test descriptions and execution commands are provided in the package documentation. 
+
+4.2 Experimental Setup 4.2.1 One-Day Policy Evaluation 
+
+Each evaluation episode represents one day of electric ride-hailing operations. We vary fleet size N ∈{100 , 500 , 1,000 , 2,000 } and the number of reposition locations D ∈ { 5, 10 , 20 , 40 }, yielding 16 configurations. Each instance contains 20 N requests and 0.2N charging posts. Approximately one quarter of the reposition locations host charging facilities, and the posts are distributed uniformly among these locations. This construction holds demand per vehicle and charging capacity per vehicle constant while varying fleet size and the number of available destinations. The software provides nearest and random-feasible baseline agents and a periodic proximal policy optimization (PPO) agent that can load pretrained checkpoints. The nearest policy uses distance-based assignment and repositioning rules. The random-feasible policy enumerates feasible repositioning and charging actions before sampling an action at 15-minute clock epochs. The periodic PPO policy uses the same clock epochs but selects repositioning and charging actions through neural-network inference. For the learned-policy workload, we use a separate pretrained checkpoint for each configuration, obtained as described in Section 4.2.2. Both periodic controllers use nearest-feasible assign-ment at request epochs; their periodic decisions concern repositioning and charging. At other non-clock epochs, they issue no repositioning or charging action unless a jobless vehicle requires a nearest-feasible repositioning instruction. 6OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 100 500 1,000 2,000 Number of vehicles 10 0                   
+
+> 10 1
+> Episode time (s)
+> (a) D= 5
+> 100 500 1,000 2,000 Number of vehicles
+> (b) D= 10
+> 100 500 1,000 2,000 Number of vehicles 10 0
+> 10 1
+> Episode time (s)
+> (c) D= 20
+> 100 500 1,000 2,000 Number of vehicles
+> (d) D= 40
+> Nearest Trained PPO Random feasible
+
+Figure 2: Post-hoc simulation time by controller, fleet size, and location count. Each marker is the median duration of five paired one-day rollouts; error bars span the interquartile range. The vertical axes are logarithmic. Policy optimization, model loading, and reset are excluded. We evaluate each controller on five paired one-day instances for every (N, D ) configuration, yielding 240 measured rollouts. PPO uses sampled actions from the selected checkpoint without parameter updates. The controllers share environment seeds within each configuration; stochastic controllers also use matched policy seeds. We perform one unmeasured warm-up rollout per controller and configuration and rotate controller execution order across replications. Measurements are collected sequentially within a single Compute Canada allocation on an AMD EPYC 7532 pro-cessor, with the process bound to one CPU. The environment uses Linux, Python 3.13.2, NumPy 2.4.2, and PyTorch 2.13.0; numerical-library and PyTorch thread counts are fixed at one. Rendering, strict validation, and activity tracking are disabled. The timed interval begins after instance reset and controller initialization and ends at episode termination. We record total wall-clock duration, accumulated time in controller calls, and accumulated time in environment transitions; total duration additionally includes measurement-loop overhead. Dividing each rollout duration by its number of exposed decision epochs gives the time per epoch. We report medians and interquartile ranges across the five paired instances for each controller and configuration. 
+
+4.2.2 PPO Training 
+
+For each configuration, we train a separate periodic PPO policy for 500 episodes. Policy evaluation occurs every 25 episodes on five fixed environment–policy seed pairs, and the checkpoint with the highest mean evaluation reward is retained for the one-day experiments. Training uses CPU execution with validation and activity tracking enabled. Table 4 reports the elapsed time to train each agent, including periodic evaluation. Training requires 0.54–21.03 hours per configuration. At each location count, larger fleets require more time; the effect of increasing the number of locations is not monotone across the tested configurations. 7OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 
+
+Table 4: Elapsed time (hours) to train each PPO agent for 500 episodes, including periodic evaluation. Columns give the number of reposition locations. Reposition locations Vehicles 5 10 20 40 100 0.54 0.60 0.82 0.75 500 2.74 2.85 3.27 10.44 1,000 6.56 6.56 13.85 8.44 2,000 16.29 16.55 18.76 21.03 100 500 1,000 2,000 Number of vehicles 0.00 0.25 0.50 0.75 1.00 1.25 Time per epoch (ms)                    
+
+> (a) D= 5
+> 100 500 1,000 2,000 Number of vehicles
+> (b) D= 10
+> 100 500 1,000 2,000 Number of vehicles 0.00 0.25 0.50 0.75 1.00 1.25 Time per epoch (ms)
+> (c) D= 20
+> 100 500 1,000 2,000 Number of vehicles
+> (d) D= 40
+> Nearest Trained PPO Random feasible
+
+Figure 3: Post-hoc simulation time per exposed decision epoch. Each marker is the median of the five rollout-specific ratios of episode duration to decision count; error bars span the interquartile range. All panels use the same linear vertical scale. 
+
+4.3 Post-hoc Simulation Performance 
+
+Figure 2 compares episode duration across controllers. Each panel fixes the location count, with fleet size on the horizontal axis and wall-clock time in seconds on the logarithmic vertical axis. Figure 3 uses the same arrangement to report time per exposed decision epoch in milliseconds. Median episode duration increases with fleet size for all three controllers. At 100 vehicles, it ranges from 1.14–1.30 seconds for nearest, 1.83–2.40 seconds for random feasible, and 1.97–2.83 seconds for PPO across the four location counts. At 2,000 vehicles, the corresponding ranges are 32.03–37.53, 49.15–65.51, and 56.25–78.22 seconds. PPO requires 1.62–2.18 times the episode duration of nearest over the tested configurations. At 2,000 vehicles, median time per epoch is 0.799–0.936 milliseconds for nearest, 0.757–0.898 milliseconds for random feasible, and 0.864–1.057 milliseconds for PPO. 8OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 
+
+Table 5: Post-hoc runtime decomposition for 2,000 vehicles and 40 reposition locations. Each entry is the median over five paired rollouts; wall time also includes measurement-loop overhead. Controller Wall (s) Agent (s) Environment (s) Epochs Time/epoch (ms) Nearest 37.53 15.68 21.83 40,096 0.936 Random feasible 65.51 15.67 49.78 72,666 0.898 Trained PPO 78.22 27.36 50.85 73,929 1.057 Table 5 decomposes the runtime of the largest configuration, with 2,000 vehicles and 40 reposition locations. Across all tested configurations, median controller computation time is lower than median environment-update time for all three policies. PPO exposes approximately 84% more decision epochs than nearest, with a median time per epoch that is approximately 13% higher. Relative to random feasible, the additional PPO runtime is concentrated in controller computation: median agent time is 27.36 versus 15.67 seconds, whereas environment time is 50.85 versus 49.78 seconds. 
+
+# 5 Conclusion 
+
+In this paper, we introduce OpenHail, an open-source environment for developing and evaluating control policies for electric ride-hailing fleets. The library provides a common Gymnasium interface for request assignment, repositioning, and charging, allowing policies to account for the interactions among passenger service, vehicle availability, and charging queues. OpenHail has been designed using a modular architecture that allows researchers to adapt the environment to different fleet configurations and control approaches. The New York City request generator, configurable charging infrastruc-ture, and baseline policies provide initial settings from which to develop such studies. Alongside the library, we provide training and evaluation tools that illustrate how reinforcement-learning policies can be integrated into the en-vironment and evaluated alongside other controllers. In the largest tested configuration, with 2,000 vehicles and 40 reposition locations, median wall-clock runtime per simulated day ranges from 37.53 to 78.22 seconds across the three controllers on one allocated CPU. OpenHail also provides a mechanism for controlling the frequency and timing of policy decisions and selecting the types of operational events that trigger them. Further research can examine how decision timing affects the quality of fleet control by comparing policies that respond to operational events, act periodically, or request their next deci-sion time. With these mechanisms and its modular architecture, OpenHail aims to serve as both a practical tool for developing and evaluating fleet-control policies and a foundation for future research on electric ride-hailing operations. 
+
+# Software Availability 
+
+OpenHail is available under the MIT license at https://github.com/tommaso-schettini/openhail , together with documentation and reproduction instructions. 
+
+# References 
+
+Javier Alonso-Mora, Samitha Samaranayake, Alex Wallar, Emilio Frazzoli, and Daniela Rus. On-demand high-capacity ride-sharing via dynamic trip-vehicle assignment. Proceedings of the National Academy of Sciences , 114 (3):462–467, 2017. Jim Dai, Manxi Wu, and Zhanhao Zhang. Atomic proximal policy optimization for electric robo-taxi dispatch and charger allocation, 2025. URL https://arxiv.org/abs/2502.13392 .Roman Engelhardt, Florian Dandl, Arslan Ali Syed, Chenhao Ding, Santiago Alvarez-Ossorio Martinez, Yunfei Zhang, Hoda Hamdy, Joel Brodersen, Zhipu Chen, and Klaus Bogenberger. FleetPy: An open source simulator for reproducible research on mobility-on-demand services. European Transport Research Review , 18:52, 2026. doi: 10.1186/s12544-026-00823-3. FleetPy Developers. FleetPy: Gymnasium environment for zonal dispatching. Source code, FleetPy_gym.py , 2026. URL https://github.com/TUM-VT/FleetPy/blob/main/FleetPy_gym.py . Accessed September 9, 2026. 9OpenHail: Electric Ride-Hailing Fleet Control A P REPRINT 
+
+Ricardo Gama, Ricardo Cunha, Daniel Fuertes, Carlos R. del Blanco, and Hugo L. Fernandes. Multiagent environ-ments for vehicle routing problems. INFORMS Journal on Computing , 2026. doi: 10.1287/ijoc.2025.1211. Articles in Advance. Felix Jung and Debsankha Manik. RidePy: A fast and modular framework for simulating ridepooling systems. Journal of Open Source Software , 9(97):6241, 2024. doi: 10.21105/joss.06241. Rafał Kucharski and Oded Cats. Simulating two-sided mobility platforms with MaaSSim. PLOS ONE , 17(6): e0269682, 2022. doi: 10.1371/journal.pone.0269682. Nicholas Kullman. pyhailing, 2022. URL https://pypi.org/project/pyhailing/ . Python package. Nicholas D Kullman, Martin Cousineau, Justin C Goodson, and Jorge E Mendoza. Dynamic ride-hailing with electric vehicles. Transportation Science , 56(3):775–794, 2022. Kaixiang Lin, Renyu Zhao, Zhe Xu, and Jiayu Zhou. Efficient large-scale fleet management via multi-agent deep reinforcement learning. In Proceedings of the 24th ACM SIGKDD International Conference on Knowl-edge Discovery and Data Mining , 2018. URL https://www.kdd.org/kdd2018/accepted-papers/view/ efficient-large-scale-fleet-management-via-multi-agent-deep-reinforcement-l .Kunal Menda, Yi-Chun Chen, Justin Grana, James W. Bono, Brendan D. Tracey, Mykel J. Kochenderfer, and David Wolpert. Deep reinforcement learning for event-driven multi-agent decision processes. IEEE Transactions on Intelligent Transportation Systems , 20(4):1259–1268, 2019. doi: 10.1109/TITS.2018.2868268. Claudio Ruch, Sebastian Hörl, and Emilio Frazzoli. AMoDeus, a simulation-based testbed for autonomous mobility-on-demand systems. In 2018 21st International Conference on Intelligent Transportation Systems , pages 3639– 3644. IEEE, 2018. doi: 10.1109/ITSC.2018.8569961. J Terry, Benjamin Black, Nathaniel Grammel, Mario Jayakumar, Ananth Hari, Ryan Sullivan, Luis S San-tos, Clemens Dieffendahl, Caroline Horsch, Rodrigo Perez-Vicente, Niall Williams, Yashas Lokesh, and Praveen Ravi. PettingZoo: Gym for multi-agent reinforcement learning. In Advances in Neural In-formation Processing Systems , volume 34, 2021. URL https://papers.nips.cc/paper/2021/hash/ 7ed2d3454c5eea71148b11d0c25104ff-Abstract.html .Mark Towers, Ariel Kwiatkowski, Jordan Terry, John U. Balis, Gianluca De Cola, Tristan Deleu, Manuel Goulão, Andreas Kallinteris, Markus Krimmel, Arjun KG, Rodrigo Perez-Vicente, Andrea Pierré, Sander Schulhoff, Jun Jet Tai, Hannah Tan, and Omar G. Younis. Gymnasium: A standard interface for reinforcement learning environments, 2024. URL https://arxiv.org/abs/2407.17032 .Chen Zhang and Sushil Varma. A simulation framework for ride-hailing with electric vehicles, 2024. Zijian Zhao, Yulong Hu, and Sen Li. RideGym: A standardized interface for real-world large-scale ride-sharing systems, 2026. URL https://arxiv.org/abs/2607.10173 .10
