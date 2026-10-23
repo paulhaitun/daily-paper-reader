@@ -1,0 +1,1808 @@
+Title: Robust Non-Clairvoyant Scheduling with Classification Models
+
+URL Source: https://arxiv.org/pdf/2610.01343v1
+
+Published Time: Fri, 02 Oct 2026 01:19:54 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+# Robust Non-Clairvoyant Scheduling with Classification Models 
+
+Anthony Dugois 1, Vincent Fagnon 1, and Giorgio Lucarelli 21Univ. Marie et Louis Pasteur, CNRS, institut FEMTO-ST, F-25000 Besançon, France 
+
+{anthony.dugois,vincent.fagnon}@umlp.fr 
+
+> 2
+
+Université de Lorraine, LCOMS, Metz, France 
+
+giorgio.lucarelli@univ-lorraine.fr 
+
+Abstract 
+
+We study the classical single-machine scheduling problem of minimizing the sum of com-pletion times of jobs in a non-clairvoyant setting, where the processing time of each job remains unknown until its completion. This is a hard problem for which no constant com-petitive algorithm is possible. Inspired by robust optimization and learning-augmented algorithms, we introduce a novel robustness framework that leverages structural informa-tion provided by a classification model to overcome this limitation. Specifically, we assume that jobs are partitioned into classes and we have access to the confusion matrix of the classifier, whose entry (k, ℓ ) indicates the number of jobs predicted to belong to class k but that actually belong to class ℓ. In this manner, we are able to characterize uncertainty as a set of permutations within each predicted class, rather than as a collection of discrete numerical scenarios, avoiding the computational difficulty of classical robust metrics, such as Min-Max and Min-Max Regret. In addition to these worst-case metrics, we also consider the expected objective over all scenarios. We first propose an optimal non-adaptive strat-egy that is oblivious with respect to all three robust criteria. We then investigate adaptive and randomized algorithms, showing that they can outperform the optimal non-adaptive strategy when the matrix exhibits particular structural properties. 
+
+Keywords: Scheduling, Robustness, Non-Clairvoyant, Classification, Confusion Matrix 
+
+1arXiv:2610.01343v1 [cs.LG] 1 Oct 2026 1 Introduction 
+
+Scheduling problems, where one seeks to schedule a set of jobs on a set of resources in order to optimize a given objective function, are known to be particularly sensitive to uncertainty. The various applications of scheduling are often subject to different sources of variability, making the perfect knowledge of input parameters extremely challenging. Typically, it is common that the exact processing time of a task cannot be known with full precision before its completion. As a consequence, algorithms leveraging this information are more difficult to use in practice. Several approaches have been proposed to deal with this uncertainty, among which online/non-clairvoyant optimization [1, 2, 3], stochastic optimization [4, 5, 6, 7, 8], robust optimization [9, 10, 11], or learning-augmented algorithms [12, 13, 14, 15, 16]. In the latter approach, one has access to an oracle that predicts the values of the unknown parameters. These predictions are subject to errors, typically summarized by a single scalar 
+
+η, which represents the “overall quality” of the oracle on a given instance. The goal is then to design an algorithm with a formal guarantee (e.g., a competitive ratio) that depends on η. The oracle is often seen as a black box, in the sense that no assumptions are made about its behavior. However, in many practical applications, predictions may exhibit specific patterns that could be exploited by optimization algorithms. For example, an expert may specialize in recognizing a particular class of items, providing near-perfect predictions for the corresponding parameters while producing less accurate predictions for other types of items. Similarly, an oracle may be guaranteed never to overestimate (or underestimate) parameters values. Unfortunately, the single-scalar error representation used in the classical learning-augmented framework is generally too coarse to capture such structured prediction patterns in optimization problems. In this paper, we introduce a novel robustness analysis framework based on classification models , which assign objects to discrete categories. If we note X ⊆ Rn the features describing the objects to classify and Y = {c1, c 2, . . . , c K } a finite set of K class labels (representing the possible categories for our objects), a classifier is a function C : X → Y mapping each vector 
+
+x ∈ X to a class label y ∈ Y . Such classifiers may be obtained through (un)supervised machine learning methods (e.g., Support Vector Machines, Decision Trees, Neural Networks, k-Nearest Neighbors, etc.), probabilistic data structures (e.g., Bloom Filters, Count-Min Sketch, etc.), or represent a human expert predicting the category of an object from simple observation. What makes classifiers interesting in our context is that they are typically evaluated through their 
+
+confusion matrix , which is obtained by running the model on the testing set. For a classifier 
+
+C on K classes, a confusion matrix is a K × K matrix EC where each entry eij indicates the number of items of class cj that C predicted as ci. In other words, the rows of EC correspond to the predicted classes, while the columns correspond to the true classes of the items 1. Fig. 1 illustrates the confusion matrix of a binary classifier. Interestingly, it is possible to infer the performance of a classifier on unlabeled data [17, 18], and in particular to estimate its confusion matrix. We therefore propose to leverage such confusion matrices in scheduling problems. Suppose we are given a set of jobs partitioned into 
+
+K classes, where all jobs within the same class have identical processing times. The objective is to schedule these jobs non-preemptively on a single machine so as to minimize the sum of completion times. In the clairvoyant setting, it is well-known that the Shortest Processing Time (SPT) policy is optimal [19]. In the non-clairvoyant setting, the class of each job is unknown, and since preemption is not allowed, the best strategy is simply to execute the jobs in an arbitrary order [20]. The worst case outcome is then a Longest Processing Time (LPT) schedule. Now suppose we have access to a classifier C that predicts the class of each job, and that its   
+
+> 1Depending on the definition, the predictions may appear in the columns instead of the rows of the confusion matrix; everything is equivalent by taking the transpose of EC.
+
+22 14 5
+
+" #
+
+c1
+
+c1
+
+c2
+
+c2
+
+> Actual Predicted
+
+Figure 1: Confusion matrix of a binary classifier (2 classes). The entry on row i and column j
+
+indicates the number of items of class cj predicted as ci. The entries highlighted in red (first column) represent the 6 items actually in class c1 (among which 2 are correctly classified and 4 are misclassified in c2). Those highlighted in blue (second row) represent the 9 items classified as c2 (among which 4 are actually in c1). confusion matrix on the problem instance is known in advance. For example, consider the two-class setting illustrated in Fig. 1. Although we do not know whether any particular job is small or large, among the jobs that C predicts to be large (the blue entries in Fig. 1), we do know how many are actually small and how many are actually large. This additional information makes it possible to decide whether the classifier should be trusted, while always avoiding the worst-case LPT schedule. This naturally raises the question of whether the information captured by the confusion matrix can be exploited to guarantee the robustness of scheduling algorithms. The remainder of this paper is devoted to answering this question by developing a framework that explicitly leverages confusion matrices. 
+
+# 2 Model Definition and Contributions 
+
+We revisit the famous 1|| P Cj scheduling problem. We are given a set J = {1, 2, . . . , n } of n
+
+jobs, partitioned into K disjoint subsets J1, J2, . . . , JK . We say that jobs in Jk belong to class 
+
+k. The processing time of a job j is noted pj ∈ Q≥0. All jobs of a given class k have identical processing time λk, and we assume that λ1 < λ 2 < · · · < λ K . The objective is to schedule these jobs non-preemptively on a single machine in such a way that the sum P 
+
+> j∈J
+
+Cj is minimized, where Cj denotes the completion time of job j.
+
+Knowledge model. We consider that we do not know the class of a job in advance: this information is revealed only at full completion of the job. However, we have access to a classifier 
+
+C that is able to predict the class of a job before executing it. Each request to the classifier is free, and it is deterministic in the sense that it always gives the same answer for a given job. The classifier is not perfect and may respond with the wrong class. Although we do not have any information for each individual job, we consider that, for any instance of the problem, we know in advance the confusion matrix EC of the classifier C, which consists in a K × K integer matrix where each entry ekℓ on row k and column ℓ gives the number of jobs that the classifier believes to be in class k whereas they are in reality in class ℓ. For each k, we note Rk the set of jobs that the classifier believes to be in class k; the number of jobs in Rk is equal to the sum of entries in row k of the confusion matrix EC . We also have ekℓ = |R k ∩ J ℓ| for all k, ℓ . We assume that we systematically begin by executing the classifier on each job (as requesting the classifier is free) in order to build the sets Rk. Again, we do not know the class of each individual job, but we do know the distribution of each set Rk thanks to the a priori knowledge of the confusion matrix. This knowledge may seem to be a strong assumption; however, recent approaches in the field of Machine Learning have demonstrated the possibility to estimate the performance of a trained classifier on unlabelled data, even in the case of distributional shift [17, 18]. In particular, it is possible to provide an estimation of confusion matrices. In this paper, we propose to evaluate the 3gain that a perfect “unsupervised performance estimation” technique would permit on scheduling algorithms, and we leave the analysis of inaccurate confusion matrices for future work. Interestingly, this knowledge model can be seen as a generalization of the classical clairvoyant and non-clairvoyant models. We say that a classifier C is clairvoyant if and only if each row of its confusion matrix EC has at most one nonzero entry. Indeed, since all jobs within a given class share the same processing time, knowing that all jobs in Rk belong to a single true class ℓ
+
+is sufficient to determine the processing time of each job prior to its execution. On the opposite side, any classifier C whose confusion matrix EC has only one row with nonzero entries does not help at all, as it will predict that all jobs belong to the same class. Hence, we say that such a classifier is non-clairvoyant . All the other classifiers are in between of these two extremes. Fig. 2 gives several examples of matrices. 2 0 0 0 4 0 0 0 3 
+
+" #
+
+> (a)
+
+0 0 2 4 0 0 0 3 0 
+
+" #
+
+> (b)
+
+2 0 0 1 1 0 2 1 3 
+
+" #
+
+> (c)
+
+1 0 1 0 4 0 1 0 2 
+
+" #
+
+> (d)
+
+2 4 3 0 0 0 0 0 0 
+
+" #
+
+> (e)
+
+Figure 2: Examples of confusion matrices. (a) and (b) are both examples of clairvoyant classi-fiers. Although the classifier in (b) is wrong about the interpretation of the classes, the confusion matrix allows to infer the reality; for example, we immediately know that all the jobs labelled as class 2 are actually in class 1. (c) shows an example of a classifier that only over-estimates the jobs, and (d) is an example of a classifier that confuses class 1 and class 3 but is always correct for class 2. Finally, (e) shows a non-clairvoyant classifier. In the following, we will sometimes restrict to the special case of binary classifiers , that is to say, 2 × 2 confusion matrices. In this case, to simplify notations, we note sk (resp. Lk) the number of small (resp. large) jobs in Rk, and we note ns = s1 + s2 (resp. nL = L1 + L2) the total number of small (resp. large) jobs in the instance. Moreover, we note λs (resp. λL) the size of small (resp. large) jobs. 
+
+Uncertainty model. While the classifier allows to partition J into K subsets R1, R2, . . . , RK ,the permutation of the jobs in each Rk remains completely unknown. In other words, the uncertainty of the problem is on the ordering of each set Rk, and we do not make any assumption about it. We argue that, from a worst-case point of view, it seems completely unfair to compare to the optimal strategy of the clairvoyant case, which consists in scheduling jobs in non-decreasing order of processing times (the SPT policy): our decisions can always be subject to an adversary giving us large jobs first, whereas the optimal clairvoyant algorithm is never constrained by this malicious ordering. Hence, in the following of this paper, we compare to an optimal solution that is also subject to the fixed ordering of jobs in each set Rk. Our objective is to ensure robustness to the uncertain ordering of these sets. In these settings, the sets Rk may be seen as queues from which an algorithm must pull jobs: at each decision step, the job that is in front of the chosen queue is immediately executed. We say that a scenario σ is a tuple of K permutations (also called chains ) σk, 1 ≤ k ≤ K,where σk describes a fixed ordering of the queue Rk. The job that is in position j in the chain 
+
+σk is denoted by σk[j], and for any 1 ≤ j1 ≤ j2 ≤ |R k|, we note σk[j1 : j2] the subchain of jobs 
+
+σk[j1], σ k[j1 + 1] , . . . , σ k[j2]. Let S denote the set of all possible scenarios. We define a sequence r to be an ordered list r = ( k1, k 2, . . . , k n) of queues Rk from which pulling and executing jobs. Note that a given queue may be chosen several times in a sequence, unless it contains a single job or is empty. For example, the sequence (1 , 1, 2, 2, 2, 1, 1, 2, 2) 
+
+means that we execute the 2 first jobs of R1, then the 3 first jobs of R2, then the 2 next jobs 4of R1, and finally the 2 next jobs of R2. The queue that is chosen at step t in sequence r is noted r[t], and we note R the set of all possible sequences. An algorithm A taking a scenario 
+
+σ as input and returning a sequence r = A(σ) is called a sequencing algorithm . Note that an optimal strategy is defined by a sequence optimizing some criterion, respecting however the actual scenario as for any sequencing algorithm. The realization of a sequence r on a scenario σ generates the schedule πrσ, which gives a permutation of the jobs, i.e., the j-th job in the schedule is denoted by πrσ[j]. Note that this schedule defines a partition of each chain σk into subchains σk[1 : j1], σ k[j1 + 1 : j2], σ k[j2 + 1 : 
+
+j3], . . . , such that the jobs of a given subchain are consecutive in πrσ, and such that two subchains coming from the same chain σk are never consecutive in πrσ. We note Prσk the ordered set of subchains of σk induced by the realization of the sequence r on scenario σ.
+
+Robustness criteria. For any given sequence r and scenario σ, the sum of completion times of the schedule πrσ is defined as ˜Crσ = Pnj=1 (n − j + 1) pπrσ [j]. By slightly abusing the notation, 
+
+πA 
+
+> σ
+
+(resp. ˜CA 
+
+> σ
+
+) denotes the schedule (resp. objective value) obtained by executing algorithm A
+
+on scenario σ. The sequence that minimizes the objective for a given scenario σ is called the 
+
+σ-optimal sequence and is noted r∗
+
+> σ
+
+. The corresponding optimal objective value is simply noted ˜C∗
+
+> σ
+
+. We can immediately observe that when the scenario σ is known, it is straightforward to compute r∗
+
+> σ
+
+, as this minimization problem is a special case of 1|chains | P Cj . Indeed, one can view the fixed ordering of jobs of a given queue Rk as a chain of precedence relationships. This problem is polynomially solvable, as described in Theorem 4-2 of [21]: compute the average processing time of each prefix of each chain σk and schedule completely the prefix of lowest cost; repeat (ignoring already scheduled jobs) until there is no remaining job in the chains. We call this algorithm Chain-Opt (see Appendix A for details), and we assume that the given solution always maximizes the number of jobs scheduled at each step. We propose to study algorithmic robustness for the uncertain scheduling problem (where the permutations of the queues Rk are unknown) under different settings. In robust optimization with multiple scenarios, it is common to study the so-called Min-Max and Min-Max Regret problems, where the former seeks to find the solution whose worst-case scenario gives the lowest objective value, while the latter seeks to find the solution whose worst-case scenario gives the lowest absolute deviation from the optimal. Note that our problem differs from the classical framework in the nature of the scenarios: they are usually defined as sets of numeric values, representing the uncertain parameters, while our scenarios consist in the set of all possible permutations of the queues Rk. More formally, we respectively define the Min-Max and Min-Max Regret problems as following: 
+
+min  
+
+> A
+
+max 
+
+> σ∈S
+
+n ˜CA
+
+> σ
+
+o
+
+, (Min-Max )
+
+min  
+
+> A
+
+max 
+
+> σ∈S
+
+n ˜CA 
+
+> σ
+
+− ˜C∗
+
+> σ
+
+o
+
+, (Min-Max Regret )where the minimum is taken over a different set of sequencing algorithms A according to the situation. Indeed, we study two kinds of algorithms in the following: non-adaptive algorithms 
+
+NA , which must return the full sequence before any execution of the jobs, and adaptive algo-rithms A ⊃ NA , which may adapt their choices during the execution of the schedule. While the former are easier to analyze, the latter make a malicious adversary less powerful. We also consider randomized algorithms, which are allowed to randomly sample a sequence, and we adapt the metric accordingly, i.e., the Min-Max Regret problem becomes 
+
+min  
+
+> A
+
+max 
+
+> σ∈S
+
+n
+
+E
+
+h ˜CA
+
+> σ
+
+i
+
+− ˜C∗
+
+> σ
+
+o
+
+, (Randomized Min-Max Regret )5where the expectation is taken over the choices of algorithm A. Finally, we also consider in similar settings the Min-Expectation problem, which seeks to minimize the expected sum of completion times when each scenario σ has probability Pr (σ) to appear: 
+
+min  
+
+> A
+
+E
+
+h ˜CAi
+
+= min 
+
+> A
+
+X
+
+> σ∈S
+
+Pr (σ) ˜CA 
+
+> σ
+
+. (Min-Expectation )Unless specified otherwise, we assume that all scenarios are equiprobable, i.e., Pr (σ) = 1 /|S| .
+
+Contributions and organization. The paper is organized as follows. Section 3 is devoted to related work. In Section 4, we give a very simple algorithm, called Min-Cost , and we prove that it is the best possible non-adaptive algorithm for the three considered robustness criteria (Theorems 1-4). Interestingly, we demonstrate that adaptive or randomized algorithms cannot do better for the Min-Max problem (Lemma 1). We also show that, for binary classifiers, no deterministic adaptive algorithm can perform better than Min-Cost for the Min-Max Regret problem (Lemma 3). However, we prove in Section 5 that for Min-Max Regret and binary classifiers, a simple randomized algorithm outperforms Min-Cost for specific structures in the confusion matrix (Theorem 5). Moreover, for Min-Expectation , we give an optimal adaptive dynamic program, which is polynomial when the number of classes K and the entries of the confusion matrix are bounded above by a constant (Theorem 6). Finally, by giving a specific family of classifiers, we show that the relative gap between Min-Cost (i.e., optimal non-adaptive) and this optimal adaptive algorithm is asymptotically bigger than 4/3 (Theorem 7). 
+
+# 3 Related Work 
+
+In the offline case where all jobs are fully known in advance, 1|| P Cj can be solved in polynomial time by applying the Shortest Processing Time (SPT) policy [19]. In the online case where the jobs are revealed according to an adversarial order (online over list), the LPT order corresponds to a worst-case scenario for any no-idling algorithm. Moreover, in the case where the instance is composed by only two classes of jobs with processing times λs, λL, with λs < λ L, considering a random ordering leads to an expected competitive ratio of O
+
+pλL/λ s
+
+
+
+[22]. In the online case where the jobs arrive over time, Hoogeveen and Vestjens [23] showed that no deterministic algorithm can have a competitive ratio better than 2, and they proposed the delayed-SPT algorithm which attains this ratio. In the non-clairvoyant model where the processing time of each job becomes known only at its completion, no (randomized) algorithm can achieve a constant competitive ratio [20]. In order to deal with non-clairvoyant data, several works consider the learning-augmented setting, where non-necessarily accurate predictions are provided. Kumar et al. [16] were the first to study the sum of completion times objective when preemption of jobs is permitted and predictions on the processing times are available, and they proposed an algorithm being robust (bounded perfor-mance for any quality of predictions) and consistent (good performance on accurate predictions). Since then, a series of papers has appeared, mainly handling the preemptive case [24, 25, 15, 26]. Closer to our setting but still in the preemptive case, Lindermayr and Megow [27] consider predictions on jobs permutations implying a priority order among the jobs. Our framework differs in that the uncertainty is captured by a full confusion matrix rather than a single priority order. Another way to circumvent the non-clairvoyant model is to treat processing times as random variables whose distributions (or at least their first moments) are known in advance. Then, the objective is to minimize the expected sum of completion times E [P Cj ]. On a single machine, the Shortest Expected Processing Time (SEPT) policy, which executes jobs in non-decreasing 6order of E[pj ], is optimal, and this is also the case on parallel machines if processing times follow an exponential distribution [19]. For general distributions, the approximation ratio of SEPT is Ω( n1/4) [4], but is almost linear in the squared coefficient of variation of processing times, which indicates that SEPT performs well if there is not much variability among jobs [6]. The dependence on this squared coefficient of variation is also characteristic of several proposed LP-based strategies [6, 8]. Other works consider the online stochastic model, in which the processing times are random variables and jobs stay unknown before their arrival in the system [5, 7]. The problem 1|| P Cj has also been studied in the classical robust optimization setting [28]. In order to represent the uncertain information, in the discrete uncertainty model, a finite set of different realization scenarios for the processing times of the jobs is available, while in the 
+
+interval uncertainty model, only a lower and an upper bound of them are provided. In both cases, commonly used metrics include Min-Max, Min-Max Regret and Min-Max Relative Regret, similarly to the metrics used in our work. All of them seek to guarantee a robust solution, that is a solution with good performance even in the worst-case realization of the input parameters. Yang and Yu [29] have proved that 1|| P Cj under discrete uncertainty is NP-hard for all the three metrics. For the Min-Max criterion, Mastrolilli et al. [10] have shown that it is NP-hard to approximate it within a factor less than 6/5, and they give a 2-approximation algorithm for the weighted case with precedence constraints. Moreover, they propose a dynamic programming algorithm running in polynomial time if the number of scenarios and the values of processing times are bounded by a constant. When considering interval uncertainty, both the Min-Max Regret [30] and the Min-Max Relative Regret [31] are known to be NP-hard. Note that our work introduces a new model to represent uncertain data, which is of a completely different nature with respect to the known ones. Kahan [32] proposed a model in which an oracle is queried to reveal the real values of some uncertain data at a given cost. Adapting this idea in scheduling problems, Dürr et al. [33] consider the query to be an additional job to be executed on the same machines as the other jobs. Querying a job is decided by the scheduler and may lead to a reduction of its processing time. Without a query, the processing time of a job is equal to a given upper bound. In this context, they propose deterministic and randomized results in different settings of 1|| P Cj .Moreover, adaptive and non-adaptive algorithms in this model are proposed in [34] for instances consisting of two types of jobs. Finally, Bampis et al. [35] proposed a probabilistic prediction model for permutation problems, which tries to limit the number of predictions used to optimize an objective. The authors showed that their model also applies to 1|| P Cj for which any no-idling solution corresponds to a permutation of jobs. 
+
+# 4 An Oblivious Non-Adaptive Algorithm 
+
+We begin by studying a non-adaptive sequencing algorithm called Min-Cost (MC ), which schedules each Rk completely in non-decreasing order of average processing time 
+
+¯pk = 1
+
+|R k|
+
+X
+
+> j∈R k
+
+pj = 1
+
+|R k|
+
+> K
+
+X
+
+> ℓ=1
+
+ekℓ λℓ.
+
+To make the analysis easier, we assume in the following that the rows of any confusion matrix are arranged in non-decreasing order of ¯pk: if this is not the case, it suffices to rename the rows accordingly. This way, Min-Cost simply consists in executing R1 completely, then R2, and so on. We will show that Min-Cost is the best possible deterministic algorithm for the Min-Max 
+
+and Min-Max Regret problems (Theorems 1, 3 and 4 in Sections 4.1 and 4.3), and that it 7is the best possible non-adaptive algorithm for the Min-Expectation problem (Theorem 2 in Section 4.2). In this sense, we call Min-Cost an oblivious non-adaptive algorithm, as it solves three robust problems at once for the class of algorithms NA .
+
+4.1 Min-Max problem 
+
+Theorem 1. Min-Cost is an optimal algorithm for the Min-Max problem. 
+
+To prove Theorem 1, we state a simple lemma showing that the worst scenario for any possible solution consists in arranging all queues Rk in non-increasing order of processing times. 
+
+Lemma 1. Let DEC be the scenario where each queue Rk is arranged in non-increasing order of processing times. Then, the scenario DEC maximizes the objective for any sequence r.Proof. Let r be an arbitrary sequence and ˆσ a scenario that maximizes the objective of r.Suppose there exists a queue Rk that is not arranged in non-increasing order of processing times, i.e., there exists a position 1 ≤ j < |R k| such that pˆσk [j] < p ˆσk [j+1] . These two jobs 
+
+ˆσk[j] and ˆσk[j + 1] are respectively scheduled during steps t1 and t2, with t1 < t 2. As they are consecutive in Rk, we have r[t1] = r[t2] = k and r[τ ]̸ = k for all t1 < τ < t 2. Thus, swapping jobs ˆσk[j] and ˆσk[j +1] in ˆσk will also swap them in the schedule πr 
+
+> ˆσ
+
+without altering the position of the other jobs, and this operation will necessarily increase the sum of completion times. As 
+
+ˆσ was chosen to maximize this objective, we get a distinct scenario that also maximizes it. By repeatedly swapping consecutive unordered jobs in each set Rk, we obtain the scenario DEC .According to this lemma, it suffices to build the DEC -optimal sequence to solve the Min-Max 
+
+problem. The solution provided by Chain-Opt for DEC is in fact equivalent to scheduling the queues Rk in non-decreasing order of average processing time, which is exactly the Min-Cost 
+
+procedure. 
+
+Theorem 1. Apply Chain-Opt on DEC . As the jobs are ordered in non-increasing order of processing times in each Rk, this implies that the average processing time of the full queue is smaller than the average processing time of any shorter prefix of this queue. Thus, Chain-Opt 
+
+schedules queues in non-decreasing order of average processing time ¯pk, exactly like Min-Cost .Note that Lemma 1 applies to any solution, no matter how the sequence is built, which proves that no adaptive or randomized algorithm can do better than Min-Cost .
+
+4.2 Min-Expectation problem 
+
+For non-adaptive algorithms and when all scenarios are equiprobable, the Min-Expectation 
+
+problem is straightforward to solve by computing the expected processing time of each job. 
+
+Theorem 2. If all scenarios are equiprobable, Min-Cost is an optimal non-adaptive algorithm for the Min-Expectation problem. Proof. The Min-Expectation problem can be rewritten as 
+
+min 
+
+> A
+
+X
+
+> σ∈S
+
+Pr (σ) ˜CA 
+
+> σ
+
+= min 
+
+> A
+
+X
+
+> σ∈S
+
+Pr (σ)
+
+
+
+> n
+
+X
+
+> j=1
+
+(n − j + 1) pπA 
+
+> σ[j]
+
+
+
+= min 
+
+> A
+> n
+
+X
+
+> j=1
+
+(n − j + 1) X
+
+> σ∈S
+
+Pr (σ)pπA 
+
+> σ[j]
+
+!
+
+,
+
+8where the term P 
+
+> σ∈S
+
+Pr (σ)pπA  
+
+> σ[j]
+
+is the expected processing time of the j-th job in the schedule built by algorithm A over all scenarios. Clearly, if A is a non-adaptive algorithm, the job 
+
+πA 
+
+> σ
+
+[j] always comes from the same queue Rk, no matter the scenario. Thus, if all scenarios are equiprobable, we have X
+
+> σ∈S
+
+Pr (σ)pπA  
+
+> σ[j]
+
+= 1
+
+|R k|
+
+X
+
+> j′∈R k
+
+pj′ = ¯ pk.
+
+It is well-known that the optimal solution consists in scheduling jobs in non-decreasing order of expected processing time (see for example Theorem 10.1.1 in [19]), which is exactly Min-Cost 
+
+in this case. 
+
+4.3 Min-Max Regret problem 
+
+The Min-Max Regret problem is more challenging to analyze. First, we derive an upper bound for the maximum regret of Min-Cost . Then, we derive a matching lower bound for the maximum regret of any deterministic algorithm in the special case of 2 classes of jobs (binary classifiers). This shows that Min-Cost is the best possible deterministic algorithm for the Min-Max Regret problem on 2 classes, and we conjecture that this result holds for an arbitrary number of classes. 
+
+Theorem 3. For any instance, we have 
+
+max 
+
+> σ∈S
+
+n ˜CMC  
+
+> σ
+
+− ˜C∗
+
+> σ
+
+o
+
+≤ X
+
+> 1≤k<ℓ ≤K
+
+(λℓ − λk) X
+
+> 1≤i<j ≤K
+
+ejk eiℓ .
+
+In particular, max σ∈S 
+
+n ˜CMC  
+
+> σ
+
+− ˜C∗
+
+> σ
+
+o
+
+≤ s2L1(λL − λs) for any binary classifier. 
+
+Theorem 4. For binary classifiers, we have min A∈ A max σ∈S 
+
+n ˜CA 
+
+> σ
+
+− ˜C∗
+
+> σ
+
+o
+
+≥ s2L1(λL − λs).
+
+We prove the upper bound in Theorem 3 by characterizing the worst-case scenario for Min-Cost (i.e., the scenario that maximizes the regret of Min-Cost ). Then, we compute the optimal solution for this worst-case scenario by applying Chain-Opt , which then allows us to derive the expression of the regret. The following lemma shows a useful general property on the worst-case scenario of any sequence in the Min-Max Regret problem. A direct implication of this lemma is that the worst-case scenario for Min-Cost is when all queues are arranged in non-decreasing order of processing times (in contrast with the worst-case scenario in the Min-Max problem, which was exactly the inverse ordering). 
+
+Lemma 2. For any sequence r, the set of worst-case scenarios necessarily includes the scenario 
+
+ˆσ where, for all chains ˆσk, each sub-chain ˆσk[j1 : j2] ∈ P r 
+
+> ˆσk
+
+is non-decreasing. Proof. Let r be an arbitrary sequence, and let ˆσ be a scenario that maximizes the regret of 
+
+r. Suppose there is a chain ˆσk such that there exists a sub-chain ˆσk[j1 : j2] ∈ P r 
+
+> ˆσk
+
+that is not arranged in non-decreasing order of processing times, i.e., there exists a position j1 ≤ j < j 2
+
+such that pˆσk [j] > p ˆσk [j+1] . Consider the alternative scenario ˆσ′ where jobs ˆσk[j] and ˆσk[j + 1] 
+
+are swapped. As these jobs are consecutive in the schedule πr 
+
+> ˆσ
+
+(by definition), we get 
+
+˜Cr 
+
+> ˆσ′
+
+= ˜Cr 
+
+> ˆσ
+
+−  pˆσk [j] − pˆσk [j+1] 
+
+ .
+
+Now let us consider the ˆσ-optimal sequence r∗
+
+> ˆσ
+
+. If we only swap jobs ˆσk[j] and ˆσk[j + 1] , leaving the other jobs untouched in the schedule π∗
+
+> ˆσ
+
+, we necessarily get 
+
+˜Cr∗ 
+
+> ˆσ
+> ˆσ′
+
+≤ ˜C∗ 
+
+> ˆσ
+
+−  pˆσk [j] − pˆσk [j+1] 
+
+ .
+
+9Then, as ˜C∗ 
+
+> ˆσ′
+
+≤ ˜Cr∗ 
+
+> ˆσ
+> ˆσ′
+
+, we conclude ˜C∗ 
+
+> ˆσ
+
+− ˜C∗ 
+
+> ˆσ′
+
+≥ pˆσk [j] − pˆσk [j+1] = ˜Cr 
+
+> ˆσ
+
+− ˜Cr 
+
+> ˆσ′
+
+, that is, ˜Cr 
+
+> ˆσ′
+
+−
+
+˜C∗ 
+
+> ˆσ′
+
+≥ ˜Cr 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+. In other words, swapping two consecutive jobs arranged in decreasing order of processing times in a given sub-chain can only increase the regret of r. By successive swaps, the wanted result follows. As Min-Cost executes each queue Rk completely one after the other, we necessarily have 
+
+PMC  
+
+> ˆσk
+
+= {ˆσk[1 : |R k|]} for all k, which by Lemma 2 implies that the worst-case scenario for 
+
+Min-Cost is when each queue is non-decreasing. Let INC denote this scenario. It is easy to see that Chain-Opt will actually provide an SPT schedule for INC . Hence, we can directly compute the maximum regret of Min-Cost , which necessarily constitute an upper bound for the optimal solution of the Min-Max Regret problem. 
+
+Theorem 3. Recall that we assumed ¯p1 ≤ · · · ≤ ¯pK . Hence, for the scenario INC , Min-Cost 
+
+and Chain-Opt will produce the following schedules, where each ekℓ represents the contiguous segment of jobs Rk ∩ J ℓ:
+
+e11 e12 · · · e1K e21 e22 · · · e2K · · · eK1 eK2 · · · eKK   
+
+> R1R2RK
+
+πMC 
+
+> INC
+
+e11 e21 · · · eK1 e12 e22 · · · eK2 · · · e1K e2K · · · eKK   
+
+> J1J2JK
+
+π∗
+
+> INC
+
+When transitioning from πMC  
+
+> INC
+
+to π∗
+
+> INC
+
+, we see that, for each k, ℓ such that 1 ≤ k < ℓ ≤ K,the ekℓ jobs Rk ∩ J ℓ are moved after the eij jobs Ri ∩ J j for each k < i ≤ K and 1 ≤ j < ℓ .Hence, the contribution of each segment ekℓ to ˜CMC  
+
+> INC
+
+− ˜C∗ 
+
+> INC
+
+is ekℓ 
+
+Pℓ−1
+
+> j=1
+
+(λℓ − λj ) PKi=k+1 eij .Summing over 1 ≤ k < ℓ ≤ K and rearranging the terms yields 
+
+˜CMC  
+
+> INC
+
+− ˜C∗ 
+
+> INC
+
+= X
+
+> 1≤k<ℓ ≤K
+
+(λℓ − λk) X
+
+> 1≤i<j ≤K
+
+ejk eiℓ .
+
+By Lemma 2, INC is the worst-case scenario for Min-Cost , hence the theorem follows. For the lower bound, Theorem 4 is a direct consequence of the following lemma. 
+
+Lemma 3. For any binary classifier and any deterministic algorithm A, there exists a scenario 
+
+ˆσ such that ˜CA 
+
+> ˆσ
+
+− ˜C∗ 
+
+> ˆσ
+
+≥ s2L1(λL − λs).Proof. Any deterministic algorithm A must schedule the s1 + L1 jobs of R1 and the s2 + L2 jobs of R2, and its only degree of freedom is to decide at each step which queue to draw from. We construct an adversarial scenario as follows: whenever A draws a job from any queue Rk, the scenario reveals it to be large, until one of the two queues has exhausted all its large jobs. First, assume the queue R1 exhausts its large jobs before R2, i.e., A has drawn x < L 2 large jobs from R2 when all L1 large jobs of R1 have been scheduled. At this point, the remaining jobs are s1 small jobs in R1, and s2 small and L2 − x large jobs in R2. Furthermore, the adversarial scenario fixes the rest of internal order of R2 (the first x jobs have already been decided large): the s2 small jobs, followed by the remaining L2 − x large jobs. After the reveal of the L1 large jobs of R1, the best thing that A could do is to schedule all remaining jobs of R1 (known as small, as the first L1 jobs are large), then finish R2. This yields the schedule L · · · L| {z } 
+
+> x+L1
+
+s · · · s| {z } 
+
+> s1
+
+s · · · s| {z } 
+
+> s2
+
+L · · · L| {z } 
+
+> L2−x
+
+, where L (resp. s) denotes a large (resp. small) job. However, consider the alternative schedule that first processes the x + s2 jobs of R2,then schedules all jobs from R1, and finally the remaining L2 − x jobs from R2. This yields 10 L · · · L| {z } 
+
+> x
+
+s · · · s| {z } 
+
+> s2
+
+L · · · L| {z } 
+
+> L1
+
+s · · · s| {z } 
+
+> s1
+
+L · · · L| {z } 
+
+> L2−x
+
+. A direct computation shows that the cost difference between these two schedules is s2L1 (λL − λS ), and the difference with the optimal schedule can only be greater. In the symmetric case, where queue R2 exhausts its large jobs first, the same argument applies with queues R1 and R2 exchanged, yielding a cost difference of s1L2 (λL − λS ). Recall that, by assumption, we have ¯p1 ≤ ¯p2, that is, s1λs+L1λL 
+
+> s1+L1
+
+≤ s2λs+L2λL 
+
+> s2+L2
+
+, i.e., s2L1 ≤ s1L2. Thus, the bound also holds in this case. 
+
+# 5 Beyond Non-Adaptivity 
+
+Although we have shown there is no hope to obtain a better solution than Min-Cost for the 
+
+Min-Max problem, we demonstrate in this section that randomization helps for the Min-Max Regret problem. In particular, we give a randomized algorithm, Rand-Half (RH ), which breaks the lower bound given in Lemma 3 if the confusion matrix exhibits a specific structure. Moreover, we will show in the case of the Min-Expectation problem that adaptive algorithms generally do better than Min-Cost , and we prove that the relative gap between an optimal non-adaptive algorithm and an optimal adaptive algorithm is asymptotically greater than 4/3. 
+
+5.1 Randomization for Min-Max Regret 
+
+We show that, in the case of 2 classes (binary classifiers), it is possible to break the lower bound for deterministic algorithms by allowing to sample a solution randomly before executing any job. We consider the Randomized Min-Max Regret criterion, where the adversarial scenario must be chosen without knowing anything about the random number generator of the algorithm. We analyze a randomized algorithm called Rand-Half (RH ), which chooses a solution randomly among 3 different sequences. We show how to set the probability of each sequence in order to minimize the value of the maximum regret of Rand-Half , yielding the following theorem. 
+
+Theorem 5. For any binary classifier, we have max 
+
+> σ∈S
+
+n
+
+E
+
+h ˜CRH 
+
+> σ
+
+i
+
+− ˜C∗
+
+> σ
+
+o
+
+≤ (s2L1 − δ)( λ2 − λ1),where 
+
+δ =
+
+ 
+
+> s22(L1−s1)2
+> L1L2−s1s2
+
+if s1 < L 1 and s2 ≤ L2, or s1 ≤ L1 and s2 < L 2, 
+
+> L21(s2−L2)2
+> s1s2−L1L2
+
+if L1 < s 1 and L2 ≤ s2, or L1 ≤ s1 and L2 < s 2,
+
+0 otherwise. 
+
+Remark 1. Note that, for binary classifiers, the problem is trivial if there is at least one zero entry in the confusion matrix, as it allows to know whether a given queue contains only small or only large jobs. Thus, we consider in the following that all entries are nonzero. 
+
+The Rand-Half algorithm randomly chooses a solution among the 3 following sequences: 
+
+Sequence r1 The jobs σ1[1 : |R 1|], followed by σ2[1 : |R 2|], which is equivalent to Min-Cost .
+
+Sequence r2 The jobs σ1[1 : s1], followed by σ2[1 : s2], then σ1[s1+1 : |R 1|] and σ2[s2+1 : |R 2|].
+
+Sequence r3 The jobs σ2[1 : s2], followed by σ1[1 : s1], then σ2[s2+1 : |R 2|] and σ1[s1+1 : |R 1|].Each sequence ri is chosen with probability 0 ≤ αi ≤ 1, such that P αi = 1 . We are going to show how to set these αi, depending on the structure of the confusion matrix, to minimize the randomized maximum regret max σ∈S
+
+n
+
+E
+
+h ˜CRH 
+
+> σ
+
+i
+
+− ˜C∗
+
+> σ
+
+o
+
+.11 First, remark that the sequence r1 can be decomposed as σ1[1 : s1] followed by σ1[s1 + 1 : 
+
+|R 1|], then σ2[1 : s2] followed by σ2[s2 + 1 : |R 2|]. This means that each sequence r1, r 2, r 3
+
+consists in the 4 same sub-chains arranged in a different order, which allows us to characterize the structure of the scenario that maximizes the randomized regret. Indeed, for any scenario σ,we have 
+
+E
+
+h ˜CRH 
+
+> σ
+
+i
+
+− ˜C∗ 
+
+> σ
+
+= E
+
+h ˜CRH  
+
+> σ
+
+− ˜C∗
+
+> σ
+
+i
+
+=
+
+> 3
+
+X
+
+> i=1
+
+αi( ˜Cri 
+
+> σ
+
+− ˜C∗
+
+> σ
+
+),
+
+and by Lemma 2, we know that, for each ri, there necessarily exists a worst-case scenario ˆσ where 
+
+ˆσ1[1 : s1], ˆσ1[s1 + 1 : |R 1|], ˆσ2[1 : s2] and ˆσ2[s2 + 1 : |R 2|] are all non-decreasing. Therefore, there is necessarily such a scenario that maximizes the randomized regret. To fully characterize it, we need to find how many large jobs belong to ˆσ1[1 : s1] and ˆσ2[1 : s2]. Let x1 (resp. x2)denote the number of large jobs in ˆσ1[1 : s1] (resp. ˆσ2[1 : s2]). We immediately get the regret of each sequence ri:
+
+
+
+˜Cr1 
+
+> ˆσ
+
+− ˜C∗ 
+
+> ˆσ
+
+= ( λL − λs)(( s2 − x2)( L1 − x1) + x2(L1 − x1) + x1(s2 − x2)) ,
+
+˜Cr2 
+
+> ˆσ
+
+− ˜C∗ 
+
+> ˆσ
+
+= ( λL − λs)( x1x2 + x2(L1 − x1) + x1(s2 − x2)) ,
+
+˜Cr3 
+
+> ˆσ
+
+− ˜C∗ 
+
+> ˆσ
+
+= ( λL − λs)( x1x2 + x2(s1 − x1) + x1(L2 − x2)) .
+
+Therefore, P3 
+
+> i=1
+
+αi( ˜Cri 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+) = ( λL −λs)( α1s2L1 +α2(s2x1 +L1x2)+ α3(s1x2 +L2x1)−x1x2) = (λL − λs)f (x1, x 2), where the second equality follows by noticing that α1 = 1 − α2 − α3 and defining f (x1, x 2) = −x1x2 + x1(α2s2 + α3L2) + x2(α2L1 + α3s1) + s2L1(1 − α2 − α3). Define also m1 = min( s1, L 1) and m2 = min( s2, L 2). Clearly, the function f is bi-linear in x1, x 2, and as 0 ≤ x1 ≤ m1, 0 ≤ x2 ≤ m2, it is maximized either on (0 , 0) , (m1, 0) , (0 , m 2) or (m1, m 2). As 
+
+f (0 , 0) ≤ f (m1, 0) and f (0 , 0) ≤ f (0 , m 2), we can directly eliminate the case (0 , 0) .Now we know that the expression P3 
+
+> i=1
+
+αi( ˜Cri 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+) is maximized in one of the 3 following cases: (i) x1 = m1 and x2 = 0 , (ii) x1 = 0 and x2 = m2, or (iii) x1 = m1 and x2 = m2. We obtain 3X
+
+> i=1
+
+αi( ˜Cri 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+) = ( λL − λs) max g(m1,0) (α), g (0 ,m 2)(α), g (m1,m 2)(α) ,
+
+where 
+
+
+
+g(m1,0) (α) = α2(m1s2 − s2L1) + α3(m1L2 − s2L1) + s2L1,g(0 ,m 2)(α) = α2(m2L1 − s2L1) + α3(m2s1 − s2L1) + s2L1,g(m1,m 2)(α) = g(m1,0) (α) + g(0 ,m 2)(α) − m1m2 − s2L1(1 − α2 − α3).
+
+The proof of Theorem 5 consists in solving the following min-max problem for each possible value of m1, m 2:
+
+min 
+
+> α∈Γ
+
+max g(m1,0) (α), g (0 ,m 2)(α), g (m1,m 2)(α) , (Min-Max-Alpha )where Γ is the simplex {(α2, α 3) : α2 + α3 ≤ 1}. A detailed functional analysis (given in Appendix B) shows that Min-Max-Alpha is solved by 
+
+α =
+
+ s1(L2−s2) 
+
+> L1L2−s1s2
+
+, s2(L1−s1)
+
+> L1L2−s1s2
+
+
+
+if s1 < L 1 and s2 ≤ L2, or s1 ≤ L1 and s2 < L 2,
+
+ L2(s1−L1) 
+
+> s1s2−L1L2
+
+, L1(s2−L2)
+
+> s1s2−L1L2
+
+
+
+if L1 < s 1 and L2 ≤ s2, or L1 ≤ s1 and L2 < s 2,
+
+(0 , 0) otherwise. 12 5.2 Adaptive Algorithms for Min-Expectation 
+
+We now consider adaptive algorithms, which may observe the true processing time of each completed job and update their future scheduling decisions accordingly. We show that, for the 
+
+Min-Expectation objective, the ratio between optimal non-adaptive and optimal adaptive costs is asymptotically close to 4/3 on a specific family of instances, giving a lower bound on the performance improvement one may expect by exploiting adaptivity. In what follows, the state of the remaining jobs to process after the execution of t jobs is denoted by Et, where E0 is the initial confusion matrix and En is the final confusion matrix without any remaining job. Each time a job drawn from queue Rk reveals true class ℓ, one unit is subtracted from entry (k, ℓ ), so the state transitions as Et+1 = Et − ekℓ where ekℓ denotes the indicator matrix, i.e., the K × K matrix with a 1 at position (k, ℓ ) and 0 elsewhere. Thus, Et
+
+records exactly the remaining unprocessed jobs after t executions. In what follows, we extend the notations introduced in Section 2 by adding t as a superscript. Based on this, etkℓ is the number of remaining jobs at state Et that the classifier believes to belong to class k but actually belong to class ℓ, and |R tk| is the number of remaining jobs in queue Rk at state Et. For any state Et, we denote by nt = P 
+
+> k
+
+|R tk| = P 
+
+> k,ℓ
+
+etkℓ the total number of remaining jobs. 
+
+Remark 2. Generalizing Min-Cost to the adaptive context, a natural greedy strategy consists in, at each step t, always selecting the queue Rtk with smallest current expected processing time 
+
+¯ptk = 1 
+
+> |R tk|
+
+P 
+
+> ℓ
+
+etkℓ λℓ, then observing the realized job, updating Et+1 accordingly. The following 
+
+3×3 instance shows this greedy strategy is not optimal. Set λ1 = 1 , λ2 = 3 , λ3 = 6 , and consider the matrix 
+
+E =
+
+
+
+0 0 00 1 01 0 1
+
+
+
+Drawing from R2 yields a cost of 
+
+3λ2 + 12 ((2 λ1 + 1 λ3) + (2 λ3 + 1 λ1)) = 19 .5,
+
+whereas drawing from R3 yields a cost of 
+
+12 (3 λ1 + 2 λ2 + 1 λ3) + 12 (3 λ3 + 2 λ1 + 1 λ2) = 19 .
+
+The greedy rule selects first the queue R2 since ¯p02 = 3 < 3.5 = ¯ p03, yielding an expected cost of 19.5, while optimal is 19, showing that greedy is strictly sub-optimal here. 
+
+The optimal adaptive policy can be characterized via dynamic programming. Define f by the Bellman recurrence: 
+
+f (Et) = min  
+
+> 1≤k≤K
+> |R tk|>0
+
+( KX
+
+> ℓ=1
+
+etkℓ 
+
+|R tk| ·
+
+h
+
+ntλℓ + f  Et − ekℓ i)
+
+, (1) with the boundary condition f (En) = 0 , where etkℓ   
+
+> |R tk|
+
+is the probability that a job drawn from 
+
+Rk belongs to class ℓ, ntλℓ is its immediate cost contribution to P Cj (its processing time λℓ,and the delay λℓ it inflicts on each of the nt −1 remaining jobs), and f Et −ekℓ  is the optimal future cost of the resulting state Et+1 = Et−ekℓ . The proof of the following theorem is given in Appendix C. 13 Theorem 6. Let DP be a dynamic programming algorithm that, at each step Et, selects the queue Rk∗ that minimizes f (Et). DP is an optimal adaptive algorithm of complexity O
+
+
+
+K · eK2
+
+> max
+
+
+
+,where emax is the maximum entry of the initial confusion matrix E = E0.
+
+Corollary 1. If the number of classes K is bounded by a constant, then DP is a pseudo-polynomial algorithm. 
+
+Remark 3. Note that emax ≤ n, and then the complexity of DP can be written as O
+
+
+
+K · nK2 
+
+.However, this is not a polynomial complexity in the case of bounded K, since n is an exponential parameter with respect to the size of the instance, which consists in the K × K confusion matrix and the processing times of the classes λ1, . . . , λ K .
+
+Next, our goal is to quantify how much the adaptive model can outperform the non-adaptive one. All proofs of this part can be found in Appendix D. We introduce the following family of instances. 
+
+Definition 1 (Instances MK,x ). For any positive integer K and any positive odd integer x, the instance MK,x is composed by the K × K matrix where all entries of the first column have value 
+
+x and all entries of the last column have value 1 (and zeros elsewhere), along with the processing times λ1 = 0 and λK = 1 .
+
+First, we compute the expected cost of the optimal non-adaptive algorithm Min-Cost .
+
+Lemma 4. For any instance MK,x , we have E[ ˜CMC (MK,x )] = (x+1) 2 K2 + K 
+
+> 2
+
+.
+
+Since getting a closed formula for the expected cost of the optimal adaptive DP algorithm is hard (due to its recursive nature), the second ingredient of our analysis is the following non-optimal adaptive heuristic applied on any instance MK,x . By the optimality of DP , its expected cost is no bigger than the expected cost of this heuristic. 
+
+Definition 2 (Half-and-Check (HC ) policy) . Let L be a list of jobs (initially empty), and let MK,x be an instance as described in Definition 1. For each queue R1, R2, . . . , RK do: 1. Execute the first r = x+1 2 jobs of current queue. We call these jobs the first half-block of the queue. 2. If the large job was observed in this first half-block, execute the remaining r jobs of the current queue (second half-block) immediately, then proceed to the next queue. 3. Otherwise, add the second half-block of current queue at the beginning of L, and proceed to the next queue. Finally, execute the half-blocks stored in L respecting their order in the list. 
+
+Next, we compute the expected cost of the adaptive algorithm HC .
+
+Lemma 5. For any instance MK,x , we have 
+
+E
+
+h ˜CHC (MK,x )
+
+i
+
+=
+
+( 15 4 x + 21 4 if K = 3 ,
+
+E
+
+h ˜CHC (MK−1,x )
+
+i
+
++ 34 (K − 1)( x + 1) + x 
+
+> 2
+
++ 1 otherwise. 
+
+By combining Lemmas 4 and 5, we get the following theorem. 
+
+Theorem 7. The expected-cost ratio between optimal non-adaptive and optimal adaptive solu-tions is asymptotically bigger than 4K 
+
+> 3K+1
+
+.
+
+14 6 Conclusions and Perspectives 
+
+We proposed a novel robustness model based on classification and confusion matrices, applied on the basic scheduling problem 1|| P Cj . This allowed us to refine the analysis in non-clairvoyant setting: instead of being forced to rely on a random ordering of the jobs, we were able to leverage additional information provided by the classifier to derive new robustness guarantees, both in worst ( Min-Max Regret ) and average ( Min-Expectation ) cases. We think this model might constitute a new approach to analyze combinatorial optimization problems subject to uncertainty. One logical next step consists in designing algorithms giving optimal results when the clas-sifier provides perfect predictions (e.g., diagonal matrices), while being robust no matter the confusion matrix, in the same spirit as learning-augmented algorithms. In particular, we plan to study how the structure of the matrix impacts robustness. Another direction could be the generalization of the model to multi-label classification, where an object is categorized according to several attributes. For example, we could analyze the 1|| P wj Cj problem, where each job is assigned one class for its weight, and a second class for its processing time. 15 References 
+
+[1] Luca Becchetti and Stefano Leonardi. “Nonclairvoyant scheduling to minimize the total flow time on single and parallel machines”. In: Journal of the ACM (JACM) 51.4 (2004), pp. 517–539. doi :10.1145/1008731.1008732. [2] Bala Kalyanasundaram and Kirk R Pruhs. “Minimizing flow time nonclairvoyantly”. In: Journal of the ACM (JACM) 50.4 (2003), pp. 551–567. doi : 10.1145/792538.792545. [3] Rajeev Motwani, Steven Phillips, and Eric Torng. “Nonclairvoyant scheduling”. In: Theoretical computer science 130.1 (1994), pp. 17–47. doi : 10.1016/0304-3975(94)90151-1. [4] Sungjin Im, Benjamin Moseley, and Kirk Pruhs. “Stochastic scheduling of heavy-tailed jobs”. In: 
+
+32nd International Symposium on Theoretical Aspects of Computer Science (STACS 2015) . 2015, pp. 474–486. doi : 10.4230/LIPIcs.STACS.2015.474. [5] Nicole Megow, Marc Uetz, and Tjark Vredeveld. “Models and algorithms for stochastic online scheduling”. In: Mathematics of Operations Research 31.3 (2006), pp. 513–525. doi : 10.1287/moor. 1060.0201. [6] Rolf H Möhring, Andreas S Schulz, and Marc Uetz. “Approximation in stochastic scheduling: the power of LP-based priority policies”. In: Journal of the ACM (JACM) 46.6 (1999), pp. 924–942. 
+
+doi : 10.1145/331524.331530. [7] Andreas S Schulz. “Stochastic online scheduling revisited”. In: International Conference on Combi-natorial Optimization and Applications . 2008, pp. 448–457. doi : 10.1007/978-3-540-85097-7\_42. [8] Martin Skutella, Maxim Sviridenko, and Marc Uetz. “Stochastic Scheduling on Unrelated Ma-chines”. In: 31st International Symposium on Theoretical Aspects of Computer Science (STACS 2014) . Vol. 25. 2014, pp. 639–650. doi : 10.4230/LIPIcs.STACS.2014.639. [9] Adam Kasperski and Paweł Zieliński. “Single Machine Scheduling Problems with Uncertain Pa-rameters and the OWA Criterion”. In: Journal of Scheduling 19.2 (2016), pp. 177–190. doi : 10. 1007/s10951-015-0444-y. [10] Monaldo Mastrolilli, Nikolaus Mutsanas, and Ola Svensson. “Single Machine Scheduling with Sce-narios”. In: Theoretical Computer Science 477 (2013), pp. 57–66. doi : 10.1016/j.tcs.2012.12.006. [11] Dvir Shabtay and Miri Gilenson. “A State-of-the-Art Survey on Multi-Scenario Scheduling”. In: 
+
+European Journal of Operational Research 310.1 (2023), pp. 3–23. doi : 10.1016/j.ejor.2022.11.014. [12] Yossi Azar, Stefano Leonardi, and Noam Touitou. “Flow time scheduling with uncertain processing time”. In: Proceedings of the 53rd Annual ACM SIGACT Symposium on Theory of Computing .2021, pp. 1070–1080. doi : 10.1145/3406325.3451023. [13] Yossi Azar, Stefano Leonardi, and Noam Touitou. “Distortion-oblivious algorithms for minimizing flow time”. In: Proceedings of the 2022 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA) . 2022, pp. 252–274. doi : 10.1137/1.9781611977073.13. [14] Evripidis Bampis, Alexander Kononov, Giorgio Lucarelli, and Fanny Pascual. “Non-clairvoyant makespan minimization scheduling with predictions”. In: ACM Transactions on Parallel Computing 
+
+13.1 (2026), pp. 1–20. doi : 10.1145/3777410. [15] Sungjin Im, Ravi Kumar, Mahshid Montazer Qaem, and Manish Purohit. “Non-clairvoyant schedul-ing with predictions”. In: ACM Transactions on Parallel Computing 10.4 (2023), pp. 1–26. doi :10.1145/3593969. [16] Manish Purohit, Zoya Svitkina, and Ravi Kumar. “Improving online algorithms via ML predic-tions”. In: Advances in Neural Information Processing Systems 31 (2018). doi : 10.5555/3327546. 3327635. [17] Jakub Białek, Juhani Kivimäki, Wojciech Kuberski, and Nikolaos Perrakis. “Estimating model performance under covariate shift without labels”. In: Advances in Neural Information Processing Systems 38 (2026), pp. 161084–161115. doi : 10.48550/arXiv.2401.08348. [18] Juhani Kivimäki, Jakub Białek, Wojtek Kuberski, and Jukka K Nurminen. “Performance estima-tion in binary classification using calibrated confidence”. In: Machine Learning 115.3 (2026), p. 67. 
+
+doi : 10.1007/s10994-025-06970-3. 
+
+16 [19] Michael L Pinedo. Scheduling . Vol. 29. 2012. [20] Sven Jäger, Guillaume Sagnol, Daniel Schmidt genannt Waldschmidt, and Philipp Warode. “Com-petitive kill-and-restart and preemptive strategies for non-clairvoyant scheduling”. In: Math. Pro-gram. 210.1 (2025), pp. 457–509. doi : 10.1007/s10107-024-02118-8. [21] Richard W Conway, William L Maxwell, and Louis W Miller. Theory of Scheduling . 1967. [22] Michael Mitzenmacher. “Scheduling with Predictions and the Price of Misprediction”. In: 11th Innovations in Theoretical Computer Science Conference (ITCS 2020) . Vol. 151. 2020, 14:1–14:18. 
+
+doi : 10.4230/LIPIcs.ITCS.2020.14. [23] Han Hoogeveen and Arjen P. A. Vestjens. “Optimal On-Line Algorithms for Single-Machine Schedul-ing”. In: Integer Programming and Combinatorial Optimization, 5th International IPCO Confer-ence . Vol. 1084. LNSC. 1996, pp. 404–414. doi : 10.1007/3-540-61310-2\_30. [24] Evripidis Bampis, Konstantinos Dogeas, Alexander V. Kononov, Giorgio Lucarelli, and Fanny Pascual. “Scheduling with Untrusted Predictions”. In: Proceedings of the Thirty-First International Joint Conference on Artificial Intelligence, IJCAI 2022, Vienna, Austria, 23-29 July 2022 . 2022, pp. 4581–4587. doi : 10.24963/ijcai.2022/636. [25] Ziyad Benomar, Romain Cosson, Alexander Lindermayr, and Jens Schlöter. “Non-Clairvoyant Scheduling with Progress Bars”. In: The Thirty-ninth Annual Conference on Neural Information Processing Systems . 2026. [26] Alexander Wei and Fred Zhang. “Optimal Robustness-Consistency Trade-offs for Learning-Augmented Online Algorithms”. In: Advances in Neural Information Processing Systems 33: Annual Confer-ence on Neural Information Processing Systems 2020, NeurIPS 2020, December 6-12, 2020, virtual .2020. doi : 10.5555/3495724.3496398. [27] Alexander Lindermayr and Nicole Megow. “Permutation Predictions for Non-Clairvoyant Schedul-ing”. In: ACM Trans. Parallel Comput. 12.2 (2025), 4:1–4:26. doi : 10.1145/3711872. [28] Panos Kouvelis and Gang Yu. Robust Discrete Optimization and its Applications . Kluwer Academic Publishers, 1997. [29] J. Yang and G. Yu. “On the Robust Single Machine Scheduling Problem”. In: Journal of Combi-natorial Optimization 6 (2002), pp. 17–33. doi : 10.1023/A:1013333232691. [30] V. Lebedev and I. Averbakh. “Complexity of Minimizing the Total Flow Time with Interval Data and Minmax Regret Criterion”. In: Discrete Applied Mathematics 154 (2006), pp. 2167–2177. doi :10.1016/j.dam.2005.04.015. [31] I. Averbakh. “Computing and minimizing the relative regret in combinatorial optimization with interval data”. In: Discrete Optimization 2.4 (2005), pp. 273–287. doi : 10.1016/j.disopt.2005.07.001. [32] Simon Kahan. “A Model for Data in Motion”. In: Proceedings of the 23rd Annual ACM Symposium on Theory of Computing . ACM, 1991, pp. 267–277. doi : 10.1145/103418.103449. [33] Christoph Dürr, Thomas Erlebach, Nicole Megow, and Julie Meißner. “An Adversarial Model for Scheduling with Testing”. In: Algorithmica 82.12 (2020), pp. 3630–3675. doi : 10.1007/s00453-020-00742-2. [34] Fanny Dufossé, Christoph Dürr, Noël Nadal, Denis Trystram, and Óscar C. Vásquez. “Scheduling with a processing time oracle”. In: CoRR abs/2005.03394 (2020). doi : 10.1016/j.apm.2021.12.020. [35] Evripidis Bampis, Bruno Escoffier, Dimitris Fotakis, Panagiotis Patsilinakos, and Michalis Xefteris. “Polynomial Time Learning Augmented Algorithms for NP-hard Permutation Problems”. In: Forty-second International Conference on Machine Learning, ICML 2025, Vancouver, BC, Canada, July 13-19, 2025 . Vol. 267. Proceedings of Machine Learning Research. 2025. 
+
+17 A Optimal Algorithm for 1|chains | P Cj
+
+Chain-Opt (Algorithm 1) describes the optimal algorithm for 1|chains | P Cj [21]. Recall that each Rk denotes the set of jobs believed to be in class k, and that each σk represents the permutation of Rk. Thus, we can see each σk as a chain of jobs, and pσk [i] gives the processing time of the i-th job in Rk.At each step, the algorithm computes the average processing time of each prefix of each chain 
+
+σk (cost k(j) denotes the average processing time of the prefix of length j in σk), and schedules the jobs of the prefix of minimum cost. We assume that the algorithm always maximizes the number of jobs scheduled at each step, that is, if best k∗ = cost k∗ (j) = cost k∗ (j′) for two distinct positions j < j ′, we systematically set len k∗ = j′.
+
+Algorithm 1 Chain-Opt 
+
+Input: a confusion matrix E and a scenario σ
+
+Output: an optimal schedule  
+
+> 1:
+
+for all queues Rk do  
+
+> 2:
+
+if Rk = ∅ then  
+
+> 3:
+
+best k ← +∞ 
+
+> 4:
+
+len k ← − 1 
+
+> 5:
+
+else  
+
+> 6:
+
+cost k(j) ← 1
+
+> j
+
+Pji=1 pσk [i] for all 1 ≤ j ≤ |R k| 
+
+> 7:
+
+best k ← min 1≤j≤|R k | cost k(j) 
+
+> 8:
+
+len k ← arg min 1≤j≤|R k | cost k(j) 
+
+> 9:
+
+end if  
+
+> 10:
+
+end for  
+
+> 11:
+
+while there remain jobs to schedule do  
+
+> 12:
+
+k∗ ← arg min 1≤k≤K best k 
+
+> 13:
+
+Pull the first len k∗ jobs of Rk∗ 
+
+> 14:
+
+if Rk∗ = ∅ then  
+
+> 15:
+
+best k∗ ← +∞ 
+
+> 16:
+
+len k∗ ← − 1 
+
+> 17:
+
+else  
+
+> 18:
+
+Update cost k∗ (j) for all 1 ≤ j ≤ |R k∗ | 
+
+> 19:
+
+Update best k∗ and len k∗ 
+
+> 20:
+
+end if  
+
+> 21:
+
+end while 
+
+18 B Optimal Solution of Min-Max-Alpha (Theorem 5) 
+
+We recall the Min-Max-Alpha problem: 
+
+min 
+
+> α∈Γ
+
+max g(m1,0) (α), g (0 ,m 2)(α), g (m1,m 2)(α) , (Min-Max-Alpha )where Γ = {(α2, α 3) : α2 + α3 ≤ 1}, mk = min( sk, L k), and 
+
+
+
+g(m1,0) (α) = α2(m1s2 − s2L1) + α3(m1L2 − s2L1) + s2L1,g(0 ,m 2)(α) = α2(m2L1 − s2L1) + α3(m2s1 − s2L1) + s2L1,g(m1,m 2)(α) = g(m1,0) (α) + g(0 ,m 2)(α) − m1m2 − s2L1(1 − α2 − α3).
+
+First, suppose that s1 = L1 and s2 = L2. We immediately obtain g(m1,0) (α) = g(0 ,m 2)(α) = 
+
+s2L1 and g(m1,m 2)(α) = s2L1(α2 + α3) ≤ s2L1, thus P3 
+
+> i=1
+
+αi( ˜Cri 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+) = ( λL − λs)s2L1. We now assume s1̸ = L1 or s2̸ = L2, and we notice that the case m1 = s1 and m2 = L2 cannot happen, as we necessarily have s2L1 ≤ s1L2. This leaves 3 different cases to analyze. 
+
+Case 1: m1 = s1 and m2 = s2. We get 
+
+
+
+g(m1,0) (α) = α2(s1s2 − s2L1) + α3(s1L2 − s2L1) + s2L1,g(0 ,m 2)(α) = α3(s1s2 − s2L1) + s2L1,g(m1,m 2)(α) = α2s1s2 + α3(s1L2 + s1s2 − s2L1) + s2L1 − s1s2.
+
+Observe that Min-Max-Alpha can be rewritten as 
+
+min 
+
+> 0≤α3≤1
+
+
+
+min 
+
+> 0≤α2≤1−α3
+
+max g(m1,0) (α2, α 3), g (0 ,m 2)(α3), g (m1,m 2)(α2, α 3)
+
+
+
+.
+
+First we solve the inner problem for any fixed α3. We have that g(m1,0) decreases with 
+
+α2 (as s1 ≤ L1), g(0 ,m 2) is constant with α2, and g(m1,m 2) increases with α2. This implies that max g(m1,0) , g (m1,m 2) is minimized when g(m1,0) (α2, α 3) = g(m1,m 2)(α2, α 3), i.e., 
+
+α2 = (1 − α3) s1 
+
+> L1
+
+. In other words, 
+
+min 
+
+> 0≤α2≤1−α3
+
+max g(m1,0) (α2, α 3), g (0 ,m 2)(α3), g (m1,m 2)(α2, α 3) = max h(α3), g (0 ,m 2)(α3) ,
+
+where 
+
+h(α3) = g(m1,0) 
+
+
+
+(1 − α3) s1
+
+L1
+
+, α 3
+
+
+
+= α3
+
+
+
+s1L2 − s2L1 − s1
+
+L1
+
+(s1s2 − s2L1)
+
+
+
++ s2L1 + s1
+
+L1
+
+(s1s2 − s2L1).
+
+The Min-Max-Alpha problem becomes 
+
+min 
+
+> 0≤α3≤1
+
+max h(α3), g (0 ,m 2)(α3) .
+
+We have s2L1 ≤ s1L2 and s1 ≤ L1, thus h increases with α3 and g(0 ,m 2) decreases with 
+
+α3. Again, this implies that max h, g (0 ,m 2) is minimized when h(α3) = g(0 ,m 2)(α3), i.e., 
+
+α3 = s2(L1 − s1)
+
+L1L2 − s1s2
+
+.
+
+19 We conclude that P3 
+
+> i=1
+
+αi( ˜Cri 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+) is minimized for α1 = (L1−s1)( L2−s2) 
+
+> L1L2−s1s2
+
+, α2 = s1(L2−s2)
+
+> L1L2−s1s2
+
+and α3 = s2(L1−s1) 
+
+> L1L2−s1s2
+
+, and we obtain 
+
+E
+
+h ˜CRH 
+
+> ˆσ
+
+i
+
+− ˜C∗ 
+
+> ˆσ
+
+= ( λL − λs)
+
+
+
+s2L1 − s22(L1 − s1)2
+
+L1L2 − s1s2
+
+
+
+.
+
+Case 2: m1 = L1 and m2 = L2. We get 
+
+
+
+g(m1,0) (α) = α3(L1L2 − s2L1) + s2L1,g(0 ,m 2)(α) = α2(L1L2 − s2L1) + α3(s1L2 − s2L1) + s2L1,g(m1,m 2)(α) = α2L1L2 + α3(s1L2 + L1L2 − s2L1) + s2L1 − L1L2.
+
+With a reasoning analogous to Case 1, we deduce that P3 
+
+> i=1
+
+αi( ˜Cri 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+) is minimized for 
+
+α1 = (s1−L1)( s2−L2) 
+
+> s1s2−L1L2
+
+, α2 = L2(s1−L1) 
+
+> s1s2−L1L2
+
+and α3 = L1(s2−L2) 
+
+> s1s2−L1L2
+
+, and we obtain 
+
+E
+
+h ˜CRH 
+
+> ˆσ
+
+i
+
+− ˜C∗ 
+
+> ˆσ
+
+= ( λL − λs)
+
+
+
+s2L1 − L21(s2 − L2)2
+
+s1s2 − L1L2
+
+
+
+.
+
+Case 3: m1 = L1 and m2 = s2. We get 
+
+
+
+g(m1,0) (α) = α3(L1L2 − s2L1) + s2L1,g(0 ,m 2)(α) = α3(s1s2 − s2L1) + s2L1,g(m1,m 2)(α) = α2s2L1 + α3(L1L2 + s1s2 − s2L1).
+
+We immediately see that g(m1,m 2) increases with α2, and the 3 functions all increase with 
+
+α3. Thus, P3 
+
+> i=1
+
+αi( ˜Cri 
+
+> ˆσ
+
+− ˜C∗
+
+> ˆσ
+
+) is minimized for α1 = 1 , α2 = 0 and α3 = 0 , and we obtain 
+
+E
+
+h ˜CRH 
+
+> ˆσ
+
+i
+
+− ˜C∗ 
+
+> ˆσ
+
+= ( λL − λs)s2L1.
+
+20 C Proof of Theorem 6 
+
+Theorem 6. Let DP be a dynamic programming algorithm that, at each step Et, selects the queue Rk∗ that minimizes f (Et).
+
+DP is an optimal adaptive algorithm of complexity O
+
+
+
+K · eK2
+
+> max
+
+
+
+, where emax is the maximum entry of the initial confusion matrix E = E0.Proof. For the optimality of DP , the proof proceeds by induction on Et.
+
+Base case ( En). The base case f (En) = 0 is immediate since the matrix En contains no remaining jobs. 
+
+Inductive step. Consider any adaptive algorithm A, deterministic or randomized, and a state 
+
+Et. By the inductive hypothesis, we know that for every state Ei with i > t , the value f (Ei) is a lower bound on the expected cost of A. It is sufficient to show that the total cost of A for Et
+
+is not smaller that f (Et).Suppose that A selects the queue Rk at state Et. Conditioned on this choice, the revealed job is of class ℓ with probability etkℓ   
+
+> |R tk|
+
+. This incurs an immediate cost ntλℓ and transitions to state Et − ekℓ . By the induction hypothesis applied to Et − ekℓ , the expected future cost of A
+
+from that state is at least f  Et − ekℓ . Hence the expected total cost of A is at least 
+
+> K
+
+X
+
+> ℓ=1
+
+etkℓ 
+
+|R tk| ·
+
+h
+
+ntλℓ + f (Et − ekℓ )
+
+i
+
+≥
+
+> K
+
+X
+
+> ℓ=1
+
+etk∗ℓ
+
+|R tk∗ | ·
+
+h
+
+ntλℓ + f (Et − ek∗ℓ)
+
+i
+
+= f (Et)
+
+where the inequality follows by theorem’s statement. For the complexity of DP , consider an instance of n jobs defined by a K × K matrix E. For each entry ekℓ of E, the dynamic program needs to examine all admissible values {0, 1, · · · , e kℓ }.Hence, the number of states generated by DP is at most 
+
+Y
+
+> k,ℓ
+
+(ekℓ + 1) ≤ Y
+
+> k,ℓ
+
+(emax + 1) = 
+
+> K2
+
+Y
+
+> i=1
+
+(emax + 1) = ( emax + 1) K2
+
+Taking into account that, for each state, we need to compute a minimum over K values, the theorem follows. 21 D Expected-Cost Ratio Between Optimal Non-Adaptive and Adap-tive Solutions 
+
+Our goal is to quantify how much the adaptive model can outperform the non-adaptive one. We introduce the following family of instances. 
+
+Definition 1 (Instances MK,x ). For any positive integer K and any positive odd integer x,the instance MK,x is composed by the K × K matrix where all entries of the first column have value x and all entries of the last column have value 1, along with the processing times λ1 = 0 
+
+and λK = 1 .
+
+First, we compute the expected cost of the optimal non-adaptive algorithm Min-Cost .
+
+Lemma 4. For any instance MK,x , we have E[ ˜CMC (MK,x )] = (x+1) 2 K2 + K 
+
+> 2
+
+.Proof. For any instance MK,x and any queue Rk of the confusion matrix, we have ¯pk = 1 
+
+> x+1
+
+.Thus, we can immediately compute the expected objective of Min-Cost :
+
+E[ ˜CMC (MK,x )] = nEp[1] 
+
+ + ( n−1) Ep[2] 
+
+ + · · · + Ep[n]
+
+
+
+= 1
+
+x + 1 
+
+> n
+
+X
+
+> i=1
+
+i
+
+= 1
+
+x + 1 · n(n+1) 2= (x + 1) 2 K2 + K
+
+2 ,
+
+where E[p[j]] denotes the expected processing time of the job that is in position j. The last equality follows by noticing that there are K(x + 1) jobs in the instance. Since getting a closed formula for the expected cost of the optimal adaptive DP algorithm is hard (due to its recursive nature), the second ingredient of our analysis is the following non-optimal adaptive heuristic applied on any instance MK,x . By the optimality of DP , its expected cost is no bigger than the expected cost of this heuristic. 
+
+Definition 2 ( Half-and-Check (HC ) policy). Let L be a list of jobs (initially empty), and let MK,x be an instance as described in Definition 1. For each queue R1, R2, . . . , RK do: 1. Execute the first r = x+1 2 jobs of current queue. We call these jobs the first half-block of the queue. 2. If the large job was observed in this first half-block, execute the remaining r jobs of the current queue (second half-block) immediately, then proceed to the next queue. 3. Otherwise, add the second half-block of current queue at the beginning of L, and proceed to the next queue. Finally, execute the half-blocks stored in L respecting their order in the list. 
+
+To analyse HC , it is convenient not to reason in terms of individual jobs, but in terms of the blocks of jobs that HC manipulates as atomic units, and to track, for each block, the cost it contributes internally, as well as the cost it imposes on the blocks scheduled after it. 
+
+Block notation. We introduce the following three atomic schedule units: • bs: a half-block of size r = x+1 2 containing only small jobs (with processing time 0). 22 • bL: a half-block of size r = x+1 2 containing one large job (with processing time 1) and 
+
+r − 1 = x−12 small jobs. The large job occupies a uniformly random position within the block. • Rk: the full queue Rk (of size x + 1 ), containing one large job and x small jobs. The large job occupies a uniformly random position within the block. We first quantify the cost each block type contributes to its own jobs, which we call its internal cost δ: this is the contribution to P Cj coming only from delays that jobs of the block impose to the other jobs of the same block. Once a block’s internal cost is known, the block can be treated as an opaque unit whose only remaining effect is to delay the jobs scheduled after it. This is precisely the decomposition used in the proof of Lemma 5 below. 
+
+Lemma 6 (Internal costs) . The internal costs of each block type are δ(bs) = 0 , δ(bL) = x+3 4 ,and δ(Rk) = x+2 2 .Proof. Since λ1 = 0 , the completion time of any job equals the number of large jobs that precede it (including itself). The large job in bL occupies position j ∈ { 1, . . . , r } uniformly. It contributes 1 to its own Cj , and delays the r − j small jobs after it, each by 1. Hence it contributes r − j + 1 to P Cj in case j. Taking the expectation: 
+
+δ(bL) = 1
+
+r
+
+> r
+
+X
+
+> j=1
+
+(r − j + 1) = 1
+
+r · r(r + 1) 2 = r + 1 2 = 
+
+> x+1 2
+
++ 1 2 = x + 3 4 .
+
+The same calculation with r′ = x + 1 gives δ(Rk) = x+2 2 .We now have all ingredients to prove Lemma 5. The key observation is that the terminal queue RK is always executed as an uninterrupted block by HC , regardless of where the large job falls within the earlier queues, i.e., for RK , either its bs half-block is executed first and its bL
+
+half-block is placed at the head of L, or its bL half-block is executed first and its bs half-block follows immediately. We exploit this structural invariant to express E[ ˜CHC (MK,x )] recursively, by rewriting the execution of a single terminal queue RK as the execution of two consecutive queues RK and RK+1 , consistent with how HC schedules them. This requires tracking, for each instance size, the expected number of jobs executed after RK and the expected number of large jobs executed before it. 
+
+Lemma 5. For any instance MK,x , we have 
+
+E
+
+h ˜CHC (MK,x )
+
+i
+
+=
+
+( 15 4 x + 21 4 if K = 3 ,
+
+E
+
+h ˜CHC (MK−1,x )
+
+i
+
++ 34 (K − 1)( x + 1) + x 
+
+> 2
+
++ 1 otherwise. Proof. We prove the lemma by induction on K.
+
+Base case M3,x . Each queue R1 and R2 independently has its large job in either the first or the second half-block, yielding four equally probable branches (each occurring with probability 
+
+1/4): 
+
+R1 R2 Schedule order Cost Large in first half Large in first half bL, bs, bL, bs, R3 δ(bL) + 5 r + δ(bL) + 3 r + δ(R3)
+
+Large in first half Large in second half bL, bs, bs, R3, bL δ(bL) + 5 r + δ(R3) + 1 r + δ(bL)
+
+Large in second half Large in first half bs, bL, bs, R3, bL δ(bL) + 4 r + δ(R3) + 1 r + δ(bL)
+
+Large in second half Large in second half bs, bs, R3, bL, bL δ(R3) + 2 r + δ(bL) + 1 r + δ(bL)
+
+23 Averaging over the four branches and substituting δ(bL) = x+3 4 , δ(R3) = x+2 2 and r = x+1 2
+
+yields 
+
+E
+
+h ˜CHC (M3,x )
+
+i
+
+= 15 4 x + 21 4 .
+
+We now establish the recurrence relating MK+1 to MK for K ≥ 3.
+
+Step 1: Decomposition of HC on MK,x . The cost of HC on MK,x can be written as 
+
+E[ ˜CHC (MK,x )] = E[ ˜CHC (MK,x )] ∗ + δ(RK ) + E[AK ] + E[BK ],
+
+where E[ ˜CHC (MK,x )] ∗ denotes the expected cost of all blocks excluding RK and its external effect: • δ(RK ) is the internal cost of RK (Lemma 6), • E[AK ] is the expected external cost imposed by RK on the jobs that scheduled after it (i.e., the expected number of jobs after RK , each delayed by exactly λK ), • E[BK ] is the expected external cost imposed on RK by the jobs scheduled before it (i.e., the expected number of large jobs executed before RK , each delaying RK by exactly λK ). For each queue Rh with h ∈ { 1, . . . , K − 1}, the large job is equally likely to fall in either half-block. If it falls in the second half-block (probability 1/2), that half-block, containing r
+
+jobs, is deferred after RK . Otherwise, nothing is deferred: since the bL block is executed first, the bs block of the same queue follows immediately. As queues are independent, the expected total number of deferred jobs is E[AK ] = ( K − 1) r 
+
+> 2
+
+.Every job executed after RK belongs to one such deferred half-block, and each deferred half-block contains exactly one large job, hence E[AK ] 
+
+> r
+
+of these jobs are large. The expected number of large jobs executed before RK is therefore K − E[AK ] 
+
+> r
+
+− 1 = K−12 , and each of them delays the (x + 1) jobs of RK by exactly λK , giving E[BK ] = ( x + 1) K−12 .
+
+Step 2: Substitution of RK execution by RK and RK+1 executions. When a new queue RK+1 is appended to MK to form MK+1 , RK is no longer executed as a single terminal block. Instead, RK is processed by HC like all other non-terminal queues: its first half-block is executed, and depending on whether the long job is found there, its second half-block either follows immediately (case bL) or is deferred (case bs). The new terminal block is RK+1 , inserted at the position determined by the decision on queue RK .Each existing branch of the K-queue tree (occurring with its original probability) now splits into two equally likely sub-branches: • Case bL (probability 1/2): the large job of RK is in its first half-block. The schedule 
+
+[. . . ], RK , [. . . ]
+
+within this branch becomes 
+
+[. . . ], bL, bs, RK+1 , [. . . ]
+
+The block RK+1 is followed by AK deferred jobs (same as before, since no new deferral is added). • Case bs (probability 1/2): the large job of RK is in its second half-block. The second half-block bL is deferred. The schedule 
+
+[. . . ], RK , [. . . ]
+
+24 becomes 
+
+[. . . ], bs, RK+1 , [deferred bL], [. . . ]
+
+Hence, RK+1 is followed by AK + r deferred jobs. 
+
+Step 3: Marginal cost of adding queue RK+1 . Both RK and RK+1 are now delayed by all large tasks executed before the original execution of RK , which gives 
+
+E[ ˜CHC (MK+1 ,x )] − E[ ˜CHC (MK,x )] = −δ(RK ) − E[AK ] − E[BK ]
+
+| {z } 
+
+> remove RK
+
++ 12 (δ(bL) + (3 r + E[AK ]) + δ(bS ) + 0 + δ(RK+1 ) + E[AK ] + 2 E[BK ]) 
+
+| {z }  
+
+> case bL, proba. 1/2
+
++ 12 (δ(bS ) + 0 + δ(RK+1 ) + ( r + E[AK ]) + δ(bL) + E[AK ] + 2 E[BK ]) 
+
+| {z }  
+
+> case bs, proba. 1/2
+
+.
+
+Since δ(RK ) = δ(RK+1 ), this simplifies to 
+
+E[ ˜CHC (MK+1 ,x )] − E[ ˜CHC (MK,x )] = δ(bL) + 2 r + E[AK ] + E[BK ]= 34 K(x + 1) + x
+
+2 + 1 ,
+
+which, after re-indexing K + 1 → K, is exactly the stated recurrence. By combining Lemmas 4 and 5, we get the following theorem. 
+
+Theorem 7. The expected-cost ratio between optimal non-adaptive and optimal adaptive solu-tions is asymptotically bigger than 4K 
+
+> 3K+1
+
+.Proof. By solving the recurrence of Lemma 5, we get 
+
+E
+
+h ˜CHC (MK,x )
+
+i
+
+= 34
+
+ x + 1 2
+
+
+
+K2 + x + 5 8 K. 
+
+Hence, for the expected-cost ratio of the two stated solutions we have 
+
+E
+
+h ˜CMC (MK,x )
+
+i
+
+E
+
+h ˜CDP (MK,x )
+
+i ≥
+
+E
+
+h ˜CMC (MK,x )
+
+i
+
+E
+
+h ˜CHC (MK,x )
+
+i
+
+= 
+
+> x+1 2
+
+K2 + K 
+
+> 238
+
+(x + 1) K2 + x+5 8 K
+
+= 4( x + 1) K2 + 4 K
+
+3( x + 1) K2 + ( x + 5) K
+
+= 4( x + 1) K + 4 3( x + 1) K + x + 5 = 4Kx + 4 K + 4 (3 K + 1) x + 3 K + 5 
+
+By choosing a big enough value for x, the theorem follows. 25

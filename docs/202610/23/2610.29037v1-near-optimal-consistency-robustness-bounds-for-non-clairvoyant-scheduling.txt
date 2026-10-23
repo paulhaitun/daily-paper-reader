@@ -1,0 +1,4384 @@
+Title: Near-Optimal Consistency-Robustness Bounds for Non-Clairvoyant Scheduling
+
+URL Source: https://arxiv.org/pdf/2610.29037v1
+
+Published Time: Thu, 22 Oct 2026 00:27:49 GMT
+
+Number of Pages: 46
+
+Markdown Content:
+# Near-Optimal Consistency–Robustness Bounds for Non-Clairvoyant Scheduling 
+
+## Sizhe Li ∗
+
+## Johns Hopkins University 
+
+## sli357@jhu.edu 
+
+## Nicolas Christianson Johns Hopkins University 
+
+## christianson@jhu.edu 
+
+## Tongxin Li †
+
+## CUHK(SZ) 
+
+## litongxin@cuhk.edu.cn 
+
+Abstract 
+
+We study the problem of characterizing the optimal consistency–robustness tradeoff for single-machine non-clairvoyant scheduling with predicted processing times. For a fixed number of jobs 𝑛 , Wei and Zhang (2020) established a lower bound on the achievable consistency–robustness tradeoff which is known to be tight only in a few restrictive cases, leaving the optimal tradeoff for general 𝑛 unresolved. A different worst-case-𝑛 regime was introduced by Benomar et al. (2025a), who applied the former work’s construction to show that for 𝜆 ∈ ( 0, 1), any 
+
+(1 + 𝜆 )-consistent algorithm must be 1 + Ω(√︁ 1/𝜆 )-robust. On the other hand, the best known upper bound gives 
+
+(1 + 𝜆 )-consistency and 1 + 𝑂 (1/𝜆 )-robustness, leaving a polynomial gap. In this work, we develop a new lower bound using a multi-stage adversarial construction and a new algorithm that together give a near-optimal characterization of the consistency–robustness tradeoff: for every 𝑛 , our upper bound is within a multiplicative factor 3 /2 of our lower bound, and thus our algorithm is within a multiplicative factor 3 /2 of the online optimal. In particular, our lower bound shows that any (1 + 𝜆 )-consistent algorithm must have robustness at least 1 /√𝜆 as 𝑛 → ∞ , while our algorithm achieves robustness at most 12 +√︁ 54 + 1/𝜆 for any 𝑛 , matching the lower bound in the leading term as 𝜆 ↓ 0; our upper bound also closes the polynomial gap in the worst-case-𝑛 regime. We additionally show how our algorithm can be made error-tolerant, preserving the near-optimal consistency-robustness tradeoff while incurring only slightly degraded performance under bounded prediction errors. 
+
+# 1 Introduction 
+
+The framework of learning-augmented algorithms (also known as algorithms with predictions ) (Mitzenmacher and Vassilvitskii, 2021) enables the integration of machine-learned predictions into the design and analysis of algorithms, extending the classic competitive analysis framework (Borodin and El-Yaniv, 2005). Central to this framework is the study of the Pareto frontier between consistency , which measures algorithm performance when predictions are perfect, and robustness , which measures performance under potentially adversarial prediction error. While the optimal tradeoff between these metrics has been characterized (either exactly or asymptotically) for a number of problems including ski rental (Wei and Zhang, 2020), online search (Sun et al., 2021), and metrical task systems (Christianson et al., 2023), it remains an open question for the classical problem of single-machine non-clairvoyant scheduling with total completion time objective (Motwani et al., 1994), despite the significant attention this problem has received in the learning-augmented algorithms literature (e.g., (Kumar et al., 2018; Wei and Zhang, 2020; Benomar et al., 2025a)) and the problem’s deep connections with applications in computer systems and beyond. In this work, we seek to resolve this gap and develop near-optimal learning-augmented algorithms for this problem. In particular, we will consider both lower and upper bounds that depend on the number of jobs 𝑛 . We parameterize the algorithm’s consistency-robustness tradeoff (see Definition 2.2 for formal definitions) by a hyperparameter 𝜆 > 0; the open question is the characterization of the optimal robustness that can be achieved by any (1 + 𝜆 )-consistent algorithm. 
+
+> ∗Most of this work was done while the author was at CUHK(SZ).
+> †Corresponding author.
+
+1arXiv:2610.29037v1 [cs.DS] 21 Oct 2026 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 
+
+21.0 1.2 1.4 1.6 1.8
+
+> Consistency
+> 234567
+> Robustness
+
+n = 10      
+
+> 1.01.21.41.61.8
+> Consistency
+> 234567
+
+n = 50       
+
+> 1.01.21.41.61.82.0
+> Consistency
+> 246810 12
+
+n = ∞
+
+> Wei & Zhang (2020), unpadded Wei & Zhang (2020), padded Algorithm of Benomar et al. (2025)
+> Theorem 3.9 or 3.10 (This work, lower bound) Theorem 4.4 or 4.7 (This work, upper bound)
+
+Number of jobs , 𝑛 < 5 5 10 20 50 100 ∞
+
+Maximum gap ratio 1.0000 1.0053 1.0357 1.0604 1.0789 1.0861 1.0937 
+
+Fig. 1. Consistency-Robustness Bounds. Top: Comparison of our lower (Theorems 3.8 and 3.9) and upper (Theorems 4.4 and 4.7) bounds against prior results for various 𝑛 . Bottom: The maximum multiplicative gap (ratio) between our upper and lower bounds across all 𝜆 , computed numerically. Notably, the gap for 𝒏 = ∞
+
+converges to approximately 1.0937 , reflecting the gap between our asymptotic lower and upper bounds in Theorems 3.9 and 4.7; we rigorously establish the looser bound 3/2 on the gap for all 𝒏 in Theorem 4.6. 
+
+## Prior to this work, Wei and Zhang [42] established the best known lower bound for this problem, showing that any (1 + 𝜆 )-consistent algorithm must have robustness at least 
+
+## 𝛾 (𝑛, 𝜆 ) ≥ Φwz (𝑛, 𝜆 ) ≔ 𝑛 + 𝑛 (𝑛 + 1)𝜆 
+
+## 1 + 12 𝜆 (𝑛 + 1)( 𝑛 + 2) for 𝜆 ∈[︁ 0, 𝑛 −1
+
+> 𝑛 +1
+
+## ]︁ . (1) They also proposed an algorithm, two-stage schedule , which achieves (1 + 𝜆 )-consistency and 
+
+## (1 + 11+6𝜆 )-robustness in the restricted setting of 𝑛 = 2 jobs, matching their lower bound (1) in this case; their lower bound is also tight at the two endpoints 𝜆 = 0 and 𝜆 = 𝑛 −1 
+
+> 𝑛 +1
+
+## for any 𝑛 . However, the lower bound in (1) fails to exactly characterize the optimal robustness for general 𝑛 . In particular, one can prove that for 𝑛 ≥ 5, the lower bound in (1) can be strictly improved for some 𝜆 ∈ ( 0, 𝑛 −1 
+
+> 𝑛 +1
+
+## )
+
+## (see Proposition 3.2). Moreover, even after optimal padding 1 the resulting lower bound converges to the trivial bound of 2 as 𝑛 → ∞ for every fixed 𝜆 ∈ [ 1/2, 1), which is simply the optimal competitive ratio without predictions [34]. On the other hand, for a general number of jobs 𝑛 , Kumar et al. [22] proposed an algorithm called preferential round robin , which achieves (1 + 𝜆 )-consistency and (2 + 1 
+
+> 𝜆
+
+## )-robustness; 2 this tradeoff was subsequently improved by Benomar et al. [5], who proposed an algorithm achieving 
+
+## (1 + 𝜆 )-consistency and (1 + 1 
+
+> 𝜆
+
+## )-robustness. 3
+
+## Benomar et al. [5] initiated the study of a slightly different regime in which the number of jobs 𝑛 is allowed to depend on the consistency parameter 𝜆 and is chosen to yield the worst possible tradeoff; we call this the worst-case-𝑛 regime . In this setting, they adapted the lower bound construction 
+
+> 1
+
+Padding extends an instance with < 𝑛 jobs to 𝑛 jobs by adding dummy jobs with arbitrarily small predicted and actual processing times [42]; “optimal” refers to optimizing over the number of jobs in the original instance. 
+
+> 2
+
+The tradeoff is stated in [22] as (1 + 𝜆 )/( 2𝜆 )-consistency and 2 /( 1 − 𝜆 )-robustness, under an equivalent parameterization. 
+
+> 3
+
+The algorithm of Benomar et al. [5] has an additional parameter 𝜌 ∈ ( 0, 1]. Taking 𝜌 = 1 in their Theorem 2.4 gives this bound and minimizes the stated robustness bound for fixed consistency. , Vol. 1, No. 1, Article . Publication date: October 2026. Number of jobs , 𝑛 < 5 5 10 20 50 100 ∞       
+
+> Maximum gap ratio 1.0000 1.0053 1.0357 1.0605 1.0789 1.0861 1.0937
+
+Figure 1: Consistency-Robustness Bounds. Top: Comparison of our lower (Theorems 3.9 and 3.10) and upper (Theorems 4.4 and 4.7) bounds against prior results for various 𝑛 . We show both the original lower bound of Wei and Zhang (2020) and its optimally padded version; see Section 3.1 for details of padding. Bottom: The maximum multiplicative gap (ratio) between our upper and lower bounds across all 𝜆 , computed numerically. Notably, the gap for 𝒏 = ∞ converges to approximately 1.0937 , reflecting the gap between our asymptotic lower and upper bounds in Theorems 3.10 and 4.7; we rigorously establish the looser bound 3/2 on the gap for all 𝒏 in Theorem 4.6. Prior to this work, Wei and Zhang (2020) established the best known lower bound for this problem, showing that any 
+
+(1 + 𝜆 )-consistent algorithm must have robustness at least 
+
+𝛾 (𝑛, 𝜆 ) ≥ Φwz (𝑛, 𝜆 ) ≔ 𝑛 + 𝑛 (𝑛 + 1)𝜆 
+
+1 + 12 𝜆 (𝑛 + 1)( 𝑛 + 2) for 𝜆 ∈ 0, 𝑛 −1
+
+> 𝑛 +1
+
+ . (1) They also proposed an algorithm, two-stage schedule , which achieves (1 + 𝜆 )-consistency and (1 + 11+6𝜆 )-robustness in the restricted setting of 𝑛 = 2 jobs, matching their lower bound (1) in this case; their lower bound is also tight at the two endpoints 𝜆 = 0 and 𝜆 = 𝑛 −1 
+
+> 𝑛 +1
+
+for any 𝑛 . However, the lower bound in (1) fails to exactly characterize the optimal robustness for general 𝑛 : we show in Section 3.1 that this bound is loose in general. On the other hand, for a general number of jobs 𝑛 , Kumar et al. (2018) proposed an algorithm called preferential round robin , which achieves (1 + 𝜆 )-consistency and (2 + 1 
+
+> 𝜆
+
+)-robustness; 1 this tradeoff was subsequently improved by Benomar et al. (2025a), who proposed an algorithm achieving (1 + 𝜆 )-consistency and (1 + 1 
+
+> 𝜆
+
+)-robustness. 2 Benomar et al. (2025a) also initiated the study of a slightly different regime in which the number of jobs 𝑛 is allowed to depend on the consistency parameter 𝜆 and is chosen to yield the worst possible tradeoff; we call this the worst-case-𝑛 regime . In this setting, they adapted the lower bound construction of Wei and Zhang (2020) to show that, for any 𝜆 ∈ ( 0, 1), there exists a choice of 𝑛 such that any (1 + 𝜆 )-consistent algorithm incurs robustness at least 1 + Ω √︁ 1/𝜆 . On the other hand, the best known upper bound in this regime remains (1 + 𝜆 )-consistency and 1 + 𝑂 (1/𝜆 )-robustness (Kumar et al., 2018; Benomar et al., 2025a), leaving open a polynomial gap of Θ(𝜆 −1/2).Motivated by these gaps, our work seeks to answer the following questions: 
+
+Can we improve the lower and upper bounds on the consistency-robustness tradeoff for non-clairvoyant scheduling with predictions for any number of jobs 𝑛 ? In particular, can we develop an algorithm obtaining a near-optimal tradeoff for any 𝑛 , and close the polynomial gaps on robustness in the worst-case-𝑛 and 𝑛 → ∞ regimes?            
+
+> 1The tradeoff is stated in Kumar et al. (2018) as (1+𝜆 )/( 2𝜆 )-consistency and 2 /( 1−𝜆 )-robustness, which is equivalent up to reparameterization.
+> 2The algorithm of Benomar et al. (2025a) has an additional parameter 𝜌 ∈ ( 0,1]. Taking 𝜌 =1 in their Theorem 2.4 gives this bound and minimizes the stated robustness bound for fixed consistency.
+
+2Table 1: Summary of state-of-the-art bounds for non-clairvoyant scheduling with predictions. Entries denote lower/upper bounds on the robustness of a (1 + 𝜆 )-consistent algorithm, where 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+] is a tradeoff parameter. All bounds in the table are contributions of this work except the worst-case-𝑛 lower bound.                                                        
+
+> Setting Lower Bound Upper Bound Fixed 𝑛 (Finite) Implicit ★(Theorem 3.9) Explicit Finite Maximization ★(Theorem 4.4)
+> Fixed 𝑛 (𝑛 → ∞ )ˆ𝛾 (𝜆 ) ≥ √︁ 1/𝜆 †(Theorem 3.10) 12+√︃ 54+1/𝜆 (Theorem 4.7)
+> Worst-case-𝑛 1+Ω(√︁ 1/𝜆 )(Benomar et al., 2025a) 1+𝑂 (√︁ 1/𝜆 )(Theorem 4.7)
+> ★For every 𝑛 ≥2 and admissible 𝜆 , the two bounds differ by a factor of at most 3 /2 (Theorem 4.6).
+> †ˆ𝛾 (𝜆 )is the unique solution to the equation 1 +𝜆 =𝑥 −𝑥 2−𝑥 𝑥 +2(( 𝑥 −2)( 𝑥 +1)) 𝑥 𝑥 +2for 𝑥 > 2.
+
+## 1.1 Contributions 
+
+This paper makes contributions along two fronts: improved lower and upper bounds on consistency and robustness for the non-clairvoyant scheduling problem, and new technical ideas that enable these improved bounds. 
+
+Consistency–robustness tradeoff. This work provides a near-optimal characterization of the consistency–robustness tradeoff for non-clairvoyant scheduling. On the lower bound side, we prove that the bound of Wei and Zhang (2020) is not tight for 𝑛 ≥ 5, even when considering stronger padded versions of their bound (Proposition 3.1 and Corollary 3.3). We then derive a stronger, implicitly-defined lower bound Φ(𝑛 ) (𝜆 ) on the robustness of any (1 + 𝜆 )-consistent algorithm (Theorem 3.9). On the upper bound side, we propose a new algorithm, Modified Two-Stage Schedule (mTSS ), which achieves (1 + 𝜆 )-consistency and Ψ𝑛 (𝜆 )-robustness, where Ψ𝑛 (𝜆 ) is the optimal value of a certain finite optimization problem (Theorem 4.4). We prove that, for every 𝑛 ≥ 2 and admissible 𝜆 , our upper bound is at most 3 /2 times our lower bound (Theorem 4.6), and thus our algorithm achieves within a factor 3 /2 of the optimal robustness-consistency tradeoff. Moreover, our bounds can be computed for any value of 𝑛 , and appear to match empirically up to a much smaller multiplicative gap of ≲ 1.0937. We also characterize the asymptotic behavior of the optimal tradeoff as 𝑛 → ∞ . Specifically, we show that any 
+
+(1 + 𝜆 )-consistent algorithm must have robustness at least ˆ 𝛾 (𝜆 ) ≥ 1/√𝜆 in the large-𝑛 limit, while mTSS achieves robustness at most 12 +√︁ 54 + 1/𝜆 for every 𝑛 and admissible 𝜆 (Theorems 3.10 and 4.7). These bounds match in their leading term 1 /√𝜆 as 𝜆 ↓ 0. In particular, our lower bound improves the leading constant of the Wei–Zhang lower bound by a factor of √2 in this asymptotic regime (cf. Proposition 3.2). Our universal upper bound also closes the polynomial gap in the worst-case-𝑛 regime. We summarize our lower and upper bounds in Table 1 and show plots comparing our bounds against the prior state-of-the-art bounds in Figure 1. As consistency only measures algorithm performance under perfect predictions, we complement these guarantees on consistency and robustness by additionally studying how to retain good performance when predictions have bounded error. To this end, we develop a generic error-tolerant simulation method that preserves consistency while providing local smoothness, i.e., smooth degradation in performance as prediction error increases, at the cost of only a small increase in the worst-case robustness bound (Theorem 4.8). 
+
+Technical contributions. Our analysis departs from traditional combinatorial arguments by adopting an optimization-based perspective. Rather than analyzing specific hard instances or fixed algorithms, we formulate the search for consistency–robustness lower and upper bounds as variational problems over the space of adversarial attacks, using the following insights. 
+
+Lower bounds: from single-stage to multi-stage attacks. Existing lower bounds—in particular, the lower bound of Wei and Zhang (2020)—rely on adversaries that “attack” the algorithm at a single critical moment by revealing a prediction error. We introduce the 𝛼 -Instance Attack Set (Definition 3.4), which allows the adversary to choose among attacks at different stages—i.e., after varying numbers of jobs have been processed. This forces the algorithm to balance its processing decisions against multiple possible attack times and leads to a structured nonlinear optimization problem characterizing the relationship between consistency and robustness on this instance class (Problem 5 or 36). Our key structural insight is that, within a certain range of robustness values, optimality of a solution to this problem forces equal processing across unfinished jobs and tightness of all constraints (Lemma 3.6). This yields a transformation 3of the optimization problem into a finite system of bilinear equations implicitly characterizing the finite-𝑛 lower bound; in the asymptotic 𝑛 → ∞ limit, this system of equations yields the scaling √︁ 1/𝜆 . We anticipate that our general technique of developing and analyzing a multi-stage adversarial construction as an optimization problem may be useful for studying consistency–robustness tradeoffs in other online problems. 
+
+Upper bounds: reduction to the time of error detection. In developing our refined upper bounds, our algorithm  
+
+> mTSS
+
+refines the two-stage schedule of Wei and Zhang (2020) by enforcing exact calibration of consistency at the level (1 + 𝜆 ). To analyze this strategy, our main technical insight is that the high-dimensional, continuous space of prediction errors admits a simple worst-case structure for mTSS which reduces to algorithm performance at the time of error detection. Leveraging the affine structure of the online cost and the concavity of the offline optimum, we develop a unified reduction accounting for both over-predictions and under-predictions. Reparametrizing the remaining configurations with a collection of nonnegative “gap” variables, we show that the exact consistency calibration in mTSS 
+
+imposes a single linear equality constraint on these variables, so the resulting feasible region is a cone. Elements of this cone can be decomposed in order to obtain a simplified optimization-based expression for the robustness. Together, these techniques make robustness analysis tractable for general 𝑛 , yielding a computable finite-𝑛 guarantee and a closed-form universal bound that closes the polynomial gap in the worst-case-𝑛 and 𝑛 → ∞ regimes. 
+
+Note on concurrent work. After completing this work, we became aware of independent concurrent work currently under double-blind review for ICLR 2027 that also closes the polynomial gap in the consistency-robustness tradeoff for non-clairvoyant scheduling for worst-case-𝑛 , obtaining (1 + 𝜆 )-consistency and min {2/√𝜆, 2 + 1/√𝜆 }-robustness; they furthermore show that this tradeoff can be achieved using only ordinal predictions, rather than predicted processing times (Anonymous, 2026). Our results were obtained independently, prior to our becoming aware of this concurrent work. Moreover, our results are complementary and provide a finer characterization of the optimal tradeoff: we establish stronger lower bounds that strictly improve upon the construction of Wei and Zhang (2020) for general 𝑛 ≥ 5, sharpening the leading-order asymptotic lower bound; we develop an algorithm that achieves a robustness upper bound of 12 +√︁ 54 + 1/𝜆 , which is strictly tighter than that of the concurrent work; together, our lower and upper bounds establish the exact leading-order behavior of the optimal robustness 1 /√𝜆 as 𝜆 → 0 in the large-𝑛 regime; we prove that our algorithm’s upper bound is within a multiplicative factor 3 /2 of the online optimal for every 𝑛 ≥ 2 and 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+];and we show how to maintain a near-optimal consistency–robustness tradeoff while tolerating small prediction errors. 
+
+## 1.2 Related Work 
+
+Our work contributes to a long history of research on algorithms with predictions and the non-clairvoyant scheduling problem. We briefly review these areas below. 
+
+Learning-Augmented Algorithms. Learning-augmented algorithms (also known as algorithms with predictions )is an emerging research area that incorporates predictions about future inputs into algorithm design, with the goal of combining the strong empirical performance of machine learning predictors with the worst-case guarantees of traditional online algorithms. Since the introduction of this framework by Kumar et al. (2018) and Lykouris and Vassilvitskii (2021), it has been applied to a wide range of online problems such as caching (Lykouris and Vassilvitskii, 2021; Rohatgi, 2020; Wei, 2020; Im et al., 2022), ski rental (Kumar et al., 2018; Wei and Zhang, 2020; Antoniadis et al., 2021), online knapsack (Im et al., 2021; Lechowicz et al., 2024c; Daneshvaramoli et al., 2025), online conversion (Sun et al., 2021; Lechowicz et al., 2024b), convex function chasing (Christianson et al., 2022; Lechowicz et al., 2024a), and metrical task systems (Antoniadis et al., 2020; Christianson et al., 2023; Coester et al., 2026). Beyond classic online algorithms problems, the learning-augmented algorithms framework has also been adopted in several neighboring areas, including mechanism design (Agrawal et al., 2022; Balkanski et al., 2024), control (Li et al., 2022, 2024), and reinforcement learning (Golowich and Moitra, 2022; Li et al., 2023). While most works focus on developing algorithms with consistency and robustness guarantees, several recent works have proposed additional performance criteria that go beyond these standard notions, such as smooth degradation of performance in the face of prediction error (Elenter et al., 2024; Benomar et al., 2025b), learnability of predictions (Dinitz et al., 2021; Khodak et al., 2022), and prediction-specific performance guarantees (Li et al., 2026). Since improving consistency typically comes at the expense of robustness, an overarching goal of this area is to characterize the Pareto-optimal tradeoff between consistency and robustness (Wei and Zhang, 2020). A number of works have characterized exactly- or asymptotically-optimal consistency–robustness tradeoffs for online problems such 4as ski rental (Wei and Zhang, 2020), online conversion (Sun et al., 2021), metrical task systems (Christianson et al., 2023), and non-clairvoyant scheduling with 2 jobs (Wei and Zhang, 2020). However, despite this progress, exact and asymptotically Pareto-optimal consistency–robustness tradeoffs remain open for many online problems, including non-clairvoyant scheduling with a general number of jobs 𝑛 .
+
+Non-Clairvoyant Scheduling. Scheduling problems are a foundational class of optimization problems with a wide variety of applications spanning computer systems and operations research (Panwalkar and Iskander, 1977; Lenstra and Rinnooy Kan, 1978; Pinedo, 2022). In its most basic form, scheduling considers a set of jobs to be processed on a single machine, with the objective of minimizing the total completion time of all jobs. In the non-clairvoyant setting, where job processing times are unknown a priori and are revealed only upon completion, the Round-Robin (RR )algorithm, which divides the machine equally among all unfinished jobs, achieves the optimal deterministic competitive ratio 2 𝑛 /( 𝑛 + 1) for 𝑛 jobs; its tight uniform bound over all 𝑛 is 2 (Motwani et al., 1994). In contrast, in the clairvoyant setting where job processing times are known a priori, the Shortest Job First (SJF ) algorithm, which schedules jobs in non-decreasing order of their sizes, is optimal. Beyond these classic settings, a growing body of work has studied scheduling models augmented with machine-learned predictions, with the goal of leveraging predicted job properties to improve performance while preserving worst-case guarantees. The most standard prediction model assumes that predictions provide estimates of all job processing times. Using this model, Kumar et al. (2018) proposed the Preferential Round-Robin algorithm, which achieves (1 + 𝜆 )-consistency and (2 + 1/𝜆 )-robustness. Subsequently, Wei and Zhang (2020) established a lower bound on the achievable consistency–robustness tradeoff in this setting, and showed that their bound is tight for 𝑛 = 2 jobs, as well as at the two endpoints of the consistency parameter 𝜆 .A number of works have also explored alternative prediction models and performance metrics, such as partial predictions (Benomar and Perchet, 2024), permutation predictions (Lindermayr and Megow, 2022), progress bar predictions (Benomar et al., 2025a), classification-based predictions (Dugois et al., 2026), different metrics of prediction error (Im et al., 2023), and smoothness (Zhao and Zomaya, 2026). The results of Benomar et al. (2025a) in particular specialize to the setting we consider, improving upon the consistency–robustness tradeoff of Kumar et al. (2018) by giving (1 + 𝜆 )-consistency and (1 + 1/𝜆 )-robustness. Their work also established a robustness lower bound of 1 + Ω(√︁ 1/𝜆 ) for any (1 + 𝜆 )-consistent algorithm in the aforementioned “worst-case 𝑛 ” regime. 
+
+# 2 Problem Formulation and Preliminaries 
+
+In this section, we formally introduce the non-clairvoyant scheduling problem with and without predictions, as well as the performance metrics we consider in this work. Throughout the paper, we restrict our attention to deterministic algorithms. 
+
+Notation. N, N+, and R denote the sets of natural numbers with and without zero, and real numbers, respectively. 
+
+R𝑛  
+
+> ≥0
+
+is the set of vectors with nonnegative real coordinates. Define [𝑛 ] ≔ {1, . . . , 𝑛 } for 𝑛 ∈ N+. In asymptotic notation involving the variable 𝜆 , the implied regime is 𝜆 → 0. 
+
+## 2.1 The Classic Non-Clairvoyant Scheduling Problem 
+
+In the classic single-machine non-clairvoyant scheduling problem, a scheduler is given 𝑛 jobs. Job 𝑖 ∈ [ 𝑛 ] requires 
+
+𝑥 𝑖 units of processing on the machine, but 𝑥 𝑖 is unknown to the scheduler until the job completes. At each time, the machine has one unit of processing capacity. A schedule may allocate this capacity among unfinished jobs, and jobs may be preempted and resumed at any time at no cost; equivalently, a fractional allocation can be implemented by time-slicing on a single machine with arbitrarily small time quanta. The objective is to minimize the total completion time Í𝑖 ∈ [ 𝑛 ] 𝐶 𝑖 , where 𝐶 𝑖 is the clock time at which job 𝑖 completes, i.e., the first time by which job 𝑖 has received its required 𝑥 𝑖 units of processing. An instance of the problem is specified by the vector of processing requirements 
+
+𝐼 = (𝑥 1, . . . , 𝑥 𝑛 ); we use I to denote the set of all such instances. As a benchmark, the clairvoyant version of the problem is the case in which the processing requirements {𝑥 𝑖 }𝑖 ∈ [ 𝑛 ]
+
+are known to the scheduler in advance. In this setting, it is well known that Shortest Remaining Processing Time 
+
+(SRPT ) minimizes the total completion time (Schrage, 1968). Since all jobs are available at time 0, this is equivalent to Shortest Job First (SJF ), a special case of Smith’s rule (Smith, 1956). However, in the non-clairvoyant setting, 5the processing requirements are unknown a priori , so algorithms are evaluated by comparing their total completion time to the clairvoyant optimum (Motwani et al., 1994). This performance metric is formalized as the competitive ratio (Borodin and El-Yaniv, 2005), defined as follows. 
+
+Definition 2.1 (Competitive Ratio) . Let I denote the set of instances of the non-clairvoyant scheduling problem. For an algorithm A and instance 𝐼 ∈ I , let ALG (A, 𝐼 ) be the total completion time achieved by A, and let OPT (𝐼 ) be the total completion time of the optimal clairvoyant schedule. An algorithm A is 𝑐 -competitive, or has competitive ratio 𝑐 , if 
+
+ALG (A, 𝐼 ) ≤ 𝑐 · OPT (𝐼 ) for all 𝐼 ∈ I .
+
+It was established by Motwani et al. (1994) that the Round-Robin ( RR ) algorithm achieves the optimal deterministic competitive ratio of 2 𝑛 /( 𝑛 + 1) for 𝑛 jobs, with a tight uniform bound of 2 over all 𝑛 .
+
+## 2.2 Non-Clairvoyant Scheduling with Predictions 
+
+The competitive ratio measures the worst-case performance of an algorithm on any problem instance; however, in practice, one may be able to do better when given predictions about the underlying instance. To move beyond the pessimism of worst-case algorithms for non-clairvoyant scheduling, we consider the “prediction-augmented” setting, where the algorithm has access to a prediction for each job’s size; let 𝑦 𝑖 denote the predicted size of job 𝑖 . Importantly, we place no assumptions on the accuracy of these predictions: they can be arbitrarily inaccurate or even adversarial. Thus, the algorithm seeks to take advantage of the predictions when they are good, while remaining robust in case of poor prediction quality. Consistent with the standard non-clairvoyant scheduling model, we continue to assume that the true processing time 𝑥 𝑖 of each job 𝑖 is not known to the algorithm in advance and is revealed only once the job has received 𝑥 𝑖 units of processing. To evaluate the performance of algorithms for non-clairvoyant scheduling with predictions, we use the standard notions of consistency and robustness (Kumar et al., 2018; Wei and Zhang, 2020). To formalize these criteria, we define an instance of the prediction-augmented problem as comprising both the true processing requirements {𝑥 𝑖 }𝑖 ∈ [ 𝑛 ] and the predicted processing requirements {𝑦 𝑖 }𝑖 ∈ [ 𝑛 ] of the jobs in an instance. Let I denote the set of all such instances, and let I∗ ⊆ I denote the set of consistent instances , i.e., those for which the predictions are correct, so 𝑥 𝑖 = 𝑦 𝑖 for all 𝑖 ∈ [ 𝑛 ]. Consistency then measures the worst-case performance of an algorithm over all consistent instances I∗,while robustness considers the worst case over all prediction-augmented instances I, regardless of prediction quality. Formally, we have the following definitions: 
+
+Definition 2.2 (Consistency and Robustness) . The consistency of an algorithm A is its worst-case competitive ratio over consistent instances. In particular, an algorithm A is 𝛽 -consistent if 
+
+ALG (A, 𝐼 ) ≤ 𝛽 · OPT (𝐼 ) for all 𝐼 ∈ I ∗.
+
+The robustness of A is its worst-case competitive ratio over all instances. In particular, an algorithm A is 𝛾 -robust if 
+
+ALG (A, 𝐼 ) ≤ 𝛾 · OPT (𝐼 ) for all 𝐼 ∈ I .
+
+In learning-augmented algorithms, there is typically a tradeoff between consistency and robustness: a smaller consistency requires the algorithm to more closely follow the predictions, which can in turn lead to a larger robustness. From a game-theoretic perspective, for a given parameter 𝜆 > 0, the optimal consistency–robustness tradeoff can be viewed as the equilibrium of a constrained minimax game in which the algorithm aims to minimize its worst-case robustness subject to maintaining (1 + 𝜆 )-consistency, while an adversary chooses instances to maximize the algorithm’s robustness. This is the view that will guide our lower and upper bounds in this work as we seek to characterize this equilibrium. 
+
+# 3 Lower Bounds 
+
+In this section, we prove a sharper lower bound on the consistency–robustness tradeoff for non-clairvoyant scheduling with predictions that significantly improves on the lower bound of Wei and Zhang (2020). As a warmup, we first revisit the lower bound construction of Wei and Zhang (2020) and show that it is not tight in general. Motivated by this 6Δt
+
+Adversarial attack in 
+
+Wei and Zhang (2020) 
+
+Delaying the attack 
+
+by time 
+
+## x2
+
+## Δt
+
+> -consistency constraint
+
+(1 + λ)
+
+Adversarial attack in 
+
+Proposition 3.1 
+
+Job 1 Job 2 Job 3 ⋮Job nFigure 2: Comparison of the adversarial attacks used in Proposition 3.1 . Left: the blue dashed line marks the single attack of Wei and Zhang (2020). Right: our construction retains this attack and adds the delayed attack (red dashed line) after an additional Δ𝑡 of processing. Since the original attack exhausts the algorithm’s flexibility under the consistency constraint, the additional attack yields a strictly stronger lower bound for 𝑛 ≥ 5. limitation, we then introduce a stronger multi-stage adversarial strategy, express the robustness-consistency tradeoff that it induces as a nonlinear optimization problem, and show how this problem can be transformed into a form that gives an implicit lower bound for every finite 𝑛 and an asymptotic form as 𝑛 → ∞ .In the analysis that follows, it suffices to restrict our attention to work-conserving algorithms, which use the full processing capacity whenever a job remains unfinished, since eliminating unused capacity cannot increase completion times. We let 𝑑 (𝑖, 𝑗 ) denote the cumulative amount of processing that has been received by job 𝑖 when job 𝑗 completes. 
+
+## 3.1 Warmup: Looseness of the Wei and Zhang Lower Bound 
+
+As mentioned in the introduction, Wei and Zhang (2020) show that any (1 +𝜆 )-consistent algorithm must have robustness lower bounded as in (1), and that this bound is tight (a) when 𝑛 = 2 and (b) at the two endpoints 𝜆 = 0 and 𝜆 = 𝑛 −1 
+
+> 𝑛 +1
+
+for general 𝑛 . In this section, we show that their lower bound is not tight in general, identifying a structural limitation that makes it loose for 𝑛 ≥ 5. In particular, we have the following result. 
+
+Proposition 3.1. When 𝑛 ≥ 5, the lower bound in (1) obtained by Wei and Zhang (2020) is not tight. In particular, there exists a choice of 𝜆 ∈  0, 𝑛 −1
+
+> 𝑛 +1
+
+ such that any (1 + 𝜆 )-consistent algorithm has robustness strictly greater than 
+
+Φwz (𝑛, 𝜆 ), where Φwz (𝑛, 𝜆 ) is defined in (1) .
+
+Proof Sketch for Proposition 3.1. The lower bound construction in Wei and Zhang (2020) can be interpreted as fixing the prediction profile 𝑦 1 = 𝑦 2 = · · · = 𝑦 𝑛 = 1 and considering the adversarial input 
+
+𝑥 1 = 1, 𝑥 𝑖 = 𝑑 (𝑖, 1) + 𝜀 for all 𝑖 ≥ 2, with 𝜀 ↓ 0, (2) which “attacks” the algorithm with an incorrect prediction immediately upon the completion of the first job. Their analysis shows that for any algorithm to achieve the lower bound in (1), a necessary condition is 
+
+𝑑 (2, 1) = · · · = 𝑑 (𝑛, 1) = 𝑛 +1 
+
+> 𝑛 −1
+
+𝜆. (3) As illustrated in Figure 2, this forces the algorithm to exhaust its flexibility budget —that is, the algorithm’s flexibility to not directly follow predictions, offered by the 𝜆 consistency buffer—when the first job finishes in order to minimize the competitive ratio over the adversarial input (2). We consider the following two cases. If (3) is not satisfied, then the lower bound is strictly greater than (1). On the other hand, if (3) is satisfied, then since there is no remaining flexibility budget , the algorithm must finish the remaining jobs in the predicted order. Thus, we can delay the “attack” 𝑥 2 by Δ𝑡 —i.e., set 𝑥 2 = 𝑑 (2, 1) + Δ𝑡 for some Δ𝑡 > 𝜖 —while keeping 𝑥 𝑖 unchanged for all 𝑖 > 2. As a result, the incurred cost of the online algorithm increases by (𝑛 − 1)Δ𝑡 , whereas the cost of the offline optimum increases by only 2 Δ𝑡 . In particular, when 𝑛 ≥ 5, there exists some 𝜆 ∈ ( 0, 𝑛 −1 
+
+> 𝑛 +1
+
+) such that the bound in (1) is strictly smaller than 𝑛 −12 . Therefore, delaying the attack yields a strictly larger competitive 7ratio for these values of 𝜆 . Combining the two cases, we obtain the non-tightness result; the full proof is presented in Appendix B.1. □
+
+The above proposition shows that, for a fixed number of jobs 𝑛 , the lower bound construction of Wei and Zhang (2020) is not tight. However, it is possible to pad their construction to potentially strengthen the lower bound for a given 
+
+𝑛 , as described in (Wei and Zhang, 2020, Section 3.2): a lower bound for 𝑘 jobs also gives a lower bound for 𝑛 ≥ 𝑘 
+
+jobs by adding 𝑛 − 𝑘 “dummy” jobs with zero predicted and actual processing times. Thus, the strongest lower bound obtained by padding their construction is 
+
+Φpad wz (𝑛, 𝜆 ) ≔ max   
+
+> 2≤𝑘 ≤𝑛 𝜆 ≤ ( 𝑘 −1)/( 𝑘 +1)
+
+Φwz (𝑘, 𝜆 ), (4) where Φwz (𝑘, 𝜆 ) is simply the original lower bound in (1); the restriction on 𝑘 ensures that 𝜆 lies in the range of the corresponding 𝑘 -job lower bound. Notably, as 𝑛 → ∞ , the optimally padded lower bound of Wei and Zhang (2020) converges to the supremum of their original lower bound over the number of jobs, yielding the scaling Ω(√︁ 1/𝜆 ) as 
+
+𝜆 ↓ 0: 
+
+Proposition 3.2. For every fixed 𝜆 ∈ ( 0, 1), the limit Φpad wz (∞ , 𝜆 ) ≔ lim 𝑛 →∞ Φpad wz (𝑛, 𝜆 ) exists. Moreover, Φpad wz (∞ , 𝜆 ) = 2
+
+for 𝜆 ∈ [ 1/2, 1), and Φpad wz (∞ , 𝜆 ) = 1+𝑜 (1)√2𝜆 as 𝜆 ↓ 0.
+
+This result is proved in Appendix B.2. This asymptotic limit yields two key observations: first, when 𝜆 ∈ [ 1/2, 1),the padded lower bound converges to the trivial bound of 2 as 𝑛 → ∞ , which is simply the robustness in the setting without predictions (Motwani et al., 1994). Second, as 𝜆 ↓ 0, the leading term of this lower bound is 1 /√2𝜆 , which asymptotically matches the “worst-case 𝑛 ” lower bound of Benomar et al. (2025a). As we will show later, our strengthened lower bound can improve this leading term to 1 /√𝜆 , matching our upper bound (Theorem 3.10). Moreover, as we show in the following corollary, this padding remains insufficient to characterize the optimal worst-case robustness even for finite 𝑛 .
+
+Corollary 3.3. When 𝑛 ≥ 5, the lower bound of Wei and Zhang (2020) is not tight even after optimal padding. In particular, for every 𝜆 ∈ [ 12 , 𝑛 −1 
+
+> 𝑛 +1
+
+), any (1 + 𝜆 )-consistent algorithm for 𝑛 jobs has robustness strictly greater than 
+
+Φpad wz (𝑛, 𝜆 ), as defined in (4) .
+
+A proof of this result is given in Appendix B.3. Altogether, Propositions 3.1 and 3.2 and Corollary 3.3 demonstrate that the construction of Wei and Zhang (2020), which attacks the algorithm immediately upon the completion of the first job, is insufficient to characterize the worst-case behavior for general 𝑛 . Thus, in the next section, we will introduce a multi-stage adversarial framework to obtain stronger lower bounds. 
+
+## 3.2 Designing a New Adversarial Strategy 
+
+Motivated by the construction in the proof of Proposition 3.1, in this section, we introduce a multi-stage adversarial framework in which the adversary can choose when to reveal the prediction error among multiple times. We adopt the same prediction profile as in the previous construction and define our 𝛼 -Instance Attack Set as follows. 
+
+Definition 3.4 (𝛼 -Instance Attack Set) . Let 𝛼 ∈ [ 𝑛 −1]. Suppose all predictions are identical, i.e., 𝑦 1 = 𝑦 2 = · · · = 𝑦 𝑛 = 1.Let A be an algorithm that completes jobs in increasing index order when the prediction is accurate (i.e., when 
+
+x = y = 1), and let 𝑑 (𝑖, 𝑗 ) denote the cumulative amount of processing received by job 𝑖 when job 𝑗 finishes under this execution, assuming accurate predictions. The 𝛼 -Instance Attack Set is defined as the set of processing time vectors 
+
+X𝛼 (A) ≔ {x𝑖 }𝑖 ∈ [ 𝛼 ] , where the 𝑖 -th attack instance’s processing time vector x𝑖 is given by 
+
+x𝑖 ≔ (1, . . . , 1
+
+| {z } 
+
+> 𝑖 copies
+
+, 𝑑 (𝑖 +1, 𝑖 ) + 𝜀, . . . , 𝑑 (𝑛, 𝑖 ) + 𝜀 ),
+
+where 𝜀 > 0 denotes an infinitesimal quantity. 
+
+For a fixed 𝛼 , the 𝛼 -Instance Attack Set consists of a family of 𝛼 different candidate instances, from which the adversary selects the one that induces the greatest robustness. For instances in this set, it suffices to restrict our attention 8x1 x2 . . . 
+
+## 𝒳 α
+
+Chebyshev’s Sum Inequality 
+
+xα R(x1) = R(x2) = … = R(xα) = γ* Racc = 1 + λ
+
+Perturbation-based Analysis 
+
+Order- System α     
+
+> Racc ≤ 1 + λ
+> R(xi) ≤ γ, ∀ i∈ [ α]
+
+Job 1 Job 2 Job 3 ⋮Job nFigure 3: Structural characterization of optimal processing profiles (Lemma 3.6). Different colors correspond to processing snapshots when successive jobs finish: darker shades highlight the completing job, while lighter shades indicate the processing of the other unfinished jobs. Dashed lines mark the corresponding attack instances. Here, 𝑅 (x𝑖 )
+
+denotes the competitive ratio on the 𝑖 -th attack instance x𝑖 in the 𝛼 -Instance Attack Set X𝛼 , while 𝑅 acc denotes the competitive ratio under perfect predictions. At optimality, equal processing among unfinished jobs and tight attack and consistency constraints yield the Order-𝛼 System. to algorithms whose processing profile is monotone in the following sense: for any fixed 𝑘 , the quantities 𝑑 (𝑖, 𝑘 ) are non-increasing as 𝑖 increases. That is, when job 𝑘 finishes, the algorithm has performed more processing on earlier jobs than later jobs. This assumption can be made without loss of generality, since for any algorithm A, there exists another algorithm A′ with this monotonicity property that is equivalent to A with respect to its behavior on the attack set, in the sense that attacking A over X𝛼 (A) yields the same outcomes as attacking A′ over X𝛼 (A′). We formalize this equivalence in the following lemma, which is proved in Appendix B.4. 
+
+Lemma 3.5. Suppose all predictions are identical, i.e., 𝑦 1 = 𝑦 2 = · · · = 𝑦 𝑛 = 1. For any work-conserving algorithm A
+
+that completes jobs in increasing index order, there exists another algorithm A′ that also completes jobs in increasing index order and satisfies 𝑑 (𝑖, 𝑘 ) ≥ 𝑑 ( 𝑗, 𝑘 ) for all 𝑗 ≥ 𝑖 > 𝑘, and such that the two algorithms are equivalent in the sense that (a) they have the same competitive ratio when predictions are perfect, and (b) attacking A with an instance from 
+
+X𝛼 (A) yields the same competitive ratio as attacking A′ with an instance from X𝛼 (A′).
+
+## 3.3 A Strictly Improved Lower Bound 
+
+In this section, we will establish that the 𝛼 -Instance Attack Set enables an improved lower bound. We begin by outlining the proof strategy before stating the refined lower bound formally. 
+
+Overview of the Lower-Bound Construction. Fix the prediction profile 𝑦 1 = · · · = 𝑦 𝑛 = 1. For an attack depth 𝛼 ,the adversary chooses among the 𝛼 candidate instances in X𝛼 (A) (Definition 3.4). For any target robustness level 𝛾 , the algorithm must therefore satisfy this robustness bound on any attack from the set while maintaining (1 + 𝜆 )-consistency when the predictions are perfect. We will eventually select 𝛼 according to a prescribed rule, which we will specify later in this section; for now, assume that 𝛼 ∈ [ 𝑚 ], where 𝑚 is the maximum allowed attack depth. By Lemma 3.5, we may restrict our attention to monotone processing profiles. For 𝑖 ∈ [ 𝛼 ] and 𝑗 > 𝑖 , let 
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
+≔ 𝑑 ( 𝑗, 𝑖 ) denote the processing received by an unfinished job 𝑗 when job 𝑖 completes. We can then formulate the following nonlinear optimization problem for minimizing the robustness 𝛾 while maintaining consistency: min  
+
+> 𝛾, p
+
+𝛾 (5a) s.t. 𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 +∑︁ 
+
+> 𝑗<𝑖 𝑛
+
+∑︁  
+
+> 𝑘 =𝑗 +1
+
+𝑝 ( 𝑗 ) 
+
+> 𝑘
+
++ ( 𝑛 + 1 − 𝑖 )
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝑖 +1
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
+≤ 𝛾 ©«
+
+𝑖 (𝑖 + 1)
+
+2 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝑖 +1
+
+𝑗 𝑝 (𝑖 )
+
+> 𝑗
+
+ª®¬
+
+, 𝑖 ∈ [ 𝛼 ], (5b) 
+
+𝑛 (𝑛 + 1)
+
+2 +∑︁ 
+
+> 𝑖< 𝛼 𝑛
+
+∑︁ 
+
+> 𝑗 =𝑖 +1
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
++
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝛼 +1
+
+( 𝑗 − 𝛼 ) 𝑝 ( 𝛼 ) 
+
+> 𝑗
+
+≤ ( 1 + 𝜆 ) 𝑛 (𝑛 + 1)
+
+2 , (5c) 0 ≤ 𝑝 (𝑖 ) 
+
+> 𝑛
+
+≤ · · · ≤ 𝑝 (𝑖 ) 
+
+> 𝑖 +1
+
+≤ 1, 𝑖 ∈ [ 𝛼 ]; 𝑝 (𝑖 ) 
+
+> 𝑗
+
+≤ 𝑝 (𝑖 +1) 
+
+> 𝑗
+
+, 𝑖 ∈ [ 𝛼 − 1], 𝑖 + 1 < 𝑗 ≤ 𝑛, (5d) 9where each constraint in (5b) enforces 𝛾 -robustness on an attack in the 𝛼 -Instance Attack Set, (5c) enforces the consistency budget, and (5d) specifies the bounds and monotonicity of the processing profiles. We denote the optimal value of this optimization problem by 𝜙 𝛼,𝑛 (𝜆 ); existence of an optimal solution is established in Lemma B.1. Our key structural insight is that, within a certain range of optimal values, optimality forces both symmetry and tightness. Specifically, an optimal processing profile assigns equal processing to all unfinished jobs at each time of attack, makes every attack robustness constraint tight, and exhausts the consistency budget when the 𝛼 -th job finishes. In particular, we have the following lemma. 
+
+Lemma 3.6. Fix 𝛼 ∈ [ 𝑚 ] and 𝜆 ∈ ( 0, 𝑛 −1 
+
+> 𝑛 +1
+
+). Suppose that 2𝑛 𝑛 +1 < 𝜙 𝛼,𝑛 (𝜆 ) < 𝑛 +1− 𝛼 𝛼 . Then every optimal solution to Problem 5 satisfies 
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
+= 𝑝 (𝑖 ) for every 𝑖 ∈ [ 𝛼 ] and 𝑗 > 𝑖, 
+
+for some 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) . Moreover, all attack constraints (5b) and the consistency constraint (5c) hold with equality. 
+
+The proof of this lemma recursively constructs a symmetric comparison profile with the same robustness and tight attack constraints. A comparison using Chebyshev’s inequality shows that it uses no more consistency budget than the original optimum; any unused budget would allow a feasible perturbation decreasing the robustness level 𝛾 , contradicting optimality. The equality conditions then force the two profiles to coincide. The full proof appears in Appendix B.5. The lemma reduces the processing variables for each job and each attack instance to the common values 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) ,one for each instance. Substituting them into the tight attack and consistency constraints yields the following system of 
+
+𝛼 + 1 bilinear equations characterizing the optimal solution. 
+
+Definition 3.7 (Order-𝛼 System) . Fix integers 𝑛 ≥ 2 and 𝛼 ∈ [ 𝑚 ], and a parameter 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+]. The Order-𝛼 System 
+
+Sys 𝛼 (𝑛, 𝜆 ) is a collection of 𝛼 + 1 equations in the variables (𝛾, 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) ) given by 
+
+(2𝑛 + 1 − 𝑖 )𝑖 
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )( 𝑛 − 𝑖 ) 𝑝 (𝑖 ) = 𝛾 
+
+ 𝑖 (𝑖 + 1)
+
+2 + (𝑛 + 𝑖 + 1)( 𝑛 − 𝑖 )
+
+2 𝑝 (𝑖 )
+
+
+
+(6) 
+
+for every 𝑖 ∈ [ 𝛼 ], and 
+
+𝜆 𝑛 (𝑛 + 1)
+
+2 =
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + (𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 )
+
+2 𝑝 ( 𝛼 ) . (7) Equation (6) expresses equality in the 𝑖 -th attack constraint, while (7) expresses full use of the consistency budget upon the completion of the 𝛼 -th job. The common processing amounts 𝑝 (𝑖 ) reveal how a rational online decision maker should balance its processing allocations to hedge against the different possible attacks in the 𝛼 -Instance Attack Set. Under the hypothesis of Lemma 3.6, the optimal value 𝜙 𝛼,𝑛 (𝜆 ) is exactly the robustness coordinate of the solution to this system. 
+
+Selecting the attack depth 𝛼 . Fix 𝑛 ≥ 2. To understand when to increase the attack depth, consider a symmetric optimal profile (as in Lemma 3.6) at depth 𝛼 < 𝑛 − 1. Completing job 𝛼 + 1 while leaving the processing of the other unfinished jobs unchanged takes Δ𝑡 = 1 − 𝑝 ( 𝛼 ) . Compared with the 𝛼 -th attack, the resulting attack delays the completion of all 
+
+𝑛 − 𝛼 unfinished jobs by Δ𝑡 , increasing the online cost by (𝑛 − 𝛼 )Δ𝑡 . For the offline optimum, the enlarged job is the 
+
+(𝛼 + 1)-th largest, so its additional processing delays itself and the 𝛼 jobs scheduled after it, increasing the offline cost by (𝛼 + 1)Δ𝑡 . When Δ𝑡 > 0, this increases the competitive ratio precisely when 
+
+𝜙 𝛼,𝑛 (𝜆 ) < 𝑛 − 𝛼 𝛼 + 1 .
+
+Thus, the additional attack exposes a weakness of the profile that was optimal at depth 𝛼 , motivating an increase in the attack depth. Therefore, we start with 𝛼 = 1 and iteratively increase the attack depth from 𝑖 to 𝑖 + 1 whenever 
+
+𝜆 > 𝜙 −1
+
+> 𝑖,𝑛
+
+  𝑛 −𝑖 𝑖 +1
+
+. Figure 4 illustrates the resulting attack-depth transitions as 𝜆 increases for 𝑛 = 20. For 0 < 𝜆 < (𝑛 − 1)/( 𝑛 + 1), we therefore choose the smallest 𝛼 ∈ [ 𝑛 − 1] satisfying 
+
+𝜙 𝛼,𝑛 (𝜆 ) ∈ 
+
+ 𝑛 − 𝛼 𝛼 + 1 , 𝑛 + 1 − 𝛼 𝛼 
+
+
+
+. (8) Lemma B.3 verifies the validity of this selection rule. Since the universal lower bound 𝜙 𝛼,𝑛 (𝜆 ) ≥ 2𝑛 /( 𝑛 + 1) ensures that the lower threshold is met once 𝑛 − 𝛼 𝛼 +1 ≤ 2𝑛 𝑛 +1 , it suffices to consider 𝛼 ∈ [ 𝑚 ], where 𝑚 is the maximum allowed attack 10 0.0 0.2 0.4 0.6 0.8          
+
+> ∏
+> 0510 15 20
+> ∞ ∞=n°12
+> 0.00.20.40.60.8
+> ∏
+> 510 15 20
+> ∞
+> 0.00.20.40.60.8
+> ∏
+> 0510 15 20
+> ∞
+
+## ⋯   
+
+> Φ1, n(λ)Φ1, n(λ)
+> Φ2, n(λ)
+> Φ1, n(λ)
+> Φ2, n(λ)
+> Φ3, n(λ)⋯Φ7, n(λ)
+
+Figure 4: Successive attack-depth transitions as 𝜆 increases, illustrated for 𝑛 = 20. The attack depth 𝛼 increases from 𝑖 
+
+to 𝑖 + 1 when the current bound falls below 𝛾 = (𝑛 − 𝑖 )/( 𝑖 + 1), as indicated by the horizontal dashed lines. Different colors indicate attack depths, while gray horizontal dashed lines mark thresholds between consecutive depths. The panels show the progression from depth one to the maximal depth 𝑚 = 7. depth, defined as 
+
+𝑚 ≔ max 
+
+
+
+𝑖 ∈ [ 𝑛 − 1] : 𝑛 + 1 − 𝑖 𝑖 > 2𝑛 𝑛 + 1
+
+
+
+. (9) We now define the corresponding value functions and combine them according to this selection rule. 
+
+Definition 3.8 (Depth-𝛼 Value Functions) . For 𝛼 ∈ [ 𝑚 ] and 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+], let 
+
+Sol 𝛼 (𝑛, 𝜆 ) ≔  Φ𝛼,𝑛 (𝜆 ), 𝑝 (1) , . . . , 𝑝 ( 𝛼 )  ∈
+
+ 2𝑛 𝑛 + 1 , 𝑛 + 1 − 𝛼 𝛼 
+
+
+
+× [ 0, 1] 𝛼 
+
+denote the solution to Sys 𝛼 (𝑛, 𝜆 ) whenever it admits an admissible solution. Its robustness coordinate Φ𝛼,𝑛 is called the depth-𝛼 value function .If 𝑚 = 1, define Φ(𝑛 ) = Φ 1,𝑛 throughout [0, 𝑛 −1 
+
+> 𝑛 +1
+
+]. For 𝑚 ≥ 2, define 
+
+Φ(𝑛 ) (𝜆 ) ≔
+
+
+
+Φ1,𝑛 (𝜆 ) when 𝜆 ∈
+
+h
+
+0, Φ−11,𝑛 
+
+ 𝑛 −12
+
+i 
+
+,
+
+Φ2,𝑛 (𝜆 ) when 𝜆 ∈
+
+
+
+Φ−11,𝑛 
+
+ 𝑛 −12
+
+
+
+, Φ−12,𝑛 
+
+ 𝑛 −23
+
+i 
+
+,... ...
+
+Φ𝑚,𝑛 (𝜆 ) when 𝜆 ∈
+
+
+
+Φ−1
+
+> 𝑚 −1,𝑛
+
+ 𝑛 +1−𝑚 𝑚 
+
+
+
+, 𝑛 −1
+
+> 𝑛 +1
+
+i
+
+.
+
+(10) 
+
+When 𝑚 = 2, only the first and last cases apply. 
+
+Appendix A.1 establishes the well-posedness of these definitions, including existence and uniqueness, continuity, strict monotonicity, and agreement of consecutive value functions at their transition points. Each Φ𝛼,𝑛 can be computed numerically by solving the Order-𝛼 System on its admissible domain. For 0 < 𝜆 < (𝑛 − 1)/( 𝑛 + 1), the selected depth satisfies 𝜙 𝛼,𝑛 (𝜆 ) = Φ 𝛼,𝑛 (𝜆 ) = Φ (𝑛 ) (𝜆 ). Since 𝜙 𝛼,𝑛 (𝜆 ) is a robustness lower bound, this yields the following theorem. The full proof, including the endpoint cases and strict improvement over the previous bound, appears in Appendix B.5. 
+
+Theorem 3.9. Let 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+]. Any (1 + 𝜆 )-consistent algorithm for 𝑛 -job non-clairvoyant scheduling with predictions must have robustness 𝛾 ≥ Φ(𝑛 ) (𝜆 ). For 𝑛 ≥ 5, this strictly improves on the lower bound (1) of Wei and Zhang (2020) whenever Φ−11,𝑛 ( 𝑛 −12 ) < 𝜆 < 𝑛 −1 
+
+> 𝑛 +1
+
+, where Φ−11,𝑛 ( 𝑛 −12 ) = 2  
+
+> 𝑛 2−3𝑛 −2
+
+.
+
+## 3.4 An Asymptotic Lower Bound as 𝑛 → ∞ 
+
+In the previous section, we showed how to obtain an implicit lower bound on robustness in the fixed, finite-𝑛 setting via the solution of the Order-𝛼 System of bilinear equations. Building on this characterization, we can derive the following explicit lower bound in the asymptotic regime 𝑛 → ∞ .11 Theorem 3.10. Fix 𝜆 ∈ ( 0, 1). As 𝑛 → ∞ , any (1 + 𝜆 )-consistent algorithm for non-clairvoyant scheduling must have robustness at least ˆ𝛾 (𝜆 ), where ˆ𝛾 (𝜆 ) is the unique solution to the equation 
+
+1 + 𝜆 = 𝑥 − 𝑥 2−𝑥 𝑥 +2 (( 𝑥 − 2)( 𝑥 + 1)) 𝑥 𝑥 +2 , 𝑥 > 2. (11) 
+
+In particular, ˆ𝛾 (𝜆 ) ≥ √︁ 1/𝜆 .
+
+The proof of Theorem 3.10 is provided in Appendix B.6. Figure 1 illustrates this asymptotic lower bound together with the finite-𝑛 lower bounds from Theorem 3.9. 
+
+# 4 Algorithms and Upper Bounds 
+
+With our refined lower bounds established, we now proceed to develop an improved upper bound for the optimal consistency–robustness tradeoff. We first introduce our Modified Two-Stage Schedule (mTSS ) algorithm, which retains the two-stage structure of Wei and Zhang (2020)’s algorithm, starting with a round-robin ( RR ) stage that allocates equal processing time to all jobs before switching to processing the jobs in predicted order. The key difference in our approach is to calibrate the duration of the RR stage to exhaust the consistency budget. We show that the robustness of this algorithm can be reduced to its performance at the time that any error is detected, which yields a tractable, optimization-based robustness bound for general 𝑛 . Relaxing this bound gives a closed-form analytic bound that holds uniformly over all 𝑛 .
+
+## 4.1 An Improved Algorithm: Modified Two-Stage Schedule 
+
+In what follows, we assume that the jobs are indexed in nondecreasing order of their predicted processing times 𝑦 𝑖 ,and let OPT y denote the offline optimal scheduling cost under accurate predictions, namely, OPT y = Í𝑛 𝑖 =1 (𝑛 + 1 − 𝑖 )𝑦 𝑖 .The key idea that will guide our algorithm design is to exploit the consistency budget as fully as possible during the initial RR stage before any prediction error is revealed, thereby minimizing the worst-case robustness while preserving 
+
+(1 + 𝜆 )-consistency. Before presenting the full algorithm, we introduce the round-commit truncated cost function ,which enables calibrating the transition point at which the consistency budget has been exactly exhausted. 
+
+Round-Commit Truncated Cost Function. The key challenge is to determine the exact point at which the algorithm should terminate the initial Round-Robin phase and commit to processing the jobs in the predicted order (𝑦 1, . . . , 𝑦 𝑛 ).Stopping too early leaves part of the consistency budget unused, thereby resulting in an unnecessarily large robustness, while stopping too late may violate the desired (1 + 𝜆 )-consistency guarantee. To characterize the cost that has been accumulated at any potential transition point, we introduce the Round-Commit Truncated Cost Function .
+
+Definition 4.1 (Round-Commit Truncated Cost Function) . For any prediction vector y = (𝑦 1, . . . , 𝑦 𝑛 ), index 𝑣 ∈ [ 𝑛 ],service level 𝑎 ∈ [ 𝑦 𝑣 −1, 𝑦 𝑣 ] (with 𝑦 0 = 0 by convention), and integer truncation index 𝑣 − 1 ≤ ℓ ≤ 𝑛 , consider the following schedule: the algorithm first runs Round-Robin ( RR ) until every job 𝑖 has received min {𝑦 𝑖 , 𝑎 } units of processing; it then switches to processing the remaining jobs in the predicted order. Under this schedule, assuming that no misprediction is detected, let 𝛤 (𝑣 ) 
+
+> ℓ
+
+(y, 𝑎 ) denote the total cost accumulated up to the completion of job ℓ when ℓ ≥ 𝑣 .If ℓ = 𝑣 − 1, 𝛤 (𝑣 ) 
+
+> ℓ
+
+(y, 𝑎 ) will instead denote the total cost accumulated up until the transition from RR to the predicted order processing phase. Formally, 
+
+𝛤 (𝑣 ) 
+
+> ℓ
+
+(y, 𝑎 ) ≔
+
+> 𝑣 −1
+
+∑︁ 
+
+> 𝑖 =1
+
+(2𝑛 + 1 − 2𝑖 )𝑦 𝑖 + ( 𝑛 + 1 − 𝑣 )2𝑎 +
+
+> ℓ
+
+∑︁ 
+
+> 𝑖 =𝑣
+
+(𝑛 + 1 − 𝑖 )( 𝑦 𝑖 − 𝑎 ), (12) 
+
+where an empty sum is interpreted as zero. 
+
+Figure 5 illustrates 𝛤 (𝑣 ) 
+
+> ℓ
+
+(y, 𝑎 ). Then our algorithm Modified Two-Stage Schedule (mTSS ) operates as follows: we first evaluate 𝛤 (𝑛 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑛 ) to determine whether running only RR throughout will stay within the consistency budget 
+
+(1 + 𝜆 )OPT y (assuming accurate predictions); if so, then we simply run RR the whole time. Otherwise, we choose 𝑣 
+
+and 𝑟 ∈ [ 𝑦 𝑣 −1, 𝑦 𝑣 ] such that 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) = (1 + 𝜆 )OPT y. We call this choice exact consistency calibration : the algorithm switches from RR to processing jobs in the predicted order exactly when its consistency budget has been exhausted. If 12 Predicted Job Length 
+
+## yi 
+
+Processing Order 
+
+## a
+
+Cost incurred up to this point      
+
+> Job 1 ⋮Job v− 1 Job v
+> ⋮Job ℓ
+> ⋮Job n
+
+Figure 5: An illustration of the Round-Commit Truncated Cost in Definition 4.1. Blue segments represent processing done under RR ; the other colored segments represent processing done on jobs one at a time in the predicted order after 
+
+RR .
+
+Algorithm 1: mTSS : Modified Two-Stage Schedule 
+
+Input: 𝑛 jobs with predicted lengths y; tradeoff parameter 𝜆 ∈ 0, 𝑛 −1
+
+> 𝑛 +1
+
+
+
+Global interrupt rule. Whenever a prediction error is detected, immediately run RR until all jobs complete, and terminate 
+
+Stage 1. Round-Robin. if 𝛤 (𝑛 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑛 ) < (1 + 𝜆 )OPT y then 
+
+Run RR until all jobs complete 
+
+else 
+
+𝑣 ← 1
+
+while 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑣 ) < (1 + 𝜆 )OPT y do 
+
+𝑣 ← 𝑣 + 1Choose 𝑟 such that 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) = (1 + 𝜆 )OPT y // Saturate consistency 
+
+Run RR for Í𝑣 −1 
+
+> 𝑖 =1
+
+𝑦 𝑖 + ( 𝑛 + 1 − 𝑣 )𝑟 time units 
+
+Stage 2. Commit. Process the remaining jobs nonpreemptively, one at a time until completion, in nondecreasing order of predicted length at any time a prediction error is detected, we switch back to running RR . We present the formal description of mTSS in Algorithm 1; in the remainder of this section, we will establish its consistency and robustness guarantees. 
+
+## 4.2 Reduction to the Time of Error Detection 
+
+The core challenge in analyzing the robustness of mTSS is handling general adversarial instances, since the space of true processing times x and predictions y can be high-dimensional. We approach this challenge from the perspective of the algorithm’s execution. Once a prediction error is detected, mTSS switches to RR ; we can show that the competitive ratio guarantee of RR controls the algorithm’s performance on the remaining processing times. This reduces the problem of robustness analysis to characterizing algorithm performance at the time of error detection. To distinguish the processing already performed from the remaining work, we extend the offline optimum to vectors that may contain zero coordinates. For any w ∈ R𝑛 
+
+> ≥0
+
+, let OPT (w) ≔ min  
+
+> 𝜋 ∈𝔖 𝑛
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝑛 + 1 − 𝑖 )𝑤 𝜋 (𝑖 )
+
+denote the offline optimal total completion time for jobs with processing times w, where 𝔖 𝑛 is the set of permutations of 
+
+[𝑛 ]. Viewing 𝜋 as a permutation matrix, the objective is linear in 𝜋 (it is also linear in w); thus OPT (w) can equivalently be expressed as the optimal value of a linear program over the Birkhoff polytope of doubly stochastic matrices. The following lemma reduces the worst-case competitive-ratio analysis to the cost accumulated up to the transition to RR ,13 which occurs at error detection in mTSS .
+
+Lemma 4.2. Suppose an algorithm A for non-clairvoyant scheduling switches to RR at time 𝑇 , and then runs RR 
+
+until all jobs complete. Let a ∈ R𝑛  
+
+> ≥0
+
+denote the processing amounts received by all jobs by time 𝑇 , including the full processing times of completed jobs, and let z = x − a denote their remaining processing times. Let 𝐶 (𝑡 ) denote the cost incurred by A at time 𝑡 . If OPT (a) > 0, then the competitive ratio of A on the instance x satisfies 
+
+ALG (A, x)
+
+OPT (x) ≤ max 
+
+ 𝐶 (𝑇 )
+
+OPT (a) , 2𝑛 𝑛 + 1
+
+
+
+.
+
+Proof. The definition of the offline optimum gives OPT (a + z) ≥ OPT (a) + OPT (z),
+
+since the minimum of a sum is at least the sum of the minima. The cost accumulated by A after time 𝑇 is exactly the cost of running RR on the positive coordinates of z; there are at most 𝑛 such jobs, so this cost is at most 2𝑛 𝑛 +1 OPT (z)
+
+(Motwani et al., 1994). Therefore, ALG (A, x)
+
+OPT (x) ≤ 𝐶 (𝑇 ) + 2𝑛 𝑛 +1 OPT (z)
+
+OPT (a) + OPT (z) ≤ max 
+
+ 𝐶 (𝑇 )
+
+OPT (a) , 2𝑛 𝑛 + 1
+
+
+
+.
+
+□
+
+For fixed predictions y, we can use Lemma 4.2 to reduce the robustness analysis over adversarial true processing times x to processing times drawn from a finite family of truncated prediction vectors. 
+
+Lemma 4.3. Suppose the calibration step in mTSS (Algorithm 1) selects parameters 𝑣 and 𝑟 . For 𝑣 − 1 ≤ 𝑠 ≤ 𝑛 , define 
+
+¯y(𝑠 ) ≔  𝑦 1, . . . , 𝑦 𝑠 , 𝑟, . . . , 𝑟  ∈ R𝑛 
+
+> ≥0
+
+. Then, for every processing-time vector x > 0,
+
+ALG (mTSS , x)
+
+OPT (x) ≤ max 
+
+(
+
+2𝑛 𝑛 + 1 , max 
+
+> 𝑣 ≤𝑠 ≤𝑛
+
+𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 )
+
+OPT ( ¯y(𝑠 ) )
+
+)
+
+. (13) 
+
+Proof. If calibration selects RR throughout or the first error is detected during the initial RR stage, mTSS only runs RR 
+
+and has competitive ratio at most 2 𝑛 /( 𝑛 + 1). We therefore consider the case where the first error is detected during the commit stage. Let 𝑣 and 𝑟 denote the parameters selected by calibration in Algorithm 1. Let 𝑀 denote the right-hand side of (13). By definition, 
+
+𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ) ≤ 𝑀 · OPT ( ¯y(𝑠 ) ) for 𝑣 ≤ 𝑠 ≤ 𝑛. 
+
+This inequality also holds for 𝑠 = 𝑣 − 1: the cost of mTSS up to the transition to the commit stage equals the total cost of running RR throughout on the instance ¯ y(𝑣 −1) . Hence, 
+
+𝛤 (𝑣 ) 
+
+> 𝑣 −1
+
+(y, 𝑟 ) ≤ 2𝑛 𝑛 + 1 · OPT ( ¯y(𝑣 −1) ) ≤ 𝑀 · OPT ( ¯y(𝑣 −1) ).
+
+Suppose the first error is detected while running job 𝑠 in the commit phase. Jobs 1 , . . . , 𝑠 − 1 have completed with their predicted processing times, while every job after 𝑠 has received 𝑟 units of processing. 
+
+Under-prediction. If job 𝑠 has received 𝑦 𝑠 units of processing and remains unfinished, the attained processing vector is ¯ y(𝑠 ) , and the accumulated cost is 𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ). Lemma 4.2 therefore bounds the competitive ratio by 𝑀 .
+
+Over-prediction. Suppose job 𝑠 completes at service 𝑎 , where 𝑟 < 𝑎 < 𝑦 𝑠 . The attained processing vector and accumulated cost are 
+
+a = (𝑦 1, . . . , 𝑦 𝑠 −1, 𝑎, 𝑟, . . . , 𝑟 ), 𝑃 = 𝛤 (𝑣 ) 
+
+> 𝑠 −1
+
+(y, 𝑟 ) + ( 𝑛 + 1 − 𝑠 )( 𝑎 − 𝑟 ).
+
+Define 𝜃 = (𝑎 − 𝑟 )/( 𝑦 𝑠 − 𝑟 ) ∈ ( 0, 1). Then 
+
+a = (1 − 𝜃 ) ¯y(𝑠 −1) + 𝜃 ¯y(𝑠 ) , 𝑃 = (1 − 𝜃 )𝛤 (𝑣 ) 
+
+> 𝑠 −1
+
+(y, 𝑟 ) + 𝜃𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ).
+
+14 Since OPT (w) is the minimum of linear functions of w, it is concave. Consequently, 
+
+𝑃 ≤ 𝑀 ·  (1 − 𝜃 )OPT ( ¯y(𝑠 −1) ) + 𝜃 OPT ( ¯y(𝑠 ) ) ≤ 𝑀 · OPT (a).
+
+Applying Lemma 4.2 once again bounds the competitive ratio by 𝑀 .Finally, if no error is detected, the predictions are accurate, and the competitive ratio is 
+
+𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 )
+
+OPT (y) = 1 + 𝜆 ≤ 2𝑛 𝑛 + 1 ≤ 𝑀. 
+
+This completes the proof. □
+
+Thus both types of prediction error reduce to the same family of truncated vectors ¯ y(𝑠 ) . Since 𝑦 𝑣 −1 ≤ 𝑟 ≤ 𝑦 𝑣 , the offline costs of their induced instances are OPT ( ¯y(𝑠 ) ) =
+
+> 𝑣 −1
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝑛 + 1 − 𝑖 )𝑦 𝑖 + (𝑛 − 𝑠 )( 𝑛 + 𝑠 − 2𝑣 + 3)
+
+2 𝑟 +
+
+> 𝑠
+
+∑︁ 
+
+> 𝑖 =𝑣
+
+(𝑠 + 1 − 𝑖 )𝑦 𝑖 .
+
+For fixed 𝑣 and 𝑠 , both this expression and 𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ) are linear in (y, 𝑟 ). Bounding the worst-case robustness therefore reduces to a linear-fractional optimization problem, subject to the ordering constraints and the calibration equality. 
+
+## 4.3 A Nearly-Optimal Upper Bound for General 𝑛 
+
+Building on the preceding reduction, we can exploit the linear-fractional structure of the resulting cost ratios and the calibration equality to derive a robustness bound for mTSS for general 𝑛 that can be expressed as a maximization over a single integer index. We state the bound formally in the following theorem. 
+
+Theorem 4.4. For every 𝑛 ≥ 2 and 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+], Algorithm mTSS (Algorithm 1) is (1 + 𝜆 )-consistent and Ψ𝑛 (𝜆 )-robust, where 
+
+Ψ𝑛 (𝜆 ) ≔ max 
+
+> 𝑠 ∈ [ 𝑛 ]
+
+2𝜆𝑛 2 +   𝑛 −1 
+
+> 𝑛 +1
+
+− 𝜆  𝑠 (2𝑛 + 1 − 𝑠 )
+
+𝜆𝑛 (𝑛 + 1) +   𝑛 −1 
+
+> 𝑛 +1
+
+− 𝜆  𝑠 (𝑠 + 1) .
+
+Note that this bound improves empirically over previous guarantees; see Figure 1. We sketch the proof of this theorem below; the full proof appears in Appendix C.1. 
+
+Proof Sketch for Theorem 4.4 We first verify that, when 𝜆 = 0, mTSS is 1-consistent and 𝑛 -robust, matching 
+
+Ψ𝑛 (0) = 𝑛 .For 𝜆 > 0, we establish (1 + 𝜆 )-consistency by checking that calibration respects the consistency budget. For robustness, we first apply Lemma 4.3 to reduce the analysis to computing cost ratios at error detection (13). For fixed calibration and detection indices 𝑣 and 𝑠 , the online cost in the reduced ratio is 𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ). Since 𝑣 is fixed, the order of the entries in ¯ y(𝑠 ) is fixed. Consequently, the corresponding offline cost OPT ( ¯y(𝑠 ) ) is linear in (y, 𝑟 ). Thus both costs are linear in (y, 𝑟 ). We seek to bound their ratio subject to the ordering constraints and the calibration equality 
+
+𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) = (1 + 𝜆 )
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝑛 + 1 − 𝑖 )𝑦 𝑖 . (14) The key step is to express these constraints and costs through consecutive gaps. Define 
+
+w ≔ (𝑦 1, . . . , 𝑦 𝑣 −1, 𝑟, 𝑦 𝑣 , . . . , 𝑦 𝑛 ), 𝑢 𝑖 ≔ 𝑤 𝑖 − 𝑤 𝑖 −1, 𝑖 ∈ [ 𝑛 + 1],
+
+where 𝑤 0 = 0. Allowing zero predictions and replacing strict ordering inequalities by weak inequalities gives an upper-bound relaxation in which the ordering constraints are equivalent to u ≥ 0. Since every coordinate of (y, 𝑟 ) is linear in u, the two costs 
+
+𝑁 (u) ≔ 𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ), 𝐷 (u) ≔ OPT ( ¯y(𝑠 ) )
+
+15 are linear, and calibration equality (14) becomes ℎ⊤u = 0 for a fixed coefficient vector ℎ ∈ R𝑛 +1. The relaxed feasible set is therefore the cone 
+
+𝐾 = {u ∈ R𝑛 +1 
+
+> ≥0
+
+: ℎ⊤u = 0}.
+
+The remaining task is thus to bound 𝑁 (u)/ 𝐷 (u) over 𝐾 \ { 0}. We prove a key structural property for this cone: every nonzero feasible vector can be decomposed into feasible vectors, each with at most two strictly positive coordinates. By linearity of both cost expressions, the original cost ratio is thus a weighted average of the component ratios, and therefore cannot exceed their maximum. Specifically, we have the following result: 
+
+Lemma 4.5. Let ℎ ∈ R𝑞 and define the cone 𝐾 = {u ∈ R𝑞  
+
+> ≥0
+
+: ℎ⊤u = 0}. For every u ∈ 𝐾 \ { 0}, there exist an integer 
+
+𝐿 ≥ 1 and vectors u(1) , . . . , u(𝐿 ) ∈ 𝐾 \ { 0} such that 
+
+u =
+
+> 𝐿
+
+∑︁ 
+
+> ℓ=1
+
+u(ℓ ) , supp (u(ℓ ) ) ≤ 2 for every ℓ ∈ { 1, . . . , 𝐿 },
+
+where supp (w) = {𝑖 : 𝑤 𝑖 ≠ 0}. Moreover, if 𝐴, 𝐵 : R𝑞 → R are linear and 𝐵 (w) > 0 for every w ∈ 𝐾 \ { 0}, then 
+
+𝐴 (u)
+
+𝐵 (u) ≤ max   
+
+> 1≤ℓ≤𝐿
+
+𝐴 (u(ℓ ) )
+
+𝐵 (u(ℓ ) ) .
+
+Applying Lemma 4.5 with 𝐴 = 𝑁 and 𝐵 = 𝐷 , we reduce the analysis to feasible vectors with at most two positive gaps. Each such vector can be written as 
+
+u = 𝑎 e𝑖 + 𝑏 e 𝑗 , 𝑎, 𝑏 ≥ 0, 𝑎 + 𝑏 > 0,
+
+where e𝑖 and e 𝑗 are standard basis vectors. Combining this representation with the calibration equality and the scale invariance of the cost ratio yields an optimization-based bound involving only a few integer indices. A sequence of monotonicity and weighted-average comparisons eliminates the auxiliary indices, leaving a maximization over the single integer variable 𝑠 :max 
+
+> 𝑠 ∈ [ 𝑛 ]
+
+2𝜆𝑛 2 +   𝑛 −1 
+
+> 𝑛 +1
+
+− 𝜆  𝑠 (2𝑛 + 1 − 𝑠 )
+
+𝜆𝑛 (𝑛 + 1) +   𝑛 −1 
+
+> 𝑛 +1
+
+− 𝜆  𝑠 (𝑠 + 1) = Ψ 𝑛 (𝜆 ).
+
+Finally, we verify that the case 𝑠 = 1 in the maximization is at least 2 𝑛 /( 𝑛 + 1), so this bound also covers the RR 
+
+alternative and completes the robustness analysis. □
+
+We next show that mTSS approximates the optimal consistency–robustness tradeoff within a factor of 3 /2, uniformly over all 𝑛 and all admissible 𝜆 . Specifically, its robustness is at most 3 /2 times the best robustness that can be achieved by any (1 + 𝜆 )-consistent online algorithm. The following theorem establishes this guarantee by comparing Ψ𝑛 (𝜆 ) with our lower bound Φ(𝑛 ) (𝜆 ).
+
+Theorem 4.6. For every 𝑛 ≥ 2 and 0 ≤ 𝜆 ≤ ( 𝑛 − 1)/( 𝑛 + 1),
+
+Φ(𝑛 ) (𝜆 ) ≤ Ψ𝑛 (𝜆 ) ≤ 32 · Φ(𝑛 ) (𝜆 ),
+
+where Ψ𝑛 (𝜆 ) is defined in Theorem 4.4 and Φ(𝑛 ) (𝜆 ) is defined in Theorem 3.9. 
+
+A proof of Theorem 4.6 is provided in Appendix C.2. The key step is to show that the smallest maximizing index 
+
+𝑠 in the upper bound Ψ𝑛 (𝜆 ) does not exceed the attack depth 𝛼 selected in our lower-bound construction. We then use the corresponding attack constraint, consistency budget, and monotonicity of the processing amounts to derive an explicit lower bound on Φ(𝑛 ) (𝜆 ). Combining this lower bound on Φ(𝑛 ) (𝜆 ) with the weighted-average relation governing consecutive terms in the maximization defining Ψ𝑛 (𝜆 ) yields the factor of 3 /2. 16 4.4 A Universal Closed-Form Upper Bound 
+
+Theorem 4.4 provides a finite-𝑛 robustness guarantee through the one-dimensional maximization defining Ψ𝑛 (𝜆 ), which can be evaluated by direct enumeration. 3 Although this expression is readily computable, its dependence on 𝜆 is not immediately clear. To obtain a more interpretable guarantee, we bound the maximization using a quadratic inequality. The resulting closed-form upper bound holds uniformly across all 𝑛 , makes the dependence on 𝜆 explicit, and enables a direct comparison with our lower bounds. We provide a proof of the bound in Appendix C.3. 
+
+Theorem 4.7. For any number of jobs 𝑛 ≥ 2 and any 𝜆 ∈ ( 0, 𝑛 −1 
+
+> 𝑛 +1
+
+], Algorithm mTSS (Algorithm 1) is (1 + 𝜆 )-consistent and 
+
+ 
+
+> 12
+
++√︃ 54 + 1/𝜆 
+
+
+
+-robust. 
+
+## 4.5 Ensuring Smoothness via Error-Tolerant Simulation 
+
+The standard consistency–robustness framework controls performance under perfect predictions and in the worst case, but does not guarantee smooth degradation in performance under small prediction errors. While prior work has developed smooth algorithms for non-clairvoyant scheduling (Im et al., 2023; Benomar et al., 2025a; Zhao and Zomaya, 2026), we propose a generic tolerance-based approach that preserves consistency and provides local smoothness : within a prescribed error range, algorithm performance degrades smoothly as the prediction error increases; this smoothness comes at the cost of only a small, controlled increase in robustness. We define the coordinatewise relative prediction error as 
+
+𝜀 (x, y) ≔ max 
+
+> 𝑖 ∈ [ 𝑛 ]
+
+ 𝑥 𝑖 
+
+𝑦 𝑖 
+
+, 𝑦 𝑖 
+
+𝑥 𝑖 
+
+
+
+− 1.
+
+The key idea is to hide prediction errors within a specified tolerance range from A. Whenever 𝜀 (x, y) ≤ 𝜏 , the simulated execution of A is identical to its execution under perfectly accurate predictions. Algorithm 2 implements this idea without knowing the true processing times in advance. As we show in the following theorem, this simulation preserves consistency and provides local smoothness while only modestly increasing robustness. 
+
+Theorem 4.8 (Prediction-tolerant simulation) . Suppose A is a deterministic, 𝛽 -consistent and 𝛾 -robust algorithm for non-clairvoyant scheduling. For every 𝜏 > 0, Algorithm 2 is 𝛽 -consistent and (1 + 𝜏 )2𝛾 -robust. Moreover, whenever 
+
+𝜀 ≔ 𝜀 (x, y) ≤ 𝜏 ,
+
+ALG (A𝜏 
+
+> tol
+
+, 𝐼 )
+
+OPT (x) ≤ 𝛽 (1 + 𝜀 )2.
+
+A proof of this theorem is presented in Appendix C.4. Letting mTSS 𝜏 𝜆, tol denote the prediction-tolerant simulation of mTSS via Algorithm 2, we immediately obtain the following corollary showing that we can maintain the near-optimal robustness-consistency guarantees of mTSS while ensuring smoothness to small prediction errors. 
+
+Corollary 4.9. For every 𝑛 ≥ 2, 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+], and 𝜏 > 0, algorithm mTSS 𝜏 𝜆, tol is (1 + 𝜆 )-consistent and (1 + 𝜏 )2Ψ𝑛 (𝜆 )-robust. Moreover, whenever 𝜀 ≔ 𝜀 (x, y) ≤ 𝜏 ,
+
+ALG (mTSS 𝜏 𝜆, tol , 𝐼 )
+
+OPT (x) ≤ ( 1 + 𝜆 )( 1 + 𝜀 )2.
+
+# 5 Conclusion and Future Directions 
+
+In this work, we provide a nearly-optimal characterization of the consistency–robustness tradeoff for non-clairvoyant scheduling with predictions. We show that the lower bound of Wei and Zhang (2020) is not tight for general 𝑛 and introduce a multi-stage adversarial strategy that yields a strictly stronger piecewise lower bound for 𝑛 ≥ 5 over a nontrivial range of 𝜆 . Complementing this lower bound, we propose the Modified Two-Stage Schedule algorithm (mTSS ), which achieves a nearly-optimal consistency–robustness tradeoff, with an upper bound within a factor of 3 /2of our lower bound for every 𝑛 ≥ 2 and any admissible 𝜆 .         
+
+> 3Evaluating the 𝑛 candidate values requires 𝑂 (𝑛 )arithmetic operations. Note that this concerns the evaluation of Ψ𝑛 (𝜆 ), not the running time of the mTSS algorithm itself.
+
+17 Algorithm 2: Prediction-Tolerant Simulation ( A𝜏 
+
+> tol
+
+)
+
+Input: Deterministic algorithm A, predictions y > 0, and tolerance 𝜏 > 0. Initialize a simulated copy of A with predictions y. In the simulated execution, a job remains unfinished until we report its completion to A
+
+Initialize the processing time allocated by the simulated A to each job: 𝑠 𝑖 ← 0 for all 𝑖 ∈ [ 𝑛 ]
+
+while some job remains unfinished do 
+
+Follow A’s allocations, increasing each 𝑠 𝑖 accordingly and leaving allocations to already completed jobs idle, until a job completes or first reaches 𝑠 𝑖 = 𝑦 𝑖 
+
+if job 𝑖 first reaches 𝑠 𝑖 = 𝑦 𝑖 then 
+
+Pause A’s simulated execution, keeping its clock and all 𝑠 𝑗 unchanged 
+
+if job 𝑖 is unfinished then 
+
+Process 𝑖 alone until it completes or 𝜏𝑦 𝑖 additional time elapses 
+
+if job 𝑖 has completed then 
+
+Report job 𝑖 ’s completion to A at simulated service 𝑦 𝑖 
+
+Resume A
+
+else if 𝑠 𝑖 < 𝑦 𝑖 /( 1 + 𝜏 ) or 𝑠 𝑖 > 𝑦 𝑖 then 
+
+Report job 𝑖 ’s completion to A at simulated service 𝑠 𝑖 
+
+else 
+
+Withhold job 𝑖 ’s completion report until 𝑠 𝑖 = 𝑦 𝑖 
+
+These two developments allow us to paint a complete asymptotic picture of the optimal consistency–robustness tradeoff for this problem. As the number of jobs 𝑛 → ∞ , our results establish that the best achievable robustness for a 
+
+(1 + 𝜆 )-consistent algorithm scales as √︁ 1/𝜆 . Furthermore, our results resolve (up to constant factors) the polynomial gap between the upper and lower bounds on robustness in the worst-case-𝑛 regime (Benomar et al., 2025a). Together, our results suggest that the key to optimal scheduling with predictions lies in the effective management of the algorithm’s 
+
+flexibility budget , i.e., balancing following the predictions directly with preserving robustness with a more conservative strategy. We also show that these guarantees can be made error-tolerant, developing a generic approach to enable learning-augmented algorithms to provide locally smooth degradation to small prediction errors. Our work suggests several potentially promising directions for future work. First, a natural extension is to characterize near-optimal consistency–robustness tradeoffs for non-clairvoyant scheduling with known job weights and predicted processing times, complementing existing results for weighted scheduling with other forms of predictions (Lindermayr and Megow, 2022). Second, our results could potentially serve as a foundation for refining consistency–robustness tradeoffs under alternative prediction models, including partial predictions (Benomar and Perchet, 2024), permutation predictions (Lindermayr and Megow, 2022), and progress bar predictions (Benomar et al., 2025a). Third, it would be interesting to explore whether the proposed optimization-based formulation of multi-stage lower bounds can be extended to other online problems such as metrical task systems in order to obtain tighter, instance-dependent lower bounds. Finally, closing the small gap for finite 𝑛 ≥ 5 may require new technical ideas, particularly on the upper bound front. To this end, we conjecture that optimal robustness may require repeated cycles of RR and committing to the predicted order. 
+
+# AI Use Acknowledgment 
+
+The authors used AI tools including OpenAI’s ChatGPT and Codex in this work (with models ranging from GPT-5.1 to GPT-6 Astra) to assist with initial proof development and drafting based on the authors’ proof ideas, to perform limited editing for language and grammar, and to help simplify and check the correctness of mathematical proofs. All AI-assisted content included in this paper has been reviewed, verified, and revised by the authors, who take full responsibility for the content of this paper. 18 References 
+
+Priyank Agrawal, Eric Balkanski, Vasilis Gkatzelis, Tingting Ou, and Xizhi Tan. Learning-augmented mechanism design: Leveraging predictions for facility location. In Proceedings of the 23rd ACM Conference on Economics and Computation (EC ’22) , pages 497–528. ACM, 2022. doi: 10.1145/3490486.3538306. Anonymous. Ordinal predictions suffice for non-clairvoyant scheduling: Closing the gap in the consistency–robustness trade-off, 2026. URL https://openreview.net/forum?id=LXpuTbjZhR .Antonios Antoniadis, Christian Coester, Marek Elias, Adam Polak, and Bertrand Simon. Online metric algorithms with untrusted predictions. In Proceedings of the 37th International Conference on Machine Learning (ICML 2020) , 2020. Antonios Antoniadis, Christian Coester, Marek Elias, Adam Polak, and Bertrand Simon. Learning-augmented dynamic power management with multiple states via new ski rental bounds. In Proceedings of the 35th International Conference on Neural Information Processing Systems (NeurIPS 2021) , 2021. Eric Balkanski, Vasilis Gkatzelis, Xizhi Tan, and Cherlin Zhu. Online mechanism design with predictions, 2024. URL 
+
+https://arxiv.org/abs/2310.02879 .Ziyad Benomar and Vianney Perchet. Non-clairvoyant scheduling with partial predictions. In Proceedings of the 41st International Conference on Machine Learning (ICML 2024) , 2024. Ziyad Benomar, Romain Cosson, Alexander Lindermayr, and Jens Schlöter. Non-clairvoyant scheduling with progress bars. In Proceedings of the 39th International Conference on Neural Information Processing Systems (NeurIPS 2025) ,2025a. Ziyad Benomar, Lorenzo Croissant, Vianney Perchet, and Spyros Angelopoulos. Pareto-optimality, smoothness, and stochasticity in learning-augmented one-max-search. In Proceedings of the 42nd International Conference on Machine Learning (ICML 2025) , 2025b. Allan Borodin and Ran El-Yaniv. Online computation and competitive analysis . Cambridge University Press, 2005. Nicolas Christianson, Tinashe Handina, and Adam Wierman. Chasing convex bodies and functions with black-box advice. In Proceedings of the 35th Conference on Learning Theory (COLT 2022) , 2022. Nicolas Christianson, Junxuan Shen, and Adam Wierman. Optimal robustness-consistency tradeoffs for learning-augmented metrical task systems. In Proceedings of the 26th International Conference on Artificial Intelligence and Statistics (AISTATS 2023) , 2023. Christian Coester, Alexa Tudose, and Alexander Turoczy. Learning-augmented online minimization with dual predictions. In Proceedings of the 43rd International Conference on Machine Learning , volume 306 of Proceedings of Machine Learning Research , pages 21020–21045. PMLR, 2026. Mohammadreza Daneshvaramoli, Helia Karisani, Adam Lechowicz, Bo Sun, Cameron Musco, and Mohammad Hajiesmaili. Near-optimal consistency-robustness trade-offs for learning-augmented online knapsack problems. In 
+
+Proceedings of the 42nd International Conference on Machine Learning (ICML 2025) , 2025. Michael Dinitz, Sungjin Im, Thomas Lavastida, Benjamin Moseley, and Sergei Vassilvitskii. Faster Matchings via Learned Duals. In Advances in Neural Information Processing Systems , volume 34, pages 10393–10406. Curran Associates, Inc., 2021. Anthony Dugois, Vincent Fagnon, and Giorgio Lucarelli. Robust non-clairvoyant scheduling with classification models. 
+
+arXiv preprint arXiv:2610.01343 , 2026. Alex Elenter, Spyros Angelopoulos, Christoph Dürr, and Yanni Lefki. Overcoming brittleness in pareto-optimal learning-augmented algorithms. In Proceedings of the 38th International Conference on Neural Information Processing Systems (NeurIPS 2024) , 2024. Noah Golowich and Ankur Moitra. Can q-learning be improved with advice? In Proceedings of the 35th Conference on Learning Theory (COLT 2022) , 2022. 19 Sungjin Im, Ravi Kumar, Mahshid Montazer Qaem, and Manish Purohit. Online knapsack with frequency predictions. In Proceedings of the 35th International Conference on Neural Information Processing Systems (NeurIPS 2021) ,2021. Sungjin Im, Ravi Kumar, Aditya Petety, and Manish Purohit. Parsimonious learning-augmented caching. In Proceedings of the 39th International Conference on Machine Learning (ICML 2022) , 2022. Sungjin Im, Ravi Kumar, Mahshid Montazer Qaem, and Manish Purohit. Non-clairvoyant scheduling with predictions. 
+
+ACM Transactions on Parallel Computing , 10(4), 2023. Mikhail Khodak, Maria-Florina Balcan, Ameet Talwalkar, and Sergei Vassilvitskii. Learning predictions for algorithms with predictions. In Advances in Neural Information Processing Systems , volume 35, pages 3542–3555, 2022. Ravi Kumar, Manish Purohit, and Zoya Svitkina. Improving online algorithms via ml predictions. In Proceedings of the 32nd International Conference on Neural Information Processing Systems (NeurIPS 2018) , 2018. Adam Lechowicz, Nicolas Christianson, Bo Sun, Noman Bashir, Mohammad Hajiesmaili, Adam Wierman, and Prashant Shenoy. Chasing convex functions with long-term constraints. In Proceedings of the 41st International Conference on Machine Learning (ICML 2024) , 2024a. Adam Lechowicz, Nicolas Christianson, Bo Sun, Noman Bashir, Mohammad Hajiesmaili, Adam Wierman, and Prashant Shenoy. Online Conversion with Switching Costs: Robust and Learning-Augmented Algorithms. ACM SIGMETRICS Performance Evaluation Review , 52(1):45–46, June 2024b. ISSN 0163-5999. doi: 10.1145/3673660.3655074. Adam Lechowicz, Rik Sengupta, Bo Sun, Shahin Kamali, and Mohammad Hajiesmaili. Time fairness in online knapsack problems. In Proceedings of the International Conference on Learning Representations (ICLR 2024) , 2024c. J. K. Lenstra and A. H. G. Rinnooy Kan. Complexity of scheduling under precedence constraints. Operations Research ,26(1):22–35, 1978. Sizhe Li, Nicolas Christianson, and Tongxin Li. Prediction-specific design of learning-augmented algorithms. 
+
+Proceedings of the ACM on Measurement and Analysis of Computing Systems , 10(1), 2026. Tongxin Li, Ruixiao Yang, Guannan Qu, Guanya Shi, Chenkai Yu, Adam Wierman, and Steven Low. Robustness and consistency in linear quadratic control with untrusted predictions. Proceedings of the ACM on Measurement and Analysis of Computing Systems , 6(1), 2022. Tongxin Li, Yiheng Lin, Shaolei Ren, and Adam Wierman. Beyond black-box advice: Learning-augmented algorithms for mdps with q-value predictions. In Proceedings of the 37th International Conference on Neural Information Processing Systems (NeurIPS 2023) , 2023. Tongxin Li, Hao Liu, and Yisong Yue. Disentangling linear quadratic control with untrusted ml predictions. In 
+
+Proceedings of the 38th International Conference on Neural Information Processing Systems (NeurIPS 2024) , 2024. Alexander Lindermayr and Nicole Megow. Permutation predictions for non-clairvoyant scheduling. In Proceedings of the 34th ACM Symposium on Parallelism in Algorithms and Architectures (SPAA 2022) , 2022. Thodoris Lykouris and Sergei Vassilvitskii. Competitive caching with machine learned advice. Journal of the ACM , 68 (4):24:1–24:25, 2021. Michael Mitzenmacher and Sergei Vassilvitskii. Algorithms with predictions. In Tim Roughgarden, editor, Beyond the worst-case analysis of algorithms . Cambridge University Press, 2021. Rajeev Motwani, Steven Phillips, and Eric Torng. Nonclairvoyant scheduling. Theoretical Computer Science , 130(1): 17–47, 1994. S. S. Panwalkar and W. A. Iskander. A survey of scheduling rules. Operations Research , 25(1):45–61, 1977. Michael L. Pinedo. Scheduling: Theory, algorithms, and systems . Springer Cham, 6th edition, 2022. 20 Dhruv Rohatgi. Near-optimal bounds for online caching with machine learned advice. In Proceedings of the 2020 ACM-SIAM Symposium on Discrete Algorithms (SODA 2020) , 2020. Linus Schrage. Letter to the editor—a proof of the optimality of the shortest remaining processing time discipline. 
+
+Operations Research , 16(3):687–690, 1968. Wayne E. Smith. Various optimizers for single-stage production. Naval Research Logistics Quarterly , 3(1–2):59–66, 1956. Bo Sun, Russell Lee, Mohammad Hajiesmaili, Adam Wierman, and Danny H.K. Tsang. Pareto-optimal learning-augmented algorithms for online conversion problems. In Proceedings of the 35th International Conference on Neural Information Processing Systems (NeurIPS 2021) , 2021. Alexander Wei. Better and simpler learning-augmented online caching. In Proceedings of the 2020 International Conference on Approximation Algorithms for Combinatorial Optimization Problems and Randomization and Computation (APPROX/RANDOM 2020) , 2020. Alexander Wei and Fred Zhang. Optimal robustness-consistency trade-offs for learning-augmented online algorithms. In 
+
+Proceedings of the 34th International Conference on Neural Information Processing Systems (NeurIPS 2020) , 2020. Tianming Zhao and Albert Y. Zomaya. On smoothness bounds for non-clairvoyant scheduling with predictions. In 
+
+Proceedings of the 14th International Conference on Learning Representations (ICLR 2026) , 2026. 21 A Properties of the Value Function Φ
+
+In this section, we establish the well-definedness of Φ(𝑛 ) (Appendix A.1) and prove a monotonicity property for the function Φ·,𝑛 (Appendix A.2). 
+
+## A.1 Well-Posedness of the Function Φ(𝑛 )
+
+To establish the well-posedness of Φ(𝑛 ) , we first introduce the Reversed Order-𝛼 System , which replicates the equations in the Order-𝛼 System (see Definition 3.7) while treating 𝜆 as the decision variable instead of 𝛾 .
+
+Definition A.1 (Reversed Order-𝛼 System) . Fix integers 𝑛 ≥ 2 and 𝛼 ∈ [𝑚 ], and 𝛾 ∈ [ 2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 ], where 
+
+𝑚 = max 𝛼 ∈ [ 𝑛 − 1] : 𝑛 +1− 𝛼 𝛼 > 2𝑛 𝑛 +1 . The Reversed Order-𝛼 System Sys rev  
+
+> 𝛼
+
+(𝑛, 𝛾 ) is a collection of 𝛼 + 1 equations in the variables (𝜆, 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) ) given by (6) and (7) .
+
+We next establish that the reversed order-𝛼 system is well-posed, in the sense that it admits a unique solution for every admissible parameter value. 
+
+Lemma A.2 (Existence and Uniqueness of the Reversed Order-𝛼 System) . Let 𝑛 ≥ 2 and 𝛼 ∈ [ 𝑚 ], where 𝑚 =
+
+max 𝛼 ∈ [ 𝑛 − 1] : 𝑛 +1− 𝛼 𝛼 > 2𝑛 𝑛 +1 . For any 𝛾 ∈  2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 
+
+, the reversed system Sys rev  
+
+> 𝛼
+
+(𝑛, 𝛾 ) admits a unique solution (𝜆, 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) ) in [0, 𝑛 −1 
+
+> 𝑛 +1
+
+] × [ 0, 1] 𝛼 .Proof. By rearranging the terms in (6), we have for all 𝑖 ∈ [ 𝛼 ],
+
+(𝑛 − 𝑖 )
+
+ (𝑛 + 1 + 𝑖 )𝛾 
+
+2 − ( 𝑛 + 1 − 𝑖 )
+
+
+
+𝑝 (𝑖 ) =
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + 𝑖 
+
+2 · (2𝑛 + 1 − 𝑖 ) − ( 𝑖 + 1)𝛾 . (15) Since 𝛾 ∈  2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 
+
+ ⊆ Ð𝑚 𝛼 =1
+
+ 2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 
+
+ =  2𝑛 𝑛 +1 , 𝑛 , we have 
+
+(𝑛 + 1 + 𝑖 )𝛾 
+
+2 − ( 𝑛 + 1 − 𝑖 ) ≥ (𝑛 + 2)𝛾 
+
+2 − 𝑛 ≥ 𝑛 + 22 · 2𝑛 𝑛 + 1 − 𝑛 = 𝑛 𝑛 + 1 > 0. (16) Setting 𝑖 = 1 in (15), we obtain 
+
+(𝑛 − 1)
+
+ (𝑛 + 2)𝛾 
+
+2 − 𝑛 
+
+
+
+𝑝 (1) = 𝑛 − 𝛾. (17) It follows immediately that 𝑝 (1) is a strictly decreasing function of 𝛾 . Now suppose that, for all 𝑖 ∈ [ 𝑘 ], 𝑝 (𝑖 ) is a strictly decreasing function of 𝛾 . Consider (15) with 𝑖 = 𝑘 + 1. By (16), the coefficient 
+
+(𝑛 − ( 𝑘 + 1)) 
+
+ (𝑛 + 𝑘 + 2)𝛾 
+
+2 − ( 𝑛 − 𝑘 )
+
+
+
+on the left-hand side is strictly positive and strictly increasing in 𝛾 . By the assumption, the summation term 
+
+Í𝑘 𝑗 =1 (𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) on the right-hand side is strictly decreasing in 𝛾 , while the remaining term 𝑘 +12
+
+ (2𝑛 − 𝑘 ) − ( 𝑘 + 2)𝛾 
+
+is also strictly decreasing in 𝛾 . Therefore, using the non-negativity established below, 𝑝 (𝑘 +1) is strictly decreasing in 𝛾 .By induction on 𝑖 , it follows that 𝑝 (𝑖 ) is a strictly decreasing function of 𝛾 for all 𝑖 ∈ [ 𝛼 ].We define 
+
+𝑆 𝛼 (𝛾 ) ≔
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) (𝛾 ) + (𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 )
+
+2 𝑝 ( 𝛼 ) (𝛾 ), (18) where we emphasize the dependence of each 𝑝 (𝑖 ) on 𝛾 induced by (15). Since each 𝑝 (𝑖 ) (𝛾 ) is strictly decreasing in 𝛾 
+
+and all coefficients in (18) are positive, it follows that 𝑆 𝛼 (𝛾 ) is strictly decreasing in 𝛾 . Since 𝑝 (𝑖 ) is uniquely determined by 𝛾 through (15), for any fixed 𝛾 ∈ [ 2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 ], there exists at most one 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+] such that 𝑆 𝛼 (𝛾 ) = 𝑛 (𝑛 +1) 
+
+> 2
+
+𝜆 ,thereby satisfying (7). This proves the uniqueness. We next prove the existence result. We claim that 𝑝 (𝑖 ) ∈ [ 0, 1] for all 𝑖 ∈ [ 𝛼 ]. We prove this by induction on 𝑖 . Suppose that 𝑝 ( 𝑗 ) ∈ [ 0, 1] for all 𝑗 < 𝑖 , where the case 𝑖 = 1 is understood with the empty sum equal to zero. Then 0 ≤ Í𝑖 −1 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) ≤ Í𝑖 −1 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ). Moreover, since 𝑖 ≤ 𝛼 , we have 𝑛 +1− 𝛼 𝛼 ≤ 2𝑛 +1−𝑖 𝑖 +1 . Indeed, this is 22 equivalent to (𝑖 + 1)( 𝑛 + 1 − 𝛼 ) ≤ 𝛼 (2𝑛 + 1 − 𝑖 ), and the difference between the right-hand side and the left-hand side is 
+
+(𝑛 + 1)( 2𝛼 − 𝑖 − 1) ≥ 0. Therefore, 𝛾 ≤ 2𝑛 +1−𝑖 𝑖 +1 , and hence 𝑖 
+
+> 2
+
+ (2𝑛 + 1 − 𝑖 ) − ( 𝑖 + 1)𝛾  ≥ 0. It follows from (15) and (16) that 𝑝 (𝑖 ) ≥ 0. It remains to show that 𝑝 (𝑖 ) ≤ 1. By the induction hypothesis, 
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + 𝑖 
+
+2
+
+ (2𝑛 + 1 − 𝑖 ) − ( 𝑖 + 1)𝛾  ≤
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) + 𝑖 
+
+2
+
+ (2𝑛 + 1 − 𝑖 ) − ( 𝑖 + 1)𝛾 .
+
+On the other hand, a direct calculation gives 
+
+(𝑛 − 𝑖 )
+
+ (𝑛 + 1 + 𝑖 )𝛾 
+
+2 − ( 𝑛 + 1 − 𝑖 )
+
+
+
+−
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) − 𝑖 
+
+2
+
+ (2𝑛 + 1 − 𝑖 ) − ( 𝑖 + 1)𝛾 
+
+= 𝑛 
+
+2
+
+ (𝑛 + 1)𝛾 − 2𝑛  ≥ 0,
+
+where the last inequality follows from 𝛾 ≥ 2𝑛 𝑛 +1 . Thus the right-hand side of (15) is at most the coefficient of 𝑝 (𝑖 ) on the left-hand side. Since this coefficient is strictly positive, we obtain 𝑝 (𝑖 ) ≤ 1. Therefore 𝑝 (𝑖 ) ∈ [ 0, 1]. By induction, 
+
+𝑝 (𝑖 ) ∈ [ 0, 1] for all 𝑖 ∈ [ 𝛼 ].Now set 
+
+𝜆 = 2
+
+𝑛 (𝑛 + 1) 𝑆 𝛼 (𝛾 ).
+
+Then (7) holds by construction. Moreover, since 𝑝 (𝑖 ) ∈ [ 0, 1] for all 𝑖 ∈ [ 𝛼 ],0 ≤ 𝑆 𝛼 (𝛾 ) ≤ 
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) + (𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 )
+
+2 = 𝑛 (𝑛 − 1)
+
+2 .
+
+Hence 𝜆 ∈ 0, 𝑛 −1
+
+> 𝑛 +1
+
+. Therefore (𝜆, 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) ) ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+] × [ 0, 1] 𝛼 satisfies (6) and (7). This proves the existence. 
+
+□
+
+Lemma A.2 implies that, for every admissible 𝛾 , the reversed order-𝛼 system admits a unique solution, thereby inducing a well-defined mapping from 𝛾 to 𝜆 .
+
+Definition A.3 (Λ-Function) . Fix integers 𝑛 ≥ 2 and 𝛼 ∈ [ 𝑚 ] and a parameter 𝛾 ∈  2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 
+
+, where 𝑚 =
+
+max 𝛼 ∈ [ 𝑛 − 1] : 𝑛 +1− 𝛼 𝛼 > 2𝑛 𝑛 +1 . Let (𝜆, 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) ) ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+] × [ 0, 1] 𝛼 be the solution to Sys rev  
+
+> 𝛼
+
+(𝑛, 𝛾 ). The 
+
+value function Λ𝛼,𝑛 is defined as the map from 𝛾 to the unique admissible value of 𝜆 .
+
+The following lemma establishes regularity properties of the Λ-function, including continuity and monotonicity with respect to 𝛾 .
+
+Lemma A.4. Fix integers 𝑛 ≥ 2 and 𝛼 ∈ [ 𝑚 ], where 𝑚 = max 𝛼 ∈ [ 𝑛 − 1] : 𝑛 +1− 𝛼 𝛼 > 2𝑛 𝑛 +1 . Then Λ𝛼,𝑛 (𝛾 ) is continuous and strictly decreasing in 𝛾 ∈  2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 
+
+.Proof. By Lemma A.2, for each admissible 𝛾 , the reversed order-𝛼 system admits a unique solution, so the map Λ𝛼,𝑛 is well-defined. As shown in the proof of Lemma A.2, Λ𝛼,𝑛 (𝛾 ) = 2 
+
+> 𝑛 (𝑛 +1)
+
+𝑆 𝛼 (𝛾 ) is strictly decreasing in 𝛾 . Moreover, the triangular recurrence and the strictly positive denominators established in that proof imply, by induction, that each 𝑝 (𝑖 ) (𝛾 ) is continuous in 𝛾 . Since 𝑆 𝛼 (𝛾 ) is a weighted sum of these processing amounts, it follows that Λ𝛼,𝑛 (𝛾 ) is continuous in 
+
+𝛾 . □
+
+We next prove continuity of Λ𝛼,𝑛 across adjacent selections of 𝛼 .
+
+Lemma A.5. Let 𝑚 = max 𝛼 ∈ [ 𝑛 − 1] : 𝑛 +1− 𝛼 𝛼 > 2𝑛 𝑛 +1 . Then 
+
+Λ𝛼,𝑛 ( 𝑛 − 𝛼 𝛼 +1 ) = Λ 𝛼 +1,𝑛 ( 𝑛 − 𝛼 𝛼 +1 ), for all 𝛼 ∈ [ 𝑚 − 1],
+
+where Λ𝛼,𝑛 (·) is defined in Definition A.3. 
+
+23 Proof. Consider 𝛼 ∈ [ 𝑚 − 1]. Let 𝜆 𝛼 ≔ Λ 𝛼,𝑛 ( 𝑛 − 𝛼 𝛼 +1 ). Let 
+
+(𝜆 𝛼 , 𝑝 (1) , 𝑝 (2) , . . . , 𝑝 ( 𝛼 ) ) ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+] × [ 0, 1] 𝛼 
+
+be a solution to Sys rev  
+
+> 𝛼
+
+(𝑛, 𝑛 − 𝛼 𝛼 +1 ). By Definition A.1, we have 
+
+(2𝑛 + 1 − 𝑖 ) 𝑖 
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )( 𝑛 − 𝑖 ) 𝑝 (𝑖 ) = 𝑛 − 𝛼 𝛼 + 1 ·
+
+ 𝑖 (𝑖 + 1)
+
+2 + (𝑛 + 𝑖 + 1)( 𝑛 − 𝑖 )
+
+2 𝑝 (𝑖 )
+
+
+
+(19) for every 𝑖 ∈ [ 𝛼 ], and 
+
+𝜆 𝛼 · 𝑛 (𝑛 + 1)
+
+2 =
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + (𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 )
+
+2 𝑝 ( 𝛼 ) . (20) We construct ˆ 𝑝 (𝑖 ) = 𝑝 (𝑖 ) for all 𝑖 ∈ [ 𝛼 ] and ˆ 𝑝 ( 𝛼 +1) = 𝑝 ( 𝛼 ) . By construction, together with (19), we have 
+
+(2𝑛 + 1 − 𝑖 ) 𝑖 
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) ˆ𝑝 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )( 𝑛 − 𝑖 ) ˆ𝑝 (𝑖 ) = 𝑛 − 𝛼 𝛼 + 1 ·
+
+ 𝑖 (𝑖 + 1)
+
+2 + (𝑛 + 𝑖 + 1)( 𝑛 − 𝑖 )
+
+2 ˆ𝑝 (𝑖 )
+
+
+
+(21) for every 𝑖 ∈ [ 𝛼 ]. Invoking (21) with 𝑖 = 𝛼 , we have 
+
+(2𝑛 + 1 − 𝛼 ) 𝛼 
+
+2 +
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) ˆ𝑝 ( 𝑗 ) + ( 𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 ) ˆ𝑝 ( 𝛼 ) = 𝑛 − 𝛼 𝛼 + 1 ·
+
+ 𝛼 (𝛼 + 1)
+
+2 + (𝑛 + 𝛼 + 1)( 𝑛 − 𝛼 )
+
+2 ˆ𝑝 ( 𝛼 )
+
+
+
+.
+
+Adding (𝑛 − 𝛼 ) − ( 𝑛 − 𝛼 ) ˆ𝑝 ( 𝛼 ) to both sides of the above equation and using ˆ 𝑝 ( 𝛼 +1) = 𝑝 ( 𝛼 ) = ˆ𝑝 ( 𝛼 ) gives 
+
+(2𝑛 − 𝛼 ) ( 𝛼 + 1)
+
+2 +
+
+> 𝛼
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) ˆ𝑝 ( 𝑗 ) + ( 𝑛 − 𝛼 )( 𝑛 − 𝛼 − 1) ˆ𝑝 ( 𝛼 +1)
+
+= 𝑛 − 𝛼 𝛼 + 1 ·
+
+ (𝛼 + 1)( 𝛼 + 2)
+
+2 + (𝑛 + 𝛼 + 2)( 𝑛 − 𝛼 − 1)
+
+2 ˆ𝑝 ( 𝛼 +1)
+
+
+
+. (22) Also note that 
+
+> 𝛼
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) ˆ𝑝 ( 𝑗 ) + (𝑛 − 𝛼 )( 𝑛 − 𝛼 − 1)
+
+2 ˆ𝑝 ( 𝛼 +1) =
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) ˆ𝑝 ( 𝑗 ) + ( 𝑛 − 𝛼 ) ˆ𝑝 ( 𝛼 ) + (𝑛 − 𝛼 )( 𝑛 − 𝛼 − 1)
+
+2 ˆ𝑝 ( 𝛼 +1)
+
+=
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + (𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 )
+
+2 𝑝 ( 𝛼 ) = 𝜆 𝛼 · 𝑛 (𝑛 + 1)
+
+2 (23) Since 𝛼 + 1 ≤ 𝑚 , we have 𝑛 − 𝛼 𝛼 +1 > 2𝑛 𝑛 +1 . Combining (21), (22) and (23), it follows that 
+
+(𝜆 𝛼 , ˆ𝑝 (1) , . . . , ˆ𝑝 ( 𝛼 +1) ) ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+] × [ 0, 1] 𝛼 +1
+
+is a solution to Sys rev  
+
+> 𝛼 +1
+
+(𝑛, 𝑛 − 𝛼 𝛼 +1 ). By Definition A.3, 𝜆 𝛼 = Λ 𝛼 +1,𝑛 ( 𝑛 − 𝛼 𝛼 +1 ). Combining this with the definition of 𝜆 𝛼 
+
+concludes the proof. □
+
+Based on these foundations, we establish the well-definedness of Φ(𝑛 ) .
+
+Lemma A.6. For fixed integers 𝑛 ≥ 2, the function Φ(𝑛 ) (𝜆 ) is well-defined, where Φ(𝑛 ) (·) is defined in (10) .Proof. By Definition A.3 and Lemmas A.2 and A.4, the map Λ𝛼,𝑛 (𝛾 ) is well-defined, continuous, and strictly decreasing for 𝛾 ∈  2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 
+
+. This ensures that its inverse, Φ𝛼,𝑛 (𝜆 ), as defined in Definition 3.8, is well-defined for 𝜆 ∈[Λ𝛼,𝑛 ( 𝑛 +1− 𝛼 𝛼 ), Λ𝛼,𝑛 ( 2𝑛 𝑛 +1 )] , where Λ𝛼,𝑛 ( 2𝑛 𝑛 +1 ) = 𝑛 −1 
+
+> 𝑛 +1
+
+and Λ1,𝑛 (𝑛 ) = 0. Since 𝑚 = max  𝑖 ∈ [ 𝑛 − 1] : 𝑛 +1−𝑖 𝑖 > 2𝑛 𝑛 +1 ,we have 
+
+[Λ𝛼,𝑛 ( 𝑛 +1− 𝛼 𝛼 ), Λ𝛼,𝑛 ( 𝑛 − 𝛼 𝛼 +1 )] ⊆ [ Λ𝛼,𝑛 ( 𝑛 +1− 𝛼 𝛼 ), Λ𝛼,𝑛 ( 2𝑛 𝑛 +1 )] 
+
+24 for all 𝛼 ∈ [ 𝑚 − 1], and 
+
+[Λ𝑚,𝑛 ( 𝑛 +1−𝑚 𝑚 ), 𝑛 −1 
+
+> 𝑛 +1
+
+] = [Λ𝑚,𝑛 ( 𝑛 +1−𝑚 𝑚 ), Λ𝑚,𝑛 ( 2𝑛 𝑛 +1 )] .
+
+Therefore, Φ𝛼,𝑛 (𝜆 ) is also well defined for 𝜆 in those ranges. Since Λ𝛼,𝑛 (𝛾 ) is strictly decreasing for 𝛾 ∈  2𝑛 𝑛 +1 , 𝑛 +1− 𝛼 𝛼 
+
+, Lemma A.5 gives 
+
+Λ𝛼,𝑛 ( 𝑛 +1− 𝛼 𝛼 ) < Λ𝛼,𝑛 ( 𝑛 − 𝛼 𝛼 +1 ) = Λ 𝛼 +1,𝑛 ( 𝑛 − 𝛼 𝛼 +1 ), ∀ 𝛼 ∈ [ 𝑚 − 1].
+
+Combining the above results with Lemma A.5 and the construction of Φ(𝑛 ) establishes its well-definedness. □
+
+## A.2 Monotonicity Property of Function Φ𝛼,𝑛 
+
+Lemma A.7. For a fixed integer 𝑛 ≥ 2, let 𝛼 ′ > 𝛼 , where 𝛼 ′, 𝛼 ∈ [ 𝑚 ], and 
+
+𝑚 = max 
+
+
+
+𝛼 ∈ [ 𝑛 − 1] : 𝑛 + 1 − 𝛼 𝛼 > 2𝑛 𝑛 + 1
+
+
+
+.
+
+Then Φ𝛼 ′ ,𝑛 (𝜆 ) > Φ𝛼,𝑛 (𝜆 ) for all 𝜆 ∈
+
+
+
+Λ𝛼 ′ ,𝑛 
+
+ 𝑛 +1− 𝛼 ′
+
+> 𝛼 ′
+
+
+
+, 𝑛 −1
+
+> 𝑛 +1
+
+
+
+, where Φ·,𝑛 is defined as in Definition 3.8. Proof. Define 
+
+𝛾 0 := 2𝑛 𝑛 + 1 , 𝑟 𝑘 := 𝑛 + 1 − 𝑘 𝑘 , ¯𝜆 𝑛 := 𝑛 − 1
+
+𝑛 + 1 .
+
+We have shown in the proof of Lemma A.2 that, for every 𝑖 ∈ [ 𝑚 ] and 𝛾 ∈ [ 𝛾 0, 𝑟 𝑖 ], the solution variable 𝑝 (𝑖 ) satisfies 0 ≤ 𝑝 (𝑖 ) (𝛾 ) ≤ 1, and that 𝑝 (𝑖 ) (𝛾 ) is strictly decreasing in 𝛾 .By Definition A.3 and (7), Λ𝛼,𝑛 satisfies 
+
+Λ𝛼,𝑛 (𝛾 ) := 2
+
+𝑛 (𝑛 + 1)
+
+
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) (𝛾 ) + (𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 )
+
+2 𝑝 ( 𝛼 ) (𝛾 )
+
+
+
+, 𝛾 ∈ [ 𝛾 0, 𝑟 𝛼 ].
+
+Recall that Λ𝛼,𝑛 is continuous and strictly decreasing, and Φ𝛼,𝑛 = Λ −1 
+
+> 𝛼,𝑛
+
+is well-defined on [Λ𝛼,𝑛 (𝑟 𝛼 ), ¯𝜆 𝑛 ].Note that (15) is obtained through rearranging (6). For each 𝑖 ∈ [ 𝑚 ], let 𝑝 (𝑖 ) (𝛾 ) be recursively determined by (15), i.e., 
+
+𝑎 𝑖 (𝛾 ) 𝑝 (𝑖 ) (𝛾 ) =
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) (𝛾 ) + 𝑖 
+
+2
+
+ (2𝑛 + 1 − 𝑖 ) − ( 𝑖 + 1)𝛾 , (24) where 
+
+𝑎 𝑖 (𝛾 ) := (𝑛 − 𝑖 )
+
+ (𝑛 + 1 + 𝑖 )𝛾 
+
+2 − ( 𝑛 + 1 − 𝑖 )
+
+
+
+.
+
+For 𝛾 ≥ 𝛾 0, we have 𝑎 𝑖 (𝛾 ) > 0. For 𝑗 ≥ 2, subtracting (24) with 𝑖 = 𝑗 − 1 from that with 𝑖 = 𝑗 gives 
+
+𝑎 𝑗 𝑝 ( 𝑗 ) (𝛾 ) − 𝑎 𝑗 −1 𝑝 ( 𝑗 −1) (𝛾 ) = (𝑛 + 1 − 𝑗 )( 𝑝 ( 𝑗 −1) (𝛾 ) + 1) − 𝑗 𝛾 (25) By definition of 𝑎 𝑗 (𝛾 )
+
+𝑎 𝑗 −1 − 𝑎 𝑗 = 𝑗 𝛾 − 2(𝑛 + 1 − 𝑗 ). (26) Then, adding (25) to 𝑝 ( 𝑗 −1) (𝛾 ) times (26) gives 
+
+𝑎 𝑗 (𝛾 )  𝑝 ( 𝑗 ) (𝛾 ) − 𝑝 ( 𝑗 −1) (𝛾 ) =   𝑗 𝛾 − ( 𝑛 + 1 − 𝑗 )   𝑝 ( 𝑗 −1) (𝛾 ) − 1.
+
+We now compare adjacent branches. Fix 𝑘 ∈ [ 𝑚 − 1]. Applying the difference identity above with 𝑗 = 𝑘 + 1 gives 
+
+𝑎 𝑘 +1 (𝛾 )  𝑝 (𝑘 +1) (𝛾 ) − 𝑝 (𝑘 ) (𝛾 ) =  (𝑘 + 1)𝛾 − ( 𝑛 − 𝑘 )   𝑝 (𝑘 ) (𝛾 ) − 1. (27) For 𝛾 ∈ ( 𝛾 0, 𝑟 𝑘 +1), both factors on the right-hand side of (27) are strictly negative. Hence 𝑝 (𝑘 +1) (𝛾 ) > 𝑝 (𝑘 ) (𝛾 ).25 Therefore, 
+
+Λ𝑘 +1,𝑛 (𝛾 ) − Λ𝑘,𝑛 (𝛾 ) = 2
+
+𝑛 (𝑛 + 1) · (𝑛 − 𝑘 )( 𝑛 − 𝑘 − 1)
+
+2
+
+ 𝑝 (𝑘 +1) (𝛾 ) − 𝑝 (𝑘 ) (𝛾 ) > 0for all 𝛾 ∈ ( 𝛾 0, 𝑟 𝑘 +1). At 𝛾 = 𝑟 𝑘 +1, the first factor on the right-hand side of (27) vanishes, so 𝑝 (𝑘 +1) (𝑟 𝑘 +1) = 𝑝 (𝑘 ) (𝑟 𝑘 +1),and hence Λ𝑘 +1,𝑛 (𝑟 𝑘 +1) = Λ 𝑘,𝑛 (𝑟 𝑘 +1). Since 𝑟 𝑘 +1 < 𝑟 𝑘 and Λ𝑘,𝑛 is strictly decreasing, 
+
+Λ𝑘 +1,𝑛 (𝑟 𝑘 +1) = Λ 𝑘,𝑛 (𝑟 𝑘 +1) > Λ𝑘,𝑛 (𝑟 𝑘 ).
+
+Thus the lower endpoints Λ𝑘,𝑛 (𝑟 𝑘 ) are strictly increasing in 𝑘 .Now take any 𝛼 ′ > 𝛼 and 𝜆 ∈  Λ𝛼 ′ ,𝑛 (𝑟 𝛼 ′ ), ¯𝜆 𝑛 
+
+. By the monotonicity of the lower endpoints, both Φ𝛼,𝑛 (𝜆 ) and 
+
+Φ𝛼 ′ ,𝑛 (𝜆 ) are well-defined. Set 
+
+𝛾 𝛼 := Φ 𝛼,𝑛 (𝜆 ), 𝛾 𝛼 ′ := Φ 𝛼 ′ ,𝑛 (𝜆 ).
+
+Since 𝜆 < ¯𝜆 𝑛 = Λ 𝛼,𝑛 (𝛾 0), and Λ𝛼,𝑛 is strictly decreasing, we have 𝛾 𝛼 > 𝛾 0.Applying the adjacent comparison successively at 𝛾 = 𝑟 𝛼 ′ gives Λ𝛼 ′ ,𝑛 (𝑟 𝛼 ′ ) ≥ Λ𝛼,𝑛 (𝑟 𝛼 ′ ). Hence 𝜆 > Λ𝛼 ′ ,𝑛 (𝑟 𝛼 ′ ) ≥ 
+
+Λ𝛼,𝑛 (𝑟 𝛼 ′ ). Since Λ𝛼,𝑛 is strictly decreasing, this implies 𝛾 𝛼 < 𝑟 𝛼 ′ . Thus 𝛾 𝛼 ∈ ( 𝛾 0, 𝑟 𝛼 ′ ).For every 𝑘 = 𝛼, . . . , 𝛼 ′ − 1, we have 𝛾 𝛼 < 𝑟 𝛼 ′ ≤ 𝑟 𝑘 +1. Therefore, Λ𝑘 +1,𝑛 (𝛾 𝛼 ) > Λ𝑘,𝑛 (𝛾 𝛼 ). Iterating over 
+
+𝑘 = 𝛼, . . . , 𝛼 ′ − 1 yields Λ𝛼 ′ ,𝑛 (𝛾 𝛼 ) > Λ𝛼,𝑛 (𝛾 𝛼 ) = 𝜆 . On the other hand, Λ𝛼 ′ ,𝑛 (𝛾 𝛼 ′ ) = 𝜆 . Since Λ𝛼 ′ ,𝑛 is strictly decreasing, we conclude that 𝛾 𝛼 ′ > 𝛾 𝛼 . That is, Φ𝛼 ′ ,𝑛 (𝜆 ) > Φ𝛼,𝑛 (𝜆 ). This completes the proof. □
+
+# B Proofs for Section 3 
+
+In this section, we present proofs of the results in Section 3. 
+
+## B.1 Proof of Proposition 3.1 
+
+Proof. Consider a (1 + 𝜆 )-consistent algorithm A. Let the predictions be 𝑦 1 = 𝑦 2 = · · · = 𝑦 𝑛 = 1. Let 𝑑 (𝑖, 𝑗 ) denote the processing time of job 𝑖 when job 𝑗 finishes. We assume without loss of generality that job 1 is the first job finished by A and that 𝑑 (𝑖, 1) ≥ 𝑑 ( 𝑗, 1) for all 𝑖 < 𝑗 . We consider the scenario where the prediction 𝑦 1 is accurate (i.e. 𝑥 1 = 𝑦 1). A necessary condition for maintaining (1 + 𝜆 )-consistency is 
+
+(1 + 𝜆 ) · 𝑛 (𝑛 + 1)
+
+2 ≥ 𝑛 · 1 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+𝑑 (𝑖, 1)
+
+!
+
++
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+(𝑛 + 1 − 𝑖 ) · ( 1 − 𝑑 (𝑖, 1)) ,
+
+where the first term represents the costs incurred up to the moment when job 1 completes, while the second term represents the minimum cost required to finish from this state. Simplifying, we obtain 
+
+𝑛 (𝑛 + 1)
+
+2 𝜆 ≥
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+(𝑖 − 1) · 𝑑 (𝑖, 1). (28) We first consider an adversarial setup where 𝑥 1 = 𝑦 1 = 1 and 𝑥 𝑖 = 𝑑 (𝑖, 1) + 𝜀 , where 𝜀 is a small positive number. For this setup, we have OPT = 1 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+𝑖 · 𝑑 (𝑖, 1) + 𝑂 (𝜀 ). (29) We also have ALG = 𝑛 · 1 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+𝑑 (𝑖, 1)
+
+!
+
++ 𝑂 (𝜀 ) (30) Combining (29) and (30) and taking 𝜀 → 0, we have OPT ALG − 1
+
+𝑛 = 1
+
+𝑛 ·
+
+ Í 𝑛 𝑖 =2 (𝑖 − 1) · 𝑑 (𝑖, 1)
+
+1 + Í𝑛 𝑖 =2 𝑑 (𝑖, 1)
+
+
+
+. (31) 26 We set the numerator Í𝑛 𝑖 =2 (𝑖 − 1) · 𝑑 (𝑖, 1) = 𝐶 . To maximize the quantity on the right-hand side, 4 we would want to have Í𝑛 𝑖 =2 𝑑 (𝑖, 1) as small as possible subject to the constraints 𝑑 (𝑖, 1) ≥ 𝑑 ( 𝑗, 1) ≥ 0 for all 𝑗 > 𝑖 ≥ 2 and Í𝑛 𝑖 =2 (𝑖 − 1) · 𝑑 (𝑖, 1) = 𝐶 . It’s clear that the linear program is bounded and feasible, so an optimum exists. Furthermore, if we have a feasible solution with 𝑑 (𝑖, 1) > 𝑑 (𝑖 + 1, 1), then this solution cannot be optimal. This is because we can set 
+
+𝑑 (𝑖, 1) ← 𝑑 (𝑖, 1) − 𝜗 𝑖 −1 and 𝑑 (𝑖 + 1, 1) ← 𝑑 (𝑖 + 1, 1) + 𝜗 𝑖 for sufficiently small 𝜗 > 0, reducing the objective while remaining feasible. Thus, if an optimal solution exists, it must have 𝑑 (2, 1) = 𝑑 (3, 1) = . . . = 𝑑 (𝑛, 1) = 2𝐶 𝑛 (𝑛 −1) . Then, (31) yields OPT ALG − 1
+
+𝑛 ≤ 1
+
+𝑛 ·
+
+ 𝐶 
+
+1 + 2𝐶 /𝑛 
+
+
+
+,
+
+whose right-hand side is strictly increasing in 𝐶 . Since (28) gives 𝐶 ≤ 𝑛 (𝑛 +1) 
+
+> 2
+
+𝜆 , we obtain OPT ALG ≤ 1
+
+𝑛 + 1
+
+𝑛 · 𝐶 
+
+1 + 2𝐶 /𝑛 ≤ 1
+
+𝑛 + 1
+
+𝑛 · 𝑛 (𝑛 + 1)𝜆 /21 + ( 𝑛 + 1)𝜆 = 1 + (𝑛 +1) ( 𝑛 +2) 
+
+> 2
+
+𝜆 𝑛 + 𝑛 (𝑛 + 1)𝜆 .
+
+Inverting the numerator and denominator, we recover exactly the lower bound of Wei and Zhang (2020) in (1). The equality is attained only when 
+
+𝑑 (2, 1) = · · · = 𝑑 (𝑛, 1) = 𝑛 +1 
+
+> 𝑛 −1
+
+𝜆. (32) We distinguish the following two cases. 
+
+Case 1 : If (32) is not satisfied, then algorithm A will necessarily incur a robustness strictly larger than the bound given in (1). 
+
+Case 2 : If (32) is satisfied, then we consider a positive number Δ𝑡 with Δ𝑡 < 1 − 𝑛 +1 
+
+> 𝑛 −1
+
+𝜆 . Suppose that, within the time interval of length Δ𝑡 immediately following the completion of job 1, the processing time allocated to job 𝑖 (𝑖 ≥ 2) is denoted by Δ𝑡 𝑖 . We assume without loss of generality that Δ𝑡 𝑖 ≥ Δ𝑡 𝑗 for all 𝑖 < 𝑗 .5 Note that 
+
+𝑑 (𝑖, 1) + Δ𝑡 𝑖 ≤ 𝑑 (𝑖, 1) + Δ𝑡 < 1 = 𝑦 𝑖 , ∀ 𝑖 ≥ 2.
+
+No job is completed during this period when all predictions are accurate. Consistency requires 
+
+(1 + 𝜆 ) · 𝑛 (𝑛 + 1)
+
+2 ≥ 𝑛 · 1 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+𝑑 (𝑖, 1)
+
+!
+
++ ( 𝑛 − 1) · Δ𝑡 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+(𝑛 + 1 − 𝑖 ) · ( 1 − 𝑑 (𝑖, 1) − Δ𝑡 𝑖 ). (33) (32) and (33) give 
+
+(𝑛 − 1) · Δ𝑡 −
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+(𝑛 + 1 − 𝑖 ) · Δ𝑡 𝑖 ≤ 0.
+
+Since Í𝑛 𝑖 =2 Δ𝑡 𝑖 = Δ 𝑡 and Δ𝑡 𝑖 ≥ 0, we have Δ𝑡 2 = Δ 𝑡 and Δ𝑡 𝑖 = 0 for all 𝑖 ≥ 3. Therefore, A must allocate all processing time to job 2 during the Δ𝑡 interval immediately following the completion of job 1. We then consider another adversarial setup where 𝑥 1 = 𝑦 1 = 1, 𝑥 2 = 𝑛 +1 
+
+> 𝑛 −1
+
+𝜆 + Δ𝑡 and 𝑥 𝑖 = 𝑛 +1 
+
+> 𝑛 −1
+
+𝜆 + 𝜀 for 𝑖 ≥ 3, where 𝜀 is a small positive number. In this setup, ALG = 𝑛 · 1 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =2
+
+𝑑 (𝑖, 1)
+
+!
+
++ ( 𝑛 − 1) · Δ𝑡 + 𝑂 (𝜀 ). (34) OPT = 1 + 2 · ( 𝑑 (2, 1) + Δ𝑡 ) + 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =3
+
+𝑖 · 𝑑 (𝑖, 1) + 𝑂 (𝜀 ). (35) Combining (32), (34) and (35), we have ALG OPT = 𝑛 + 𝑛 (𝑛 + 1)𝜆 + ( 𝑛 − 1)Δ𝑡 + 𝑂 (𝜀 )
+
+1 + ( 𝑛 + 1)( 𝑛 + 2)𝜆 /2 + 2Δ𝑡 + 𝑂 (𝜀 ) .
+
+> 4Since we want to minimize the ratio ALG /OPT.
+> 5This assumption is justified, as under (32) all remaining unfinished jobs become equivalent once job 1 is completed.
+
+27 Taking 𝜀 → 0 yields ALG OPT = 𝑛 + 𝑛 (𝑛 + 1)𝜆 + ( 𝑛 − 1)Δ𝑡 
+
+1 + ( 𝑛 + 1)( 𝑛 + 2)𝜆 /2 + 2Δ𝑡 .
+
+Since 𝑛 ≥ 5, we have 2 /( 𝑛 2 − 3𝑛 − 2) < (𝑛 − 1)/( 𝑛 + 1). For 𝜆 ∈
+
+ 2  
+
+> 𝑛 2−3𝑛 −2
+
+, 𝑛 −1
+
+> 𝑛 +1
+
+
+
+, it follows that ALG OPT > 𝑛 + 𝑛 (𝑛 + 1)𝜆 
+
+1 + (𝑛 +1) ( 𝑛 +2) 
+
+> 2
+
+𝜆 .
+
+Therefore, within this interval of 𝜆 , the ratio ALG /OPT is strictly larger than the value in (1), thereby showing that the bound in Wei and Zhang (2020) is not tight. □
+
+## B.2 Proof of Proposition 3.2 
+
+Proof. Fix 𝜆 ∈ ( 0, 1). For every admissible 𝑘 ,
+
+Φwz (𝑘, 𝜆 ) = 𝑘 
+
+1 + 12 𝜆 (𝑘 + 1)( 𝑘 + 2) + 𝜆𝑘 (𝑘 + 1)
+
+1 + 12 𝜆 (𝑘 + 1)( 𝑘 + 2) ≤ 𝑘 
+
+1 + 𝜆𝑘 2/2 + 2 ≤ 1
+
+√2𝜆 + 2,
+
+where the last inequality follows from 1 + 𝜆𝑘 2/2 ≥ √2𝜆 𝑘 . For all sufficiently large 𝑛 , the maximum defining Φpad wz (𝑛, 𝜆 )
+
+is nonempty. It is nondecreasing in 𝑛 and bounded above, so its limit exists. For 𝜆 ∈ [ 1/2, 1),
+
+Φwz (𝑘, 𝜆 ) − 2 = (1 − 2𝜆 )𝑘 − 2(1 + 𝜆 )
+
+1 + 12 𝜆 (𝑘 + 1)( 𝑘 + 2) < 0.
+
+Since all sufficiently large 𝑘 are admissible and Φwz (𝑘, 𝜆 ) → 2 as 𝑘 → ∞ , we obtain Φpad wz (∞ , 𝜆 ) = 2. Finally, let 𝑘 𝜆 = ⌊√︁ 2/𝜆 ⌋, which is admissible for all sufficiently small 𝜆 . Since √𝜆 𝑘 𝜆 → √2, 
+
+√𝜆 Φwz (𝑘 𝜆 , 𝜆 ) =
+
+√𝜆 𝑘 𝜆 
+
+ 1 + 𝜆 (𝑘 𝜆 + 1)
+
+1 + 12 𝜆 (𝑘 𝜆 + 1)( 𝑘 𝜆 + 2) −→ 1
+
+√2 .
+
+Combining this with 
+
+Φwz (𝑘 𝜆 , 𝜆 ) ≤ Φpad wz (∞ , 𝜆 ) ≤ 1
+
+√2𝜆 + 2proves the claimed asymptotic expression. □
+
+## B.3 Proof of Corollary 3.3 
+
+Proof. Fix 𝑛 ≥ 5 and 𝜆 ∈ [ 12 , 𝑛 −1 
+
+> 𝑛 +1
+
+). For 𝜆 ≥ 1/2, the expression in (1) is strictly increasing in the number of jobs. Hence, Φpad wz (𝑛, 𝜆 ) = Φ wz (𝑛, 𝜆 ). Since 2
+
+𝑛 2 − 3𝑛 − 2 ≤ 14 < 12 ≤ 𝜆 < 𝑛 − 1
+
+𝑛 + 1 ,
+
+the proof of Proposition 3.1 in Appendix B.1 shows that every (1 + 𝜆 )-consistent algorithm for 𝑛 jobs has robustness strictly greater than Φwz (𝑛, 𝜆 ), and therefore its robustness is also strictly greater than the padded lower bound. □
+
+## B.4 Proof of Lemma 3.5 
+
+Proof. Run A on the accurate all-unit instance. Let 𝐶 𝑗 denote the clock completion time of job 𝑗 under A, and let 
+
+𝐷 𝑖 (𝑡 ) denote the cumulative amount of processing received by job 𝑖 by time 𝑡 . Thus, 
+
+𝑑 (𝑖, 𝑗 ) = 𝐷 𝑖 (𝐶 𝑗 ).
+
+28 For every 𝑡 ≥ 0, let 𝐷 (𝑘 ) (𝑡 ) denote the 𝑘 -th largest element of the multiset {𝐷 𝑖 (𝑡 )} 𝑖 ∈ [ 𝑛 ] , so that 
+
+𝐷 (1) (𝑡 ) ≥ 𝐷 (2) (𝑡 ) ≥ · · · ≥ 𝐷 (𝑛 ) (𝑡 ).
+
+In particular, if 𝑑 (𝑘 ) ( 𝑗 ) denotes the 𝑘 -th largest element of {𝑑 (𝑖, 𝑗 )} 𝑖 ∈ [ 𝑛 ] , then 
+
+𝑑 (𝑘 ) ( 𝑗 ) = 𝐷 (𝑘 ) (𝐶 𝑗 ).
+
+We construct A′ so that, as long as the observed completion history agrees with that of the accurate all-unit instance, the cumulative amount of processing received by job 𝑘 at time 𝑡 is 
+
+𝐷 ′ 
+
+> 𝑘
+
+(𝑡 ) ≔ 𝐷 (𝑘 ) (𝑡 ).
+
+This defines a feasible processing profile. Indeed, since every 𝐷 𝑖 (𝑡 ) is nondecreasing in 𝑡 , each order statistic 𝐷 (𝑘 ) (𝑡 ) is also nondecreasing. Moreover, for every 0 ≤ 𝑠 < 𝑡 ,
+
+> 𝑛
+
+∑︁ 
+
+> 𝑘 =1
+
+ 𝐷 ′ 
+
+> 𝑘
+
+(𝑡 ) − 𝐷 ′ 
+
+> 𝑘
+
+(𝑠 ) =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑘 =1
+
+ 𝐷 (𝑘 ) (𝑡 ) − 𝐷 (𝑘 ) (𝑠 ) =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+ 𝐷 𝑖 (𝑡 ) − 𝐷 𝑖 (𝑠 ) ≤ 𝑡 − 𝑠, 
+
+where the last inequality follows from the unit-capacity constraint. Hence the sorted cumulative profile can be implemented by a feasible single-machine schedule. If the observed completion history departs from the accurate all-unit execution, we complete the definition of A′ by processing the remaining jobs according to any fixed feasible work-conserving rule. Let 𝐶 ′ 
+
+> 𝑗
+
+denote the clock completion time of job 𝑗 under A′ on the accurate all-unit instance. Since A completes jobs in increasing index order, the 𝑗 -th largest cumulative processing value first reaches one at time 𝐶 𝑗 . Therefore, A′ also completes job 𝑗 at time 𝐶 𝑗 , with simultaneous completions, if any, ordered by increasing index. Consequently, 
+
+𝐶 ′ 
+
+> 𝑗
+
+= 𝐶 𝑗 for every 𝑗 ∈ [ 𝑛 ],
+
+and 
+
+𝑑 ′ (𝑘, 𝑗 ) = 𝐷 ′ 
+
+> 𝑘
+
+(𝐶 ′ 
+
+> 𝑗
+
+) = 𝐷 (𝑘 ) (𝐶 𝑗 ) = 𝑑 (𝑘 ) ( 𝑗 ).
+
+Thus, 
+
+{𝑑 (𝑖, 𝑗 )} 𝑖 ∈ [ 𝑛 ] = {𝑑 (𝑖 ) ( 𝑗 )} 𝑖 ∈ [ 𝑛 ] = {𝑑 ′ (𝑖, 𝑗 )} 𝑖 ∈ [ 𝑛 ] for every 𝑗 ∈ [ 𝑛 ].
+
+Since 𝑑 ′ (1, 𝑗 ), . . . , 𝑑 ′ (𝑛, 𝑗 ) are arranged in non-increasing order, 
+
+𝑑 ′ (𝑖, 𝑘 ) ≥ 𝑑 ′ ( 𝑗, 𝑘 ) for all 𝑗 ≥ 𝑖 > 𝑘. 
+
+Moreover, 𝐶 ′ 
+
+> 𝑗
+
+= 𝐶 𝑗 for every 𝑗 ∈ [ 𝑛 ], so the two algorithms incur the same total completion time on the accurate all-unit instance: ALG (A, 1) =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐶 𝑗 =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐶 ′ 
+
+> 𝑗
+
+= ALG (A′, 1).
+
+Since the offline optimum depends only on the instance, A and A′ have the same competitive ratio under perfect predictions. It remains to compare their corresponding attack instances. Fix 𝑖 ∈ [ 𝛼 ], and let x𝑖 ∈ X 𝛼 (A) and x′ 
+
+> 𝑖
+
+∈ X 𝛼 (A′) be the corresponding 𝑖 -th attacks. At the 𝑖 -th completion time, sorting preserves the multiset of processing received by the unfinished jobs: 
+
+{𝑑 ( 𝑗, 𝑖 ) : 𝑗 > 𝑖 } = {𝑑 ( 𝑗 ) (𝑖 ) : 𝑗 > 𝑖 } = {𝑑 ′ ( 𝑗, 𝑖 ) : 𝑗 > 𝑖 }.
+
+Hence x𝑖 and x′ 
+
+> 𝑖
+
+are permutations of each other, and therefore OPT (x𝑖 ) = OPT (x′ 
+
+> 𝑖
+
+).
+
+By non-clairvoyance, the two algorithms reproduce their respective accurate executions through the 𝑖 -th completion time. Indeed, before that time, none of the unfinished jobs can reveal that its true processing time is only 𝜀 larger than 29 the amount of processing it has received. At time 𝐶 𝑖 = 𝐶 ′ 
+
+> 𝑖
+
+, every remaining job has exactly 𝜀 units of processing left. Their total remaining workload is therefore (𝑛 − 𝑖 )𝜀 . Since A is work-conserving, the remaining processing time is 
+
+𝑂 (𝜀 ). Therefore, ALG (A, x𝑖 ) =
+
+> 𝑖
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐶 𝑗 + ( 𝑛 − 𝑖 )𝐶 𝑖 + 𝑂 (𝜀 ),
+
+while ALG (A′, x′ 
+
+> 𝑖
+
+) =
+
+> 𝑖
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐶 ′ 
+
+> 𝑗
+
++ ( 𝑛 − 𝑖 )𝐶 ′ 
+
+> 𝑖
+
++ 𝑂 (𝜀 ) =
+
+> 𝑖
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐶 𝑗 + ( 𝑛 − 𝑖 )𝐶 𝑖 + 𝑂 (𝜀 ).
+
+Because 𝜀 is infinitesimal in Definition 3.4, the two corresponding attacks yield the same outcome. Since this holds for every 𝑖 ∈ [ 𝛼 ], attacking A over X𝛼 (A) yields the same outcomes as attacking A′ over X𝛼 (A′). □
+
+## B.5 Proof of Theorem 3.9 
+
+Proof of Theorem 3.9. The proof has four steps. We first formulate the constraints imposed by consistency and the adversarial attacks. We then establish the structure of optimal solutions and identify the resulting equations with the Order-𝛼 System. Finally, we verify the attack-depth selection rule and establish the claimed lower bound. 
+
+Step 1: The attack-based optimization problem. Fix 𝑛 ≥ 2, 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+], and a (1 + 𝜆 )-consistent algorithm A
+
+with robustness 𝛾 . Run A on the accurate all-unit instance, and index the jobs by their completion order. By Lemma 3.5, we may assume that 
+
+𝑑 ( 𝑗, 𝑖 ) ≤ 𝑑 (𝑘, 𝑖 ) whenever 𝑖 < 𝑘 < 𝑗, 
+
+for the analysis of the accurate instance and the corresponding adversarial attacks. For an attack depth 𝛼 ∈ [ 𝑛 − 1], write 𝑝 (𝑖 ) 
+
+> 𝑗
+
+≔ 𝑑 ( 𝑗, 𝑖 ), p ≔  𝑝 (𝑖 )
+
+> 𝑗
+
+  
+
+> 1≤𝑖 ≤𝛼, 𝑖< 𝑗 ≤𝑛
+
+, and we define the aggregates 
+
+𝑃 (𝑖 ) ≔
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝑖 +1
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
+, 𝐼 (𝑖 ) 
+
+> 𝑝
+
+≔
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝑖 +1
+
+𝑗 𝑝 (𝑖 ) 
+
+> 𝑗
+
+, 𝑖 ∈ [ 𝛼 ].
+
+Consider the 𝑖 -th attack, whose processing-time vector is 
+
+x𝑖 =  1, . . . , 1
+
+| {z } 
+
+> 𝑖 copies
+
+, 𝑝 (𝑖 ) 
+
+> 𝑖 +1
+
++ 𝜀, . . . , 𝑝 (𝑖 ) 
+
+> 𝑛
+
++ 𝜀 , 𝜀 ↓ 0.
+
+By non-clairvoyance, the execution agrees with the accurate execution through the 𝑖 -th completion. At the 𝑗 -th completion, the total amount of processing performed is 𝑗 + 𝑃 ( 𝑗 ) , which is also the completion time. In the 𝑖 -th attack instance, each remaining job has only 𝜀 units of processing left and therefore completes within (𝑛 − 𝑖 )𝜀 additional time. Thus, up to an additive 𝑂 (𝜀 ) term, the online cost equals 
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+  𝑗 + 𝑃 ( 𝑗 )  + ( 𝑛 + 1 − 𝑖 )  𝑖 + 𝑃 (𝑖 )  = 𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )𝑃 (𝑖 ) .
+
+In the limit, the processing times are ordered as 1 , . . . , 1, 𝑝 (𝑖 )
+
+> 𝑖 +1
+
+, . . . , 𝑝 (𝑖 ) 
+
+> 𝑛
+
+in nonincreasing order. By the shortest-processing-time rule, the offline cost converges to 𝑖 (𝑖 + 1)/ 2 + 𝐼 (𝑖 ) 
+
+> 𝑝
+
+as 𝜀 ↓ 0. Consequently, 
+
+𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )𝑃 (𝑖 ) ≤ 𝛾 
+
+ 𝑖 (𝑖 + 1)
+
+2 + 𝐼 (𝑖 )
+
+> 𝑝
+
+
+
+.
+
+On the accurate instance, the remaining processing times after the 𝛼 -th completion are 1 − 𝑝 ( 𝛼 ) 
+
+> 𝛼 +1
+
+≤ · · · ≤ 1 − 𝑝 ( 𝛼 ) 
+
+> 𝑛
+
+.30 Completing them in this order minimizes their additional cost. Hence the total completion time is at least 
+
+𝛼 (2𝑛 + 1 − 𝛼 )
+
+2 +
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + ( 𝑛 + 1 − 𝛼 )𝑃 ( 𝛼 ) +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝛼 +1
+
+(𝑛 + 1 − 𝑗 )  1 − 𝑝 ( 𝛼 )
+
+> 𝑗
+
+
+
+= 𝑛 (𝑛 + 1)
+
+2 +
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− 𝛼𝑃 ( 𝛼 ) .
+
+Consistency bounds the excess over 𝑛 (𝑛 + 1)/ 2 by 𝜆𝑛 (𝑛 + 1)/ 2. Together with the bounds and monotonicity of cumulative processing, these observations yield the following problem: min  
+
+> 𝛾, p
+
+𝛾 (36a) s.t. 𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )𝑃 (𝑖 ) ≤ 𝛾 
+
+ 𝑖 (𝑖 + 1)
+
+2 + 𝐼 (𝑖 )
+
+> 𝑝
+
+
+
+, 𝑖 ∈ [ 𝛼 ], (36b) 
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− 𝛼𝑃 ( 𝛼 ) ≤ 𝜆 𝑛 (𝑛 + 1)
+
+2 , (36c) 0 ≤ 𝑝 (𝑖 ) 
+
+> 𝑗
+
+≤ 1, 1 ≤ 𝑖 ≤ 𝛼, 𝑖 < 𝑗 ≤ 𝑛, (36d) 
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
+≤ 𝑝 (𝑖 ) 
+
+> 𝑘
+
+, 1 ≤ 𝑖 ≤ 𝛼, 𝑖 < 𝑘 < 𝑗 ≤ 𝑛, (36e) 
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
+≤ 𝑝 (𝑘 ) 
+
+> 𝑗
+
+, 1 ≤ 𝑖 < 𝑘 ≤ 𝛼, 𝑘 < 𝑗 ≤ 𝑛. (36f) Here 𝑃 (𝑖 ) and 𝐼 (𝑖 ) 
+
+> 𝑝
+
+are the aggregates defined above, not additional decision variables. Every algorithm under consideration induces a feasible point, so the optimal value 𝜙 𝛼,𝑛 (𝜆 ) is a lower bound on its robustness. 
+
+Lemma B.1. For every 𝜆 ∈ [ 0, 𝑛 −1 
+
+> 𝑛 +1
+
+] and 𝛼 ∈ [ 𝑛 − 1], Problem 36 admits a globally optimal solution. Proof. Let F𝜆, 𝛼 denote the feasible region of Problem 36. A direct substitution shows that (𝛾, p) = (𝑛, 0) is feasible. Consider the objective sublevel set 
+
+K𝜆, 𝛼 ≔ (𝛾, p) ∈ F 𝜆, 𝛼 : 𝛾 ≤ 𝑛 .
+
+This set is nonempty because it contains (𝑛, 0). The box constraints give 0 ≤ 𝑝 (𝑖 ) 
+
+> 𝑗
+
+≤ 1 for every 𝑖 ∈ [ 𝛼 ] and 𝑖 < 𝑗 ≤ 𝑛, 
+
+so all coordinates of p are bounded. Moreover, in Constraint (36b), both the left-hand side and the coefficient multiplying 
+
+𝛾 are strictly positive. Hence 𝛾 > 0. Together with 𝛾 ≤ 𝑛 , this shows that K𝜆, 𝛼 is bounded. It is also closed because all its defining constraints are non-strict inequalities of continuous functions. Therefore, K𝜆, 𝛼 is compact. By the Weierstrass extreme value theorem, the continuous objective attains a minimum on K𝜆, 𝛼 . This minimum is at most 𝑛 , since (𝑛, 0) belongs to K𝜆, 𝛼 . Every feasible point outside K𝜆, 𝛼 has objective value greater than 𝑛 and therefore cannot improve this minimum. Hence it is also a global minimum over F𝜆, 𝛼 . □
+
+Step 2: Structure of optimal solutions. Let 𝑚 be the maximal depth defined in (9). We next show that, when the optimal value lies in a certain range, every optimal solution has equal processing across the unfinished jobs and saturates both the attack constraints and the consistency budget. 
+
+Lemma B.2 (Restatement of Lemma 3.6) . Fix 𝛼 ∈ [ 𝑚 ] and 𝜆 ∈ ( 0, 𝑛 −1 
+
+> 𝑛 +1
+
+). Suppose that 
+
+2𝑛 𝑛 + 1 < 𝜙 𝛼,𝑛 (𝜆 ) < 𝑛 + 1 − 𝛼 𝛼 .
+
+31 Then every optimal solution to Problem 36 satisfies 
+
+𝑝 (𝑖 ) 
+
+> 𝑗
+
+= 𝑝 (𝑖 ) for every 𝑖 ∈ [ 𝛼 ] and 𝑗 > 𝑖, 
+
+for some 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) . Moreover, all constraints in (36b) and (36c) hold with equality. Proof. Fix an arbitrary optimal solution (𝛾, p), where 𝛾 = 𝜙 𝛼,𝑛 (𝜆 ). Throughout the proof, the unbarred aggregates 
+
+𝑃 (𝑖 ) and 𝐼 (𝑖 ) 
+
+> 𝑝
+
+refer to this fixed optimal solution. 
+
+A symmetric comparison profile. We seek a symmetric comparison profile at the same robustness 𝛾 , with every attack constraint tight. Let ¯ 𝑝 (𝑖 ) denote the common processing time of the unfinished jobs when job 𝑖 finishes, and define the corresponding aggregates ¯𝑃 (𝑖 ) ≔
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝑖 +1
+
+¯𝑝 (𝑖 ) = (𝑛 − 𝑖 ) ¯𝑝 (𝑖 ) , ¯𝐼 (𝑖 ) 
+
+> 𝑝
+
+≔
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =𝑖 +1
+
+𝑗 ¯𝑝 (𝑖 ) = 𝑛 + 𝑖 + 12 ¯𝑃 (𝑖 ) .
+
+Equality in the 𝑖 -th attack constraint requires 
+
+𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 ) ¯𝑃 (𝑖 ) = 𝛾 
+
+ 𝑖 (𝑖 + 1)
+
+2 + ¯𝐼 (𝑖 )
+
+> 𝑝
+
+
+
+.
+
+Substituting ¯ 𝐼 (𝑖 ) 
+
+> 𝑝
+
+= 𝑛 +𝑖 +12 ¯𝑃 (𝑖 ) and rearranging gives the recurrence 
+
+ 𝑛 + 𝑖 + 12 𝛾 − ( 𝑛 + 1 − 𝑖 )
+
+
+
+¯𝑃 (𝑖 ) = 𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 − 𝛾 𝑖 (𝑖 + 1)
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) , 𝑖 ∈ [ 𝛼 ]. (37) The coefficient on the left is strictly positive, since 
+
+𝑛 + 𝑖 + 12 𝛾 − ( 𝑛 + 1 − 𝑖 ) ≥ 𝑛 + 22 𝛾 − 𝑛 > 𝑛 𝑛 + 1 > 0.
+
+Starting with 𝑖 = 1, this recurrence uniquely determines ¯ 𝑃 (1) , . . . , ¯𝑃 ( 𝛼 ) , and hence ¯ 𝑝 (𝑖 ) = ¯𝑃 (𝑖 ) /( 𝑛 − 𝑖 ). These quantities depend continuously on 𝛾 ∈ ( 2𝑛 /( 𝑛 + 1), (𝑛 + 1 − 𝛼 )/ 𝛼 ). By construction, the resulting symmetric profile satisfies every constraint in (36b) with equality. We verify that this profile also satisfies the box and monotonicity constraints. The first equation gives ¯𝑝 (1) = 𝑛 − 𝛾 
+
+(𝑛 − 1)(( 𝑛 + 2)𝛾 /2 − 𝑛 ) ∈ ( 0, 1),
+
+where positivity follows from 2 𝑛 /( 𝑛 + 2) < 𝛾 < (𝑛 + 1 − 𝛼 )/ 𝛼 ≤ 𝑛 , and the upper bound follows from 
+
+(𝑛 − 1)
+
+ 𝑛 + 22 𝛾 − 𝑛 
+
+
+
+− ( 𝑛 − 𝛾 ) = 𝑛 (𝑛 + 1)
+
+2
+
+
+
+𝛾 − 2𝑛 𝑛 + 1
+
+
+
+> 0.
+
+Subtracting consecutive equations in (37) gives, for 𝑖 < 𝛼 ,¯𝑝 (𝑖 +1) = ¯𝑝 (𝑖 ) + 𝑛 − 𝑖 − ( 𝑖 + 1)𝛾 
+
+(𝑛 − 𝑖 − 1)(( 𝑛 + 𝑖 + 2)𝛾 /2 − ( 𝑛 − 𝑖 )) 
+
+ 1 − ¯𝑝 (𝑖 ) .
+
+The fraction lies strictly between zero and one. Indeed, its numerator is positive because 𝛾 < (𝑛 +1−𝛼 )/ 𝛼 ≤ ( 𝑛 −𝑖 )/( 𝑖 +1),and its denominator exceeds its numerator by 
+
+(𝑛 − 𝑖 )
+
+ 𝑛 + 𝑖 + 12 𝛾 − ( 𝑛 − 𝑖 )
+
+
+
+> 0.
+
+Induction therefore yields 0 < ¯𝑝 (1) < · · · < ¯𝑝 ( 𝛼 ) < 1. (38) 32 Comparison of the consistency budgets. Monotonicity across the processing times of unfinished jobs and Chebyshev’s sum inequality give 
+
+𝐼 (𝑖 ) 
+
+> 𝑝
+
+≤ 𝑛 + 𝑖 + 12 𝑃 (𝑖 ) , 𝑖 ∈ [ 𝛼 ]. (39) Since 𝛾 > 0, the 𝑖 -th attack constraint and (39) give 
+
+𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )𝑃 (𝑖 ) ≤ 𝛾 
+
+ 𝑖 (𝑖 + 1)
+
+2 + 𝐼 (𝑖 )
+
+> 𝑝
+
+
+
+≤ 𝛾 
+
+ 𝑖 (𝑖 + 1)
+
+2 + 𝑛 + 𝑖 + 12 𝑃 (𝑖 )
+
+
+
+.
+
+Moving the terms involving 𝑃 (𝑖 ) to the left yields 
+
+ 𝑛 + 𝑖 + 12 𝛾 − ( 𝑛 + 1 − 𝑖 )
+
+
+
+𝑃 (𝑖 ) ≥ 𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 − 𝛾 𝑖 (𝑖 + 1)
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) .
+
+The comparison profile satisfies the corresponding equality (37). Subtracting that equality from this inequality cancels the constant terms and gives 
+
+ 𝑛 + 𝑖 + 12 𝛾 − ( 𝑛 + 1 − 𝑖 )
+
+  𝑃 (𝑖 ) − ¯𝑃 (𝑖 )  ≥
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+ 𝑃 ( 𝑗 ) − ¯𝑃 ( 𝑗 ) .
+
+Since the coefficient on the left is positive, induction gives 
+
+𝑃 (𝑖 ) ≥ ¯𝑃 (𝑖 ) for every 𝑖 ∈ [ 𝛼 ]. (40) The final attack constraint implies 
+
+𝛾 ©«
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− 𝛼𝑃 ( 𝛼 ) ª®¬
+
+≥ ( 𝛾 + 1)
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝛼 (2𝑛 + 1 − 𝛼 )
+
+2 − 𝛾 𝛼 (𝛼 + 1)
+
+2 +  𝑛 + 1 − 𝛼 − 𝛼𝛾  𝑃 ( 𝛼 ) .
+
+For the symmetric comparison profile, the final attack constraint holds with equality. Since ¯ 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+= 𝑛 +𝛼 +12 ¯𝑃 ( 𝛼 ) , we have 
+
+𝛾 ©«
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) + 𝑛 + 1 − 𝛼 
+
+2 ¯𝑃 ( 𝛼 ) ª®¬
+
+= 𝛾 ©«
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) + ¯𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− 𝛼 ¯𝑃 ( 𝛼 ) ª®¬
+
+= (𝛾 + 1)
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) + 𝛼 (2𝑛 + 1 − 𝛼 )
+
+2 − 𝛾 𝛼 (𝛼 + 1)
+
+2 +  𝑛 + 1 − 𝛼 − 𝛼𝛾  ¯𝑃 ( 𝛼 ) .
+
+Subtracting the two relations gives 
+
+𝛾 
+
+
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− 𝛼𝑃 ( 𝛼 ) −
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) − 𝑛 + 1 − 𝛼 
+
+2 ¯𝑃 ( 𝛼 )
+
+
+
+≥ ( 𝛾 + 1)
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+ 𝑃 ( 𝑗 ) − ¯𝑃 ( 𝑗 )  +  𝑛 + 1 − 𝛼 − 𝛼𝛾    𝑃 ( 𝛼 ) − ¯𝑃 ( 𝛼 )  ≥ 0. (41) The last inequality follows from (40) and 𝑛 + 1 − 𝛼 − 𝛼𝛾 > 0. Consequently, the comparison profile uses no more consistency budget than the original optimum: 
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) + 𝑛 + 1 − 𝛼 
+
+2 ¯𝑃 ( 𝛼 ) ≤
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− 𝛼𝑃 ( 𝛼 ) ≤ 𝜆 𝑛 (𝑛 + 1)
+
+2 . (42) 33 Tightness and symmetry. Suppose that the first expression in this chain is strictly less than 𝜆𝑛 (𝑛 + 1)/ 2. Since the comparison profile depends continuously on 𝛾 , we may replace 𝛾 by a sufficiently close, smaller value e𝛾 within the same open interval, while keeping its consistency budget below 𝜆𝑛 (𝑛 + 1)/ 2. The resulting profile still satisfies all attack constraints with equality, and the preceding recurrence argument guarantees its box and monotonicity constraints. It would therefore be feasible with objective value e𝛾 < 𝛾 , contradicting optimality. Hence 
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+¯𝑃 ( 𝑗 ) + 𝑛 + 1 − 𝛼 
+
+2 ¯𝑃 ( 𝛼 ) = 𝜆 𝑛 (𝑛 + 1)
+
+2 . (43) Combining (42) with (43) shows that both inequalities in (42) are equalities. Hence the left-hand side of (41) is zero. Since 𝑃 (𝑖 ) ≥ ¯𝑃 (𝑖 ) for every 𝑖 and all coefficients on the right are strictly positive, we obtain 𝑃 (𝑖 ) = ¯𝑃 (𝑖 ) for every 𝑖 . The original optimum and the comparison profile then have the same left-hand side in each attack constraint. The comparison profile satisfies that constraint with equality, so feasibility of the original optimum and 𝛾 > 0 imply ¯ 𝐼 (𝑖 ) 
+
+> 𝑝
+
+≤ 𝐼 (𝑖 ) 
+
+> 𝑝
+
+. Together with (39), this gives ¯𝐼 (𝑖 ) 
+
+> 𝑝
+
+≤ 𝐼 (𝑖 ) 
+
+> 𝑝
+
+≤ 𝑛 + 𝑖 + 12 𝑃 (𝑖 ) = 𝑛 + 𝑖 + 12 ¯𝑃 (𝑖 ) = ¯𝐼 (𝑖 ) 
+
+> 𝑝
+
+.
+
+Hence every attack constraint is tight, and equality holds in Chebyshev’s inequality. Since the weights 𝑖 + 1, . . . , 𝑛 
+
+are strictly increasing, equality forces the processing amounts of all unfinished jobs at the 𝑖 -th completion to be equal (trivially so when only one job remains). Their common value is 𝑃 (𝑖 ) /( 𝑛 − 𝑖 ) = ¯𝑃 (𝑖 ) /( 𝑛 − 𝑖 ) = ¯𝑝 (𝑖 ) . Since the chosen optimum was arbitrary, these conclusions hold at every optimum. □
+
+Step 3: Identification with the Order-𝛼 System. Suppose that the optimal value lies in the interval of Lemma 3.6. At any optimum, let 𝑝 (𝑖 ) be the common processing amount of unfinished jobs when job 𝑖 finishes. Then 
+
+𝑃 (𝑖 ) = (𝑛 − 𝑖 ) 𝑝 (𝑖 ) , 𝐼 (𝑖 ) 
+
+> 𝑝
+
+= (𝑛 − 𝑖 )( 𝑛 + 𝑖 + 1)
+
+2 𝑝 (𝑖 ) .
+
+Substituting these expressions into the tight attack and consistency constraints gives 
+
+𝑖 (2𝑛 + 1 − 𝑖 )
+
+2 +
+
+> 𝑖 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + ( 𝑛 + 1 − 𝑖 )( 𝑛 − 𝑖 ) 𝑝 (𝑖 )
+
+= 𝛾 
+
+ 𝑖 (𝑖 + 1)
+
+2 + (𝑛 − 𝑖 )( 𝑛 + 𝑖 + 1)
+
+2 𝑝 (𝑖 )
+
+
+
+, 𝑖 ∈ [ 𝛼 ],
+
+and 𝛼 −1∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + (𝑛 − 𝛼 )( 𝑛 + 1 − 𝛼 )
+
+2 𝑝 ( 𝛼 ) = 𝜆 𝑛 (𝑛 + 1)
+
+2 .
+
+These are precisely the equations of Sys 𝛼 (𝑛, 𝜆 ). The box constraints make this an admissible solution. By the uniqueness established in Appendix A.1, 
+
+𝜙 𝛼,𝑛 (𝜆 ) = Φ 𝛼,𝑛 (𝜆 ). (44) 
+
+Step 4: Selecting the attack depth and concluding the proof. We now justify the selection rule in (8) and apply the structural characterization established above. The following lemma provides the key step in establishing the validity of this rule. Recall that 𝜙 𝛼,𝑛 (𝜆 ) denotes the optimal objective value of Problem 36 for fixed 𝑛 , 𝜆 , and attack depth 𝛼 .
+
+Lemma B.3. For every 𝛼 ∈ [ 𝑚 − 1], if 𝜙 𝛼,𝑛 (𝜆 ) < 𝑛 − 𝛼 𝛼 +1 , then 𝜙 𝛼 +1,𝑛 (𝜆 ) < 𝑛 − 𝛼 𝛼 +1 .Proof. Fix an optimal solution at depth 𝛼 , with 𝛾 = 𝜙 𝛼,𝑛 (𝜆 ), and let 𝑃 (𝑖 ) and 𝐼 (𝑖 ) 
+
+> 𝑝
+
+denote its aggregates. Extend this processing profile to depth 𝛼 + 1 by defining 
+
+𝑝 ( 𝛼 +1) 
+
+> 𝑗
+
+≔ 𝑝 ( 𝛼 ) 
+
+> 𝑗
+
+for 𝑗 > 𝛼 + 1,
+
+34 while keeping all previously defined coordinates unchanged. The box and monotonicity constraints remain satisfied. The new aggregates are 
+
+𝑃 ( 𝛼 +1) = 𝑃 ( 𝛼 ) − 𝑝 ( 𝛼 )
+
+> 𝛼 +1
+
+, 𝐼 ( 𝛼 +1) 
+
+> 𝑝
+
+= 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− ( 𝛼 + 1) 𝑝 ( 𝛼 )
+
+> 𝛼 +1
+
+.
+
+Consequently, the consistency budget is unchanged: 
+
+> 𝛼
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝐼 ( 𝛼 +1) 
+
+> 𝑝
+
+− ( 𝛼 + 1)𝑃 ( 𝛼 +1) =
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + 𝐼 ( 𝛼 ) 
+
+> 𝑝
+
+− 𝛼𝑃 ( 𝛼 ) ≤ 𝜆 𝑛 (𝑛 + 1)
+
+2 .
+
+We check the attack constraints at robustness (𝑛 − 𝛼 )/( 𝛼 + 1). The first 𝛼 constraints hold strictly because they already hold at 𝛾 = 𝜙 𝛼,𝑛 (𝜆 ) < (𝑛 − 𝛼 )/( 𝛼 + 1). For the new attack constraint, we have 
+
+(2𝑛 − 𝛼 )( 𝛼 + 1)
+
+2 +
+
+> 𝛼
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + ( 𝑛 − 𝛼 )𝑃 ( 𝛼 +1)
+
+= ©«
+
+𝛼 (2𝑛 + 1 − 𝛼 )
+
+2 +
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑃 ( 𝑗 ) + ( 𝑛 + 1 − 𝛼 )𝑃 ( 𝛼 ) ª®¬
+
++ ( 𝑛 − 𝛼 )  1 − 𝑝 ( 𝛼 )
+
+> 𝛼 +1
+
+
+
+< 𝑛 − 𝛼 𝛼 + 1
+
+ 𝛼 (𝛼 + 1)
+
+2 + 𝐼 ( 𝛼 )
+
+> 𝑝
+
+
+
++ ( 𝑛 − 𝛼 )  1 − 𝑝 ( 𝛼 )
+
+> 𝛼 +1
+
+ = 𝑛 − 𝛼 𝛼 + 1
+
+ (𝛼 + 1)( 𝛼 + 2)
+
+2 + 𝐼 ( 𝛼 +1)
+
+> 𝑝
+
+
+
+.
+
+The strict inequality follows from the original 𝛼 -th attack constraint and 𝜙 𝛼,𝑛 (𝜆 ) < (𝑛 − 𝛼 )/( 𝛼 + 1).Thus all attack constraints hold strictly at robustness (𝑛 − 𝛼 )/( 𝛼 + 1). Since there are finitely many such constraints, they remain satisfied at a sufficiently close, smaller robustness value. The extended profile is therefore feasible at depth 
+
+𝛼 + 1 with robustness strictly below (𝑛 − 𝛼 )/( 𝛼 + 1). This proves the claim. □
+
+Validity of the selection rule. First suppose 0 < 𝜆 < (𝑛 − 1)/( 𝑛 + 1). For every attack depth, the first attack constraint and (39) give 
+
+𝛾 ≥ 𝑛 (1 + 𝑃 (1) )
+
+1 + 𝑛 +22 𝑃 (1) ≥ 2𝑛 𝑛 + 1 . (45) The last inequality follows because the fraction is strictly decreasing in 𝑃 (1) ∈ [ 0, 𝑛 − 1]. If an optimum attained 2𝑛 /( 𝑛 + 1), then 𝑃 (1) = 𝑛 − 1, so every unfinished job would have received one unit of processing at the first completion. The box and monotonicity constraints would then force 𝑝 (𝑖 ) 
+
+> 𝑗
+
+= 1 for every 𝑖 ∈ [ 𝛼 ] and 𝑗 > 𝑖 . Its consistency budget would be 𝛼 −1∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) + (𝑛 − 𝛼 )( 𝑛 + 1 − 𝛼 )
+
+2 = 𝑛 (𝑛 − 1)
+
+2 > 𝜆 𝑛 (𝑛 + 1)
+
+2 ,
+
+a contradiction. Hence 
+
+𝜙 𝛼,𝑛 (𝜆 ) > 2𝑛 𝑛 + 1 for every 𝛼 ∈ [ 𝑚 ].
+
+At depth one, setting 𝑝 (1) 
+
+> 𝑗
+
+= (𝑛 + 1)𝜆 /( 𝑛 − 1) for every 𝑗 > 1 satisfies the consistency constraint with equality. The first attack constraint is tight at the robustness value appearing below, so 
+
+𝜙 1,𝑛 (𝜆 ) ≤ 𝑛 (1 + ( 𝑛 + 1)𝜆 )
+
+1 + (𝑛 +1) ( 𝑛 +2) 
+
+> 2
+
+𝜆 < 𝑛. 
+
+We now verify that the prescribed rule for choosing 𝛼 is well-defined. Fix 𝜆 and consider the sequence {𝜙 𝑘,𝑛 (𝜆 )} 𝑚 𝑘 =1.If 𝜙 1,𝑛 (𝜆 ) ≥ ( 𝑛 − 1)/ 2, then the previously established bound 𝜙 1,𝑛 (𝜆 ) < 𝑛 gives 𝜙 1,𝑛 (𝜆 ) ∈  𝑛 −12 , 𝑛 
+
+
+
+, so the rule selects 
+
+𝛼 = 1. Otherwise, if 𝑚 ≥ 2, Lemma B.3 gives 𝜙 2,𝑛 (𝜆 ) < 𝑛 −12 . If 𝜙 2,𝑛 (𝜆 ) ≥ ( 𝑛 − 2)/ 3, then 𝜙 2,𝑛 (𝜆 ) ∈  𝑛 −23 , 𝑛 −12
+
+
+
+,and the rule selects 𝛼 = 2. Continuing in the same manner, whenever a depth 𝛼 < 𝑚 fails the lower bound in (8), Lemma B.3 guarantees the required strict upper bound at depth 𝛼 + 1. The rule therefore advances until both bounds are satisfied. This must happen no later than depth 𝑚 . Indeed, the definition of 𝑚 and the lower bound established above 35 give 𝑛 −𝑚 𝑚 +1 ≤ 2𝑛 𝑛 +1 < 𝜙 𝑚,𝑛 (𝜆 ). Thus, if the rule reaches depth 𝑚 , its lower bound is necessarily satisfied, while its strict upper bound has already been ensured by the preceding argument. Consequently, there exists a smallest 𝛼 ∈ [ 𝑚 ] such that 
+
+𝜙 𝛼,𝑛 (𝜆 ) ∈ 
+
+ 𝑛 − 𝛼 𝛼 + 1 , 𝑛 + 1 − 𝛼 𝛼 
+
+
+
+, (46) proving that (8) is well-defined. For this selected depth, we have 2𝑛 𝑛 +1 < 𝜙 𝛼,𝑛 (𝜆 ) < 𝑛 +1− 𝛼 𝛼 . Lemma 3.6 therefore applies, and (44) gives 
+
+𝜙 𝛼,𝑛 (𝜆 ) = Φ 𝛼,𝑛 (𝜆 ). By strict monotonicity and agreement of adjacent branches in Appendix A.1, the interval in (46) corresponds precisely to the depth-𝛼 branch in (10). Consequently, 
+
+𝛾 ≥ 𝜙 𝛼,𝑛 (𝜆 ) = Φ 𝛼,𝑛 (𝜆 ) = Φ (𝑛 ) (𝜆 ).
+
+Endpoint cases. At 𝜆 = 0, the consistency constraint for 𝛼 = 1 forces 𝑝 (1) 
+
+> 𝑗
+
+= 0 for every 𝑗 > 1. The first attack then gives 
+
+𝛾 ≥ 𝑛 = Φ (𝑛 ) (0).
+
+At 𝜆 = (𝑛 − 1)/( 𝑛 + 1), (45) gives 
+
+𝛾 ≥ 2𝑛 𝑛 + 1 = Φ (𝑛 )
+
+ 𝑛 − 1
+
+𝑛 + 1
+
+
+
+,
+
+where the final identity follows by substituting 𝑝 (1) = · · · = 𝑝 (𝑚 ) = 1 and 𝛾 = 2𝑛 /( 𝑛 + 1) into the order system. 
+
+Strict improvement. Suppose 𝑛 ≥ 5 and 2  
+
+> 𝑛 2−3𝑛 −2
+
+< 𝜆 < 𝑛 −1 
+
+> 𝑛 +1
+
+. The transition from depth one occurs at 
+
+Φ−11,𝑛 
+
+ 𝑛 − 12
+
+
+
+= 2
+
+𝑛 2 − 3𝑛 − 2 ,
+
+so the selected depth is at least two. Since the lower bound of Wei and Zhang (2020) equals Φ1,𝑛 (𝜆 ), Lemma A.7 yields 
+
+Φ(𝑛 ) (𝜆 ) = Φ 𝛼,𝑛 (𝜆 ) > Φ1,𝑛 (𝜆 ).
+
+This proves the strict-improvement claim and completes the proof. □
+
+## B.6 Proof of Theorem 3.10 
+
+Proof. Define 
+
+𝐹 (𝑥 ) ≔ 𝑥 − 𝑥 2−𝑥 𝑥 +2
+
+ (𝑥 − 2)( 𝑥 + 1) 𝑥 𝑥 +2 , 𝑥 ≥ 2.
+
+We first derive this function from the finite-𝑛 order systems, then establish its monotonicity and the claimed asymptotic lower bound. 
+
+Step 1: A product formula for the finite-𝑛 systems. Fix 𝑥 > 2. For all sufficiently large 𝑛 , define 
+
+𝛼 𝑛 ≔
+
+ 𝑛 + 1
+
+𝑥 + 1
+
+
+
+, 𝛾 𝑛 ≔ 𝑛 + 1 − 𝛼 𝑛 
+
+𝛼 𝑛 
+
+, 𝜆 𝑛 ≔  Φ(𝑛 )  −1 (𝛾 𝑛 ).
+
+Then 𝛾 𝑛 → 𝑥 . For sufficiently large 𝑛 , or more precisely for 𝑛 ≥ 2(𝑥 + 1) − 1, we have 2𝑛 𝑛 +1 < 2 < 𝑥 ≤ 𝛾 𝑛 = 𝑛 +1 
+
+> 𝛼 𝑛
+
+− 1 ≤ 
+
+> 𝑛 −12
+
+< 𝑛 . Combining this with continuity and strict monotonicity of Φ(𝑛 ) , it follows that 𝜆 𝑛 is well-defined. Since 𝛾 𝑛 = (𝑛 + 1 − 𝛼 𝑛 )/ 𝛼 𝑛 , Lemma A.5 and the well-posedness results in Appendix A.1 guarantee that the Order-𝛼 𝑛 
+
+System at 𝜆 𝑛 admits an admissible solution with robustness 𝛾 𝑛 . Write its processing coordinates as 𝑝 (1) , . . . , 𝑝 ( 𝛼 𝑛 ) ,suppressing their dependence on 𝑛 .Define 
+
+𝐷 𝑛,𝑖 ≔ (𝑛 + 1)( 𝛾 𝑛 − 2) + 𝑖 (𝛾 𝑛 + 2), 0 ≤ 𝑖 ≤ 𝛼 𝑛 ,
+
+and set 𝑝 (0) ≔ 0. Subtracting consecutive order equations gives 
+
+(𝑛 − 𝑖 )𝐷 𝑛,𝑖 (1 − 𝑝 (𝑖 ) ) = (𝑛 − 𝑖 + 1)( 𝐷 𝑛,𝑖 − 𝛾 𝑛 )( 1 − 𝑝 (𝑖 −1) ), 1 ≤ 𝑖 ≤ 𝛼 𝑛 ,
+
+36 where the case 𝑖 = 1 follows directly from the first order equation. Since 𝐷 𝑛,𝑖 − 𝛾 𝑛 = 𝐷 𝑛,𝑖 −1 + 2 > 0, iteration yields 
+
+𝑛 − 𝛼 𝑛 
+
+𝑛 (1 − 𝑝 ( 𝛼 𝑛 ) ) =
+
+> 𝛼 𝑛
+
+Ö
+
+> 𝑖 =1
+
+
+
+1 − 𝛾 𝑛 
+
+𝐷 𝑛,𝑖 
+
+
+
+. (47) The budget equation gives  
+
+> 𝛼 𝑛 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) = 𝜆 𝑛 
+
+𝑛 (𝑛 + 1)
+
+2 − (𝑛 − 𝛼 𝑛 )( 𝑛 + 1 − 𝛼 𝑛 )
+
+2 𝑝 ( 𝛼 𝑛 ) .
+
+Substituting this expression into the last order equation and rearranging yields 
+
+𝜆 𝑛 𝑛 (𝑛 + 1) = 𝛼 𝑛 
+
+𝛾 𝑛 (𝛼 𝑛 + 1) − ( 2𝑛 + 1 − 𝛼 𝑛 )
+
++ ( 𝑛 − 𝛼 𝑛 ) 𝛾 𝑛 (𝑛 + 𝛼 𝑛 + 1) − ( 𝑛 + 1 − 𝛼 𝑛 ) 𝑝 ( 𝛼 𝑛 )
+
+= (𝑛 + 1) 1 − 𝛼 𝑛 + 𝛾 𝑛 (𝑛 − 𝛼 𝑛 ) 𝑝 ( 𝛼 𝑛 ) ,
+
+where the last equality uses 𝛼 𝑛 𝛾 𝑛 = 𝑛 + 1 − 𝛼 𝑛 . Dividing by 𝑛 (𝑛 + 1) and using the same identity gives 
+
+𝜆 𝑛 = 1 − 𝛼 𝑛 + 𝛾 𝑛 (𝑛 − 𝛼 𝑛 ) 𝑝 ( 𝛼 𝑛 )
+
+𝑛 = 𝛾 𝑛 − 1 − 𝛾 𝑛 
+
+𝑛 − 𝛼 𝑛 
+
+𝑛 (1 − 𝑝 ( 𝛼 𝑛 ) ).
+
+Combining this with (47), we obtain 1 + 𝜆 𝑛 = 𝛾 𝑛 
+
+"
+
+1 −
+
+> 𝛼 𝑛
+
+Ö
+
+> 𝑖 =1
+
+
+
+1 − 𝛾 𝑛 
+
+𝐷 𝑛,𝑖 
+
+#
+
+. (48) 
+
+Step 2: Taking the limit as 𝑛 → ∞ . Because 𝛾 𝑛 → 𝑥 > 2, we have 𝛾 𝑛 /𝐷 𝑛,𝑖 = 𝑂 (𝑛 −1) uniformly for 1 ≤ 𝑖 ≤ 𝛼 𝑛 .Using log (1 − 𝑢 ) = −𝑢 + 𝑂 (𝑢 2), we obtain log 
+
+> 𝛼 𝑛
+
+Ö
+
+> 𝑖 =1
+
+
+
+1 − 𝛾 𝑛 
+
+𝐷 𝑛,𝑖 
+
+
+
+= − 1
+
+𝑛 + 1
+
+> 𝛼 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝛾 𝑛 
+
+𝛾 𝑛 − 2 + ( 𝛾 𝑛 + 2)𝑖 /( 𝑛 + 1) + 𝑂 (𝑛 −1)−→ − 
+
+∫ 1/( 𝑥 +1)
+
+> 0
+
+𝑥 𝑥 − 2 + ( 𝑥 + 2)𝑡 𝑑𝑡 = 𝑥 𝑥 + 2 log (𝑥 − 2)( 𝑥 + 1)
+
+𝑥 2 ,
+
+where the limit follows from a Riemann sum and 𝛼 𝑛 /( 𝑛 + 1) → 1/( 𝑥 + 1). Substituting into (48) yields 1 + 𝜆 𝑛 −→ 𝑥 
+
+"
+
+1 −
+
+ (𝑥 − 2)( 𝑥 + 1)
+
+𝑥 2
+
+ 𝑥 𝑥 +2
+
+#
+
+= 𝐹 (𝑥 ). (49) 
+
+Step 3: Monotonicity and the asymptotic lower bound. Lemma B.4. With the convention 𝐹 (∞) ≔ 1, the function 𝐹 : [2, ∞] −→ [ 1, 2] is continuous and strictly decreasing, with 𝐹 (2) = 2.Proof. For 𝑥 ≥ 2, define 𝛿 (𝑥 ) ≔ (𝑥 + 2)/ 𝑥 2. Direct integration gives 
+
+𝐹 (𝑥 ) =
+
+∫ 10
+
+ 1 − 𝛿 (𝑥 )𝑡  − 2 
+
+> 𝑥 +2
+
+𝑑𝑡. (50) Both 𝛿 (𝑥 ) and 2 /( 𝑥 + 2) strictly decrease with 𝑥 . Consequently, the integrand strictly decreases with 𝑥 for every 
+
+𝑡 ∈ ( 0, 1), so 𝐹 is strictly decreasing on [2, ∞) .37 Moreover, for every finite 𝑥 ≥ 2 and 𝑡 ∈ ( 0, 1),1 <  1 − 𝛿 (𝑥 )𝑡  − 2 
+
+> 𝑥 +2
+
+≤ ( 1 − 𝑡 )−1/2.
+
+Since (1 − 𝑡 )−1/2 is integrable, dominated convergence shows that 𝐹 is continuous on [2, ∞) and that lim 𝑥 →∞ 𝐹 (𝑥 ) = 1. Also, 
+
+𝐹 (2) =
+
+∫ 10
+
+(1 − 𝑡 )−1/2 𝑑𝑡 = 2.
+
+Since 𝐹 (𝑥 ) > 1 for every finite 𝑥 ≥ 2, the extension 𝐹 (∞) = 1 is continuous and preserves strict monotonicity. □
+
+By Lemma B.4, for every 𝜆 ∈ ( 0, 1), there exists a unique ˆ 𝛾 (𝜆 ) > 2 satisfying 
+
+𝐹 ( ˆ𝛾 (𝜆 )) = 1 + 𝜆. 
+
+Fix 𝜆 ∈ ( 0, 1) and any 𝑐 < ˆ𝛾 (𝜆 ). Choose max {2, 𝑐 } < 𝑥 < ˆ𝛾 (𝜆 ). Since 𝐹 is strictly decreasing and 𝑥 < ˆ𝛾 (𝜆 ), we have 𝐹 (𝑥 ) > 1 + 𝜆 . By (49) and 𝛾 𝑛 → 𝑥 , for all sufficiently large 𝑛 ,
+
+𝜆 < 𝜆 𝑛 , 𝑐 < 𝛾 𝑛 .
+
+The finite-𝑛 lower-bound theorem and strict monotonicity of Φ(𝑛 ) therefore imply that every (1 + 𝜆 )-consistent algorithm for 𝑛 jobs has robustness at least 
+
+Φ(𝑛 ) (𝜆 ) > Φ(𝑛 ) (𝜆 𝑛 ) = 𝛾 𝑛 > 𝑐. 
+
+Since 𝑐 < ˆ𝛾 (𝜆 ) was arbitrary, this proves the asserted asymptotic lower bound. Finally, convexity gives 
+
+(1 − 𝑢 )− 2 
+
+> 𝑥 +2
+
+≥ 1 + 2𝑢 𝑥 + 2 , 0 ≤ 𝑢 < 1.
+
+Applying this inequality in (50) yields 
+
+𝐹 (𝑥 ) ≥ 1 + 𝛿 (𝑥 )
+
+𝑥 + 2 = 1 + 1
+
+𝑥 2 .
+
+Consequently, 
+
+𝜆 = 𝐹 ( ˆ𝛾 (𝜆 )) − 1 ≥ 1ˆ𝛾 (𝜆 )2 , ˆ𝛾 (𝜆 ) ≥ 1
+
+√𝜆 .
+
+This completes the proof. □
+
+# C Proofs and Additional Details for Section 4 
+
+In this section, we present the proofs of the results in Section 4. 
+
+## C.1 Proof of Theorem 4.4 
+
+Proof. We first handle the case 𝜆 = 0. For 𝜆 > 0, we establish consistency and then prove robustness using Lemma 4.3. 
+
+The endpoint 𝜆 = 0. The calibration step gives 𝑣 = 1 and 𝑟 = 0, so Stage 1 has zero duration. When the predictions are accurate, Stage 2 processes the jobs in nondecreasing order of their true processing times. This order minimizes the total completion time, proving that the algorithm is 1-consistent. For robustness, consider an arbitrary instance and let 𝑆 = Í𝑛 𝑖 =1 𝑥 𝑖 . Since the algorithm never idles while jobs remain unfinished, every job completes by time 𝑆 . Moreover, OPT (x) ≥ 𝑆 , so ALG (mTSS , x) ≤ 𝑛 · 𝑆 ≤ 𝑛 · OPT (x) = Ψ 𝑛 (0) · OPT (x).
+
+This proves the algorithm is Ψ𝑛 (0)-robust. We henceforth assume 𝜆 > 0 in the subsequent analysis.. 38 Consistency. Assume that x = y, where the jobs are indexed so that 0 < 𝑦 1 ≤ · · · ≤ 𝑦 𝑛 , and let ALG = ALG (mTSS , y).The offline optimum is OPT (y) =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝑛 + 1 − 𝑖 )𝑦 𝑖 .
+
+We first record the cost incurred during Stage 1 (i.e., the RR stage; see Algorithm 1), which will also be useful in the robustness analysis. For an index 𝑣 ∈ { 1, . . . , 𝑛 } and a service level 𝑎 ∈ [ 𝑦 𝑣 −1, 𝑦 𝑣 ], with 𝑦 0 = 0, let R𝑣 (𝑎 ) be the cost accumulated by RR when every job 𝑖 has received min {𝑦 𝑖 , 𝑎 } units of service. During a service interval with ℎ
+
+unfinished jobs, increasing their common service by 𝛿 takes ℎ𝛿 time and contributes ℎ2𝛿 to the holding cost. Therefore, 
+
+R𝑣 (𝑎 ) ≔
+
+> 𝑣 −1
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝑛 + 1 − 𝑖 )2 (𝑦 𝑖 − 𝑦 𝑖 −1) + ( 𝑛 + 1 − 𝑣 )2 (𝑎 − 𝑦 𝑣 −1) (51) 
+
+=
+
+> 𝑣 −1
+
+∑︁ 
+
+> 𝑖 =1
+
+(2𝑛 + 1 − 2𝑖 )𝑦 𝑖 + ( 𝑛 + 1 − 𝑣 )2𝑎. (52) Both formulas are valid for 𝑣 = 1: the sums are then empty and R1 (𝑎 ) = 𝑛 2𝑎 . Consequently, for ℓ ≥ 𝑣 , if the algorithm next processes jobs 𝑣, . . . , ℓ in their predicted order, the total cost accumulated up to the completion of job ℓ is 
+
+R𝑣 (𝑎 ) + 
+
+> ℓ
+
+∑︁ 
+
+> 𝑖 =𝑣
+
+(𝑛 + 1 − 𝑖 )( 𝑦 𝑖 − 𝑎 ) = 𝛤 (𝑣 ) 
+
+> ℓ
+
+(y, 𝑎 ). (53) We then distinguish the following two cases. If 𝛤 (𝑛 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑛 ) < (1 + 𝜆 )OPT (y), the algorithm runs RR to completion. Taking 𝑣 = 𝑛 and 𝑎 = 𝑦 𝑛 in (53) gives ALG = 𝛤 (𝑛 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑛 ) < (1 + 𝜆 )OPT (y).
+
+Otherwise, 𝑣 is the first index for which 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑣 ) ≥ ( 1 + 𝜆 )OPT (y), and 𝑟 is the service level chosen by calibration. Thus 
+
+𝛤 (𝑖 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑖 ) < (1 + 𝜆 )OPT (y) (𝑖 < 𝑣 ), 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) = (1 + 𝜆 )OPT (y). (54) Because 𝛤 (𝑛 −1) 
+
+> 𝑛
+
+(y, 𝑦 𝑛 −1) = 𝛤 (𝑛 ) 
+
+> 𝑛
+
+(y, 𝑦 𝑛 ), we have 𝑣 ≤ 𝑛 − 1. Rearranging the definition of 𝛤 (𝑣 ) 
+
+> 𝑛
+
+gives 
+
+𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑎 ) =
+
+> 𝑣 −1
+
+∑︁ 
+
+> 𝑖 =1
+
+(2𝑛 + 1 − 2𝑖 )𝑦 𝑖 +
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =𝑣
+
+(𝑛 + 1 − 𝑖 )𝑦 𝑖 + (𝑛 + 1 − 𝑣 )( 𝑛 − 𝑣 )
+
+2 𝑎. (55) Since 𝑣 ≤ 𝑛 − 1, the coefficient of 𝑎 is positive. Thus 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑎 ) is strictly increasing in 𝑎 . The stopping rule gives 
+
+𝑟 ≤ 𝑦 𝑣 . If 𝑣 = 1, then 𝛤 (1) 
+
+> 𝑛
+
+(y, 0) = OPT (y) < (1 + 𝜆 )OPT (y), so 𝑟 > 0 = 𝑦 0. If 𝑣 ≥ 2, the identity 
+
+𝛤 (𝑣 −1) 
+
+> 𝑛
+
+(y, 𝑦 𝑣 −1) = 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) − (𝑛 + 1 − 𝑣 )( 𝑛 − 𝑣 )
+
+2 (𝑟 − 𝑦 𝑣 −1)
+
+together with (54) implies 𝑟 > 𝑦 𝑣 −1. Hence, uniformly for every 𝑣 ≥ 1, 
+
+𝑦 𝑣 −1 < 𝑟 ≤ 𝑦 𝑣 .
+
+Stage 1 completes jobs 1 , . . . , 𝑣 − 1 and gives 𝑟 units of service to each job indexed at least 𝑣 ; any such job with 𝑦 𝑖 = 𝑟 
+
+also completes at the transition and contributes a zero residual term. By (53) and (54), ALG = R𝑣 (𝑟 ) + 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =𝑣
+
+(𝑛 + 1 − 𝑖 )( 𝑦 𝑖 − 𝑟 ) = 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) = (1 + 𝜆 )OPT (y).
+
+This proves (1 + 𝜆 )-consistency. 39 Reduction of the robustness analysis. By Lemma 4.3, it suffices to bound 2 𝑛 /( 𝑛 + 1) and the ratios 
+
+𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 )
+
+OPT ( ¯y(𝑠 ) ) , 𝑣 ≤ 𝑠 ≤ 𝑛, 
+
+over all predictions and calibrated parameters 𝑣, 𝑟 . Thus both types of prediction error reduce to the same family of truncated vectors ¯ y(𝑠 ) . Since 𝑦 𝑣 −1 ≤ 𝑟 ≤ 𝑦 𝑣 , their offline costs are OPT ( ¯y(𝑠 ) ) =
+
+> 𝑣 −1
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝑛 + 1 − 𝑖 )𝑦 𝑖 + (𝑛 − 𝑠 )( 𝑛 + 𝑠 − 2𝑣 + 3)
+
+2 𝑟 +
+
+> 𝑠
+
+∑︁ 
+
+> 𝑖 =𝑣
+
+(𝑠 + 1 − 𝑖 )𝑦 𝑖 . (56) For fixed 𝑣 and 𝑠 , both this expression and 𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ) are linear in (y, 𝑟 ). The remaining robustness analysis therefore reduces to a linear-fractional optimization problem subject to the ordering constraints and the calibration equality. 
+
+Reducing to two positive gaps. Fix 𝑣 and 𝑠 , and write 
+
+w = (𝑦 1, . . . , 𝑦 𝑣 −1, 𝑟, 𝑦 𝑣 , . . . , 𝑦 𝑛 ), 𝑢 𝑖 = 𝑤 𝑖 − 𝑤 𝑖 −1 (𝑖 ∈ [ 𝑛 + 1]) , 𝑤 0 = 0.
+
+Since 𝑤 𝑖 = Í𝑖 𝑘 =1 𝑢 𝑘 , both costs are linear in u = (𝑢 1, . . . , 𝑢 𝑛 +1). Define 
+
+𝑁 (u) = 𝛤 (𝑣 ) 
+
+> 𝑠
+
+(y, 𝑟 ), 𝐷 (u) = OPT ( ¯y(𝑠 ) ),
+
+and 
+
+𝐻 (u) = 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) − ( 1 + 𝜆 )OPT (y).
+
+Here y and 𝑟 are expressed in terms of u, and 𝐻 (u) = 0 is precisely the calibration equality. To obtain an upper bound, we allow zero predictions and replace the strict ordering inequalities by weak ones: 0 ≤ 𝑦 1 ≤ · · · ≤ 𝑦 𝑣 −1 ≤ 𝑟 ≤ 𝑦 𝑣 ≤ · · · ≤ 𝑦 𝑛 , 𝐻 (u) = 0.
+
+When 𝑣 = 1, the chain starts with 0 ≤ 𝑟 ≤ 𝑦 1. Every nonzero feasible vector u has 𝑟 > 0. Indeed, if 𝑟 = 0, then 𝑦 𝑖 = 0for 𝑖 < 𝑣 , and 
+
+𝐻 (u) = −𝜆 OPT (y) = 0.
+
+Since 𝜆 > 0, all predictions must vanish, contradicting u ≠ 0. Consequently, 𝐷 (u) > 0 for every nonzero feasible u.The ordering is equivalent to 𝑢 𝑖 ≥ 0. Since 𝐻 is linear, calibration becomes a single equation ℎ⊤u = 0 for a fixed coefficient vector ℎ. We will show that it suffices to consider at most two positive gaps. The following lemma gives the required decomposition and explains why it also preserves an upper bound on the cost ratio. 
+
+Lemma C.1 (Restatement of Lemma 4.5) . Let ℎ ∈ R𝑞 and define the cone 𝐾 = {u ∈ R𝑞  
+
+> ≥0
+
+: ℎ⊤u = 0}. For every 
+
+u ∈ 𝐾 \ { 0}, there exist an integer 𝐿 ≥ 1 and vectors u(1) , . . . , u(𝐿 ) ∈ 𝐾 \ { 0} such that 
+
+u =
+
+> 𝐿
+
+∑︁ 
+
+> ℓ=1
+
+u(ℓ ) , supp (u(ℓ ) ) ≤ 2 for every ℓ ∈ { 1, . . . , 𝐿 },
+
+where supp (w) = {𝑖 : 𝑤 𝑖 ≠ 0}. Moreover, if 𝐴, 𝐵 : R𝑞 → R are linear and 𝐵 (𝑤 ) > 0 for every 𝑤 ∈ 𝐾 \ { 0}, then 
+
+𝐴 (u)
+
+𝐵 (u) ≤ max   
+
+> 1≤ℓ≤𝐿
+
+𝐴 (u(ℓ ) )
+
+𝐵 (u(ℓ ) ) .
+
+Proof. Fix u ∈ 𝐾 \ { 0} and define 
+
+H0 = {𝑖 : ℎ𝑖 = 0}, H+ = {𝑖 : ℎ𝑖 > 0}, H− = {𝑖 : ℎ𝑖 < 0}.
+
+40 Since ℎ⊤u = 0, 
+
+𝑇 ≔∑︁ 
+
+> 𝑖 ∈ H +
+
+ℎ𝑖 𝑢 𝑖 =∑︁  
+
+> 𝑗 ∈ H −
+
+(− ℎ 𝑗 )𝑢 𝑗 ≥ 0.
+
+Let 𝑒 𝑖 denote the 𝑖 th standard basis vector. For each 𝑖 ∈ H 0, the vector 𝑢 𝑖 𝑒 𝑖 belongs to 𝐾 and has at most one nonzero coordinate. If 𝑇 = 0, nonnegativity implies that 𝑢 𝑖 = 0 for every 𝑖 ∈ H + ∪ H − . Hence 
+
+u =∑︁ 
+
+> 𝑖 ∈ H 0
+
+𝑢 𝑖 𝑒 𝑖 ,
+
+which gives the required decomposition after omitting zero vectors. Suppose 𝑇 > 0. For each (𝑖, 𝑗 ) ∈ H + × H − , define 
+
+𝑤 𝑖 𝑗 ≔ (ℎ𝑖 𝑢 𝑖 )(− ℎ 𝑗 𝑢 𝑗 )
+
+𝑇 
+
+ 𝑒 𝑖 
+
+ℎ𝑖 
+
++ 𝑒 𝑗 
+
+−ℎ 𝑗 
+
+
+
+.
+
+Then we have 𝑤 𝑖 𝑗 ≥ 0 with ℎ⊤𝑤 𝑖 𝑗 = 0 and supp (𝑤 𝑖 𝑗 ) ⊆ { 𝑖, 𝑗 }. To verify that these vectors recover all coordinates indexed by H+ ∪ H − , expand and regroup the double sum: ∑︁   
+
+> (𝑖, 𝑗 ) ∈ H +×H −
+
+𝑤 𝑖 𝑗 =∑︁ 
+
+> 𝑖 ∈ H +
+
+∑︁ 𝑗 ∈ H −
+
+ 𝑢 𝑖 (− ℎ 𝑗 )𝑢 𝑗 
+
+𝑇 𝑒 𝑖 + ℎ𝑖 𝑢 𝑖 𝑢 𝑗 
+
+𝑇 𝑒 𝑗 
+
+
+
+=∑︁ 
+
+> 𝑖 ∈ H +
+
+𝑢 𝑖 
+
+𝑇 
+
+©«∑︁ 𝑗 ∈ H −
+
+(− ℎ 𝑗 )𝑢 𝑗 ª®¬
+
+𝑒 𝑖 +∑︁  
+
+> 𝑗 ∈ H −
+
+𝑢 𝑗 
+
+𝑇  ∑︁ 𝑖 ∈ H +
+
+ℎ𝑖 𝑢 𝑖 
+
+!
+
+𝑒 𝑗 
+
+=∑︁ 
+
+> 𝑖 ∈ H +
+
+𝑢 𝑖 𝑒 𝑖 +∑︁  
+
+> 𝑗 ∈ H −
+
+𝑢 𝑗 𝑒 𝑗 .
+
+Since H0, H+, H− partition {1, . . . , 𝑞 }, it follows that 
+
+u =∑︁ 
+
+> 𝑖 ∈ H 0
+
+𝑢 𝑖 𝑒 𝑖 +∑︁   
+
+> (𝑖, 𝑗 ) ∈ H +×H −
+
+𝑤 𝑖 𝑗 .
+
+Omitting zero vectors and indexing the remaining vectors as u(1) , . . . , u(𝐿 ) proves the first assertion. Finally, by linearity, 
+
+𝐴 (u)
+
+𝐵 (u) =
+
+Í𝐿 ℓ=1 𝐴 (u(ℓ ) )
+
+𝐵 (u) =
+
+> 𝐿
+
+∑︁ 
+
+> ℓ=1
+
+ 𝐵 (u(ℓ ) )
+
+𝐵 (u)
+
+ 𝐴 (u(ℓ ) )
+
+𝐵 (u(ℓ ) ) .
+
+The coefficients 𝐵 (u(ℓ ) )/ 𝐵 (u) are positive and sum to one. Therefore, 
+
+𝐴 (u)
+
+𝐵 (u) ≤ max   
+
+> 1≤ℓ≤𝐿
+
+𝐴 (u(ℓ ) )
+
+𝐵 (u(ℓ ) ) ,
+
+as claimed. □
+
+Applying Lemma 4.5 with 𝐴 = 𝑁 and 𝐵 = 𝐷 , it suffices to consider at most two positive gaps. We first compute 
+
+ℎ𝑖 = 𝐻 (𝑒 𝑖 ).For a unit gap at index 𝑖 ≤ 𝑣 , we have 𝑟 = 1 and exactly 𝑐 = 𝑛 + 1 − 𝑖 predictions equal to one. For a unit gap at index 𝑖 > 𝑣 , we have 𝑟 = 0 and exactly 𝑧 = 𝑛 + 2 − 𝑖 predictions equal to one. Thus 
+
+ℎ𝑖 =
+
+
+
+𝑐 
+
+2
+
+ 𝑐 − 1 − ( 𝑐 + 1)𝜆 , 𝑖 ≤ 𝑣, 𝑐 = 𝑛 + 1 − 𝑖, 
+
+−𝜆 𝑧 (𝑧 + 1)
+
+2 , 𝑖 > 𝑣, 𝑧 = 𝑛 + 2 − 𝑖. 
+
+If all positive gaps have indices at most 𝑣 , then 𝑦 𝑣 = · · · = 𝑦 𝑛 = 𝑟 . The truncated vector equals the prediction vector, 41 and 
+
+𝑁 (u) = 𝛤 (𝑣 ) 
+
+> 𝑛
+
+(y, 𝑟 ) = (1 + 𝜆 )𝐷 (u).
+
+These cases therefore have ratio 1 + 𝜆 .Otherwise, feasibility requires two positive gaps of the form 
+
+u = 𝑎𝑒 𝑖 + 𝑏𝑒 𝑗 , 𝑖 ≤ 𝑣 < 𝑗, 𝑎, 𝑏 > 0, 𝐻 (u) = 0.
+
+Define 𝑐 = 𝑛 + 1 − 𝑖 and 𝑧 = 𝑛 + 2 − 𝑗 . The predictions then have the form 
+
+y =   0, . . . , 0
+
+| {z } 
+
+> 𝑛 −𝑐 copies
+
+, 𝑎, . . . , 𝑎 
+
+| {z } 
+
+> 𝑐 −𝑧 copies
+
+, 𝑎 + 𝑏, . . . , 𝑎 + 𝑏 
+
+| {z } 
+
+> 𝑧 copies
+
+, 𝑟 = 𝑎, 
+
+where 1 ≤ 𝑧 ≤ 𝑐 ≤ 𝑛 . By linearity, calibration becomes 
+
+𝑐  𝑐 − 1 − ( 𝑐 + 1)𝜆 𝑎 = 𝜆𝑧 (𝑧 + 1)𝑏. (57) In particular, 𝑐 ≥ 2 and 𝜆 < (𝑐 − 1)/( 𝑐 + 1).If 𝑠 ≤ 𝑛 − 𝑧 , the truncated vector has 𝑐 positive processing times, all equal to 𝑎 , and 
+
+𝑁 (u) = 𝑐 2𝑎, 𝐷 (u) = 𝑐 (𝑐 + 1)
+
+2 𝑎. 
+
+Its ratio is 2 𝑐 /( 𝑐 + 1) ≤ 2𝑛 /( 𝑛 + 1).Otherwise, define 𝑑 = 𝑠 − ( 𝑛 − 𝑧 ) ∈ [ 𝑧 ]. Exactly 𝑑 processing times in the truncated vector equal 𝑎 + 𝑏 , while the other positive processing times equal 𝑎 . Substitution gives 
+
+𝑁 (u) = 𝑐 2𝑎 + 𝑑 (2𝑧 + 1 − 𝑑 )
+
+2 𝑏, 𝐷 (u) = 𝑐 (𝑐 + 1)
+
+2 𝑎 + 𝑑 (𝑑 + 1)
+
+2 𝑏. 
+
+Reduction to a one-dimensional maximization. Define 
+
+𝜌 𝑐 = 2𝑐 𝑐 + 1 , 𝜏 𝑐 = 𝑐 − 1
+
+𝜆 (𝑐 + 1) − 1, (58) and, for 1 ≤ 𝑑 ≤ 𝑧 ,
+
+𝑈 𝑧,𝑑 = 𝑑 (2𝑧 + 1 − 𝑑 )
+
+𝑧 (𝑧 + 1) , 𝑉 𝑧,𝑑 = 𝑑 (𝑑 + 1)
+
+𝑧 (𝑧 + 1) . (59) Notice that 0 < 𝑉 𝑧,𝑑 ≤ 𝑈 𝑧,𝑑 ≤ 1. By (57), 
+
+𝑏 𝑎 = 𝑐 (𝑐 + 1)𝜏 𝑐 
+
+𝑧 (𝑧 + 1) ,
+
+so the remaining ratios are 
+
+𝑅 𝑐,𝑧,𝑑 ≔ 𝑁 (u)
+
+𝐷 (u) = 𝜌 𝑐 + 𝜏 𝑐 𝑈 𝑧,𝑑 
+
+1 + 𝜏 𝑐 𝑉 𝑧,𝑑 
+
+. (60) We bound these ratios through two comparisons. 
+
+First comparison: increasing 𝑐 to 𝑛 . Fix 𝑧, 𝑑 , and write 𝑈 = 𝑈 𝑧,𝑑 and 𝑉 = 𝑉 𝑧,𝑑 . The identity 𝜌 𝑐 = 1 + 𝜆 + 𝜆𝜏 𝑐 gives 
+
+𝑅 𝑐,𝑧,𝑑 = 1 + 𝜆 + 𝜏 𝑐 
+
+ 𝜆 (1 − 𝑉 ) + 𝑈 − 𝑉 
+
+1 + 𝜏 𝑐 𝑉 . (61) Since 0 < 𝑉 ≤ 𝑈 ≤ 1, the coefficient 𝜆 (1 − 𝑉 ) + 𝑈 − 𝑉 is nonnegative. Moreover, 𝜏 𝑐 increases with 𝑐 , and 𝑡 /( 1 + 𝑡𝑉 )
+
+increases for 𝑡 ≥ 0. Therefore, 
+
+𝑅 𝑐,𝑧,𝑑 ≤ 𝑅 𝑛,𝑧,𝑑 .
+
+Second comparison: increasing 𝑧 to 𝑛 . For 𝑧 < 𝑛 , define 𝜃 = 𝑑 /𝑧 ∈ ( 0, 1]. Direct substitution gives 
+
+(𝑈 𝑧,𝑑 , 𝑉 𝑧,𝑑 ) = (1 − 𝜃 )( 𝑈 𝑧 +1,𝑑 , 𝑉 𝑧 +1,𝑑 ) + 𝜃 (𝑈 𝑧 +1,𝑑 +1, 𝑉 𝑧 +1,𝑑 +1).
+
+42 Consequently, 𝑅 𝑛,𝑧,𝑑 is a weighted average of 𝑅 𝑛,𝑧 +1,𝑑 and 𝑅 𝑛,𝑧 +1,𝑑 +1, with weights proportional to their positive denominators. Hence 
+
+𝑅 𝑛,𝑧,𝑑 ≤ max {𝑅 𝑛,𝑧 +1,𝑑 , 𝑅 𝑛,𝑧 +1,𝑑 +1 }.
+
+Iterating increases 𝑧 to 𝑛 and yields 
+
+𝑅 𝑐,𝑧,𝑑 ≤ max  
+
+> 𝑠 ∈ [ 𝑛 ]
+
+𝑅 𝑛,𝑛,𝑠 .
+
+This maximum also dominates the remaining ratios: 1 + 𝜆 ≤ 𝜌 𝑛 , and 𝑅 𝑛,𝑛, 1 is a weighted average of 𝜌 𝑛 and 
+
+𝑈 𝑛, 1/𝑉 𝑛, 1 = 𝑛 ≥ 𝜌 𝑛 . Thus 𝑅 𝑛,𝑛, 1 ≥ 𝜌 𝑛 = 2𝑛 /( 𝑛 + 1).Finally, substituting 𝑐 = 𝑧 = 𝑛 and 𝑑 = 𝑠 into (60) gives ALG (mTSS , x)
+
+OPT (x) ≤ max 
+
+> 𝑠 ∈ [ 𝑛 ]
+
+2𝜆𝑛 2 +   𝑛 −1 
+
+> 𝑛 +1
+
+− 𝜆  𝑠 (2𝑛 + 1 − 𝑠 )
+
+𝜆𝑛 (𝑛 + 1) +   𝑛 −1 
+
+> 𝑛 +1
+
+− 𝜆  𝑠 (𝑠 + 1) = Ψ 𝑛 (𝜆 ). (62) This completes the robustness proof. □
+
+## C.2 Proof of Theorem 4.6 
+
+Proof. At 𝜆 = 0 both bounds equal 𝑛 , and at 𝜆 = (𝑛 − 1)/( 𝑛 + 1) both equal 2 𝑛 /( 𝑛 + 1). It remains to consider 0 < 𝜆 < (𝑛 − 1)/( 𝑛 + 1). We write 𝑡 = 𝑛 +1 
+
+> 𝑛 −1
+
+𝜆 ∈ ( 0, 1). By Theorem 4.4, 
+
+Ψ𝑛 (𝜆 ) = max  
+
+> 𝑖 ∈ [ 𝑛 ]
+
+𝑈 𝑖 (𝑡 ), 𝑈 𝑖 (𝑡 ) = 2𝑡𝑛 2 + ( 1 − 𝑡 )𝑖 (2𝑛 + 1 − 𝑖 )
+
+𝑡𝑛 (𝑛 + 1) + ( 1 − 𝑡 )𝑖 (𝑖 + 1) .
+
+Let 𝑠 be the smallest index attaining this maximum. Let (Φ(𝑛 ) (𝜆 ), 𝑝 (1) , . . . , 𝑝 ( 𝛼 ) ) be the solution to the corresponding Order-𝛼 system, and extend it by setting 
+
+𝑝 ( 𝑗 ) = 𝑝 ( 𝛼 ) for 𝛼 < 𝑗 ≤ 𝑛 − 1. The sequence is nondecreasing, and the consistency budget equation (see (7)) yields 
+
+> 𝑛 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) =
+
+> 𝛼 −1
+
+∑︁ 
+
+> 𝑗 =1
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) + (𝑛 + 1 − 𝛼 )( 𝑛 − 𝛼 )
+
+2 𝑝 ( 𝛼 ) = 𝑛 (𝑛 + 1)
+
+2 𝜆 = 𝑛 (𝑛 − 1)
+
+2 𝑡. 
+
+Thus 𝑝 ( 𝛼 ) ≥ 𝑡 . Combining the 𝛼 -th attack constraint equation (6) with the consistency budget equation (7) gives 
+
+Φ(𝑛 ) (𝜆 )
+
+h
+
+𝛼 (𝛼 + 1) + ( 𝑛 − 𝛼 )( 𝑛 + 𝛼 + 1) 𝑝 ( 𝛼 ) i
+
+= 𝛼 (2𝑛 + 1 − 𝛼 ) + 𝑡𝑛 (𝑛 − 1) + ( 𝑛 − 𝛼 )( 𝑛 − 𝛼 + 1) 𝑝 ( 𝛼 ) .
+
+Since Φ(𝑛 ) (𝜆 ) > 1 and 𝑝 ( 𝛼 ) ≥ 𝑡 , it follows that 
+
+Φ(𝑛 ) (𝜆 ) ≤ 𝛼 (2𝑛 + 1 − 𝛼 ) + 𝑡 𝑛 (𝑛 − 1) + ( 𝑛 − 𝛼 )( 𝑛 − 𝛼 + 1)
+
+𝛼 (𝛼 + 1) + 𝑡 (𝑛 − 𝛼 )( 𝑛 + 𝛼 + 1) = 𝑈 𝛼 (𝑡 ).
+
+Therefore, 
+
+Φ(𝑛 ) (𝜆 ) ≤ 𝑈 𝛼 (𝑡 ) ≤ max  
+
+> 𝑖 ∈ [ 𝑛 ]
+
+𝑈 𝑖 (𝑡 ) = Ψ 𝑛 (𝜆 ).
+
+This proves the first inequality. For the second inequality, we first show that 𝑠 ≤ 𝛼 . The selection rule of 𝛼 (see (8)) gives 
+
+Φ(𝑛 ) (𝜆 ) ≥ 𝑛 − 𝛼 𝛼 + 1 .
+
+The numerator and denominator increments from 𝑈 𝑖 to 𝑈 𝑖 +1 have ratio (𝑛 − 𝑖 )/( 𝑖 + 1), which strictly decreases with 𝑖 . Consequently, 𝑈 𝑖 +1 is a weighted average of 𝑈 𝑖 and (𝑛 − 𝑖 )/( 𝑖 + 1). Once 𝑈 𝑖 ≥ ( 𝑛 − 𝑖 )/( 𝑖 + 1), the sequence is nonincreasing thereafter. Since 
+
+𝑈 𝛼 ≥ Φ(𝑛 ) (𝜆 ) ≥ 𝑛 − 𝛼 𝛼 + 1 ,
+
+we conclude that 𝑠 ≤ 𝛼 .43 The 𝑠 -th attack constraint equation (6) is therefore available, which yields 
+
+Φ(𝑛 ) (𝜆 ) ≥ 𝑠 (2𝑛 + 1 − 𝑠 ) + 2(𝑛 − 𝑠 )( 𝑛 − 𝑠 + 1) 𝑝 (𝑠 )
+
+𝑠 (𝑠 + 1) + ( 𝑛 − 𝑠 )( 𝑛 + 𝑠 + 1) 𝑝 (𝑠 ) . (63) Moreover, monotonicity of the extended sequence implies 
+
+𝑡 𝑛 (𝑛 − 1)
+
+2 ≥
+
+> 𝑛 −1
+
+∑︁ 
+
+> 𝑗 =𝑠
+
+(𝑛 − 𝑗 ) 𝑝 ( 𝑗 ) ≥ (𝑛 − 𝑠 )( 𝑛 − 𝑠 + 1)
+
+2 𝑝 (𝑠 ) .
+
+Equivalently, 𝑝 (𝑠 ) ≤ 𝑛 (𝑛 −1)(𝑛 −𝑠 ) ( 𝑛 −𝑠 +1) 𝑡 . The derivative of the right-hand side of (63) with respect to 𝑝 (𝑠 ) has the same sign as 
+
+−𝑠 (𝑛 − 𝑠 )  2𝑛 2 − 𝑛𝑠 + 𝑛 + 𝑠 2 − 1 < 0.
+
+Thus the right-hand side of (63) is decreasing with respect to 𝑝 (𝑠 ) . It follows that 
+
+Φ(𝑛 ) (𝜆 ) ≥ 𝐿 𝑠 (𝑡 ) ≔ 𝑠 (2𝑛 + 1 − 𝑠 ) + 2𝑡𝑛 (𝑛 − 1)
+
+𝑠 (𝑠 + 1) + 𝑡 𝑛 (𝑛 −1) ( 𝑛 +𝑠 +1)
+
+> 𝑛 −𝑠 +1
+
+.
+
+Suppose first that 𝑠 > (𝑛 + 3)/ 4. Then 𝑠 ≥ 2, and maximality gives 𝑈 𝑠 ≥ 𝑈 𝑠 −1. The weighted-average observation above implies 
+
+Ψ𝑛 (𝜆 ) = 𝑈 𝑠 ≤ 𝑛 + 1 − 𝑠 𝑠 .
+
+Combining this with Φ(𝑛 ) (𝜆 ) ≥ 2𝑛 /( 𝑛 + 1) gives 
+
+Ψ𝑛 (𝜆 )
+
+Φ(𝑛 ) (𝜆 ) ≤ (𝑛 + 1)( 𝑛 + 1 − 𝑠 )
+
+2𝑛𝑠 < (𝑛 + 1)( 3𝑛 + 1)
+
+2𝑛 (𝑛 + 3) ≤ 32 .
+
+Now suppose that 𝑠 ≤ ( 𝑛 + 3)/ 4. If 𝑠 = 1, then 𝑈 𝑠 = 𝐿 𝑠 , so the claim follows. For 𝑠 ≥ 2, define 
+
+𝑎 ≔ 𝑛 (𝑛 − 1)(𝑛 − 𝑠 )( 𝑛 − 𝑠 + 1) − 1, 𝑞 ≔ 𝑛 (𝑛 − 1)( 𝑠 + 1)(2𝑛 + 1 − 𝑠 )( 𝑛 − 𝑠 )( 𝑛 + 𝑠 + 1) , 𝑤 ≔ (𝑛 − 𝑠 )( 𝑛 + 𝑠 + 1)
+
+𝑠 (𝑠 + 1) 𝑡. 
+
+Define 𝑟 ≔ (𝑠 − 1)/( 𝑛 − 1) ∈ ( 0, 1/4]. Then 1 + 𝑎 = 𝑛 
+
+(1 − 𝑟 )(( 1 − 𝑟 )( 𝑛 − 1) + 1) ≤ 1
+
+(1 − 𝑟 )2 ,
+
+so 
+
+𝑎 ≤ 𝑟 (2 − 𝑟 )(1 − 𝑟 )2 ≤ 79 .
+
+Also, 
+
+𝑞 = 𝑛 (𝑟 (𝑛 − 1) + 2)(1 − 𝑟 )(( 2 − 𝑟 )( 𝑛 − 1) + 2)(( 1 + 𝑟 )( 𝑛 − 1) + 3) ≥ 𝑟 
+
+(2 − 𝑟 )( 1 − 𝑟 2) .
+
+Indeed, after cross-multiplication, the difference is 
+
+(4 − 4𝑟 − 𝑟 3)( 𝑛 − 1) + 4 − 4𝑟 − 2𝑟 2 ≥ 0.
+
+Since 
+
+(2 − 𝑟 )2 (1 + 𝑟 ) = 4 − 3𝑟 2 + 𝑟 3 ≤ 4,
+
+we obtain 
+
+𝑞 ≥ 1 − 𝑟 
+
+(2 − 𝑟 )2 (1 + 𝑟 )
+
+𝑟 (2 − 𝑟 )(1 − 𝑟 )2 ≥ 316 
+
+𝑟 (2 − 𝑟 )(1 − 𝑟 )2 ≥ 𝑎 
+
+6 .
+
+Therefore, we have 0 < 𝑎 ≤ 79 , 𝑞 ≥ 𝑎 
+
+6 .
+
+44 Direct simplification now gives 
+
+𝑈 𝑠 (𝑡 )
+
+𝐿 𝑠 (𝑡 ) = 1 + 𝑎𝑤  1 − 𝑞 /( 1 + 𝑎 ) + 𝑞𝑤 
+
+(1 + 2𝑞𝑤 )( 1 + 𝑤 ) .
+
+Thus 𝑈 𝑠 /𝐿 𝑠 ≤ 3/2 is equivalent to 1 +
+
+h
+
+1 − 2𝑎 + 2𝑞 
+
+
+
+1 + 𝑎 
+
+1 + 𝑎 
+
+i 
+
+𝑤 + 2𝑞 (1 − 𝑎 )𝑤 2 ≥ 0.
+
+If 𝑎 ≤ 1/2, all coefficients are nonnegative. Otherwise, 1 /2 ≤ 𝑎 ≤ 7/9, so 𝑞 ≥ 1/12 and 𝑎 /( 1 + 𝑎 ) ≥ 1/3. Therefore, 1 − 2𝑎 + 2𝑞 
+
+
+
+1 + 𝑎 
+
+1 + 𝑎 
+
+
+
+≥ − 13 , 2𝑞 (1 − 𝑎 ) ≥ 127 .
+
+The left-hand side is consequently at least 1 − 𝑤 
+
+3 + 𝑤 2
+
+27 = (𝑤 − 9/2)2
+
+27 + 14 > 0.
+
+Combining this with Φ(𝑛 ) (𝜆 ) ≥ 𝐿 𝑠 (𝑡 ) yields 
+
+Ψ𝑛 (𝜆 )
+
+Φ(𝑛 ) (𝜆 ) = 𝑈 𝑠 (𝑡 )
+
+Φ(𝑛 ) (𝜆 ) ≤ 𝑈 𝑠 (𝑡 )
+
+𝐿 𝑠 (𝑡 ) ≤ 32 ,
+
+completing the proof. □
+
+## C.3 Proof of Theorem 4.7 
+
+Proof. Fix 0 < 𝜆 ≤ ( 𝑛 − 1)/( 𝑛 + 1) and define 
+
+𝑅 ≔
+
+ 
+
+> 12
+
++√︃ 54 + 1/𝜆 
+
+
+
+.
+
+By Theorem 4.4, it suffices to prove Ψ𝑛 (𝜆 ) ≤ 𝑅 . Note that 𝑅 > 2 and 
+
+𝜆 (𝑅 − 2) = 1 − 𝜆 𝑅 + 1 .
+
+For every 𝑠 ∈ [ 𝑛 ],
+
+𝑠 (2𝑛 + 1 − 𝑠 ) − 𝑅𝑠 (𝑠 + 1) = 2𝑛𝑠 − ( 𝑅 + 1)𝑠 2 − ( 𝑅 − 1)𝑠 ≤ 2𝑛𝑠 − ( 𝑅 + 1)𝑠 2
+
+= 𝑛 2
+
+𝑅 + 1 − ( 𝑅 + 1)
+
+
+
+𝑠 − 𝑛 𝑅 + 1
+
+2
+
+≤ 𝑛 2
+
+𝑅 + 1 .
+
+Since 0 ≤ 𝑛 −1 
+
+> 𝑛 +1
+
+− 𝜆 ≤ 1 − 𝜆 , we obtain 
+
+ 𝑛 − 1
+
+𝑛 + 1 − 𝜆 
+
+ 𝑠 (2𝑛 + 1 − 𝑠 ) − 𝑅𝑠 (𝑠 + 1)
+
+≤ (1 − 𝜆 )𝑛 2
+
+𝑅 + 1 = 𝜆𝑛 2 (𝑅 − 2) ≤ 𝑅𝜆𝑛 (𝑛 + 1) − 2𝜆𝑛 2.
+
+Rearranging and dividing by the positive denominator shows that every ratio in the maximization defining Ψ𝑛 (𝜆 ) is at most 𝑅 . Thus Ψ𝑛 (𝜆 ) ≤ 𝑅 , proving the robustness guarantee. Consistency follows from Theorem 4.4. □
+
+45 C.4 Proof of Theorem 4.8 
+
+Proof. Define the virtual processing times 
+
+b𝑥 𝑖 ≔
+
+
+
+𝑥 𝑖 , 𝑥 𝑖 < 𝑦 𝑖 /( 1 + 𝜏 ),𝑦 𝑖 , 𝑦 𝑖 /( 1 + 𝜏 ) ≤ 𝑥 𝑖 ≤ ( 1 + 𝜏 )𝑦 𝑖 ,𝑥 𝑖 − 𝜏𝑦 𝑖 , 𝑥 𝑖 > (1 + 𝜏 )𝑦 𝑖 .
+
+By construction, a job below the tolerance interval is reported as completed at 𝑠 𝑖 = 𝑥 𝑖 , whereas a job within the interval is reported as completed at 𝑠 𝑖 = 𝑦 𝑖 . For a job above the interval, the additional 𝜏𝑦 𝑖 units of processing are not counted in 𝑠 𝑖 , so its completion is reported at 𝑠 𝑖 = 𝑥 𝑖 − 𝜏𝑦 𝑖 . Thus, in every case, job 𝑖 is reported as completed at simulated service b𝑥 𝑖 . Consequently, A receives exactly the same completion feedback as in its execution on (bx, y).Let b𝐶 𝑖 denote the completion time of job 𝑖 under A on (bx, y), and let 𝐶 tol  
+
+> 𝑖
+
+denote its completion time under A𝜏  
+
+> tol
+
+on 
+
+𝐼 = (x, y). We first compare these completion times. Fix a job 𝑖 , and consider A’s execution on (bx, y) up to its completion time b𝐶 𝑖 . Let T𝑖 denote the set of jobs 𝑗 to which A has allocated at least 𝑦 𝑗 units of processing by time b𝐶 𝑖 in its execution on (bx, y). Since A can perform at most 
+
+b𝐶 𝑖 units of processing by time b𝐶 𝑖 , we have Í 𝑗 ∈ T 𝑖 𝑦 𝑗 ≤ b𝐶 𝑖 . To follow this part of A’s execution, A𝜏  
+
+> tol
+
+takes b𝐶 𝑖 time, plus the additional processing performed while A is paused. Only jobs in T𝑖 can require such additional processing, and each receives at most 𝜏𝑦 𝑗 . After following this part of A’s execution and performing the associated additional processing, 
+
+A𝜏  
+
+> tol
+
+has completed job 𝑖 . Therefore, 
+
+𝐶 tol  
+
+> 𝑖
+
+≤ b𝐶 𝑖 + 𝜏 ∑︁  
+
+> 𝑗 ∈ T 𝑖
+
+𝑦 𝑗 ≤ ( 1 + 𝜏 ) b𝐶 𝑖 .
+
+Summing over all jobs and using the robustness of A, we obtain ALG (A𝜏 
+
+> tol
+
+, 𝐼 ) ≤ ( 1 + 𝜏 ) ALG (A, (bx, y)) ≤ ( 1 + 𝜏 )𝛾 OPT (bx) ≤ ( 1 + 𝜏 )2𝛾 OPT (x),
+
+where the last inequality follows from b𝑥 𝑖 ≤ ( 1 + 𝜏 )𝑥 𝑖 for every 𝑖 .Now suppose 𝜀 ≤ 𝜏 . Then bx = y, so the execution observed by A is its execution under accurate predictions. Moreover, each additional-processing phase takes at most 𝜀𝑦 𝑖 time. The preceding time comparison therefore holds with 1 + 𝜀 in place of 1 + 𝜏 . Using 𝛽 -consistency of A and 𝑦 𝑖 ≤ ( 1 + 𝜀 )𝑥 𝑖 , we obtain ALG (A𝜏 
+
+> tol
+
+, 𝐼 ) ≤ ( 1 + 𝜀 ) ALG (A, (y, y)) ≤ 𝛽 (1 + 𝜀 ) OPT (y) ≤ 𝛽 (1 + 𝜀 )2 OPT (x).
+
+Taking 𝜀 = 0 proves 𝛽 -consistency. □
+
+46

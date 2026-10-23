@@ -1,0 +1,1690 @@
+Title: Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers
+
+URL Source: https://arxiv.org/pdf/2610.00605v1
+
+Published Time: Fri, 02 Oct 2026 00:38:31 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+> 1
+
+# Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers 
+
+Junyu Lin, Wenjie Liu, Shunbo Lei, Senior Member, IEEE, Wentian Lu, Jianhui Wang, Member, IEEE, Junhong Liu, Member, IEEE 
+
+Abstract—The rapid proliferation of data centers (DCs), driven by cloud computing and artificial intelligence (AI), has led to massive energy demand and carbon emissions, posing significant sustainability challenges. Carbon-aware op-timization in geographically distributed data centers has been widely studied. Most existing approaches mainly focus on operational carbon emissions from server usage. However, ex-isting literature often ignores workload-induced thermal stress, which accelerates nonlinear hardware degradation. This leads to more frequent server replacements and ultimately increases embodied carbon emissions 1. To address these limitations, we propose a comprehensive carbon life-cycle modeling framework for distributed data centers. Apart from operational carbon emissions, this work combines workload scheduling with autilization-dependent exponential aging model to evaluate long-term carbon costs from server degradation. In order to solve the proposed optimization model in an online and privacy-preserving manner, an enhanced Lyapunov framework with time-varying queue shifting (TVQS) is first introduced to han-dle system uncertainties. Then, a zero-sum perturbation-based alternating direction method of multipliers (ZSP-ADMM) framework is developed to enable distributed coordination across geographically separated data centers while protecting locally exchanged workload information. Simulation results demonstrate that the proposed approach achieves up to 13.0% lower carbon emissions and 12.6% lower operational costs compared with benchmarks. Index Terms—Data center, carbon-aware, hardware degra-dation, online algorithm, distributed mechanism. 
+
+I. Introduction The rapid proliferation of data centers (DCs), driven by cloud computing and AI, has led to massive energy requirements and carbon emissions. DC power demand is projected to soar to nearly 2967 TWh by 2030, with its carbon footprint potentially contributing 8% of global 
+
+Junyu Lin, Wenjie Liu, Wentian Lu, and Jianhui Wang are with the School of Mechanical and Electrical Engineering, Guangzhou University, Guangzhou 510006, Guangdong, China (e-mail: linjunyu20040910@gmail.com; lwj1993@gzhu.edu.cn; luwen-tian@gzhu.edu.cn; jhwang@gzhu.edu.cn). Shunbo Lei is with the School of Science and Engineering, The Chinese University of Hong Kong (Shenzhen), Longgang, Shenzhen, Guangdong, China, and also with the Shenzhen Research Institute of Big Data, Guangdong, China (e-mail: leishunbo@cuhk.edu.cn). Junhong Liu is with the Rausser College of Natural Re-sources, UC Berkeley, Berkeley, CA 94720, USA (e-mail: jun-hongliu@berkeley.edu). 
+
+> 1
+
+In this study, embodied carbon refers to the carbon emissions generated during server manufacturing and disposal, which are amortized into operational time slots based on hardware degradation. 
+
+emissions [1], [2]. These trends raise significant concerns regarding electricity costs and environmental sustainabil-ity, making cost-efficient and carbon-aware operation an imperative research priority [3]. To address these challenges, extensive research efforts have focused on real-time carbon-aware operational man-agement in geographically distributed data centers [2]. Early strategies prioritized optimizing energy portfolios via Power Purchase Agreements and Renewable Energy Certificates [4]. Subsequently, research pivoted toward op-erational flexibility, leveraging geographical load balancing and Lyapunov-based online scheduling to exploit spatio-temporal variations in carbon intensity and renewable energy availability [5], [6], [7]. These concepts have reached industrial maturity through Google’s carbon-intelligent system using Virtual Capacity Curves [8], with further refinements extending to dual-dimension task migration and edge-computing resource allocation [9], [10]. Existing thermal-aware hardware aging studies have shown that sustained high power density can accelerate physical wear in computing systems [11], [12]. Specifi-cally, higher server utilization accelerates hardware aging, shortens server lifetime, and increases carbon emissions associated with hardware replacement [13], [14]. Field data from large-scale data centers indicate that regular hardware replacement is unavoidable due to inevitable component wear and failure [15]. Such replacement re-quires continuous manufacturing of new devices and dis-posal of retired equipment. In particular, manufacturing high-performance components such as solid-state drives (SSDs) generates substantial embodied carbon emissions [16]. Although these manufacturing and disposal emissions account for over half of the total lifecycle carbon footprint in modern computing [17], they are rarely integrated into dynamic data center scheduling. Most existing approaches, including carbon-aware work-load scheduling methods [18], [19], [20] and cloud-edge lifecycle management frameworks [21], focus primarily on energy efficiency or operational carbon emissions. They overlook heterogeneous degradation caused by varying server utilization levels. This oversight leads to underes-timation of the actual lifecycle carbon footprint [22], [23]. Although a recent study [24] considers both operational and embodied carbon, its embodied carbon accounting is primarily based on active server counts and accumulated arXiv:2610.00605v1 [eess.SY] 30 Sep 2026 2
+
+operating time, without explicitly modeling utilization-dependent hardware degradation. Consequently, it may underestimate the embodied carbon emissions associated with accelerated hardware degradation under high uti-lization. Moreover, its offline scheduling method relies on future information about workload arrivals, renewable generation, and electricity prices, while its centralized coordination raises privacy concerns through information exchange among data centers. Lyapunov optimization has been widely applied to online data center scheduling, including the joint coor-dination of computing workloads and battery energy [25], electricity procurement under renewable generation and price uncertainties [26], and cluster energy minimization under data redundancy constraints [7]. However, standard Lyapunov frameworks rely on static virtual queue shift parameters, preventing energy storage from adaptively responding to real-time fluctuations in renewable gener-ation and electricity prices. On the other hand, alter-nating direction method of multipliers (ADMM)-based algorithms have been widely applied to distributed data center coordination, including computational-task coordi-nation among multiple data center operators [27] and joint workload and energy scheduling across regional peer-to-peer energy markets [28], [29]. However, exchanging partial operational data in these ADMM schemes still exposes workload patterns and user privacy. To address the aforementioned modeling and algo-rithmic limitations, this paper proposes a low-carbon online distributed operation framework for geographically distributed data centers. The main contributions are summarized as follows: 1) We develop a lifecycle carbon model for geo-distributed data centers that jointly accounts for op-erational carbon emissions and hardware-aging-induced embodied carbon emissions. The model links cluster-level server utilization to nonlinear lifetime degradation and calculates the resulting embodied carbon emissions. Simulation results show that the proposed framework reduces total carbon emissions by 13.0% and operational costs by 12.6% relative to the benchmark. 2) We formulate a long-term optimization problem that jointly minimizes economic costs and lifecycle carbon emis-sions, and develop a Lyapunov-based online method that transforms it into per-slot subproblems without requiring future system information. A time-varying queue shifting (TVQS) mechanism adjusts the battery virtual-queue shift according to real-time electricity prices and renewable generation. Simulation results show that the proposed mechanism enables the battery to adapt its charging and discharging decisions to variations in electricity prices and renewable availability. 3) We propose a zero-sum perturbation ADMM (ZSP-ADMM) framework to enable distributed coordination across geographically separated data centers without di-rectly exposing their local workload migration decisions. A structured perturbation mechanism is incorporated into the ADMM information exchange, where coordinated zero-sum perturbations preserve the global workload-balance structure while obfuscating local migration sig-nals. Simulation results demonstrate that the proposed ZSP-ADMM achieves effective workload masking with negligible computational overhead. II. Proposed DC Operation Framework 
+
+Fig. 1: Structure of the data centers. We consider a geographically distributed DC network, as illustrated in Fig. 1. Externally, each DC operates under distinct local electricity prices and grid carbon emission intensities depending on its regional power sources. Inter-nally, each DC is equipped with local solar generation, energy storage systems (ESS), and heterogeneous server clusters that exhibit distinct processing rate, power pro-files, and physical aging sensitivity factors. Three coupled flows are modeled and jointly optimized. 1) Electricity flow: Each DC can utilize local renewable energy generation and an energy storage system (ESS), while purchasing electricity from the nearby utility grid and incurring both electricity cost and operational carbon emissions. 2) Workload flow: Interactive workloads can be migrated among DCs. 3) Degradation flow: Workload allocation among server clusters directly impacts hardware degradation, which dictates server replacement cycles and embodied carbon emissions. A. Operational Cost Model 1) Electricity Purchase Cost: The electricity purchase cost of data center i from the power grid at time slot t is modeled as 
+
+f gi,t = λi,t Pg,i,t ∆t. (1) Here, Pg,i,t represents the active power drawn by data center i from the grid at time t, λi,t denotes the electricity price at the bus where DC i is connected, and ∆t denotes the duration of each time slot. 2) Energy Storage System Cost: Battery cycling leads to degradation and an associated cost. We model the degradation-related cost of the battery in DC i at time slot t as 
+
+f bi,t = ψdeg 
+
+(P cb,i,t + P db,i,t 
+
+) ∆t, (2) 3
+
+where P cb,i,t and P db,i,t denote the charging and discharging power of the battery, respectively, and ψdeg is a degrada-tion coefficient that converts energy throughput into an equivalent monetary cost. 3) Transfer Cost: Interactive workload migration across data centers incurs operational costs, such as bandwidth charges or routing overhead. We assume this cost is borne by the sending data center. For each DC i, the migration cost incurred at time slot t is defined as: 
+
+f trans  
+
+> i,t
+
+= ctrans  
+
+> i
+
+[mIi,t ]+, ∀i ∈ I , ∀t, (3) where ctrans  
+
+> i
+
+is the unit transfer cost for DC i, and 
+
+[mIi,t ]+ = max( mIi,t , 0) denotes the net outbound inter-active workload migrated at time t.4) Operational Carbon Cost: Let αC denote the carbon price per unit emission, and let ρoc i,t denote the carbon emission intensity of grid electricity at the location of DC i and time t, measured in kg CO 2 per unit energy. The operational carbon cost incurred at time slot t is modeled as 
+
+f c,o i,t = αC ρoc i,t Pg,i,t ∆t, ∀i, t. (4) B. Degradation-Informed Embodied Carbon Cost Model 
+
+Fig. 2: Illustration of utilization-induced server aging and lifetime consumption. Fig. 2 illustrates how workload allocation at the server-cluster level is translated into server utilization and sub-sequently affects thermal stress and lifetime consumption. Conventional amortization models allocate embodied carbon uniformly over the expected hardware lifetime [30]. However, physical hardware aging is highly load-dependent [31]. High resource utilization elevates power consumption and processor temperature, thereby accel-erating physical hardware aging [30], [32]. This ther-mal stress shortens the operational lifespan of servers, necessitating more frequent hardware replacements and thus driving up the overall embodied carbon footprint. Accordingly, we develop a framework that links workload utilization to physical server aging and the embodied carbon cost induced by hardware replacement. We define the resource utilization level ui,k,t ∈ [0 , 1] for cluster (i, k ) at time slot t as the ratio of the assigned workload to the total available processing capacity: 
+
+ui,k,t ≜ Wi,k,t 
+
+N Ai,k,t Srate 
+
+> i,k
+
+, ∀i, k, t, (5) where Srate  
+
+> i,k
+
+denotes the processing rate of a single server in cluster (i, k ), and N Ai,k,t represents the number of active servers. This definition captures the load-dependent nature of server aging, whereby a higher execution load results in a faster hardware aging rate [31], [33]. 1) Utilization-induced Aging Model: To mathematically map the load-dependent physical wear to the macroscopic lifespan reduction, an exponential aging model is adopted. Let Luse  
+
+> i,k,t
+
+represent the cumulative lifetime consumed by cluster (i, k ) up to time slot t. The lifetime dynamics evolve as: 
+
+Luse  
+
+> i,k,t +1
+
+= Luse  
+
+> i,k,t
+
++ ηi,k exp (γi,k ui,k,t 
+
+) ∆t
+
+︸ ︷︷ ︸
+
+> aging increment
+
+, (6) where ηi,k > 0 is the intrinsic aging coefficient, and γi,k >
+
+0 denotes the aging sensitivity factor. 2) Embodied Carbon Accounting: As server lifetime is consumed during operation, the manufacturing embodied carbon is amortized in proportion to the corresponding lifetime consumption. Therefore, sustained high utiliza-tion accelerates lifetime consumption and consequently increases the embodied carbon attributed to the current operation. The fractional lifetime consumption during time slot t
+
+is calculated as: 
+
+∆ℓi,k,t = ηi,k exp( γi,k ui,k,t )∆ tLlife 
+
+> i,k
+
+, (7) where Llife  
+
+> i,k
+
+represents the nominal design lifetime under base operating conditions. The corresponding instanta-neous embodied carbon expenditure is: 
+
+Eemb  
+
+> i,k,t
+
+= CMi,k ∆ℓi,k,t , (8) where CMi,k denotes the manufacturing embodied carbon per server in cluster (i, k ).3) Aging-Amortized Embodied Carbon Cost: To ac-count for the degradation-induced embodied carbon in the operational optimization loop, the embodied carbon emission is aggregated across all active servers and con-verted into an equivalent monetary cost via the carbon price. Specifically, the total embodied carbon cost for data center i at time slot t is obtained by multiplying the single-server embodied carbon Eemb  
+
+> i,k,t
+
+by the active server count 
+
+N Ai,k,t and the carbon price αC :
+
+f c,m i,t = αC
+
+∑
+
+> k∈K i
+
+N Ai,k,t Eemb 
+
+> i,k,t
+
+= αC
+
+∑
+
+> k∈K i
+
+N Ai,k,t 
+
+(
+
+CMi,k 
+
+ηi,k exp( γi,k ui,k,t )∆ tLlife 
+
+> i,k
+
+)
+
+, ∀i, t. 
+
+(9) By combining the operational and embodied carbon, the total carbon-related financial objective for data center i
+
+at time slot t is established as: 
+
+f ci,t = f c,o i,t + f c,m i,t , ∀i, t. (10) C. Workload Migration Model We consider two workload types: interactive workloads (IWs) and batch workloads (BWs) [34]. 4 
+
+> •
+
+IWs: latency-critical tasks that must be completed within each time slot and can be migrated across data centers.  
+
+> •
+
+BWs: delay-tolerant tasks processed locally due to high data transfer overhead. 1) Interactive Workload (IW) Modeling: Let wI, pre 
+
+> i,t
+
+denote the local incoming IW demand at DC i at time slot t, and let mIi,t represent the net migrated IW volume from DC i. The IW processed at DC i is formulated as: 
+
+wIi,t = wI, pre  
+
+> i,t
+
+− mIi,t , ∀i ∈ I , ∀t, (11) where mIi,t > 0 indicates net outbound workload migration (DC i exports tasks), and mIi,t < 0 denotes net inbound workload absorption (DC i imports tasks). The net migrated workloads across all data centers must sum to zero at each time slot: 
+
+∑
+
+> i∈I
+
+mIi,t = 0 , ∀t. (12) To ensure physical feasibility, the net migrated workload is bounded by the gateway bandwidth and local processing capacity limits: 
+
+−∆mI, limit  
+
+> i, in
+
+≤ mIi,t ≤ min 
+
+(
+
+wI, pre  
+
+> i,t
+
+, ∆mI, limit 
+
+> i, out
+
+)
+
+, ∀i ∈ I , ∀t, 
+
+(13) where ∆mI, limit  
+
+> i, in
+
+and ∆mI, limit  
+
+> i, out
+
+denote the maximum allow-able inbound and outbound migration capacity thresholds for DC i, respectively. The workload processed locally at DC i is further allocated to its clusters. Let wIi,k,t denote the interactive workload processed by cluster k in DC i, which satisfies: 
+
+wIi,t = ∑
+
+> k∈K i
+
+wIi,k,t , ∀i ∈ I , ∀t. (14) 2) Batch Workload (BW) Modeling: The BW queue evolves according to the standard discrete-time queueing dynamics: 
+
+SDi,t +1 = max 
+
+{
+
+SDi,t − wDi,t , 0
+
+}
+
++ ADi,t , ∀i, t, (15) where SDi,t denotes the backlog of BW at DC i at time slot 
+
+t, and ADi,t represents the newly arrived BW from local users during slot t. The total BW service wDi,t provided by DC i is formulated as 
+
+wDi,t = ∑
+
+> k∈K i
+
+wDi,k,t , ∀i, t, (16) where wDi,k,t is the amount of BW processed by cluster k
+
+in DC i. Non-negativity constraints ensure feasibility: 
+
+SDi,t ≥ 0, wDi,k,t ≥ 0, ∀i, k, t. (17) Due to the delay-tolerant nature of batch workloads, queue stability is adopted as the performance criterion for BW scheduling [35]. Accordingly, the BW queue at each DC is required to satisfy the following stability condition: 
+
+lim  
+
+> T→∞
+
+1
+
+T 
+
+> T−1
+
+∑
+
+> t=0
+
+E[SDi,t 
+
+] < ∞, ∀i. (18) D. Service Level Agreement (SLA) Constraint for Work-load Processing The total workload assigned to cluster (i, k ) at time slot 
+
+t consists of both interactive workload and delay-tolerant batch workload, given by 
+
+Wi,k,t = wIi,k,t + wDi,k,t , ∀i, k, t. (19) 1) Delay Constraint For cluster (i, k ) at time slot t, the workload execution delay is mainly determined by the server utilization and available computing capacity. Using a M/M/1-type approximation based on aggregate service capacity, the execution delay is given by 
+
+tdelay  
+
+> i,k,t
+
+= 1
+
+(1 − ui,k,t 
+
+) Srate 
+
+> i,k
+
+≤ ¯tdelay  
+
+> i,k
+
+, ∀i, k, t. (20) which provides a tractable delay approximation as com-monly adopted in prior work [36]. ¯tdelay  
+
+> i,k
+
+denotes the maximum allowable delay specified by the SLA. 2) Active Server Capacity Constraint The number of active servers in each cluster is con-strained by the installed capacity: 
+
+N min  
+
+> i,k
+
+≤ N Ai,k,t ≤ N max  
+
+> i,k
+
+, ∀i, k, t, (21) where N min  
+
+> i,k
+
+> 0 and N max  
+
+> i,k
+
+denote the minimum and maximum numbers of active servers in cluster (i, k ),respectively. E. Computing Power Consumption and Thermal Dynam-ics Model 1) Computing Power Consumption: The power con-sumption of cluster (i, k ) at time t is formulated as: 
+
+P IT  
+
+> i,k,t
+
+= P idle  
+
+> i,k
+
+N Ai,k,t + ui,k,t N Ai,k,t 
+
+(P peak  
+
+> i,k
+
+− P idle 
+
+> i,k
+
+), ∀i, k, t, 
+
+(22) where P idle  
+
+> i,k
+
+and P peak  
+
+> i,k
+
+denote the idle and peak power consumption of a single server, respectively. The total computing power consumption of data center 
+
+i is aggregated as: 
+
+P IT  
+
+> i,t
+
+= ∑
+
+> k∈K i
+
+P IT 
+
+> i,k,t
+
+, ∀i, t. (23) 2) Thermal Dynamics and Cooling: The heat generated by server operation affects the indoor temperature evolu-tion, which must be managed by the cooling system. Let 
+
+τi,t denote the ambient temperature of data center i at time t. The discrete-time thermal model is formulated as: 
+
+τi,t +1 = τi,t + κBi P IT  
+
+> i,t
+
+− κCi P cool  
+
+> i,t
+
+− βi,t , ∀i, t, (24) where P cool  
+
+> i,t
+
+is the cooling power. The parameters κBi
+
+and κCi represent the heat conversion coefficient and the cooling efficiency, respectively, while βi,t accounts for ambient heat dissipation. Constraint (25) enforces the temperature limits for each data center: 
+
+T i ≤ τi,t ≤ T i, ∀i, t. (25) 5
+
+F. Power Management Constraints This subsection summarizes the constraints associated with power flows inside each DC. 1) Electricity Purchase from the Grid The grid power drawn by each DC is bounded as 
+
+0 ≤ Pg,i,t ≤ P max  
+
+> g,i,t
+
+, (26) where P max  
+
+> g,i,t
+
+denotes the maximum grid power intake of data center i.2) Battery Energy Storage System Charging and discharging power are limited by con-verter and battery ratings: 
+
+0 ≤ P cb,i,t ≤ P c, max  
+
+> b,i,t
+
+, (27) 
+
+0 ≤ P db,i,t ≤ P d, max  
+
+> b,i,t
+
+, (28) where P c, max  
+
+> b,i,t
+
+and P d, max  
+
+> b,i,t
+
+denote the maximum charging and discharging power. The battery energy level evolves as 
+
+Eb,i,t +1 = kiEb,i,t + P cb,i,t ∆t η c − P db,i,t 
+
+∆tηd
+
+, (29) where ki ∈ (0 , 1] is the energy retention coefficient, and 
+
+ηc, ηd are charging/discharging efficiencies. The stored energy is constrained by 
+
+Emin  
+
+> b,i
+
+≤ Eb,i,t ≤ Emax  
+
+> b,i
+
+, ∀i, t. (30) and the inter-temporal variation is limited by 
+
+Eb,i,t − ∆Eb,i ≤ Eb,i,t +1 ≤ Eb,i,t + ∆ Eb,i , (31) where ∆Eb,i represents the ramp rate limit for battery storage. 3) DC Power Balance For each data center and time slot, the electrical supply must match demand: 
+
+Pg,i,t + P db,i,t + Pr,i,t = P IT  
+
+> i,t
+
++ P cool  
+
+> i,t
+
++ P cb,i,t , ∀i, t. (32) Here, Pr,i,t is the local renewable generation, and P IT 
+
+> i,t
+
+denotes the total computing power consumption of DC i.G. Joint Cost and Carbon Optimization Problem Here, i ∈ I , k ∈ K i, and t ∈ T index the data centers, server clusters of DC i, and time slots, respectively. Let 
+
+Φt define the control variables of all data centers at time slot t.
+
+Φt =
+
+{mIi,t , N Ai,k,t , w Di,k,t , w Ii,k,t , P g,i,t ,P cool  
+
+> i,t
+
+, P cb,i,t , P db,i,t 
+
+}
+
+.
+
+The instantaneous operation cost f (Φ t) incurred at time slot t is defined as: 
+
+f (Φ t) ≜ ∑
+
+> i∈I
+
+(f gi,t + f bi,t + f trans  
+
+> i,t
+
++ f ci,t 
+
+). (33) By aggregating all the constraints presented in Sec-tions C–F, the joint cost and carbon optimization problem is formulated as follows: P1: min 
+
+> {Φt}t∈T
+
+∑
+
+> t∈T
+
+f (Φ t)
+
+s.t. (11)–(18) , (19)–(32) , ∀t ∈ T .
+
+III. Solution Method Directly solving P1 in a centralized offline manner is impractical due to two fundamental structural challenges: First, problem P1 exhibits strong inter-temporal cou-pling across scheduling horizons through physical state transitions, including (15), (24), and (29). Offline opti-mization over the operating horizon requires prior knowl-edge of future renewable generation, electricity prices, and workload arrivals, which are uncertain. To address these temporal dependencies without future predictions, we design an online Lyapunov optimization framework to decouple the long-term problem into per-slot subproblems. Second, the workload-balance constraint in (12) couples migration decisions across data centers. A centralized solution requires sharing local operational data, raising privacy concerns. We therefore develop a zero-sum pertur-bation ADMM (ZSP-ADMM) algorithm that decomposes the problem into local subproblems. Structured zero-sum perturbations are applied to the exchanged migration signals, masking local decisions while preserving the global workload balance. A. Unified Online Optimization Framework To enable the real-time implementation, we reformulate the long-term problem P1 using Lyapunov optimization into a sequence of per-slot deterministic optimization problems. 1) Virtual Queue Modeling and Time-Varying Queue Shifting: To handle inter-temporal constraints without future predictions, we introduce three queue-based state variables:  
+
+> •
+
+Batch Workload Queue: The backlog SDi,t tracks delay-tolerant tasks, evolving according to SDi,t +1 =max {SDi,t − wDi,t , 0} + ADi,t . 
+
+> •
+
+Thermal Virtual Queue: To enforce operational tem-perature limits, we define ˜τi,t = τi,t − T ref  
+
+> i
+
+, capturing the temperature deviation from the baseline T ref  
+
+> i
+
+. 
+
+> •
+
+Battery Virtual Queue: To manage battery energy bounds within the Lyapunov framework [35], we define the shifted virtual queue ˜Ei,t = Eb,i,t + εi,t ,where Eb,i,t represents the battery energy level, and 
+
+εi,t is a shift parameter determined by the time-varying queue shifting (TVQS) strategy below. Time-Varying Queue Shifting Mechanism: Standard Lyapunov methods use a fixed battery virtual-queue shift derived from offline worst-case bounds, which may lead to conservative battery scheduling under time-varying operating conditions. We therefore develop a time-varying queue shifting (TVQS) mechanism that adjusts the bat-tery virtual-queue shift according to real-time renewable generation and electricity prices, thereby adapting the charging and discharging incentives to current operating conditions. Specifically, the operational incentive factor and the corresponding virtual-queue shift are defined as: 6
+
+θi,t = min 
+
+{
+
+1, β θ
+
+( P r
+
+> i,t
+
+P r,rated  
+
+> i
+
++ P r
+
+> i,t
+
++ λmax  
+
+> i
+
+− λi,t 
+
+λmax 
+
+> i
+
+)} 
+
+,
+
+(34) 
+
+εi,t = −Emax  
+
+> b,i
+
+θi,t . (35) Here, θi,t ∈ [0 , 1] is the operational incentive factor, and 
+
+βθ > 0 controls the overall strength of the queue-shifting mechanism. P r 
+
+> i,t
+
+and P r,rated  
+
+> i
+
+denote the current and rated renewable generation, respectively; λi,t and λmax  
+
+> i
+
+denote the current electricity price and its maximum threshold, where λi,t ≤ λmax  
+
+> i
+
+; and Emax  
+
+> b,i
+
+denotes the maximum battery capacity. Accordingly, εi,t ∈ [−Emax  
+
+> b,i
+
+, 0] .The value of θi,t increases when renewable generation is abundant or electricity prices are low. Consequently, εi,t 
+
+becomes more negative, lowering the battery virtual-queue value and strengthening the charging incentive. Con-versely, when renewable generation decreases or electricity prices rise, θi,t decreases and εi,t becomes less negative, raising the battery virtual-queue value and weakening the charging incentive. 2) Lyapunov Function Formulation and Drift Bound-ing: Let Θt = [ SDi,t , ˜Ei,t , ˜τi,t ]i∈I denote the concatenated system state vector. The unified Lyapunov function is defined as: 
+
+L(Θt) = 12
+
+∑
+
+> i∈I
+
+(
+
+αi(SDi,t )2 + δi ˜E2 
+
+> i,t
+
++ νi ˜τ 2
+
+> i,t
+
+)
+
+, (36) where αi, δ i, ν i > 0 are positive weighting parameters. The one-slot conditional Lyapunov drift is defined as 
+
+∆( Θt) = E[L(Θt+1 ) − L(Θt) | Θt]. The upper bound of the one-slot conditional Lyapunov drift is given in the following lemma. Lemma 1: Under any feasible control action and system state realization, the conditional one-slot Lyapunov drift is upper bounded by: 
+
+∆( Θt) ≤ C0 + ∑
+
+> i∈I
+
+{
+
+αiSDi,t 
+
+(ADi,t − wDi,t 
+
+) + νi ˜τi,t 
+
+(
+
+κBi P IT 
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+)
+
++ δiωi,t 
+
+[
+
+ki ˜Ei,t + 12 ωi,t + (1 − ki)εi,t 
+
+]}
+
+,
+
+(37) 
+
+where ωi,t = P cb,i,t ∆tη c − P db,i,t ∆t/η d denotes the net battery energy variation at time slot t, and C0 is afinite positive constant bounding the remainder terms arising from the queue dynamics and the time-varying shift variation. Proof. The detailed derivation is provided in Ap-pendix A. 3) Per-slot Online Optimization Problem: To minimize the operational cost while stabilizing all queues, we adopt the drift-plus-penalty framework by incorporating the instantaneous operational cost f (Φ t) alongside the drift bound established in Lemma 1. Let V > 0 denote the Lyapunov control parameter that balances queue stability and instantaneous operational cost. By taking the upper bound of ∆( Θt) + V E[f (Φ t) | Θt] and neglecting terms independent of the control actions, the per-slot determin-istic optimization problem at time t is formulated as: 
+
+P2: min 
+
+> Φt
+
+V f (Φ t) + ∑
+
+> i∈I
+
+[
+
+δiωi,t 
+
+(ki ˜Ei,t + 12 ωi,t + (1 − ki)εi,t 
+
+)
+
+− αiSDi,t wDi,t + νi ˜τi,t 
+
+(κBi P IT  
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+)]
+
+s.t. (11)–(13) , (14) , (16)–(17) , (19)–(21) ,
+
+(22)–(23) , (26)–(28) , (30) , (32) .
+
+(38) 
+
+B. Zero-Sum Perturbation ADMM Framework In problem P2, workload migration (12) requires coor-dination among data centers, which exchange their migra-tion volumes mIi,t to maintain the global workload balance. However, sharing exact migration decisions exposes data centers to operational privacy risks. To solve P2 in a privacy-preserving manner, we develop a zero-sum perturbation ADMM (ZSP-ADMM) scheme that masks the exchanged migration volumes while pre-serving the global workload balance. Each data center adds a perturbation to its migration volume, and the perturbations are coordinated to sum to zero, leaving the total migration volume unchanged. Building on this zero-sum property, we reformulate the global workload balance constraint (12) as consen-sus constraints on the perturbed migration variables. To determine the required perturbation magnitude, we first express the coupled migration decisions as mIt =[mI
+
+> 1,t
+
+, . . . , m I
+
+> |I| ,t
+
+]T . For two adjacent operational states that differ in the workload information of one data center, the L1-sensitivity of the released migration decision is defined as 
+
+∆m = sup 
+
+> m∼m′
+
+∥m − m′∥1 . (39) The physical migration limits in (13) provide an upper bound on this sensitivity. Specifically, the maximum admissible change associated with any single data center is 
+
+Mmax = max 
+
+> i∈I
+
+(
+
+∆mI, limit  
+
+> i, in
+
++ ∆ mI, limit 
+
+> i, out
+
+)
+
+.
+
+Therefore, ∆m ≤ Mmax , and we conservatively set 
+
+∆m = Mmax in the perturbation mechanism. To prevent adversaries from inferring local workload profiles through shared consensus information, we intro-duce a structured perturbation mechanism inspired by [37]. Let ϵ > 0 denote the perturbation-control parameter, which regulates the scale of the injected noise. At each time slot t, prior to the ZSP-ADMM iterations, each data center i first samples a preliminary perturbation ˆξi,t from a zero-mean Laplace distribution with scale parameter 
+
+∆m/ϵ , i.e., ˆξi,t ∼ Lap(∆ m/ϵ ), whose probability density function is p( ˆξ) = ϵ 
+
+> 2∆ m
+
+exp 
+
+(
+
+− ϵ| ˆξ|
+
+> ∆m
+
+)
+
+.The preliminary perturbations are then coordinated to construct the zero-sum perturbation 
+
+ξi,t = ˆξi,t − 1
+
+|I| 
+
+∑
+
+> j∈I
+
+ˆξj,t , (40) 7
+
+which satisfies ∑ 
+
+> i∈I
+
+ξi,t = 0. A fixed positive scaling factor ζ is used to control the perturbation amplitude. The obfuscated migration variable is formulated as 
+
+˜mIi,t = mIi,t + ζξ i,t , (41) where ζ > 0 is a fixed perturbation scaling factor. Since the coordinated perturbations satisfy ∑ 
+
+> i∈I
+
+ξi,t =0, the obfuscated migration variables preserve the original global workload balance, i.e., 
+
+∑
+
+> i∈I
+
+˜mIi,t = ∑
+
+> i∈I
+
+mIi,t .
+
+Therefore, the original global migration constraint (12) can be equivalently enforced through the following con-sensus constraints on the obfuscated variables: 
+
+˜mIi,t = zIi,t , ∀i ∈ I , zt ∈ Z , (42) where zIi,t is the auxiliary consensus variable for data center i at time slot t, and zt = [ zI
+
+> 1,t
+
+, . . . , z I
+
+> |I| ,t
+
+]T . Z ≜
+
+{zt ∈ R|I| : ∑ 
+
+> i∈I
+
+zIi,t = 0 } denotes the global workload-balance consensus set. Replacing the global migration constraint (12) with (41) and (42) yields the following equivalent formulation of P2, denoted as P3: 
+
+P3: min 
+
+> Φt,zt
+
+V f (Φ t) + ∑
+
+> i∈I
+
+[
+
+δiωi,t 
+
+(ki ˜Ei,t + 12 ωi,t + (1 − ki)εi,t 
+
+)
+
+− αiSDi,t wDi,t + νi ˜τi,t 
+
+(κBi P IT  
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+)]
+
+s.t. (11) , (13) , (14) , (16)–(17) , (19)–(21) ,
+
+(22)–(23) , (26)–(28) , (30) , (32) , (41) , (42) .
+
+(43) 
+
+Before deriving the ZSP-ADMM updates, we first estab-lish the convexity of P3 and its equivalence to P2 under fixed zero-sum perturbations, as stated in the following two lemmas. Lemma 2: For any fixed realization of the zero-sum perturbations, P3 is a convex optimization problem. Proof. The detailed proof is provided in Appendix B. Lemma 3: For any fixed zero-sum perturbations, P3 and P2 have the same feasible physical decisions and optimal objective value. Proof. The detailed proof is provided in Appendix C. Given the convexity of P3, the detailed update pro-cedure of the proposed ZSP-ADMM is presented below. We begin by constructing the augmented Lagrangian of P3. Let μIi,t denote the dual multiplier associated with the consensus constraint (42), and let ρ > 0 denote the penalty parameter. The augmented Lagrangian function is formulated as: 
+
+Lρ = ∑
+
+> i∈I
+
+[
+
+V f i(Φ i,t ) − αiSDi,t wDi,t + νi ˜τi,t 
+
+(κBi P IT  
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+)
+
++ δi
+
+(ki ˜Ei,t ωi,t + 12 ω2 
+
+> i,t
+
++ (1 − ki)εi,t ωi,t 
+
+)
+
++ μIi,t 
+
+( ˜mIi,t − zIi,t 
+
+) + ρ
+
+> 2
+
+( ˜mIi,t − zIi,t 
+
+)2]
+
+. (44) 
+
+In the proposed ZSP-ADMM algorithm, at iteration n+1, the decision variables are updated sequentially in three steps. 1) Parallel Local Primal Update: Each data center 
+
+i independently solves its local subproblem over Φi,t .The objective minimizes the local augmented Lagrangian decoupled from the consensus constraint: 
+
+Φ(n+1)  
+
+> i,t
+
+= arg min 
+
+> Φi,t
+
+{
+
+V f i(Φ i,t ) − αiSDi,t wDi,t 
+
++ νi ˜τi,t 
+
+(κBi P IT  
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+) + Ω i,t 
+
+}
+
+(45) s.t. (11) , (13) , (14) , (16)–(17) , (19)–(21) , (22)–(23) ,
+
+(25) , (26)–(28) , (30) , (32) , (41) ,
+
+where the decoupling term Ωi,t collects the local Lyapunov drift and ADMM penalty components: 
+
+Ωi,t = δi
+
+(
+
+ki ˜Ei,t ωi,t + 12 ω2 
+
+> i,t
+
++ (1 − ki)εi,t ωi,t 
+
+)
+
++ μI, (n)
+
+> i,t
+
+(
+
+˜mIi,t − zI, (n)
+
+> i,t
+
+)
+
++ ρ
+
+2
+
+(
+
+˜mIi,t − zI, (n)
+
+> i,t
+
+)2
+
+. (46) Since the perspective formulation preserves convexity, the local subproblem remains convex and can be solved to global optimality. 2) Centralized Global Consensus Update: The coordi-nator collects ˜mI, (n+1)  
+
+> i,t
+
+from all DCs and updates the global consensus variables zIi,t by solving the following constrained subproblem: 
+
+z(n+1)  
+
+> t
+
+= arg min 
+
+> zt
+
+∑
+
+> i∈I
+
+[
+
+−μI, (n) 
+
+> i,t
+
+zIi,t + ρ
+
+2
+
+(
+
+˜mI, (n+1)  
+
+> i,t
+
+− zIi,t 
+
+)2]
+
+s.t. zt ∈ Z . (47) 3) Dual Multiplier Update: Each data center i updates its dual multiplier locally: 
+
+μI, (n+1)  
+
+> i,t
+
+= μI, (n) 
+
+> i,t
+
++ ρ
+
+(
+
+˜mI, (n+1)  
+
+> i,t
+
+− zI, (n+1) 
+
+> i,t
+
+)
+
+, ∀i ∈ I .
+
+(48) 4) Stopping Criterion: The algorithm terminates when the primal residual satisfies 
+
+∥∥∥r(n)
+
+∥∥∥22
+
+= ∑
+
+> i∈I
+
+(
+
+˜mI, (n) 
+
+> i,t
+
+− zI, (n)
+
+> i,t
+
+)2
+
+≤ (ϵpri )2 . (49) The overall online distributed scheduling procedure based on ZSP-ADMM is summarized in Algorithm 1. IV. Numerical Results In this section, we evaluate our proposed online dis-tributed algorithm based on real-world traces. We first detail the simulation setup and parameter configurations. Subsequently, we validate the effectiveness of the proposed model and algorithm. A. Parameter Setup We consider three interconnected DCs located in re-gions with heterogeneous energy resources. DC1 is wind-dominated with lower carbon intensity during nighttime, DC2 is hydro-based with consistently low carbon emissions and electricity prices, and DC3 features high PV penetra-tion, offering a decarbonization window around midday. The hourly profiles of electricity prices λi,t and carbon intensities ρoc i,t are shown in Fig. 3. 8
+
+Algorithm 1 Online ZSP-ADMM Algorithm 
+
+1: Initialize SDi, 0, Eb,i, 0, and τi, 0 for all i ∈ I .2: for each time slot t = 0 , 1, . . . , T − 1 do 3: Observe the current workload arrivals, renewable generation, electricity price, carbon intensity, and system states. 4: Compute the operational incentive factor θi,t and update the time-varying shift parameter εi,t according to the TVQS mechanism for all i ∈ I .5: Pre-sample the preliminary perturbation ˆξi,t ∼ Lap(∆ m/ϵ )
+
+for each DC i.6: Construct the coordinated zero-sum perturbation as ξi,t =ˆξi,t − 1
+
+> |I|
+
+∑ 
+
+> j∈I
+
+ˆξj,t , for all i ∈ I .7: Form the current per-slot optimization problem P3 using the observed system information, virtual queue states, and fixed perturbations ξi,t .8: Set ADMM iteration index n = 0 , primal tolerance ϵpri > 0,and penalty parameter ρ > 0. Initialize μI, (0)  
+
+> i,t
+
+= 0 and zI, (0)  
+
+> i,t
+
+=0 for all i ∈ I .9: repeat 10: for each DC i ∈ I do 11: Solve the local subproblem (45) to obtain Φ(n+1)  
+
+> i,t
+
+.12: Compute and transmit the obfuscated migration variable 
+
+˜mI, (n+1)  
+
+> i,t
+
+= mI, (n+1)  
+
+> i,t
+
++ ζξ i,t .13: end for 14: The coordinator updates z(n+1)  
+
+> t
+
+according to (47). 15: Each DC i ∈ I updates μI, (n+1)  
+
+> i,t
+
+according to (48). 16: n ← n + 1 .17: until the primal residual satisfies the prescribed convergence tolerance 18: Implement the converged control decisions Φt.19: Update SDi,t +1 , Eb,i,t +1 , and τi,t +1 according to (15), (29), and (24), respectively. 20: end for 
+
+Fig. 3: Electricity prices and carbon intensities. Each DC comprises four server clusters, with 1000 servers in each cluster, distinguished by computing ca-pacity and service age, as summarized in Table I. The global simulation parameters are listed in Table II. B. Performance Comparison To evaluate the impact of workload migration and hardware aging awareness, four scenarios are compared:  
+
+> •
+
+Benchmark: No workload migration; no server aging model.  
+
+> •
+
+M2: Workload migration enabled; no server aging model.  
+
+> •
+
+M3: No workload migration; server aging model incorporated.  
+
+> •
+
+Proposed: Both workload migration and server aging model enabled. Table III compares the performance of different meth-ods. Compared with the benchmark, M2 reduces total cost by 7.0% and carbon emissions by 8.0%. M2 transfers TABLE I: Parameters of Heterogeneous Server Clusters 
+
+Cluster Index Cluster 1 Cluster 2 Cluster 3 Cluster 4 Computing Capacity Low High Low High Service Age New New Old Old 
+
+Srate  
+
+> i,k
+
+(req/s) 20 30 20 30 
+
+Pidle (kW) 0.100 0.125 0.125 0.156 
+
+Ppeak (kW) 0.200 0.250 0.250 0.312 
+
+γi,k 1.00 1.10 2.00 2.20 
+
+TABLE II: Global Simulation Parameters 
+
+Symbol Value Symbol Value 
+
+κBi 0.002 κCi 0.008 
+
+∆mI, limit  
+
+> i, in
+
+, ∆mI, limit  
+
+> i, out
+
+1.5 × 10 4 req ctrans  
+
+> i
+
+10 −4 $/req 
+
+Eb 4,000 kWh Emin  
+
+> b,i
+
+0.1Eb
+
+P c, max  
+
+> b,i,t
+
+400 kW Emax  
+
+> b,i
+
+0.9Eb
+
+P d, max  
+
+> b,i,t
+
+400 kW ∆Eb,i 400 kWh 
+
+ηc 0.95 ki 0.98 
+
+ηd 0.95 CMi,k 1200 kg 
+
+ψdeg 0.01 $/kWh αC 0.1 $/kgCO 2
+
+¯tdelay  
+
+> i,k
+
+0.167 s Llife  
+
+> i,k
+
+35,040 h 
+
+workloads to data centers with lower electricity prices and grid carbon intensities, thereby reducing electricity costs and operational carbon emissions. M3 reduces total cost by 7.1% and carbon emissions by 7.7%. Its aging model gives priority to server clusters with lower degradation rates, reducing hardware aging and replacement-induced embodied carbon emissions. The proposed method jointly optimizes inter-data-center workload transfer and aging-aware server allocation. It transfers workloads to data centers with lower electricity prices and grid carbon intensities while prioritizing server clusters with lower degradation rates within each data center. Consequently, it achieves the lowest total cost (23.47 ×10 3 $) and carbon emissions (148.04 t CO 2), representing reductions of 12.6% and 13.0%, respectively. C. Operational Scheduling Analysis The power composition of each data center within this typical day is shown in Fig. 4. During morning and midday periods, relatively low electricity prices and abundant PV generation encourage battery charging. Conversely, during evening peak hours, limited renewable supply, high electricity prices, and increased workload demand drive battery discharging. Fig. 5 shows the number of servers utilized in each cluster across the three data centers over 24 hours. During the late-night and early-morning hours, workload demand is low, and the scheduler mainly uses Cluster 2, with TABLE III: Comparison of Economic Cost and Total Carbon Emissions 
+
+Benchmark M2 M3 Proposed Cost ( ×10 3 $) 26.84 24.97 24.93 23.47 Cost Reduction - 7.0% 7.1% 12.6% Carbon Emission (t CO 2) 170.07 156.54 157.00 148.04 Carbon Reduction - 8.0% 7.7% 13.0% 9-400 0400 800 1200 DC 1 PV Grid Charging Discharging DC power        
+
+> -400 0400 800 1200
+> Power (kW)
+> DC 2
+> 04812 16 20 24
+> Time (h)
+> -400 0400 800 1200 DC 3
+
+Fig. 4: Solar power generation, grid power supply, battery operation, and DC power consumption across the three data centers. limited use of Cluster 1. Both clusters age slowly, but Cluster 2 offers a higher processing rate and is therefore prioritized. During the daytime and evening peak periods, additional capacity is needed to process accumulated batch workloads and increased interactive demand. Cluster 3 and Cluster 4 are therefore used more extensively despite their higher aging rates. Their utilization decreases again when demand falls, limiting the use of servers that degrade faster. Fig. 6 shows that Cluster 1 and Cluster 2 accumulate longer equivalent operating times than Cluster 3 and Cluster 4 across all three data centers. This is consistent with the utilization patterns in Fig. 5 and confirms the scheduler’s overall preference for clusters with lower aging rates. C1 C2 C3 C4 
+
+DC 1 
+
+> C1 C2 C3 C4 Server cluster
+
+DC 2       
+
+> 04812 16 20 24
+> Time (h)
+> C1 C2 C3 C4
+
+DC 3     
+
+> 0200 400 600 800 Number of servers
+
+Fig. 5: Number of servers utilized in each cluster across the three data centers over 24 hours. D. Impact of TVQS on Battery Scheduling Fig. 7 compares the battery charging and discharging power under fixed queue shifting and the proposed TVQS mechanism. Fixed queue shifting results in relatively weak and scattered battery operation, indicating conservative battery utilization. In contrast, TVQS promotes charging during low-price or renewable-abundant periods, particu-(a) Lower-aging clusters DC 1 DC 2 DC 3              
+
+> C1 C2 C1 C2 C1 C2 0.0 0.2 0.4 0.6 0.8
+> Normalized equivalent operating time
+> Benchmark Proposed
+> (b) Higher-aging clusters DC 1 DC 2 DC 3
+> C3 C4 C3 C4 C3 C4
+> DC 2 36.6%decline DC 1 38.8%decline DC 3 39.3%decline
+
+Fig. 6: Normalized equivalent operating times (EOTs) of different server clusters under the benchmark and proposed methods. larly during the early hours and around hours 13–14, and releases the stored energy during the evening high-price period. This pattern is driven by the time-varying queue shift. An increase in renewable generation or a decrease in the combined electricity and carbon price makes the shift more negative, thereby favoring charging. Conversely, the opposite conditions move the shift toward zero and favor discharging. (a) Fixed shift   
+
+> -400 0400
+> Power (kW)
+> DC 1
+> (b) TVQS
+> DC 1
+> -400 0400
+> Power (kW)
+> DC 2
+> Electricity price ($/MWh)
+> DC 2
+> Time (h)
+> -400 0400
+> Power (kW)
+> DC 3
+> Time (h)
+> DC 3
+> Charging Discharging Electricity price
+
+Fig. 7: Battery charging and discharging power under fixed queue shifting and the proposed TVQS mechanism. E. Convergence and Privacy-Preservation Performance of ZSP-ADMM Fig. 8 compares ZSP-ADMM under different perturbation-control parameters ( ϵ ∈ { 0.2, 0.3, 0.4, 0.5})with standard ADMM. All curves closely track the baseline and converge within 70 iterations, indicating that the structured perturbation has little impact on convergence. Fig. 9 compares the actual and obfuscated inter-data-center migration signals over 24 hours. The insets report the mean absolute error (MAE), root mean square error (RMSE), and maximum absolute deviation. Across the three data centers, the MAE and RMSE remain within 
+
+0.17 –0.21 and 0.22 –0.26 , respectively, while the maximum deviation is 0.43 (all in units of 10 4 requests). These bounded deviations obscure the exact migration values while preserving their overall temporal patterns for dis-tributed coordination. 10 0 10 20 30 40 50 60 70 80 
+
+Iteration 
+
+10 -6 
+
+10 -4 
+
+10 -2 
+
+10 0
+
+> Gap
+
+= 0.5 = 0.4 = 0.3 = 0.2 ADMM 
+
+Fig. 8: Convergence trajectories of the proposed ZSP-ADMM under different perturbation-control parameters. -2 -1 012 DC 1 Actual migration Obfuscated migration         
+
+> -2 -1 012DC 2
+> 04812 16 20 24
+> Time (h)
+> -2 -1 012DC 3
+> Masking deviation
+> 0.21 0.26 0.43 MAE RMSE Max
+> 0.17 0.22 0.43 MAE RMSE Max
+> 0.19 0.23 0.43 MAE RMSE Max
+> Migration volume (  10 4 requests)
+
+Fig. 9: Privacy-preserving workload masking performance on transmitted migration signals. V. Conclusion This paper proposes an aging-aware online distributed scheduling framework for geo-distributed data centers. The model incorporates utilization-dependent hardware aging into lifecycle carbon accounting. A Lyapunov-based method with TVQS enables online scheduling and adaptive battery management, while ZSP-ADMM masks migration volumes during distributed coordination. Sim-ulation results yield the following findings: 1) Combining workload migration with aging-aware scheduling reduces economic costs and lifecycle carbon emissions while pre-serving hardware health by prioritizing clusters with lower aging rates. 2) The proposed Lyapunov-based strategy with TVQS reduces conservative battery utilization by adapting charging and discharging decisions to real-time renewable generation and electricity prices. 3) Zero-sum perturbations mask local migration decisions while pre-serving global workload balance, with little change in the ZSP-ADMM convergence behavior. References 
+
+[1] A. Katal, S. Dahiya, and T. Choudhury, “Energy efficiency in cloud computing data centers: a survey on software technolo-gies,” Cluster Computing, vol. 26, no. 3, pp. 1845–1875, 2023. [2] Z. Cao, X. Zhou, H. Hu, Z. Wang, and Y. Wen, “Toward a systematic survey for carbon neutral data centers,” IEEE Communications Surveys & Tutorials, vol. 24, no. 2, pp. 895– 936, 2022. [3] S. Long, Y. Li, J. Huang, Z. Li, and Y. Li, “A review of energy efficiency evaluation technologies in cloud data centers,” Energy and Buildings, vol. 260, p. 111848, 2022. [4] C. Ren, D. Wang, B. Urgaonkar, and A. Sivasubramaniam, “Carbon-aware energy capacity planning for datacenters,” in 2012 IEEE 20th international symposium on modeling, analysis and simulation of computer and telecommunication systems, pp. 391–400, IEEE, 2012. [5] Z. Zhou, F. Liu, Y. Xu, R. Zou, H. Xu, J. C. Lui, and H. Jin, “Carbon-aware load balancing for geo-distributed cloud services,” in 2013 IEEE 21st International Symposium on Modelling, Analysis and Simulation of Computer and Telecom-munication Systems, pp. 232–241, IEEE, 2013. [6] H. Dou, Y. Qi, W. Wei, and H. Song, “Carbon-aware electricity cost minimization for sustainable data centers,” IEEE Trans-actions on Sustainable Computing, vol. 2, no. 2, pp. 211–223, 2017. [7] W. Zhao, L. Xu, and Y. Qi, “Lyapunov-driven optimization for energy-cost minimization in data center with renewable energy and time-varying electricity prices,” IEEE Transactions on Cloud Computing, 2026. [8] A. Radovanović, R. Koningstein, I. Schneider, B. Chen, A. Duarte, B. Roy, D. Xiao, M. Haridasan, P. Hung, N. Care, et al., “Carbon-aware computing for datacenters,” IEEE Trans-actions on Power Systems, vol. 38, no. 2, pp. 1270–1280, 2022. [9] T. Yang, H. Jiang, Y. Hou, and Y. Geng, “Carbon man-agement of multi-datacenter based on spatio-temporal task migration,” IEEE Transactions on Cloud Computing, vol. 11, no. 1, pp. 1078–1090, 2021. [10] W. E. Gnibga, A. Blavette, and A.-C. Orgerie, “Latency, energy and carbon aware collaborative resource allocation with con-solidation and qos degradation strategies in edge computing,” in 2023 IEEE 29th International Conference on Parallel and Distributed Systems (ICPADS), pp. 2630–2639, IEEE, 2023. [11] S. Kumar and A. K. Roy, “Advanced thermal management tech-nologies for high-power electronic devices: A review of passive, active, and hybrid cooling strategies, materials innovations, and ai-driven design for data-center, ev, and aerospace electronics,” Next Materials, vol. 13, p. 103341, 2026. [12] C. Peng, L. Mo, J. Liu, and D. Niu, “Thermal-aware approx-imate real-time task scheduling for multicore embedded sys-tems,” in 2023 China Automation Congress (CAC), pp. 6439– 6444, 2023. [13] I. Uwizeyimana and N. E. Jerger, “Carbon-aware server replace-ment,” in 2025 IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS), pp. 1–3, 2025. [14] J. Zhang, S. Sadiqbatcha, and S. X.-D. Tan, “Hot-trim: Thermal and reliability management for commercial multicore processors considering workload dependent hot spots,” IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems, vol. 42, no. 7, pp. 2290–2302, 2023. [15] K. V. Vishwanath and N. Nagappan, “Characterizing cloud computing hardware reliability,” in Proceedings of the 1st ACM symposium on Cloud computing, pp. 193–204, 2010. [16] S. Tannu and P. J. Nair, “The dirty secret of ssds: Embodied carbon,” ACM SIGENERGY Energy Informatics Review, vol. 3, no. 3, pp. 4–9, 2023. [17] U. Gupta, Y. G. Kim, S. Lee, J. Tse, H.-H. S. Lee, G.-Y. Wei, D. Brooks, and C.-J. Wu, “Chasing carbon: The elusive environmental footprint of computing,” in 2021 IEEE Interna-tional Symposium on High-Performance Computer Architecture (HPCA), pp. 854–867, IEEE, 2021. [18] W.-T. Lin, K. Liu, G. Chen, J. Li, D. Yang, and T. Ming, “Carbon-aware optimization for internet data centers with renewable generation: Robust workload allocation and carbon procurement via multi-class mean field game,” Renewable En-ergy, p. 125201, 2026. [19] P. Ren, W. Sun, Y. Wang, and G. Harrison, “Grid frequency stability support potential of data center: A quantitative as-sessment of flexibility,” IEEE Transactions on Industry Appli-cations, 2026. [20] Y. Wang, W. Sun, P. Ren, and G. Harrison, “Multi-objective low-carbon scheduling method for data centers based on ensem-ble reinforcement learning,” IEEE Transactions on Smart Grid, 2025. [21] M. Mekki, A. Ksentini, and M. Bagaa, “Energy-aware applica-tion life-cycle management in cloud edge computing continuum using applications profiles,” IEEE Transactions on Network Science and Engineering, 2026. 11 
+
+[22] F. He, X. Zhang, Y. Tao, and J. Yuan, “Flcarbon: A close look into the operational carbon and embodied carbon of federated learning,” IEEE Transactions on Dependable and Secure Computing, pp. 1–12, 2026. [23] B. Huang, H. Zhang, H. Ullah, and Y. Lv, “Bim-based embodied carbon evaluation during building early-design stage: A sys-tematic literature review,” Environmental Impact Assessment Review, vol. 112, p. 107768, 2025. [24] Y. Zhang, Y. Song, and S. Sahoo, “Carbon and reliability-aware computing for heterogeneous data centers,” arXiv preprint arXiv:2504.00518, 2025. [25] S. Huang, D. Yan, and Y. Chen, “An online algorithm for combined computing workload and energy coordination within a regional data center cluster,” International Journal of Electrical Power & Energy Systems, vol. 158, p. 109971, 2024. [26] K. Gao, Y. Yan, Y. Liu, E. Liu, and P. You, “Online electricity purchase for data center with dynamic virtual battery from flexibility aggregation,” in 2024 39th Youth Academic An-nual Conference of Chinese Association of Automation (YAC), pp. 2170–2175, IEEE, 2024. [27] O. Han, T. Ding, C. Mu, W. Jia, and Z. Ma, “Coordinative op-timization between multiple data center operators and a system operator based on two-level distributed scheduling algorithm,” IEEE Internet of Things Journal, vol. 10, no. 9, pp. 7517–7527, 2022. [28] T. Jin, L. Bai, M. Yan, and X. Chen, “Unlocking spatio-temporal flexibility of data centers in multiple regional peer-to-peer energy transaction markets,” IEEE Transactions on Power Systems, vol. 40, no. 5, pp. 3914–3927, 2025. [29] B. Chen, Y. Che, M. Takci, M. Qadrdan, and Y. Zhou, “Spatial flexibility provision from geographically dispersed data centers enabling coordinated operation of multi-local flexibility markets,” IEEE Transactions on Smart Grid, 2025. [30] T. B. Hewage, S. Ilager, M. R. Read, and R. Buyya, “Aging-aware cpu core management for embodied carbon amortization in cloud llm inference,” in Proceedings of the 16th ACM International Conference on Future and Sustainable Energy Systems, pp. 43–55, 2025. [31] C. Liu, K. Li, J. Liang, and K. Li, “Service reliability in an hc: Considering from the perspective of scheduling with load-dependent machine reliability,” IEEE Transactions on Reliabil-ity, vol. 68, no. 2, pp. 476–495, 2019. [32] A. Dowling, L. Jiang, M.-C. Cheng, and Y. Liu, “Regulating cpu temperature with thermal-aware scheduling using a reduced order learning thermal model,” Future Generation Computer Systems, vol. 166, p. 107687, 2025. [33] J. Leverich and C. Kozyrakis, “Reconciling high server utiliza-tion and sub-millisecond quality-of-service,” in Proceedings of the Ninth European Conference on Computer Systems, pp. 1– 14, 2014. [34] G. Ye, F. Gao, J. Fang, and Q. Zhang, “Joint workload scheduling in geo-distributed data centers considering ups power losses,” IEEE Transactions on Industry Applications, vol. 59, no. 1, pp. 612–626, 2022. [35] M. Neely, Stochastic network optimization with application to communication and queueing systems. Morgan & Claypool Publishers, 2010. [36] B. Chen, Y. Che, Z. Zheng, and S. Zhao, “Multi-objective robust optimal bidding strategy for a data center operator based on bi-level optimization,” Energy, vol. 269, p. 126761, 2023. [37] C. Lei, S. Bu, Q. Chen, Q. Wang, Q. Wang, and D. Srini-vasan, “Decentralized optimal power flow for multi-agent active distribution networks: A differentially private consensus admm algorithm,” IEEE Transactions on Smart Grid, vol. 15, no. 6, pp. 6175–6178, 2024. [38] L. Vandenberghe and S. Boyd, Convex optimization, vol. 1. Cambridge university press Cambridge, 2004. 
+
+Appendices Appendix A Proof of the Lyapunov Drift Upper Bound The conditional Lyapunov drift is defined as ∆( Θt) = 
+
+E[L(Θt+1 ) − L(Θt) | Θt]. We bound ∆( Θt) by squaring the dynamic transition equations of each queue indepen-dently. 1) Batch Workload Queue: Squaring the queue dynamics 
+
+SDi,t +1 = max {SDi,t − wDi,t , 0} + ADi,t yields: 
+
+αi
+
+2
+
+[(SDi,t +1 )2 − (SDi,t )2] ≤ αiSDi,t (ADi,t − wDi,t ) + CS,i , (50) where CS,i = αi 
+
+> 2
+
+max {(AD, max  
+
+> i
+
+)2, (wD, max  
+
+> i
+
+)2} is a finite constant bounding the higher-order terms. 2) Thermal Virtual Queue: Squaring the thermal tran-sition ˜τi,t +1 = ˜ τi,t + κBi P IT  
+
+> i,t
+
+− κCi P cool  
+
+> i,t
+
+− βi,t yields: 
+
+νi
+
+2
+
+[˜τ 2 
+
+> i,t +1
+
+− ˜τ 2
+
+> i,t
+
+] ≤ νi ˜τi,t 
+
+(κBi P IT  
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+)
+
+− νi ˜τi,t βi,t + Cτ,i ,
+
+(51) where Cτ,i = νi 
+
+> 2
+
+max {(κBi P IT ,max  
+
+> i
+
+)2, (κCi P cool ,max  
+
+> i
+
++
+
+βmax  
+
+> i
+
+)2}. Based on (25), the absolute temperature devia-tion is strictly bounded by 
+
+˜τ max  
+
+> i
+
+= max {| T i − T ref  
+
+> i
+
+|, |T i − T ref  
+
+> i
+
+|} .
+
+Thus, the control-independent cross-term −νi ˜τi,t βi,t has a finite upper bound Cβ,i = νi ˜τ max  
+
+> i
+
+βmax  
+
+> i
+
+. Let C′ 
+
+> τ,i
+
+= Cτ,i +
+
+Cβ,i . The thermal drift bound simplifies to: 
+
+νi
+
+2
+
+[˜τ 2 
+
+> i,t +1
+
+− ˜τ 2
+
+> i,t
+
+] ≤ νi ˜τi,t 
+
+(κBi P IT  
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+) + C′
+
+> τ,i
+
+. (52) 3) Battery Virtual Queue: Under the TVQS strategy, the shift parameter is time-varying. Let ∆εi,t = εi,t +1 −
+
+εi,t . The exact virtual queue transition is 
+
+˜Ei,t +1 = ki ˜Ei,t + ωi,t + (1 − ki)εi,t + ∆ εi,t .
+
+Squaring this transition yields: 
+
+δi
+
+2
+
+[ ˜E2 
+
+> i,t +1
+
+− ˜E2
+
+> i,t
+
+]
+
+= δi
+
+[
+
+ki ˜Ei,t ωi,t + 12 ω2
+
+> i,t
+
++ (1 − ki)εi,t ωi,t 
+
+]
+
++ Mi,t + Θ ε,i,t ,
+
+(53) where Mi,t represents the bounding terms inherited from the physical dynamics: 
+
+Mi,t = δi
+
+2
+
+[
+
+(k2 
+
+> i
+
+− 1) ˜E2 
+
+> i,t
+
++ 2 ki(1 − ki) ˜Ei,t εi,t + (1 − ki)2ε2
+
+> i,t
+
+]
+
+.
+
+(54) The term Θε,i,t captures the additional terms intro-duced by the time variation of the shift parameter: 
+
+Θε,i,t = δi
+
+2
+
+[
+
+2(ki ˜Ei,t + ωi,t + (1 − ki)εi,t 
+
+)∆εi,t + (∆ εi,t )2]
+
+.
+
+(55) The physical states and parameters strictly satisfy 
+
+| ˜Ei,t | ≤ ˜Emax  
+
+> i
+
+, |ωi,t | ≤ ωmax  
+
+> i
+
+, and |∆εi,t | ≤ εmax  
+
+> i
+
+− εmin  
+
+> i
+
+,where 
+
+˜Emax  
+
+> i
+
+≜ max {∣ ∣Emin  
+
+> b,i
+
++ εmin 
+
+> i
+
+∣∣ , ∣∣Emax  
+
+> b,i
+
++ εmax 
+
+> i
+
+∣∣} .
+
+Therefore, Mi,t and Θε,i,t are uniformly bounded over all feasible control actions. Hence, there exists a finite constant CE,i such that 
+
+Mi,t + Θ ε,i,t ≤ CE,i . (56) 12 
+
+4) Total Drift Upper Bound: Taking the conditional expectation of the summed individual queue bounds yields the total drift. Let 
+
+C0 = ∑
+
+> i∈I
+
+(CS,i + C′ 
+
+> τ,i
+
++ CE,i 
+
+)
+
+be the aggregated finite constant. The conditional one-slot Lyapunov drift is bounded by: 
+
+∆( Θt) ≤ C0 + ∑
+
+> i∈I
+
+{
+
+αiSDi,t 
+
+(ADi,t − wDi,t 
+
+)
+
++ νi ˜τi,t 
+
+(κBi P IT  
+
+> i,t
+
+− κCi P cool 
+
+> i,t
+
+)
+
++ δi
+
+[ki ˜Ei,t ωi,t + 12 ω2 
+
+> i,t
+
++ (1 − ki)εi,t ωi,t 
+
+]}
+
+.
+
+(57) This completes the proof of the stated upper bound on the conditional one-slot Lyapunov drift. Appendix B Proof of the convexity of the problem This section establishes the convexity of P3 for any fixed realization of the zero-sum perturbations. The active-server variables are treated as continuous. At each time slot, the current system states, exogenous inputs, queue shifts, and perturbation scaling factor are fixed. We establish the convexity of both the objective and the feasible region. 1) Convexity of the objective: Considering the contribu-tion of cluster (i, k ) to the aging-amortized embodied car-bon cost f c,m i,t , and substituting the utilization definition 
+
+ui,k,t = Wi,k,t /(N Ai,k,t Srate  
+
+> i,k
+
+), the corresponding per-cluster cost can be written as 
+
+f c,m i,k,t (Wi,k,t , N Ai,k,t ) = Ai,k N Ai,k,t exp 
+
+(
+
+Bi,k 
+
+Wi,k,t 
+
+N Ai,k,t 
+
+)
+
+, (58) where Ai,k = αC CMi,k ηi,k ∆t/L life  
+
+> i,k
+
+> 0 and Bi,k =
+
+γi,k /S rate  
+
+> i,k
+
+> 0 are positive constants. We define the base function h(x) = exp( Bi,k x), which is convex for x ≥ 0. According to convex optimization theory [38], the perspective function g(x, y ) = yh (x/y ) preserves joint convexity with respect to (x, y ) on the domain y > 0.By letting x = Wi,k,t and y = N Ai,k,t , f c,m i,k,t is the perspective function of Ai,k h(x):
+
+f c,m i,k,t (x, y ) = Ai,k yh 
+
+( xy
+
+)
+
+. (59) The lower bound N Ai,k,t ≥ N min  
+
+> i,k
+
+> 0 ensures that this perspective is well defined. Thus, the embodied carbon cost is jointly convex in (Wi,k,t , N Ai,k,t ). Since Wi,k,t =
+
+wIi,k,t +wDi,k,t is affine, convexity is preserved in the original allocation variables. The electricity purchase, battery cycling, and opera-tional carbon costs are affine, while the transfer cost 
+
+ctrans  
+
+> i
+
+max( mIi,t , 0) is convex for ctrans  
+
+> i
+
+≥ 0. The quadratic drift term δiω2
+
+> i,t
+
+/2 is convex for δi ≥ 0, since ωi,t =
+
+P cb,i,t ∆tη c − P db,i,t ∆t/η d is affine. All remaining drift terms are affine for fixed queue states and shifts. Therefore, the complete objective is convex for V > 0.2) Convexity of the feasible region: Using the utilization definition, the delay constraint (20), on its positive-denominator domain, is equivalently expressed as 
+
+Wi,k,t ≤
+
+(
+
+Srate  
+
+> i,k
+
+− 1¯tdelay 
+
+> i,k
+
+)
+
+N Ai,k,t . (60) This is an affine inequality because the processing rate and delay limit are fixed positive parameters. Similarly, the utilization bounds become 0 ≤ Wi,k,t ≤ N Ai,k,t Srate  
+
+> i,k
+
+.The computing power relation (22) can be rewritten as 
+
+P IT  
+
+> i,k,t
+
+= P idle  
+
+> i,k
+
+N Ai,k,t + P peak  
+
+> i,k
+
+− P idle 
+
+> i,k
+
+Srate 
+
+> i,k
+
+Wi,k,t , (61) which is affine. The workload allocation, aggregate com-puting power, and DC power-balance relations are also affine. The remaining migration, nonnegativity, server-capacity, power, and state bounds define affine inequalities for the fixed per-slot parameters. For fixed ξi,t and ζ, the obfuscated migration relation (41) and consensus constraints (42) take the affine form 
+
+˜mIi,t = mIi,t + ζξ i,t , ˜mIi,t = zIi,t , ∑
+
+> i∈I
+
+zIi,t = 0 .
+
+Consequently, the feasible region is an intersection of affine equality and inequality sets and is convex. Together with the convexity of the objective, this establishes that P3 is a convex optimization problem. Appendix C Proof of the Equivalence Between P2 and P3 Fix any zero-sum perturbation satisfying ∑ 
+
+> i∈I
+
+ξi,t = 0 .The two problems impose the same local constraints on the physical decisions Φt. We show that their remaining constraints are equivalent. For any feasible solution Φt of P2, its migration deci-sions satisfy ∑ 
+
+> i∈I
+
+mIi,t = 0 . Set 
+
+˜mIi,t = zIi,t = mIi,t + ζξ i,t .
+
+Then ∑
+
+> i∈I
+
+zIi,t = ∑
+
+> i∈I
+
+mIi,t + ζ ∑
+
+> i∈I
+
+ξi,t = 0 .
+
+Thus, Φt can be extended to a feasible solution of P3. Conversely, for any feasible solution of P3, ˜mIi,t = zIi,t =
+
+mIi,t + ζξ i,t and ∑ 
+
+> i∈I
+
+zIi,t = 0 imply 
+
+∑
+
+> i∈I
+
+mIi,t = ∑
+
+> i∈I
+
+zIi,t − ζ ∑
+
+> i∈I
+
+ξi,t = 0 .
+
+Hence, its physical decisions Φt are feasible for P2. The two problems therefore have the same feasible physical decisions. Finally, the objective functions of P2 and P3 are identical for the same Φt and do not depend on zt.Every corresponding pair of feasible solutions thus has the same objective value. Consequently, P2 and P3 have the same optimal objective value and corresponding optimal physical decisions.

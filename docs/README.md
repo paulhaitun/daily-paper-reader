@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-22</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-23</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 34 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 19 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>22</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>7</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>12</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-22 22:20:10 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-23 21:59:30 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今天筛读34篇文献（精读22篇、速读12篇），重点集中在Physical AI、世界模型与具身智能方向。</p>
-<p>最值得看的是10分的《Physical AI: A Survey of Models, Learning, Systems, and Open Challenges》，它系统梳理了模型、学习、系统与开放挑战的全景；其次是9分的《Enhancing Latent World Models with Associative Memory》，它把联想记忆引入潜在世界模型，思路清晰。</p>
-<p>普通读者建议先通读Physical AI综述建立框架，再精读联想记忆世界模型这篇，最后用JRDB-AVR和SkillWeaver两篇速读补充真实环境评测与机器人数据生成的落地视角。</p>
+<p>今日精读7篇、速读12篇，共完成19篇论文。最值得看的是世界模型与动作建模的统一因果训练（9.0分）和世界模型泛化能力（9.0分）两个方向，另有3篇速读论文均得8.0分，涉及多机器人任务分配、数据中心碳减排调度和非先验调度。建议普通读者优先精读这两篇9.0分论文，再按需查阅速读中的调度与多机器人方向。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -80,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">22 篇</strong>
+    <strong class="dpr-home-dashboard-count">7 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Physical AI: A Survey of Models, Learning, Systems, and Open Challenges">Physical AI: A Survey of Models, Learning, Systems, and Open Challenges</span></li><li><span class="dpr-home-dashboard-paper-title" title="Enhancing Latent World Models with Associative Memory">Enhancing Latent World Models with Associative Memory</span></li><li><span class="dpr-home-dashboard-paper-title" title="Reflect After Failure: Brain-Inspired Self-Evolving Agents for Embodied Spatial Intelligence">Reflect After Failure: Brain-Inspired Self-Evolving Agents for Embodied Spatial Intelligence</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Can World and Action Modeling Benefit Each Other under Unified Causal Training?">Can World and Action Modeling Benefit Each Other under Unified Causal Training?</span></li><li><span class="dpr-home-dashboard-paper-title" title="AnyGoal: On World Model Generalization Beyond Expert Rollouts">AnyGoal: On World Model Generalization Beyond Expert Rollouts</span></li><li><span class="dpr-home-dashboard-paper-title" title="Large Multimodal Models for Direct Robot Control: GPT-6 as a Beginning">Large Multimodal Models for Direct Robot Control: GPT-6 as a Beginning</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>22</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>7</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -96,7 +94,7 @@
     <strong class="dpr-home-dashboard-count">12 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="JRDB-AVR: An Active Visual Reasoning Benchmark for Embodied Agents in Real-World Environments">JRDB-AVR: An Active Visual Reasoning Benchmark for Embodied Agents in Real-World Environments</span></li><li><span class="dpr-home-dashboard-paper-title" title="SkillWeaver: Agentic Exploration over Neural Interaction Skills for Scalable Robot Data Generation">SkillWeaver: Agentic Exploration over Neural Interaction Skills for Scalable Robot Data Generation</span></li><li><span class="dpr-home-dashboard-paper-title" title="Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions">Factorized Scheduling Principle: Learning Interpretable and Transferable Policies via Structured Additive Functions</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Communication-Free Distributed Multi-Robot Task Allocation under Partial Observations Using Labeled Multi-Bernoulli Filtering">Communication-Free Distributed Multi-Robot Task Allocation under Partial Observations Using Labeled Multi-Bernoulli Filtering</span></li><li><span class="dpr-home-dashboard-paper-title" title="Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers">Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers</span></li><li><span class="dpr-home-dashboard-paper-title" title="Robust Non-Clairvoyant Scheduling with Classification Models">Robust Non-Clairvoyant Scheduling with Classification Models</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>12</strong></span></div>
 </section>

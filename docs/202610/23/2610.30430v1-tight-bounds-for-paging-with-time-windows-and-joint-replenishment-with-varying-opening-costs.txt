@@ -1,0 +1,714 @@
+Title: Tight Bounds for Paging with Time Windows and Joint Replenishment with Varying Opening Costs
+
+URL Source: https://arxiv.org/pdf/2610.30430v1
+
+Published Time: Fri, 23 Oct 2026 00:17:27 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+# Tight Bounds for Paging with Time Windows and Joint Replenishment with Varying Opening Costs 
+
+Joseph (Seffi) Naor ∗
+
+Computer Science Department, Technion Haifa, Israel 
+
+naor@cs.technion.ac.il 
+
+Tomer Tsachor Computer Science Department, Technion Haifa, Israel 
+
+tomer.ts@cs.technion.ac.il 
+
+October 23, 2026 
+
+Abstract 
+
+We study the paging with time windows problem, a natural generalization of classical paging, in which each request must be served within a specified time interval. This model allows the algorithm to delay service and batch service requests over time, but also introduces significant challenges due to overlapping requests. While the problem is well understood in the unweighted setting, where optimal O(log k)-competitive algorithms are known, the weighted case remains more elusive. The best previously known algorithm, due to Gupta, Kumar, and Panigrahi [20], achieves an O(log k log n)-competitive ratio, leaving a gap between weighted and unweighted settings. We obtain an O(log k)-competitive algorithm for weighted paging with time windows, matching the optimal competitive ratio. The core of our approach is a structural decomposition that separates the evolution of the cache from the scheduling of page loads. We show that, given a sequence of cache configurations, computing a near-optimal sequence of page loads reduces to a variant of the Joint Replenishment Problem with deadlines (JRP-D) with time-dependent opening costs. We design a constant-competitive online algorithm for this variant and prove that the reduction is tight. Combining this with an existing online construction of cache configurations yields the desired bound. 
+
+> ∗
+
+Supported in part by ISF grant 3001/24 and United States–Israel BSF grant 2022418. arXiv:2610.30430v1 [cs.DS] 21 Oct 2026 1 Introduction 
+
+In the classical weighted paging problem there is a universe of n pages, where each page p has a weight wp, and there is a cache that can hold up to k pages. At each time step, a page is requested, and if the requested page is already in the cache then no cost is incurred, otherwise, the page must be loaded into the cache, incurring a cost equal to its weight. The goal is to minimize the total cost incurred. In the unweighted version of the problem, all weights are equal (unit weights). Paging is one of the earliest and most extensively studied problems in online computation and competitive analysis [26, 18, 27, 29, 25, 6, 5, 1, 2, 10, 9, 21, 22, 23], including works on non-standard caching models, e.g., elastic caches [19], caching with time windows [20], caching with dynamic weights [16], and caching with machine learning predictions [24]. In fact, online paging has become a focal point for many of the recent developments in competitive analysis, e.g., the online primal-dual method, projections, and mirror descent [14, 12, 11]. In their seminal paper, Sleator and Tarjan [26] showed that any deterministic online algorithm is at least k-competitive and that the LRU policy (Least Recently Used) is exactly k-competitive for unweighted paging. The k-competitive bound was later generalized to weighted paging as well [15, 28]. When randomization is allowed, Fiat et al. [18] gave the elegant randomized marking algorithm for unweighted paging, which is Θ(log k)-competitive against an oblivious adversary. Bansal et al. [6] gave a Θ(log k)-competitive randomized algorithm for weighted paging based on the online primal-dual framework [14]. We now elaborate on the two problems on which we focus in the paper. 
+
+Paging with time windows. A natural and well-studied generalization is paging with time windows , where each request must be served within a specified interval. Formally, a request r is represented by a triple r = ( p(r), s (r), e (r)), where p(r) ∈ P is the requested page, s(r) is the release time, and e(r) ≥ s(r) is the deadline for serving it. A request r is satisfied if page p(r) is present in the cache at some time during the interval [ s(r), e (r)]. This model significantly increases the flexibility of any paging algorithm, allowing it to delay service, while batching together the service of several requests with overlapping time windows. At the same time, it introduces new challenges, as requests may overlap and interact in complex ways. In the unweighted setting, Azar et al. [4] showed that paging with time windows admits an 
+
+O(k)-competitive deterministic algorithm and an O(log k)-competitive randomized algorithm. The latter matches the optimal randomized guarantee for classical paging up to constant factors. At a high level, the randomized algorithm delays loading a page until the deadline of one of its pending requests, thereby batching together overlapping requests for the same page. However, in the weighted setting, the authors of [4] showed that this structural approach no longer holds, although the Ω( k) lower bound for deterministic algorithms continues to hold. Gupta et al. [20] subsequently introduced a novel LP formulation based on sophisticated covering constraints. They showed that paging with time windows is NP-hard and APX-hard even when 
+
+k = 1 and all pages have unit weight. Nevertheless, their LP has a constant integrality gap, yielding an O(1)-approximation algorithm for the problem. In the online setting, they obtained an O(log n log k)-competitive algorithm for weighted paging with time windows, which remains the best known bound to date. Gupta et al. [20] also considered the more general problem of paging with delays . Here, each request r is represented by a triple r = ( p(r), s (r), F r), where p(r) is the requested page, s(r) is the release time, and Fr : {s(r), s (r) + 1 , . . . } → R≥0 is a non-decreasing delay-loss function associated with r. If request r is served at time t ≥ s(r), the algorithm incurs delay cost Fr(t). The objective is to minimize the total weight of the loaded pages plus the total delay costs incurred by all requests. 1r 12 1 2 3 47 6 5 1
+
+Figure 1: A depth-2 tree view of JRP. The root represents the warehouse, with opening cost 12, and each leaf represents an item together with its item cost. An order corresponds to selecting the root together with any subset of the leaves. For example, serving items {2, 4} incurs total cost 12 + 6 + 1 = 19, while serving only item 4 costs 12 + 1 = 13. This formulation strictly generalizes paging with time windows: a request with deadline d and release time s corresponds to the delay function that is 0 throughout the interval [ s, d ] and ∞
+
+afterwards. Gupta et al. [20] showed how to extend their algorithmic framework from paging with time windows to paging with delays, while preserving the same asymptotic competitive guarantees. We focus primarily on the time-window formulation in the paper in order to present the main ideas more cleanly, though our techniques naturally extend to the more general setting of paging with delays. 
+
+Joint Replenishment Problem. A well-studied problem that turns out to be closely related to paging with time windows is the Joint Replenishment Problem with deadlines (JRP-D). The problem can be viewed as a depth-2 tree (see Figure 1), consisting of a warehouse at the root and a single leaf for each item, with a bijection between items and leaves. Requests for items arrive over time and an item can be requested multiple times. At any time t, an order can be placed by opening the warehouse and selecting a subset of the leaves with pending requests for items. A request for an item is served at time t if its corresponding leaf is included in the order. Opening the warehouse incurs a fixed cost, while serving requests for item i incurs an additional item-specific cost wi.Requests for items must be served within prescribed time intervals. Equivalently, serving a request after its deadline incurs infinite cost. An algorithm may place an order at any time and use it to serve multiple pending requests simultaneously. Thus, the main trade-off is between serving requests immediately vs. delaying service to batch multiple requests together. While the opening cost may be smaller than the item costs in general, the most interesting regime is when the opening cost is large, making it advantageous to postpone service and aggregate requests belonging to different items into a single order. For this problem, Bienkowski et al. [8] gave a 2-competitive online algorithm, matching the optimal competitive ratio. JRP-D is a special case of the more general Joint Replenishment Problem (JRP), in which requests incur arbitrary delay costs while awaiting service, rather than hard deadlines. JRP and its variants have been extensively studied in both offline [3, 7] and online settings. In particular, Buchbinder et al. [13] showed that JRP admits a 3-competitive online algorithm. In this work, we study a variant of JRP-D with time-dependent warehouse opening costs. Unlike the classical setting, the algorithm must account not only for the possibility of batching requests, but also for changes in the cost of placing an order. Although time-dependent opening costs have previously been investigated experimentally [17], we examine this setting from the perspective of online competitive analysis. As we show, paging with time windows admits a natural reduction to this JRP-D variant. Throughout the paper, when discussing randomized algorithms, all costs and competitive guarantees are in expectation, unless stated otherwise. 21.1 Our contribution 
+
+Our first contribution is a new formalism for representing solutions to paging with time windows. We represent a solution as a pair ( C, D ), where C = ( Ct) denotes the sequence of cache configurations at the end of each time step t, and D = ( Dt) denotes the sequence of page loads performed during each time step t. This decomposition cleanly separates the evolution of the cache over time from the scheduling of page loads used to satisfy requests that are not served by the cache configurations in C. In particular, an algorithm may load a page during a time step solely to satisfy pending requests and then immediately evict it. Consequently, a page may belong to Dt without belonging to Ct. Such page loads contribute to the cost of the solution, but are not reflected in the cache configurations. This representation is purely conceptual: it does not alter the objective function, but rather decomposes a paging solution into two components, corresponding to cache evolution and page-load scheduling. Given a request sequence R, let cost R(C, D ) denote the cost of the solution represented by a feasible pair ( C, D ). We define cost R(C) = min D cost R(C, D ), where the minimum is taken over all completions D of C that are feasible for R. When the request sequence is clear from context, we omit the subscript R and write cost (C, D ) and cost (C). Furthermore, we show that the online cache-configuration construction implicit in [20] yields a cache trajectory C, i.e., a sequence of cache configurations, satisfying 
+
+cost (C) = O(log k) · OPT , (11) where OPT denotes the cost of an optimal offline solution to paging with time windows. Our second contribution is to isolate the completion problem as a problem in its own right. In the completion problem, the sequence of cache configurations C is fixed, but revealed online, and the goal is to compute a feasible minimum-cost completion of C. We show that the completion problem can be formulated as an instance of JRP with deadlines (JRP-D) with time-dependent opening costs, i.e., opening costs can vary over time. The varying opening costs make this problem fundamentally harder than classical JRP-D, as without additional information about the future no bounded competitive ratio is possible. To get around this difficulty, we introduce a prediction-augmented model in which the algorithm receives limited information regarding future opening costs. Specifically, for each request that has been released but not yet served, which we call an active request , the prediction identifies the cheapest opening opportunity before its deadline. In fact, we show that an even weaker prediction suffices to obtain a constant-competitive online algorithm. 
+
+Theorem 1.1. There exists a constant-competitive online algorithm for JRP-D with time-dependent opening costs under our prediction model. 
+
+Our next contribution is to show that the prediction required by the JRP-D algorithm is naturally available in the reduction we provide from paging with time windows. In fact, the prediction used by the JRP-D algorithm in this case is simply the weight of the page whose pending request has the earliest deadline. Consequently, given any sequence of cache configurations C revealed online, our algorithm computes online a completion D satisfying 
+
+cost (C, D ) = O(cost (C)) .
+
+Combining this completion procedure with the cache-configuration bound in (11) immediately yields 
+
+cost (C, D ) = O(log k) · OPT ,
+
+3and therefore an O(log k)-competitive online algorithm for paging with time windows, improving upon the previous O(log k log n)-competitive bound of Gupta et al. [20]. 
+
+Theorem 1.2. There exists a randomized O(log k)-competitive online algorithm for weighted paging with time windows. 
+
+The same framework also yields an O(log k)-competitive algorithm for the more general paging-with-delays model of Gupta et al. [20]. 
+
+Theorem 1.3. There exists a randomized O(log k)-competitive online algorithm for weighted paging with delays. 
+
+1.2 Technical overview 
+
+Separating cache configurations from page loads. A key contribution of Gupta et al. [20] is a novel LP formulation for paging with time windows based on sophisticated covering constraints (see Section 2.2 for details). Their framework proceeds in two stages. First, they compute an online fractional solution to their LP and round it to an integral solution. This rounding incurs only an 
+
+O(1) loss in the offline setting, but an O(log k) loss online. The resulting integral solution, however, is not necessarily a feasible solution. In the second stage, they convert it into a feasible paging solution. This conversion incurs only an additional O(1) loss offline, yet an additional O(log n) loss online, resulting in an O(log k log n)-competitive algorithm. Although this distinction is not made explicit in [20], a closer examination of [20] reveals that both online and offline conversion algorithms produce the exact same cache configuration at the end of every time step. The only difference lies in how they schedule the “extra” page loads used to satisfy pending requests. This raises a natural question: if both algorithms maintain the same cache configuration at the end of every time step, how does the additional O(log n) factor arise? The answer is that in contrast to classical paging, the cache configurations alone do not fully determine the paging solution. In classical paging, one may assume without loss of generality that the only page loaded at each time step is the requested page, which then remains in cache. Consequently, if Ct denotes the cache configuration at time t, then the paging cost incurred at time 
+
+t is exactly W (Ct \ Ct−1), where W (S) denotes the total weight of the pages in a set S. Thus, in the classical setting, the sequence of cache configurations completely determines the solution cost. In paging with time windows, however, this is no longer the case. Since requests may be delayed and then batched together, an algorithm may load several pages simultaneously at a single time step. Moreover, a page may be loaded only to satisfy a pending request and then evicted immediately, without ever appearing in the cache configurations. As a consequence, the quantity 
+
+W (Ct \ Ct−1) may be strictly smaller than the actual cost incurred at time t, and the sequence of cache configurations by itself no longer captures all load operations performed by an algorithm. This distinction motivates our ( C, D ) formalism. The cache trajectory records only the pages present at the end of each time step, whereas the completion records all page loads used to serve the request sequence, including (i) pages that are loaded and immediately evicted; and (ii) page loads that are implied by the changes in the cache configurations. Recall that cost (C, D ) denotes the cost of the solution represented by ( C, D ), and that cost (C) is the minimum cost over all completions of 
+
+C. Thus, two solutions may induce the same cache trajectory C while using different completions and incurring different costs. Although Gupta et al. [20] do not explicitly introduce this decomposition, it is implicit in their analysis. Through the lens of our formalism, their online conversion algorithm takes an integral solution and constructs a pair ( C, D ) whose cost is within an O(log n) factor of that integral solution. 4At the same time, the same cache trajectory C does admit (offline) a completion D′ such that 
+
+cost (C, D ′) is within an O(1) factor of the same integral solution. Thus, the additional O(log n)factor arises entirely from the online construction of D, rather than the cache trajectory C itself. We formalize this reinterpretation in Section 2.4. This perspective suggests focusing exclusively on the completion problem. Our goal is therefore the following. Given a sequence of cache configurations C revealed online, compute online a completion D such that cost (C, D ) = O(cost (C)). 
+
+A replenishment view of the completion problem. To compute such a completion D, we reinterpret the problem as a covering problem over time. Consider a request r such that p(r) /∈ Cs(r).In order for a pair ( C, D ) to be feasible, page p(r) must appear in one of the sets Dt for t ∈ [s(r), e (r)]. Thus, every such request naturally induces a covering constraint over its time window. The second key observation concerns the cost of loading a set of pages while following a fixed cache trajectory C. Assume throughout that the cache is full at every time step, i.e., |Ct| = k for all 
+
+t. Suppose that at time t we wish to load a set S of pages in order to serve active requests, where 
+
+Ct \ Ct−1 ⊆ S.First, suppose that Ct̸ = Ct−1. The transition from Ct−1 to Ct already creates space for loading pages: the pages in Ct−1 \ Ct are evicted, while the pages in Ct \ Ct−1 are loaded as part of S. We may therefore load all pages in S while realizing the prescribed cache transition, with Dt = S.In contrast, suppose that Ct = Ct−1. Since the cache is full, loading a page outside the cache requires temporarily evicting a page from Ct. We may evict a minimum-weight page q ∈ Ct, load and immediately evict the pages in S (one by one), and finally reload q so that the cache configuration at the end of the time step is again Ct. In this case, Dt = S ∪ { q}, and the additional cost of performing the load is wq.This suggests viewing the completion problem as a replenishment problem, where loading the pages in S corresponds to serving a set of items. If the cache configuration changes at time t, the opening cost is effectively 0, since the pages in S can be loaded as part of the mandatory cache transition. If instead the cache configuration remains unchanged, performing a load may require an additional cost of min {wp | p ∈ Ct}, corresponding to evicting and subsequently reloading a minimum-weight page from Ct. This page plays the role of the warehouse in a JRP instance. For simplicity, we define the opening cost at every time t as 
+
+ot := min {wp | p ∈ Ct} .
+
+The JRP formulation may therefore charge slightly more than the corresponding paging load: at times when the cache changes, the opening cost is charged separately even though the cache transition itself already provides the required loading opportunity. However, this additional cost can be charged to the pages loaded as part of the cache transition, increasing the total cost by at most a factor of 2. Taken together, these observations naturally define an instance J(C) of JRP-D with time-dependent opening costs. Each page corresponds to an item, represented by a leaf in the JRP tree (see Figure 1). The covering constraints induced by the requests specify the time intervals during which the requests must be served. At every time t, an order specifies a set of pages to load. The cost of placing an order consists of the opening cost ot together with the costs of the items served by the order. We show that this reduction faithfully captures the completion problem. Every completion of C
+
+induces a feasible solution to J(C) with comparable cost, and conversely, every solution to J(C)can be transformed online into a feasible completion of C with no asymptotic loss. Consequently, solving J(C) is, up to a constant factor, equivalent to solving the completion problem. 5JRP-D with time-dependent opening costs. The next challenge is therefore to design an online algorithm for JRP-D with time-dependent opening costs. Unlike the classical JRP-D setting, where the opening cost is fixed, in our model the opening costs may vary significantly over time. Without additional information, this makes the problem substantially harder: an online algorithm may place an expensive order shortly before a much cheaper opening opportunity occurs, leading to an unbounded competitive ratio. To get around this difficulty, we consider a prediction-augmented setting that provides information about cheaper future opening opportunities before the earliest pending deadline, allowing an algorithm to decide whether to serve a request immediately or postpone service. As in paging with time windows, release and deadline times of each JRP-D request r are denoted by s(r) and 
+
+e(r), respectively. For times t < t ′, define Ot,t ′ := min τ ∈(t,t ′] {oτ }. For a request r for item i, define 
+
+P (r, t ) := max Ot,e (r), w i . Thus, P (r, t ) may overestimate the minimum opening cost Ot,e (r) when 
+
+wi > O t,e (r).The prediction value of a request r at time t, denoted by eP (r, t ), is defined as follows. If there exists a request r′ whose time window satisfies [ s(r′), e (r′)] ⊆ (t, e (r)], then eP (r, t ) may take any value in [0 , P (r, t )]; otherwise, eP (r, t ) = P (r, t ). The algorithm has access to eP (r, t ) only when r
+
+has the earliest deadline among the requests that are active at that point. Thus, as requests are served, predictions for later-deadline active requests become available. Using these predictions, the algorithm decides whether a current earliest-deadline request should be served immediately or deferred in anticipation of a cheaper future opening opportunity. Importantly, the required predictions are naturally available in the paging reduction. Consider an active page request r for page p. We show that, if no request that has not yet arrived has a deadline earlier than e(r), then one may assume 1 that p ∈ Ce(r). Therefore, Ot,e (r) ≤ oe(r) =min q∈Ce(r) wq ≤ wp, and hence P (r, t ) = max Ot,e (r), w p = wp. Thus, whenever the prediction is required to be exact, the paging reduction naturally provides it: the prediction value is simply the weight of the requested page. When a request that has not yet arrived has an earlier deadline, the exact value P (r, t ) may depend on information that is not yet available at t. In this case, our prediction model permits an arbitrary underestimation of P (r, t ). In particular, the reduction may provide the value wp, which is valid since wp ≤ P (r, t ). Thus, even when the exact prediction value cannot yet be determined, the reduction provides a valid prediction to the JRP algorithm. Using this prediction model, we design a constant-competitive online algorithm for JRP-D with time-dependent opening costs. Combining the reduction with our JRP algorithm yields an online procedure that, given a sequence of cache configurations C, computes a completion D satisfying 
+
+cost (C, D ) = O(cost (C)). Combining this completion procedure with the cache-configuration bound in (11) yields 
+
+cost (C, D ) = O(log k) · OPT ,
+
+and therefore an O(log k)-competitive online algorithm for paging with time windows. Our techniques also extend to the more general paging-with-delays model introduced by Gupta et al. [20]. They first show that paging with delays is equivalent to a variant of paging with time windows in which requests can remain unserved at the cost of paying a request-specific penalty.                
+
+> 1For intuition, suppose pis the only page with deadline e(r). Any feasible solution may postpone loading puntil time e(r). Furthermore, if pis evicted at time e(r) in order to load another page q, then the same load can instead be performed at time e(r) + 1. This preserves feasibility, since no other request has deadline e(r), and incurs the same cost. Hence, there exists an optimal solution in which pbelongs to the cache at time e(r). The general case, without the uniqueness assumption, is addressed in Lemma B.1.
+
+6Then they extend their analysis of paging with time windows to this penalty model. We show that our analysis admits the same extension, yielding an O(log k)-competitive algorithm for paging with a general delay function as well. 
+
+Organization. The remainder of the paper is organized as follows. In Section 2, we define the problems we consider, introduce our approach, and expand on previous work. In Section 3, we define the reduction from paging with time windows to JRP-D with time-dependent opening costs. In Section 4, we present and analyze our constant-competitive algorithm for JRP-D with time-dependent opening costs. Finally, Appendix A extends our framework to paging with delays. 
+
+# 2 Our Model and Approach 
+
+2.1 Paging with Time Windows 
+
+In the paging with time windows problem, there is a universe of n pages, denoted by P =
+
+{p1, p 2, . . . , p n}. Each page p ∈ P is associated with a positive weight wp, and there is a cache of size k. The system evolves over discrete time steps t = 1 , 2, . . . , T . At each time t, the cache stores a subset of pages Ct ⊆ P , referred to as the cache configuration at time t. Without loss of generality, we assume that |Ct| = k at every time t, since there is no benefit to evicting a page unless another page is loaded in its place. 
+
+Requests. Requests arrive over time. Each request r = ( p(r), s (r), e (r)) specifies a page p(r), a release time s(r), and a deadline e(r), defining a time window [ s(r), e (r)]. In the online setting, a request r becomes known only at time s(r). A request r is served if the page p(r) is present in the cache at some time t ∈ [s(r), e (r)]. Note that pages can be loaded and evicted at the same time step, thus allowing for multiple requests to be served simultaneously. 
+
+Cost. The cost of an algorithm is the total cost of all page loads over the time horizon. Loading a page p into the cache incurs cost wp, while evictions are free. Some prior work instead charges for page evictions; the two cost measures are equivalent up to an additive term determined by the initial and final cache configurations. The objective is to minimize the total cost while serving all requests. The classical paging problem corresponds to the special case in which every request satisfies 
+
+s(r) = e(r). 
+
+2.2 Prior Work: Gupta et al. [20] 
+
+The main difficulty in extending classical paging to the time-window setting arises from limitations of standard linear programming (LP) relaxations. In classical weighted paging, a request for page p
+
+at time t requires the page to reside in cache at time t. In contrast, in paging with time windows, a request r only requires that p(r) appear in the cache at some time during the interval [ s(r), e (r)]. A natural LP relaxation would therefore require that the total fractional residency of page p(r)over the interval [ s(r), e (r)] be at least 1. However, Gupta et al. [20] showed that this formulation suffers from an integrality gap of Ω( k). Intuitively, such a fractional solution can satisfy a request by keeping a small fraction of the page in cache throughout the entire window, while an integral solution must eventually pay the full cost wp.7To overcome this issue, Gupta et al. [20] introduced a fundamentally different LP formulation based on sophisticated covering constraints, which they call the hitting-set LP. For each page p and time t, the variable xp,t ∈ [0 , 1] represents the extent to which page p is evicted at time t.At a high level, the LP guarantees cache capacity through covering constraints over time intervals. Informally, if an interval I contains requests to k + 1 distinct pages, then the cache cannot simultaneously retain all of them throughout I, and therefore at least one of these pages must be evicted during the interval. The LP utilizes this observation by requiring that every such pair ( I, S ), where S is a set of k + 1 pages requested during I, be “hit” by an eviction within the time interval of one of the pages in S.In the standard LP formulations for paging, the LP directly specifies which pages reside in cache at each time step. In contrast, the hitting-set LP only determines when pages are evicted, and does not explicitly specify how requests are served. Consequently, an integral solution to the hitting-set LP does not immediately define a feasible paging schedule. Solving paging with time windows therefore requires addressing two separate challenges: first, rounding the fractional LP solution online, and second, transforming the resulting eviction schedule into a feasible paging solution. Gupta et al. [20] showed that the hitting-set LP admits an online rounding procedure with an 
+
+O(log k) loss and an offline rounding procedure with only an O(1) loss, both relative to the optimal fractional solution. Their approach exploits the interval structure of the constraints and refines the primal-dual techniques developed by Bansal et al. [14] for the classical weighted paging LP. To bridge the gap between the rounded eviction schedule and a feasible paging solution, Gupta et al. [20] introduced an additional scheduling layer. At each time step t, the algorithm determines whether a page must be loaded into the cache. Before updating the cache configuration, the algorithm may also perform additional “load-and-evict” operations: pages are loaded in order to satisfy requests and are evicted within the same time step, thus not appearing in Ct.Implementing this scheduling layer is precisely what separates the online and offline guarantees. The offline algorithm uses future knowledge of the cache trajectory to coordinate these “load-and-evict” operations more efficiently, achieving only an O(1) loss relative to the rounded hitting-set LP solution. In contrast, the online algorithm incurs an additional O(log n) factor, resulting in an overall O(log k log n)-competitive ratio. This gap is the starting point of our work. It suggests that the remaining difficulty in obtaining an optimal online algorithm lies not in constructing the cache trajectory itself, but in scheduling the additional page loads needed to satisfy requests. 
+
+2.3 Our Approach 
+
+The discussion above suggests that paging with time windows can be naturally decomposed into two tasks: determining how the cache evolves over time, and then deciding which additional pages to load in order to serve unsatisfied requests. While these two tasks are intertwined in the online algorithm of Gupta et al. [20], their offline algorithm suggests that they can be partially decoupled: after the cache configurations are determined, a final scheduling step is used to complete the solution by specifying the additional page loads. Our approach is to formalize this separation. Intuitively, the cache trajectory captures the structural decisions of the algorithm, while the loading schedule determines how requests are served. The cache trajectory is not known in advance, but is revealed online one configuration at a time. Given this trajectory, the remaining task is to construct a loading schedule online that satisfies all requests at minimum cost. At first glance, this is an interval-covering problem: each request induces a time interval during which its page must be loaded, and loading a page can simultaneously cover multiple overlapping 8intervals. However, the cache trajectory makes loading pages at certain times inherently more expensive than at other times, as a load may require an additional page to be evicted and then reloaded in order to preserve the given cache configuration. This creates a batching trade-off analogous to that in JRP-D, where serving a set of items requires paying an opening cost (of the warehouse) in addition to the item costs. 
+
+Solutions. We represent a solution using two components. Let C = ( Ct)Tt=0 denote a sequence of cache configurations, where Ct ⊆ P is the set of pages in the cache at the end of time t. Let 
+
+D = ( Dt)Tt=1 denote a sequence of page loads, where Dt ⊆ P is the set of pages loaded at time t. A page belongs to Dt whenever it is loaded at time t, i.e., if it is reloaded at the same time step that it is evicted, or if it is immediately evicted after it is loaded. 
+
+Feasibility. A pair ( C, D ) is a feasible solution if it satisfies the following conditions: 
+
+• Capacity. For every time t, |Ct| = k.
+
+• Consistency. For every time t, Ct \ Ct−1 ⊆ Dt. This implies that, for any page p, if there exist times t1 < t 2 such that p / ∈ Ct1 but p ∈ Ct2 , then there exists a time t′ ∈ (t1, t 2] such that 
+
+p ∈ Dt′ .
+
+• Non-degeneracy. For every time t, if Dt̸ = ∅, then Dt ∩ Ct̸ = ∅. That is, whenever pages are loaded at time t, at least one of the loaded pages remains in cache at the end of the time step. For example, if Ct = Ct−1 and a page p ∈ Ct is temporarily evicted to create space and subsequently reloaded, then p ∈ Dt.
+
+• Service. For every request r, the requested page p(r) must appear in the cache at some time during the interval [ s(r), e (r)]. Equivalently, a request r is served if either p(r) is already present in the cache at the beginning of its window, or it is loaded at some time during the window. Formally, p(r) ∈ Cs(r) ∪
+
+Se(r) 
+
+> t=s(r)
+
+Dt
+
+
+
+.
+
+Cost. The cost of a feasible pair ( C, D ) with respect to a request sequence R is cost R(C, D ) = PTt=1 W (Dt). For an infeasible pair ( C, D ), we define cost R(C, D ) = ∞.Observe that by the consistency condition, every page that is not in Ct−1, but belongs to Ct,must be loaded at time t and hence belongs to Dt. Consequently, any feasible pair ( C, D ) satisfies 
+
+W (Ct \ Ct−1) ≤ W (Dt). The left-hand side is precisely the cost incurred at time t in classical weighted paging, where only pages that remain in cache are loaded. Equality need not hold in paging with time windows, since pages may be loaded solely to satisfy requests and evicted immediately afterwards. For a fixed sequence of cache configurations C, we define cost R(C) = min D cost R(C, D ). 
+
+Critical pages. For every time t, define Et := Ct \ Ct−1 as the set of pages that enter the cache at time t. By the consistency condition, every such page must be loaded at time t, and therefore 
+
+Et ⊆ Dt ∩ Ct. We refer to Et as the set of critical pages at time t.
+
+2.4 A Reinterpretation of Gupta et al. [20] 
+
+The separation between cache configurations and page loads allows us to reinterpret the guarantees of Gupta et al. [20] in terms of the quantity cost R(C). Consider any integral solution to their 9hitting-set LP whose objective value is M , and let C be the cache trajectory obtained online from this solution. They provide an online conversion procedure that builds on the cache trajectory and yields a feasible solution. (To this end, recall that it is allowed to load a page p and then immediately evict it, so that p does not appear in the cache configuration at the end of the time step.) They also provide an offline conversion procedure that optimizes the online solution by considering for each page p the times at which such load-and-evict operations occur and removing some of these loads, while preserving feasibility. Since only loads of pages that do not remain in cache are removed, the cache trajectory C remains unchanged. The resulting offline completion D computed by [20] is feasible and satisfies cost R(C, D ) = 
+
+O(M ). Since cost R(C) is defined as the minimum cost of any completion of C, it follows that 
+
+cost R(C) ≤ cost R(C, D ) = O(M ). Thus, every integral LP solution naturally induces a cache trajectory whose completion cost is within a constant factor of the LP objective value. Gupta et al. [20] further showed how to construct online an integral solution whose objective value satisfies M = O(log k) · OPT , where OPT denotes the cost of an optimal offline solution to paging with time windows. We combine the two observations and get the following. 
+
+Lemma 2.1. There exists an online algorithm that constructs a cache trajectory C satisfying 
+
+cost R(C) = O(log k) · OPT. 
+
+Lemma 2.1 shows that an O(log k)-competitive algorithm for paging with time windows can be obtained by completing the cache trajectory C produced online by Gupta et al. [20]. Thus, it remains to solve the completion problem online: at each time t, the algorithm observes Ct and computes a completion D, satisfying cost R(C, D ) = O(cost R(C)). 
+
+2.5 Joint Replenishment Problem (JRP) 
+
+To formulate the completion problem as a replenishment problem, we introduce a variant of JRP that will be central to our reduction. Joint replenishment is defined over a discrete time horizon 
+
+t = 1 , 2, . . . , T and a set of items Y , where each item i ∈ Y has cost wi. In our setting, items correspond to pages. Each request r is specified by a triple ( i(r), s (r), h r), where i(r) ∈ Y is the requested item, s(r)is the release time, and hr(t) is the delay cost incurred if r is served at time t ≥ s(r). A solution consists of choosing, for each time t, a set of items Bt ⊆ Y to be served at time t. If 
+
+Bt̸ = ∅, we say that an order is placed at time t. A request r is served at the earliest time t ≥ s(r)such that i(r) ∈ Bt. The cost of a solution has three components: 
+
+• Opening cost. For each time t with Bt̸ = ∅, we pay a cost o for opening the warehouse. 
+
+• Item cost. For each time t and each item i ∈ Bt, we pay wi.
+
+• Delay cost. For each request r served at time t, we pay hr(t). The objective is to minimize the total cost. 
+
+JRP with deadlines. A special case of JRP is obtained when each request r is specified by a triple ( i(r), s (r), e (r)), where e(r) is its deadline, and must be served within the interval [ s(r), e (r)]. This corresponds to the delay-cost function 
+
+hr(t) = 
+
+(
+
+0 t ∈ [s(r), e (r)] ,
+
++∞ otherwise .
+
+10 We refer to this variant as JRP with deadlines (JRP-D). 
+
+JRP-D with time-dependent opening costs. We consider a variant of JRP-D in which the fixed opening cost o is replaced by a time-dependent opening cost ot. This additional flexibility makes the problem substantially harder in the online setting. Consider an instance with a single item i of cost wi = 0 and a single request r = ( i, 1, 2). Let the opening cost at time 1 be o1 = M .At time 2, the opening cost is either o2 = 1 or o2 = M 2, and its value is not known to the online algorithm at time 1. If the algorithm waits until time 2, then when o2 = M 2 it pays M 2, while the optimum pays M
+
+by serving r at time 1. Thus, any bounded-competitive algorithm must serve r at time 1. However, when o2 = 1, the algorithm then pays M , while the optimum waits until time 2 and pays 1. Hence, the competitive ratio is at least M , which is unbounded. Therefore, no online algorithm can achieve a bounded competitive ratio without additional information on future opening costs. To get around this difficulty, we consider a prediction-augmented setting. For times t < t ′, define 
+
+Ot,t ′ := min τ ∈(t,t ′] {oτ }, the minimum opening cost during the interval ( t, t ′]. For a request r to item 
+
+i, define P (r, t ) := max Ot,e (r), w i . Thus, P (r, t ) may overestimate the minimum opening cost 
+
+Ot,e (r) in cases where wi > O t,e (r).The prediction value of a request r at time t, denoted by eP (r, t ), is defined as follows. If there exists a request r′ whose time window satisfies [ s(r′), e (r′)] ⊆ (t, e (r)], then eP (r, t ) may be any value in [0 , P (r, t )]; otherwise, eP (r, t ) = P (r, t ). We next specify which prediction values are available to the algorithm. A request is active at time t if it has arrived, but has not yet been served, and an item is active if it has an active request. During the construction of an order, requests for items already committed to that order are treated as inactive for subsequent prediction queries. All committed items must be served by the order placed at the same time step. The algorithm has access to eP (r, t ) only when r has the earliest deadline among the requests active at that point. Thus, committing items to an order may make predictions for other active requests available. 
+
+# 3 A Reduction for Completing Cache Configurations 
+
+We study here the completion problem: given a sequence of cache configurations C, what is the minimum cost of completing it into a feasible paging solution? We show that this problem is captured, up to a constant factor, by a suitable instance J(C) of the JRP-D variant introduced in Section 2.5. We prove that the reduction preserves the completion problem up to a constant factor. First, any completion of C induces a feasible solution to J(C) with comparable cost. Second, any solution to J(C) can be transformed online into a feasible completion of C with no asymptotic loss. Consequently, J(C) characterizes cost (C) up to a constant factor. 
+
+3.1 Defining the Instance J(C)
+
+Fix a sequence R of page requests and a cache trajectory C. We construct an instance JR(C) of JRP-D with time-dependent opening costs. Since R is fixed throughout the discussion, we omit it from the notation and write J(C) and cost (C). To distinguish between the two problems, we refer to requests in R as page requests and to requests in J(C) as JRP requests .The instance J(C) has three ingredients: items, JRP requests, and time-dependent opening costs. The items correspond to pages, the JRP requests encode the page loads required for feasibility, 11 and the opening cost at time t captures the additional cost of performing a load while following the cache trajectory C.
+
+Items. For each page p ∈ P , there is a corresponding item ip ∈ Y with item cost wip = wp.
+
+Opening costs. By the non-degeneracy condition (see 2.3), every nonempty load Dt must contain a page from Ct. Thus, any load performed at time t incurs cost at least min {wp|p ∈ Ct}.Motivated by this observation, we define the opening cost at time t by 
+
+ot := min {wp|p ∈ Ct} .
+
+Observe that this may overestimate the actual cost incurred by a load. For example, if at time 
+
+t a completion loads a single page p that remains in cache, that is Dt = {p}, then the paging cost incurred at time t is wp, whereas the corresponding order in J(C) incurs cost wp + ot =
+
+wp + min {wq | q ∈ Ct} ≤ 2wp. Thus, the reduction can increase the cost by at most a factor of two, which is reflected in our analysis. 
+
+Prediction availability. Suppose that at time t < e (r), r is the active request with the earliest deadline, breaking ties by maximum page weight. Set eP (r, t ) := wp(r). If there exists a request r′ with [s(r′), e (r′)] ⊆ (t, e (r)], this prediction is valid because our prediction model permits underestimation and wp(r) ≤ P (r, t ). Otherwise, let Q be the set of remaining active requests with deadline e(r). No remaining active request outside Q, and no unrevealed request, has deadline at most e(r). By Lemma B.1, without loss of generality we may assume that some request in Q has its page q in Ce(r). By the tie-breaking rule, wq ≤ wp(r), and hence 
+
+Ot,e (r) ≤ oe(r) ≤ wq ≤ wp(r).
+
+Therefore, eP (r, t ) = wp(r) = P (r, t ), as required by the prediction model in this case. 
+
+JRP requests. The JRP requests in J(C) encode two requirements: serving page requests and performing page loads forced by the cache trajectory. Let 
+
+R′ := {r ∈ R : p(r) /∈ Cs(r)}.
+
+These are exactly the page requests that are not served by the cache at their release time and must therefore be satisfied by a subsequent page load. For every page request r ∈ R′, we introduce a JRP request for item ip(r) with release time s(r)and deadline e(r). In addition, for every time t and every page p ∈ Et, we introduce a JRP request for item ip with release time and deadline both equal to t.The first type of JRP request ensures that every page request in R′ is served within its time window. The second type enforces consistency with the prescribed cache trajectory: if page p enters the cache at time t, then every feasible completion must load p at time t.Finally, the reduction must preserve the online nature of the problem: at time t, the algorithm must be able to determine ot and all JRP requests arriving at time t using only information available up to time t.
+
+Theorem 3.1. Given a cache trajectory C revealed online, the instance J(C) can be constructed online. In particular, at each time t, the opening cost ot and all JRP requests arriving at time t
+
+depend only on the history up to time t.
+
+12 3.2 Upper Bounding OPT (J(C)) 
+
+We show that any feasible paging solution induces a feasible solution to J(C) with comparable cost. In particular, given any sequence of page loads D that completes C, we can construct a solution to J(C) whose cost is within a constant factor of cost R(C, D ). As a consequence, 
+
+OPT (J(C)) ≤ O(cost R(C)). Fix any loading sequence D such that ( C, D ) is feasible for R. Define the associated JRP solution 
+
+S⋆ = ( S⋆t )Tt=1 by 
+
+S⋆t := {ip : p ∈ Dt} for every t. 
+
+Thus, the order S⋆t serves precisely the items corresponding to the pages loaded at time t.
+
+Feasibility. We claim that S⋆ is feasible for J(C). Consider a page request r ∈ R′ for page 
+
+p = p(r). Since ( C, D ) is feasible for R, there exists a time t ∈ [s(r), e (r)] such that p ∈ Dt. Hence 
+
+ip ∈ S⋆t , and the corresponding JRP request is served within its time window. For every time t and page p ∈ Et = Ct \ Ct−1, we have p ∈ Dt, and thus ip ∈ S⋆t . Hence, the corresponding JRP request, whose release time and deadline are both t, is also served. Thus, S⋆ is feasible for J(C). 
+
+Cost analysis. The item-cost part satisfies 
+
+X
+
+> t
+
+X
+
+> ip∈S⋆t
+
+wip = X
+
+> t
+
+X
+
+> p∈Dt
+
+wp = cost R(C, D ).
+
+It remains to bound the opening-cost part. Fix a time t such that Dt̸ = ∅. By the non-degeneracy condition, Dt ∩ Ct̸ = ∅. Therefore, 
+
+ot = min 
+
+> p∈Ct
+
+wp ≤ min 
+
+> p∈Ct∩Dt
+
+wp ≤ X
+
+> p∈Dt
+
+wp.
+
+Summing over all times t with Dt̸ = ∅, we obtain 
+
+X  
+
+> t:Dt̸=∅
+
+ot ≤ X
+
+> t
+
+X
+
+> p∈Dt
+
+wp = cost R(C, D ).
+
+Conclusion. We conclude that for every feasible ( C, D ), 
+
+OPT (J(C)) ≤ cost (S⋆) ≤ 2 · cost R(C, D ).
+
+Taking the minimum over all feasible loading sequences D, we obtain 
+
+OPT (J(C)) ≤ 2 · cost R(C).
+
+3.3 From JRP-D Solutions to Paging Solutions 
+
+We now show how to complete a cache trajectory C into a feasible paging solution using a solution to the instance J(C). Let S = ( St)Tt=1 be a feasible solution to J(C), where St ⊆ Y is the order placed at time t. Our goal is to construct a sequence of page loads D such that ( C, D ) is feasible and has cost comparable to that of S.13 Construction. We define the loading sequence D online as follows. For every time t, let qt be a minimum-weight page in Ct, i.e., qt ∈ arg min p∈Ct wp, and define 
+
+Dt := 
+
+(
+
+∅, if St = ∅,
+
+{p : ip ∈ St} ∪ { qt}, otherwise .
+
+Intuitively, when St̸ = ∅, we load the pages corresponding to the items in St. If Ct = Ct−1, we temporarily evict qt to create space in the cache, and then load and immediately evict all other pages corresponding to items in St (one by one). We then reload qt to restore the cache configuration Ct.When Ct̸ = Ct−1, evicting and reloading qt may be unnecessary. For simplicity, we include qt in Dt
+
+and charge its cost to the opening cost ot of the corresponding JRP order. 
+
+Feasibility. We show that ( C, D ) is a feasible paging solution. 
+
+Capacity. The capacity constraint depends only on C and is therefore satisfied. 
+
+Service. Let r be a page request. If p(r) ∈ Cs(r), then r is already served. Otherwise, J(C)contains a JRP request for item ip(r) with release time s(r) and deadline e(r). Since S is feasible, there exists a time t ∈ [s(r), e (r)] such that ip(r) ∈ St. Hence p(r) ∈ Dt, and r is served. 
+
+Consistency. Fix a time t. If Ct = Ct−1, the consistency condition is immediate. Otherwise, for every page p ∈ Et, the instance J(C) contains a JRP request for item ip with release time and deadline both equal to t. Since S is feasible, ip ∈ St, and hence p ∈ Dt. Thus, Ct \ Ct−1 ⊆ Dt.
+
+Non-degeneracy. Fix a time t such that Dt̸ = ∅. By construction, qt ∈ Dt ∩ Ct, and therefore 
+
+Dt ∩ Ct̸ = ∅.
+
+Cost analysis. If St = ∅, then Dt = ∅ and no cost is incurred. Otherwise, 
+
+X
+
+> p∈Dt
+
+wp ≤ X
+
+> ip∈St
+
+wip + wqt .
+
+By the definition of qt,
+
+wqt = min 
+
+> p∈Ct
+
+wp = ot.
+
+Therefore, X
+
+> p∈Dt
+
+wp ≤ X
+
+> ip∈St
+
+wip + ot.
+
+Summing over all times t such that St̸ = ∅, we obtain 
+
+cost R(C, D ) ≤ X
+
+> t
+
+X
+
+> ip∈St
+
+wip + X  
+
+> t:St̸=∅
+
+ot = cost (S).
+
+Thus, cost R(C, D ) ≤ cost (S), which completes the proof. 
+
+3.4 Consequences for Paging with Time Windows 
+
+We now show that a constant-competitive algorithm for JRP-D with time-dependent opening costs, as introduced in Section 2.5, immediately implies an O(log k)-competitive algorithm for paging with time windows. 14 Theorem 3.2. Assume there exists a constant-competitive online algorithm for JRP-D with time-dependent opening costs under the prediction model of Section 2.5. Then there exists an online algorithm that, given a sequence R of page requests and a cache trajectory C, computes a completion sequence D online such that (C, D ) is feasible for R and 
+
+cost R(C, D ) = O(cost R(C)) .
+
+Proof. Given R and C, we construct the instance JR(C) online as in Section 3.1. We then run the assumed constant-competitive algorithm on JR(C), obtaining an online solution S satisfying 
+
+cost (S) = O(OPT (JR(C))) .
+
+Using the reduction of Section 3.3, we convert S online into a feasible paging solution ( C, D ) such that 
+
+cost R(C, D ) ≤ cost (S).
+
+Finally, by Section 3.2, 
+
+OPT (JR(C)) ≤ O(cost R(C)) .
+
+Combining these inequalities yields 
+
+cost R(C, D ) = O(cost R(C)) .
+
+□
+
+Combining Theorem 3.2 with Lemma 2.1, we obtain the following. 
+
+Theorem 3.3. Assume there exists a constant-competitive online algorithm for JRP-D with time-dependent opening costs under the prediction model of Section 2.5. Then there exists an O(log k)-competitive online algorithm for paging with time windows. Proof. Let C be the cache trajectory produced by the algorithm of Lemma 2.1. By Theorem 3.2, we can compute online a loading sequence D satisfying 
+
+cost R(C, D ) = O(cost R(C)) .
+
+By Lemma 2.1, 
+
+cost R(C) = O(log k) · OPT .
+
+Combining the bounds yields 
+
+cost R(C, D ) = O(log k) · OPT .
+
+□
+
+The next section is devoted to proving the assumption in Theorems 3.2 and 3.3 on the existence of a constant-competitive online algorithm for JRP-D with time-dependent opening costs. 15 4 JRP-D with Time-Dependent Opening Costs 
+
+In this section, we study the variant of JRP-D with time-dependent opening costs introduced in Section 2.5. Recall that placing an order at time t incurs opening cost ot, and that the algorithm has access to the predictions described in Section 2.5. Throughout this section, we assume that ot
+
+is a power of two for every t. This can be achieved by rounding each opening cost up to the next power of two, increasing the cost of any solution by at most a factor of two. We now present a constant-competitive online algorithm that combines the classical batching approach of Bienkowski et al. [8] with predictions of future opening costs to handle their variability over time. 
+
+4.1 Algorithm 
+
+For an active item i, we refer to the deadline of its earliest-deadline active request as the active deadline of i. At each time t, the algorithm constructs a set Xt of items and places an order for Xt
+
+if it is nonempty. The algorithm consists of two stages. Stage I initiates an order either to meet a deadline or based on a prediction of future opening costs. It then greedily adds active items as long as the total cost of Xt does not exceed the opening cost ot. Stage II uses predictions to determine which additional active items to include. Throughout both stages, the algorithm maintains and processes the active items in nondecreasing order of their active deadlines, breaking ties by nonincreasing item cost and then by item index. The algorithm performs the following at each time t:
+
+Stage I: Deadline items and greedy batching. The algorithm initializes 
+
+Xt = {i : the active deadline of i is t}.
+
+If Xt = ∅, let r be the first active request in the maintained order. If no active request exists, or if 
+
+eP (r, t ) ≤ ot,
+
+the algorithm proceeds directly to time t + 1. Otherwise, if W (Xt) ≤ ot, the algorithm considers the remaining active items and greedily adds them to Xt as long as the total weight does not exceed ot. The greedy procedure stops when the next item cannot be added without exceeding ot.The algorithm then proceeds to Stage II. 
+
+Stage II: Prediction-based orders. The algorithm continues with the set Xt constructed in Stage I and considers the remaining active items in the maintained order. For each such item i, let 
+
+r be its earliest-deadline active request. The algorithm stops if either of the following conditions holds: 1. eP (r, t ) ≤ ot;2. eP (r, t ) ≤ W (Xt) + wi.Otherwise, the algorithm adds i to Xt and continues to the next item. After stopping, or after considering all remaining active items, the algorithm places an order for 
+
+Xt if it is nonempty and proceeds to time t + 1. 16 Prediction availability. During the construction of Xt, requests for items already included in 
+
+Xt are treated as inactive. Whenever the algorithm queries eP (r, t ), the request r has the earliest deadline among the remaining active requests, and its item has maximum cost among the remaining active items with that deadline. Thus, every prediction queried by the algorithm is available under our prediction model. 
+
+4.2 Competitive Analysis 
+
+We prove that the algorithm is constant-competitive. Fix an optimal offline solution, denoted by 
+
+OPT , and partition the time horizon into phases according to the order times of OPT .
+
+Definition 4.1. A phase is a half-open interval [g, h ) between two consecutive order times of OPT. 
+
+Fix a phase [ g, h ), and let t1 < t 2 < · · · < t ℓ be the order times of the algorithm during this phase. For convenience, define t0 = g. We represent each item service by a pair ( i, t ), indicating that item i is served at time t. We partition these pairs into two sets: 
+
+• M : pairs ( i, t ) for which the active deadline of i at t is at most h − 1. 
+
+• N : pairs ( i, t ) for which the active deadline of i at t is at least h.When t is clear from context, we write i ∈ M instead of ( i, t ) ∈ M , and similarly for N . We also refer to items from M or N . Note that the same item may appear in both M and N during a phase, through services at different times. We analyze the costs associated with M and N separately. We show that the costs associated with M can be charged to the corresponding item costs incurred by OPT and to its opening cost at time g. The costs associated with N are bounded in terms of the opening cost incurred by OPT at time h.The interval preceding the first OPT order is treated as an initial phase containing only items from N , whose costs are charged to the opening cost of the first OPT order. Similarly, the interval following the last OPT order is treated as a final phase containing only items from M . Its costs are bounded by the analysis of M and charged to the opening cost of the last OPT order and the corresponding item costs incurred by OPT .Each item cost and opening cost incurred by OPT is charged at most a constant number of times. Thus, summing these bounds over all phases yields the following theorem. 
+
+Theorem 4.2. The algorithm is O(1) -competitive. 
+
+4.2.1 Bounding the Cost of M
+
+The total item cost incurred by the algorithm for services in M can be charged to the corresponding item costs incurred by OPT . Indeed, since OPT places no orders during ( g, h ), the requests defining the active deadlines of these items must be served by OPT by time g.
+
+Lemma 4.3. The total item cost incurred by the algorithm for items in M , summed over all phases, is at most the total item cost incurred by OPT. Proof. Fix a phase [ g, h ). Since OPT places no orders in ( g, h ), every request defining the active deadline of an item in M must be served by OPT no later than time g.Moreover, each item appears in M at most once during the phase. Indeed, whenever the algorithm serves an item, it satisfies all its currently active requests. Any subsequent appearance of 17 that item must therefore be due to a request arriving after its previous service, which cannot have a deadline before h.Finally, between two consecutive appearances of the same item in M across different phases, 
+
+OPT must also serve that item. Hence, each appearance can be charged to a distinct item cost incurred by OPT . □
+
+By Lemma 4.3, it remains to bound the opening costs of orders serving items from M . We will use the following observation throughout the analysis. 
+
+Lemma 4.4. Let r be an active request at time t ∈ [g, h ) with t < e (r) < h . Then, eP (r, t ) = P (r, t ).Proof. Suppose there exists a request r′ such that [ s(r′), e (r′)] ⊆ (t, e (r)]. Then every feasible solution must place an order serving r′ during ( t, e (r)] ⊆ (g, h ), contradicting the fact that OPT 
+
+places no orders in ( g, h ). Hence, by the definition of the prediction model, eP (r, t ) = P (r, t ). □
+
+Let j be the last index such that the order placed at time tj contains an item from M . We bound the opening costs of the orders serving items from M using two lemmas: the first bounds the opening costs of all orders preceding tj , while the second bounds the opening cost at tj .
+
+Lemma 4.5. For every 1 ≤ ℓ < j , let iℓ+1 denote the first item from M served by the order placed at time tℓ+1 . Then, 
+
+otℓ < W (Xtℓ ) + wiℓ+1 .
+
+Proof. Fix 1 ≤ ℓ < j . Since iℓ+1 ∈ M , it is already active at time tℓ and is the first remaining item in deadline order after the order at tℓ. If Stage II adds any item, it must first add the item that terminated the greedy procedure in Stage I, implying W (Xtℓ ) > o tℓ .Otherwise, Stage II adds no items and iℓ+1 is the item that terminated the greedy procedure in Stage I, and hence 
+
+otℓ < W (Xtℓ ) + wiℓ+1 .
+
+Thus, the claimed inequality holds in all cases. □
+
+It remains to bound the opening cost of the last order serving an item from M , placed at time 
+
+tj . If tj = g, its opening cost can be charged directly to OPT . Otherwise, recall that t0 = g. If 
+
+otj ≤ otj−1 , its opening cost can be charged to the preceding opening cost (or to OPT when j = 1). The following lemma handles the remaining case. 
+
+Lemma 4.6. Suppose tj > g and otj > o tj−1 . Let ij be the first item from M served by the order placed at time tj . Then, 
+
+otj ≤ W (Xtj−1 ) + wij .
+
+Proof. If otj ≤ wij , the claim is immediate. Hence, assume that otj > w ij . Let r be the earliest-deadline active request of ij at time tj−1. Since ij ∈ M , we have e(r) < h , and therefore, by Lemma 4.4, eP (r, t ) = P (r, t ) for every t ∈ [tj−1, t j ] satisfying t < e (r). We claim that otj is the minimum opening cost in ( tj−1, e (r)]. First, suppose there exists 
+
+t′ ∈ (tj , e (r)] such that ot′ < o tj . Then 
+
+eP (r, t j ) = P (r, t j ) = max {Otj ,e (r), w ij } ≤ max {ot′ , w ij } < o tj .
+
+Since e(r) > t j , the item ij is not due at time tj . Moreover, since ij is the first item served at tj , no active item has an earlier deadline. Thus, Stage I initializes Xtj = ∅.18 As the earliest active request satisfies eP (r, t j ) < o tj , Stage I proceeds directly to time tj + 1 without placing an order, contradicting the fact that ij is served at tj .Next, suppose there exists t′ ∈ (tj−1, t j ) such that ot′ < o tj , and let t′ be the last such time. By the preceding argument, otj is the minimum opening cost in [ tj , e (r)]. Consequently, 
+
+eP (r, t ′) = P (r, t ′) = max {Ot′,e (r), w ij } = max {otj , w ij } = otj .
+
+Since no order is placed by the algorithm between tj−1 and tj , Stage I initializes Xt′ = ∅.Moreover, ij is the first active item in deadline order at time t′.Since eP (r, t ′) = otj > o t′ ,
+
+Stage I performs greedy batching. If wij ≤ ot′ , then Stage I adds ij to Xt′ .Otherwise, wij > o t′ , so Stage I cannot add ij . However, eP (r, t ′) = otj > max {ot′ , w ij }, and hence neither stopping condition of Stage II holds when ij is considered. Thus, Stage II adds ij to 
+
+Xt′ .In either case, the algorithm serves ij at time t′ < t j , a contradiction. Therefore, otj is the minimum opening cost in ( tj−1, e (r)], proving the claim. In particular, 
+
+eP (r, t j−1) = P (r, t j−1) = max {otj , w ij } = otj .
+
+If j = 1 and t1 > g , then the algorithm places no order at g. Since eP (r, g ) = ot1 > o g, Stage I cannot skip time g. If wi1 ≤ og, greedy batching adds i1. Otherwise, since ot1 > max {og, w i1 }, Stage II adds i1. In either case, the algorithm serves i1 at g, a contradiction. Hence, we may assume j ≥ 2. Since the request of ij remains active after the order at tj−1, ij was not added during Stage I. Moreover, it is the earliest active item remaining after that order. Therefore, Stage II stops when considering ij .The first stopping condition cannot hold, since 
+
+otj−1 < o tj = eP (r, t j−1).
+
+Therefore, the second stopping condition must hold, giving 
+
+W (Xtj−1 ) + wij ≥ eP (r, t j−1) = otj ,
+
+as required. □
+
+Combining Lemmas 4.5 and 4.6, we obtain 
+
+> j
+
+X
+
+> ℓ=1
+
+otℓ = O
+
+og + X
+
+> (i,t )∈M
+
+wi
+
+ .
+
+Indeed, every order preceding tj contains only items from M . Applying Lemma 4.5 to each order preceding tj bounds its opening cost by the total item cost of that order and the cost of the first item served in the next order. Since all these services belong to M , each item service is charged at most twice. The final opening cost is bounded by og, the preceding opening cost, or by Lemma 4.6. By Lemma 4.3, these costs, summed over all phases, are bounded by a constant multiple of the cost incurred by OPT .19 4.2.2 Bounding the Cost of N
+
+We next consider items in N . We show that the opening costs of the relevant orders are strictly increasing. Since the opening costs are powers of two, this allows us to bound their total cost by 
+
+O(oh) and charge it to the order placed by OPT at time h.Recall that tj is the last order time during the phase at which the algorithm serves an item from 
+
+M . Observe that every order preceding tj contains only items from M . Indeed, all requests with deadlines before h must have arrived by time g, since OPT places no orders in ( g, h ). Moreover, both stages process items in nondecreasing order of their active deadlines and cannot skip an item to serve one with a later deadline. Thus, an order containing an item from N must serve all remaining items from M , and hence cannot precede tj .The total cost of items from N added during Stage I at tj is at most otj , and is therefore accounted for by the bound on the opening cost otj in the analysis of M . We therefore consider the order at tj only if Stage II adds an item from N , together with all subsequent orders in the phase. Let 
+
+e1 < e 2 < · · · < e q
+
+denote these order times. If M = ∅, we instead consider all orders in the phase. For every such order at time eℓ, one of the following holds: 1. Stage II adds at least one item from N .2. Stage II adds no items, and the order consists entirely of items added during Stage I. Indeed, after tj , no active request has deadline before h, so Stage I initializes Xt = ∅.
+
+Lemma 4.7. For every ℓ < q ,
+
+oeℓ < o eℓ+1 .
+
+Moreover, for every ℓ,
+
+oeℓ < o h.
+
+Proof. Fix ℓ and consider the order at time eℓ.First, suppose Stage II adds an item i ∈ N , and let r be its earliest-deadline active request when it is considered. Since neither stopping condition holds, 
+
+eP (r, e ℓ) > o eℓ
+
+and eP (r, e ℓ) > W (Xbefore  
+
+> eℓ
+
+) + wi ≥ wi,
+
+where Xbefore  
+
+> eℓ
+
+denotes the set immediately before adding i.Using eP (r, e ℓ) ≤ P (r, e ℓ), we obtain 
+
+oeℓ < eP (r, e ℓ) ≤ max {Oeℓ,e (r), w i}.
+
+Since wi < eP (r, e ℓ), it follows that oeℓ < O eℓ,e (r).Now suppose Stage II adds no items. Let i be the first item added during Stage I, and let r be its earliest-deadline active request. Since Xeℓ was initially empty, r is the earliest active request at time eℓ. Thus, by the condition for initiating greedy batching, eP (r, e ℓ) > o eℓ .20 Moreover, Stage I adds i while maintaining W (Xeℓ ) ≤ oeℓ , so wi ≤ oeℓ . Consequently, 
+
+oeℓ < eP (r, e ℓ) ≤ max {Oeℓ,e (r), w i}
+
+implies oeℓ < O eℓ,e (r). Thus, in either case, there exists an item i ∈ N with active request r such that oeℓ < O eℓ,e (r). Since i ∈ N , its active deadline satisfies e(r) ≥ h. Therefore, for every ℓ < q ,
+
+oeℓ < o eℓ+1 .
+
+The same argument, applied to h instead of eℓ+1 , gives oeℓ < o h for every ℓ. □
+
+It remains to bound the item costs of these orders. Fix ℓ. If Stage II adds an item from N , let iℓ be the last such item, and let rℓ be its earliest-deadline active request when it is considered. Since the second stopping condition does not hold, 
+
+W (Xeℓ ) < eP (rℓ, e ℓ). Moreover, 
+
+wiℓ ≤ W (Xeℓ ) < eP (rℓ, e ℓ) ≤ max {Oeℓ,e (rℓ), w iℓ }.
+
+It follows that W (Xeℓ ) < O eℓ,e (rℓ). Since e(rℓ) ≥ h, we obtain W (Xeℓ ) < o eℓ+1 for ℓ < q , and 
+
+W (Xeq ) < o h.Otherwise, Stage II adds no items, so all items in the order were added during Stage I, which guarantees W (Xeℓ ) ≤ oeℓ . By Lemma 4.7, the same bounds follow. Thus, in either case, qX
+
+> ℓ=1
+
+W (Xeℓ ) ≤
+
+> q−1
+
+X
+
+> ℓ=1
+
+oeℓ+1 + oh.
+
+By Lemma 4.7, the opening costs oe1 , . . . , o eq form a strictly increasing sequence of powers of two, with oeq < o h. Consequently, both the total opening cost and the total item cost are O(oh), giving qX
+
+> ℓ=1
+
+ oeℓ + W (Xeℓ ) = O(oh).
+
+Since OPT places an order at time h, these costs can be charged to its opening cost oh.
+
+# AI Usage Disclosure 
+
+The authors used ChatGPT to refine and polish the text. All suggestions were reviewed and edited by the authors, who take full responsibility for the final manuscript. 
+
+# Submission History 
+
+An earlier version of this paper was submitted to a conference in July 2026. 
+
+# References 
+
+[1] Dimitris Achlioptas, Marek Chrobak, and John Noga. Competitive analysis of randomized pag-ing algorithms. Theor. Comput. Sci. , 234(1-2):203–218, 2000. doi:10.1016/S0304-3975(98) 00116-9 .21 [2] Susanne Albers, Sanjeev Arora, and Sanjeev Khanna. Page replacement for general caching problems. In Robert Endre Tarjan and Tandy J. Warnow, editors, Proceedings of the Tenth Annual ACM-SIAM Symposium on Discrete Algorithms, 17-19 January 1999, Baltimore, Maryland, USA , pages 31–40. ACM/SIAM, 1999. URL: http://dl.acm.org/citation.cfm? id=314500.314528 .[3] Esther Arkin, Dev Joneja, and Robin Roundy. Computational complexity of uncapacitated multi-echelon production planning problems. Operations research letters , 8(2):61–66, 1989. [4] Yossi Azar, Arun Ganesh, Rong Ge, and Debmalya Panigrahi. Online service with delay. In 
+
+Proceedings of the 49th Annual ACM SIGACT Symposium on Theory of Computing , pages 551–563, 2017. [5] Nikhil Bansal, Niv Buchbinder, and Joseph Naor. Randomized competitive algorithms for generalized caching. SIAM J. Comput. , 41(2):391–414, 2012. doi:10.1137/090779000 .[6] Nikhil Bansal, Niv Buchbinder, and Joseph Seffi Naor. A primal-dual randomized algorithm for weighted paging. Journal of the ACM (JACM) , 59(4):19, 2012. [7] Luca Becchetti, Alberto Marchetti-Spaccamela, Andrea Vitaletti, Peter Korteweg, Martin Skutella, and Leen Stougie. Latency-constrained aggregation in sensor networks. ACM Transactions on Algorithms (TALG) , 6(1):1–20, 2009. [8] Marcin Bienkowski, Jaroslaw Byrka, Marek Chrobak, Lukasz Je˙ z, Dorian Nogneng, and Jiˇ r´ ıSgall. Better approximation bounds for the joint replenishment problem. In Proceedings of the twenty-fifth annual ACM-SIAM symposium on discrete algorithms , pages 42–54. SIAM, 2014. [9] A. Blum, M. Furst, and A. Tomkins. What to do with your free time: algorithms for infrequent requests and randomized weighted caching, 1996. [10] Avrim Blum, Carl Burch, and Adam Kalai. Finely-competitive paging. In 40th Annual Symposium on Foundations of Computer Science, FOCS ’99, 17-18 October, 1999, New York, NY, USA , pages 450–458. IEEE Computer Society, 1999. doi:10.1109/SFFCS.1999.814617 .[11] S´ ebastien Bubeck, Michael B. Cohen, Yin Tat Lee, James R. Lee, and Aleksander Madry. k-server via multiscale entropic regularization. In Ilias Diakonikolas, David Kempe, and Monika Henzinger, editors, Proceedings of the 50th Annual ACM SIGACT Symposium on Theory of Computing, STOC 2018, Los Angeles, CA, USA, June 25-29, 2018 , pages 3–16. ACM, 2018. 
+
+doi:10.1145/3188745.3188798 .[12] Niv Buchbinder, Shahar Chen, and Joseph Naor. Competitive analysis via regularization. In Chandra Chekuri, editor, Proceedings of the Twenty-Fifth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA 2014, Portland, Oregon, USA, January 5-7, 2014 , pages 436–444. SIAM, 2014. doi:10.1137/1.9781611973402.32 .[13] Niv Buchbinder, Tracy Kimbrel, Retsef Levi, Konstantin Makarychev, and Maxim Sviri-denko. Online make-to-order joint replenishment model: Primal-dual competitive algorithms. 
+
+Operations Research , 61(4):1014–1029, 2013. [14] Niv Buchbinder, Joseph Seffi Naor, et al. The design of competitive online algorithms via a primal–dual approach. Foundations and Trends ® in Theoretical Computer Science , 3(2–3):93– 263, 2009. 22 [15] Marek Chrobak and Lawrence L. Larmore. An optimal on-line algorithm for k-servers on trees. 
+
+SIAM J. Comput. , 20(1):144–148, 1991. doi:10.1137/0220008 .[16] Guy Even, Moti Medina, and Dror Rawitz. Online generalized caching with varying weights and costs. In Christian Scheideler and Jeremy T. Fineman, editors, Proceedings of the 30th on Symposium on Parallelism in Algorithms and Architectures, SPAA 2018, Vienna, Austria, July 16-18, 2018 , pages 205–212. ACM, 2018. doi:10.1145/3210377.3210404 .[17] Awi Federgruen and Michal Tzur. The joint replenishment problem with time-varying costs and demands: Efficient, asymptotic and ε-optimal solutions. Operations Research , 42(6):1067–1086, 1994. [18] Amos Fiat, Richard M. Karp, Michael Luby, Lyle A. McGeoch, Daniel Dominic Sleator, and Neal E. Young. Competitive paging algorithms. J. Algorithms , 12(4):685–699, 1991. 
+
+doi:10.1016/0196-6774(91)90041-V .[19] Anupam Gupta, Ravishankar Krishnaswamy, Amit Kumar, and Debmalya Panigrahi. Elastic caching. In Timothy M. Chan, editor, Proceedings of the Thirtieth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA 2019, San Diego, California, USA, January 6-9, 2019 , pages 143–156. SIAM, 2019. doi:10.1137/1.9781611975482.10 .[20] Anupam Gupta, Amit Kumar, and Debmalya Panigrahi. Caching with time windows. In Konstantin Makarychev, Yury Makarychev, Madhur Tulsiani, Gautam Kamath, and Julia Chuzhoy, editors, Proccedings of the 52nd Annual ACM SIGACT Symposium on Theory of Computing, STOC 2020, Chicago, IL, USA, June 22-26, 2020 , pages 1125–1138. ACM, 2020. 
+
+doi:10.1145/3357713.3384277 .[21] Sandy Irani. Competitive analysis of paging. In Amos Fiat and Gerhard J. Woeginger, editors, Online Algorithms, The State of the Art (the book grow out of a Dagstuhl Seminar, June 1996) , volume 1442 of Lecture Notes in Computer Science , pages 52–73. Springer, 1996. 
+
+doi:10.1007/BFb0029564 .[22] Sandy Irani. Page replacement with multi-size pages and applications to web caching. In Frank Thomson Leighton and Peter W. Shor, editors, Proceedings of the Twenty-Ninth Annual ACM Symposium on the Theory of Computing, El Paso, Texas, USA, May 4-6, 1997 , pages 701–710. ACM, 1997. doi:10.1145/258533.258666 .[23] Sandy Irani. Randomized weighted caching with two page weights. Algorithmica , 32(4):624–640, 2002. doi:10.1007/s00453-001-0095-6 .[24] Thodoris Lykouris and Sergei Vassilvitskii. Competitive caching with machine learned advice. In Jennifer G. Dy and Andreas Krause, editors, Proceedings of the 35th International Conference on Machine Learning, ICML 2018, Stockholmsm¨ assan, Stockholm, Sweden, July 10-15, 2018 ,volume 80 of Proceedings of Machine Learning Research , pages 3302–3311. PMLR, 2018. URL: 
+
+http://proceedings.mlr.press/v80/lykouris18a.html .[25] Lyle A. McGeoch and Daniel Dominic Sleator. A strongly competitive randomized paging algorithm. Algorithmica , 6(6):816–825, 1991. doi:10.1007/BF01759073 .[26] Daniel Dominic Sleator and Robert Endre Tarjan. Amortized efficiency of list update and paging rules. Commun. ACM , 28(2):202–208, 1985. doi:10.1145/2786.2793 .23 [27] Neal E. Young. On-line caching as cache size varies. In Alok Aggarwal, editor, Proceedings of the Second Annual ACM/SIGACT-SIAM Symposium on Discrete Algorithms, 28-30 January 1991, San Francisco, California, USA , pages 241–250. ACM/SIAM, 1991. URL: http://dl. acm.org/citation.cfm?id=127787.127832 .[28] Neal E. Young. The k-server dual and loose competitiveness for paging. Algorithmica , 11(6):525– 541, 1994. doi:10.1007/BF01189992 .[29] Neal E. Young. On-line file caching. In Symposium on Discrete algorithms , pages 82–86, 1998. 
+
+# A Extension to Paging with Delays 
+
+We explain how our framework extends to the paging-with-delays model of Gupta et al. [20]. Gupta et al. show that it suffices to consider a penalty version of paging with time windows. In this variant, each request has a time window and may either be served within its window or left unserved by paying a request-specific penalty. They further show that their analysis for paging with time windows extends to this penalty model. We follow the same approach. In paging with time windows and penalties, each request r is specified by a page p(r), a release time s(r), a deadline e(r), and a penalty πr. A solution may either serve r during [ s(r), e (r)] or pay the penalty πr. The objective is to minimize the sum of the costs and the penalties of all unserved requests. Fix an integral solution to the hitting-set LP of Gupta et al. [20] with objective value X. Recall that their conversion procedure (see Section 2.4) transforms an integral LP solution into a paging with time windows solution. The solution consists of two components: the cache trajectory C = ( Ct)and the sequence of load-and-evict sets D = ( Dt). We now use both components to partition online the requests into two sets, R1 and R2. If a request r is not served (a penalty is paid), we add r
+
+to R1. Otherwise, let t be the first time at which the online conversion procedure serves r, either through cache residency or by loading p(r), and add the page request ( p(r), t, e (r)) to R2. Since the partition is determined by the online conversion procedure, both R1 and R2 can be constructed online. We first bound the completion cost of C with respect to R2. Gupta et al. showed that the offline conversion procedure preserves the cache trajectory C and only removes some of the “load-and-evict” steps (determined online). Nevertheless, it remains feasible for every request served by the online procedure and therefore serves every request in R2. Since its total cost is O(X), it follows that 
+
+cost R2 (C) = O(X).
+
+Moreover, every request in R1 is left unserved by the online conversion procedure. Since the offline procedure only removes loads, these requests remain unserved, and the offline procedure pays their penalties. Therefore, X
+
+> r∈R1
+
+πr = O(X).
+
+Since R2 can be constructed online, we apply our online completion algorithm to C and R2,obtaining a loading sequence D satisfying 
+
+cost R2 (C, D ) = O(cost R2 (C)) = O(X).
+
+Now, the penalties paid for the requests in R1 add up to at most O(X). Thus, the resulting solution has total cost O(X). Combining this with the bound on the integral solution of Gupta et al. [20] yields an O(log k)-competitive online algorithm for paging with delays. 24 B A Local Repair of Cache Trajectories 
+
+Lemma B.1. Let S be a feasible paging solution, and let Q be a nonempty set of requests active at time t1, all with deadline t2 > t 1. Suppose that no active or unrevealed request outside Q has deadline at most t2. Then S can be modified, without increasing its cost, so that p(r) ∈ Ct2 for some 
+
+r ∈ Q. The modification can be implemented online whenever S is generated online. Proof. Follow S until all requests in Q have been served. Let r be the last request in Q to be served, and let K be the cache configuration immediately after this service. In particular, this configuration contains p(r). At this point, all requests with deadline at most t2 have been served. Indeed, every request in Q
+
+has been served, while every request outside Q with such a deadline was already served at time t1,by assumption. Postpone all subsequent loadings and evictions through the end of time t2 to the beginning of time t2 + 1. Execute these operations in their original order, before the operations originally scheduled at that time. This preserves feasibility: any request whose service is postponed and that has not already been served has deadline at least t2 + 1. Capacity is preserved because the postponed operations start from the same configuration K and are executed in the same order. No additional loads are introduced, so the cost does not increase. If t2 is the final time step, the postponed operations can instead be omitted. The configuration K persists through time t2, so p(r) ∈ Ct2 .To implement the modification online, buffer the postponed operations. If a new request with deadline at most t2 arrives, execute the buffered operations before processing it and resume S. This preserves feasibility even when the hypothesis of the lemma does not hold. Under the hypothesis, no such request arrives, so the configuration K persists until the end of time t2, as required. □
+
+Thus, any feasible paging solution can be modified at no additional cost to satisfy the stated property for the specified times t1, t 2 and set Q.25

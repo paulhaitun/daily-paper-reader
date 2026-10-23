@@ -1,0 +1,1290 @@
+Title: Joint Freshness and Deadline Feasibility in Store-and-Forward Satellite IoT Networks
+
+URL Source: https://arxiv.org/pdf/2610.27966v1
+
+Published Time: Wed, 21 Oct 2026 01:10:59 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Joint Freshness and Deadline Feasibility in Store-and-Forward Satellite IoT Networks. 
+
+S¨ uleyman C ¸ ıtır 
+
+Middle East Technical University Ankara, T¨ urkiye suleyman.citir@metu.edu.tr 
+
+Abstract —3GPP Release 19 supports store-and-forward satel-lite access, where traffic accumulated during feeder-link outages must be forwarded through finite, geometry-limited windows. Static priority levels offer little discrimination among large backlogs and ignore the decay in packet value. We formulate QoS feasibility for status updates, measured by destination freshness, and deadline-constrained event reports over periodic two-hop contacts with finite onboard storage. For general calendars, we derive ordering-sensitive miss, cohort-capacity, delivery-rate, and freshness bounds, including an exact status-only characterization. For single status flow and single event class sharing a contact pair per period, a finite-state program gives exact joint feasibility for arbitrary integer age thresholds. Numerical results quantify tradeoffs among load, capacity, deadline, and freshness tolerance. 
+
+Index Terms —Age of information, QoS, Internet of Things, satellite communications, scheduling, store-and-forward. 
+
+I. I NTRODUCTION 
+
+Store-and-forward operation allows a satellite to collect traffic while its feeder link is unavailable and deliver it when ground connectivity returns. Release 19 supports this mode for satellite access in E-UTRAN [1]. For satellite IoT, however, accepting a packet onboard is only the first step toward useful delivery. Its remaining lifetime must accommodate both the wait for a feeder contact and competition for the capacity of that contact. Different applications place different demands on these opportunities. For routine monitoring, a new status update may replace an older one; what matters is how current the destination’s information remains, as measured by age of information (AoI) [2]. An event report, such as a fault alarm, is a distinct message whose delivery must precede a deadline. Forwarding more status updates can improve freshness while leaving fewer opportunities for events. Conversely, postponing a refresh can release capacity for events, provided that the freshness contract allows it. Before choosing a scheduler, an operator therefore needs to know whether the two commitments can be met together. Average capacity does not settle this question. An event must encounter a service contact followed by a feeder contact before its deadline, and the resulting opportunities must also support the required refreshes. Even separate freshness and event-delivery tests can pass when their joint requirements are infeasible. We study feasibility under periodic contacts and finite on-board storage, with freshness measured by stale-slot fractions and event service by deadline-miss fractions. Theorem 1 gives the exact status-only stale-slot floor and an attaining policy when resources suffice. For mixed traffic, Lemma 2 reduces the specified contact-pair model losslessly, and Theorem 2 gives an exact finite-program test for joint feasibility. The phase, cohort-capacity, and aggregate-rate bounds are support-ing necessary tests for general calendars. II. R ELATED WORK 
+
+Predictable contacts are a central resource in disruption-tolerant satellite networks. Fraire and Finochietto [3] dis-cuss contact-plan design, including the role of routing and traffic information. More directly, Arı et al. [4] study peak-AoI minimization under intermittent satellite connectivity and store-and-forward delays, comparing different levels of contact awareness under a transmission budget. Mixed freshness and deadline-constrained traffic has also been studied directly. Sun et al. [5] schedule status updates alongside timely-throughput traffic over a shared wireless link, seeking to minimize weighted average AoI subject to timely-throughput constraints. Fountoulakis et al. [6] consider an AoI-oriented user and a deadline-constrained user sharing an error-prone channel; they formulate average-AoI minimization with timely- throughput constraints as a constrained Markov decision process (CMDP) and develop dynamic-programming-based policies. Thus, neither the coexistence of these traffic types nor CMDP modeling is claimed as a contribution here. Freshness scheduling over multiple hops is studied by Bedewy et al. [7], who establish age-optimality results for last-generated-first-served policies under specified service assump-tions. Li et al. [8] examine competition between AoI and ser-vice delay in mobile edge caching through achievable-region bounds and a drift-plus-penalty algorithm. Wang et al. [9] de-velop statistical peak-AoI, delay, and error-rate guarantees for satellite–terrestrial networks in the finite-blocklength regime. These works address related freshness, delay, or contact ef-fects, but not the joint feasibility problem under the contact and contract structure considered here. III. S YSTEM MODEL AND QOS R EQUIREMENTS 
+
+A. Network and Contact Calendar 
+
+We consider an uplink store-and-forward (S&F) network of the kind standardized for satellite access in 3GPP Re-lease 19 [1]: multiple ground sources, one satellite with arXiv:2610.27966v1 [cs.NI] 20 Oct 2026 onboard storage, and a ground application reached through a gateway. Each packet traverses a source-to-satellite service link and then a satellite-to-ground feeder link, so onboard reception does not constitute delivery. Time is divided into slots of duration τ , indexed by t ∈ Z≥0.The contact calendar repeats every P slots. All sources share a service window of S slots per period. The feeder window has duration w and starts at phase ϕ, where 
+
+1 ≤ S ≤ P, 0 ≤ w ≤ P, ϕ ∈ { 0, . . . , P − 1}.
+
+All calendar parameters are integers. Choosing the service-window opening as phase zero, the link-availability indicators are 
+
+a(t) = 1{t mod P < S },bw(t) = 1{(t − ϕ) mod P < w }. (1) The modulo operation takes values in {0, . . . , P − 1}, so a feeder window may cross a period boundary. An available service or feeder slot supports at most cs or cf equal-sized packets, respectively, both positive integers. The links have separate capacities and operate concurrently: a packet may be collected while a different packet is forwarded in the same slot. Each hop occupies one slot, which absorbs its transmission and propagation time. A packet collected in slot t therefore becomes available onboard at t + 1 and cannot be forwarded in slot t.
+
+B. Status Updates and Event Reports 
+
+Let I and J denote the finite sets of status flows and event classes, each associated with a source terminal. Every packet p
+
+has a unique identifier, a flow or class label, and a generation time gp ∈ Z≥0.Status flow i ∈ I generates one update at times oi + nh i,
+
+n ∈ Z≥0, where its period hi ≥ 1 and offset 0 ≤ oi <hi are fixed integers. Each update contains a complete status observation. An older update may therefore be discarded or replaced and flow is evaluated through destination freshness rather than per-packet delivery [2]. Event class j ∈ J generates Zj (t) packets at the beginning of slot t, with 
+
+Zj (t) ∼ Poisson( λp j ), pj > 0, X
+
+> j∈J
+
+pj = 1 . (2) The counts are independent across classes and slots. The class proportions pj are fixed, while λ ≥ 0 is the aggregate event rate in packets per slot. Event packets represent distinct reports and cannot replace one another. Each class has a fixed relative deadline Dj ∈
+
+Z≥1; packet p of class j succeeds only if it reaches the ground application by gp + Dj , which places the event traffic in the deadline-constrained delivery-ratio setting of [10]. At λ = 0 ,no events are generated. The satellite stores at most B ≥ 1 waiting packets at slot boundaries. Packets can be discarded at either node. Every discarded event remains a deadline failure in the QoS accounting. An undelivered event is removed once its deadline has been reached. No packet duplication or inter-satellite forwarding is allowed. 
+
+C. Scheduling, Buffer Evolution, and Causality 
+
+At boundary t, transmissions from the preceding slot first complete. The system then removes undelivered events whose deadlines have been reached and inserts new source arrivals. Let U(t) and R(t) be the resulting sets of source-held and onboard packets, respectively, before discretionary discards and scheduling. Initial queues are empty. The controller selects discard sets Ds(t) ⊆ U(t) and 
+
+Dr(t) ⊆ R (t), a collection set X (t), and a forwarding set 
+
+Y(t). Feasible actions satisfy 
+
+X (t) ⊆ U (t) \ D s(t),
+
+|X (t)| ≤ csa(t),
+
+Y(t) ⊆ R (t) \ D r(t),
+
+|Y (t)| ≤ cf bw(t),
+
+R(t) \ (Dr(t) ∪ Y (t)) + |X (t)| ≤ B. 
+
+(3) Let A(t + 1) contain all packets generated at t + 1 , and let 
+
+Et+1 remove undelivered event packets with deadlines at or before t + 1 . The queue updates are 
+
+U(t + 1) = Et+1 [U(t) \ (Ds(t) ∪ X (t))] ∪ A (t + 1) ,
+
+R(t + 1) = Et+1 
+
+  R(t) \ (Dr(t) ∪ Y (t))  ∪ X (t) . (4) Ground deliveries in Y(t) are recorded at t + 1 , before expiration, so delivery exactly at a deadline is successful. At a common boundary, forwarded packets leave onboard storage before collected packets enter it. The satellite controller knows the model parameters, contact calendar, status-generation schedules, and initial destination timestamps. At boundary t, it observes the onboard packet identifiers, labels, and generation times in R(t), as well as all ground deliveries completed through t. When a(t) = 1 ,each source reports the metadata of its currently pending packets, including the arrivals at t. Between service contacts, new source arrivals and source-side discards are not directly observed by the satellite. Control messages and acknowledg-ments have no additional modeled capacity cost or delay. Let Hsat  
+
+> t
+
+be the information generated by these observations through t, the known parameters, and past satellite actions, and let Hit be the corresponding local information at the source of flow or class i. Onboard discards and forwarding are Hsat  
+
+> t
+
+-measurable; collections are Hsat  
+
+> t
+
+-measurable when 
+
+a(t) = 1 , with X (t) = ∅ otherwise; source-side discards are Hit-measurable. Π( w) denotes the policies respecting these information and action constraints. In particular, if an event generated at gp is collected in slot 
+
+u and forwarded in slot v, its successful path must satisfy the ordering and deadline requirements of a valid path, source 
+
+satellite 
+
+ground                                                 
+
+> a(t)=1
+> bw(t)=1
+> r ≥ S waits δ s(r) = P − r
+> gp
+> uv
+> dp= v + 1
+> δf
+> ℓ(r; w)
+> 0rSφφ + w PtFig. 1. Contact calendar and the two-hop path. Service is available in [0 , S )
+> modulo P, the feeder window in [ϕ, ϕ +w). A packet collected in slot uis onboard at u+ 1 and forwarded no earlier than that, reaching the ground at
+> v+ 1 , so ℓ(r;w) = δs(r) + 2 + δfas in (13). Drawn for P= 12 ,S= 3 ,
+> ϕ= 6 ,w= 3 ,r= 1 : here δs= 0 ,δf= 4 and ℓ= 6 . A generation at
+> r≥Sfinds no service slot left in its period and waits P−r.
+
+u ≥ gp, a(u) = 1 , v ≥ u + 1 ,bw(v) = 1 , v + 1 ≤ gp + Dj . (5) The same ordering applies to status updates. 
+
+D. Freshness and Deadline Metrics 
+
+The ground-application delivery time of packet p is 
+
+dp := inf {t + 1 : t ∈ Z≥0, p ∈ Y (t)}.
+
+A discarded or undelivered packet has dp = ∞. An event received exactly at gp + Dj succeeds because deliveries are recorded before expiration at that boundary. For status flow i, let Pi be its packet set and let u0 
+
+> i
+
+∈ Z≤0
+
+be a fixed finite generation timestamp initially known at the destination, which is a reference. The fresh delivered timestamp and destination age, evaluated after all ground deliveries at boundary t, are 
+
+ui(t) = max  {u0 
+
+> i
+
+} ∪ { gp : p ∈ P i, d p ≤ t} ,
+
+∆i(t) = t − ui(t). (6) Consequently, 
+
+ui(t + 1) = max( {ui(t)} ∪ { gp : p ∈ Y (t) ∩ P i}) . (7) Freshness is evaluated once per slot, immediately after the ground deliveries at its initial boundary. For a fixed integer age threshold Ai ≥ 1, define the stale-slot fraction 
+
+V πi (λ, w ) = lim sup   
+
+> T→∞ , T ∈Z>0
+
+1
+
+T Eπ
+
+"T −1X
+
+> t=0
+
+1{∆i(t) > A i}
+
+#
+
+. (8) The freshness contract is V πi (λ, w ) ≤ εi, where 0 ≤ εi <
+
+1 is fixed. Equality ∆i(t) = Ai is fresh, and every slot is counted, including slots without connectivity. Equation (8) is the slot-sampled form of an age-threshold violation metric [2]; it does not integrate the age increase between boundaries. Let Nj (T ) = PT −1 
+
+> t=0
+
+Zj (t) be the number of class-j events generated before T , and let N miss  
+
+> j
+
+(T ) count the eventual deadline misses among the class-j events generated in slots 
+
+0, . . . , T − 1,
+
+N miss  
+
+> j
+
+(T ) = X 
+
+> p∈E j: 0 ≤gp<T
+
+1{dp > g p + Dj },
+
+where Ej is the set of all generated class-j events. For λ > 0,define 
+
+M πj (λ, w ) = lim sup  
+
+> T→∞
+
+Eπ
+
+N miss  
+
+> j
+
+(T )
+
+λp j T . (9) The deadline contract is M πj (λ, w ) ≤ ηj , where 0 ≤ ηj < 1
+
+is fixed. This is a ratio of expected counts over generation co-horts, not a delay statistic conditioned on successful delivery; discards and buffer overflows are counted as failures. Cohorts are evaluated after their deadlines, even when those deadlines occur after T .
+
+E. Fixed-QoS Traffic-Contact Feasibility 
+
+All QoS targets, status-generation parameters, event propor-tions, packet and link parameters, P, S, ϕ , and B are fixed. The operating variables are λ and w. We define 
+
+F = (λ, w ) ∈ R≥0 × { 0, . . . , P } :
+
+∃π ∈ Π( w) such that 
+
+V πi (λ, w ) ≤ εi, ∀i ∈ I ,M πj (λ, w ) ≤ ηj , ∀j ∈ J .
+
+(10) The problem is to derive necessary conditions on F, char-acterize status-only feasibility under sufficient resources, and establish exact joint feasibility in a restricted contact-pair regime. IV. T RAFFIC -C ONTACT FEASIBILITY 
+
+This section develops necessary conditions for the fixed-QoS feasible region in (10). Three mechanisms restrict it. First, the order of the service and feeder windows inside a period decides which arrival phases admit a deadline-feasible path at all, and, for status traffic, exactly how stale the destination must become; on the status-only slice this yields a characterization when both link capacities and onboard storage can support one packet per flow simultaneously. Second, even at phases that admit a path, only a bounded number of packets can traverse the ordered contacts within one deadline. Third, the QoS contracts impose a minimum successful delivery rate, which the link capacities must support. All three apply to every admissible policy, independently of its scheduling rule. 
+
+A. Arrival Phase and Earliest Ground Delivery 
+
+For a packet generated at phase r ∈ { 0, . . . , P − 1}, define its waiting time to the first available service slot as 
+
+δs(r) = 
+
+(
+
+0, r < S, P − r, r ≥ S. (11) For w > 0, let z(t) = ( t−ϕ) mod P and define the waiting time from boundary t to an available feeder slot by δf (t; w) = 
+
+(
+
+0, z(t) < w, P − z(t), z(t) ≥ w. (12) The earliest possible end-to-end delay of an isolated packet is 
+
+ℓ(r; w) = δs(r) + 2 + δf (r + δs(r) + 1; w) . (13) For w = 0 , set ℓ(r; 0) = ∞. The two slots in (13) are the service and feeder transmissions. The feeder waiting time starts after service reception, preserving the requirement that the two hops cannot occur in the same slot. To obtain (13), collect the packet in its first available service slot and forward it in the first feeder slot after reception. Because the first feeder slot at or after a boundary is nonde-creasing in that boundary, delaying collection cannot yield an earlier feeder opportunity. Thus ℓ(r; w) is the exact isolated-packet delay, with contention removed, and every packet generated at phase r satisfies dp − gp ≥ ℓ(r; w) under every policy. An event of class j has a deadline-feasible contact path if and only if ℓ(r; w) ≤ Dj .
+
+Proposition 1 (Ordering-Induced Miss Floor): For every 
+
+λ > 0 and π ∈ Π( w),
+
+M πj (λ, w ) ≥ qj (w),qj (w) = 1
+
+P 
+
+> P−1
+
+X
+
+> r=0
+
+1{ℓ(r; w) > D j }. (14) Consequently, qj (w) ≤ ηj is necessary for feasibility when-ever class j has positive offered traffic. 
+
+Example 1. Let P = 10 , S = w = 1 , and Dj = 11 . With 
+
+ϕ = 1 , the delays in (13), ordered by arrival phase, are 
+
+(2 , 11 , 10 , 9, 8, 7, 6, 5, 4, 3) ,
+
+so qj (1) = 0 . With ϕ = 0 , they become 
+
+(11 , 20 , 19 , 18 , 17 , 16 , 15 , 14 , 13 , 12) ,
+
+giving qj (1) = 0 .9. Both calendars have the same average service and feeder capacities. In the second calendar, a packet collected in the service slot has already missed that period’s feeder transmission opportunity. Any requirement ηj < 0.9 is therefore infeasible for that calendar at every positive arrival rate. The first calendar passes this ordering test; this alone does not establish its feasibility. 
+
+B. A Temporal Capacity Bound for Arrival Cohorts 
+
+The existence of an individual path does not imply that all packets generated at the same phase can use it. Consider the class-j cohort generated in slot r of a reference period. All its packets have deadline r + Dj . For any integer k ∈{r, . . . , r + Dj − 1}, divide its successful packets into those collected before slot k and those collected in slot k or later. The first group uses service capacity before k; the second cannot use feeder capacity before k + 1 . Hence, its successful packet count is at most 
+
+Cj (r; w) = min  
+
+> k=r,...,r +Dj−1
+
+h
+
+cs
+
+> k−1
+
+X
+
+> u=r
+
+a(u)+ cf 
+
+> r+Dj−1
+
+X
+
+> v=k+1
+
+bw(v)
+
+i
+
+,
+
+(15) where an empty sum is zero. The indicators are evaluated at their actual integer arguments, so (15) also covers deadlines spanning multiple periods. Equation (15) is a supply bound for the cohort, in the sense used for periodic resource models in real-time scheduling [11], with one difference that carries the result: the supply is split across two ordered stages rather than drawn from a single resource. Each k forces every successful packet to consume either service capacity strictly on its earlier side or feeder capacity strictly on its later side, so the two budgets inside a deadline interval cannot be pooled, and minimizing over k
+
+selects the cut separating them most severely. This is what distinguishes calendars differing only in the relative position of their windows. The bound grants the cohort all link capacity and ignores buffer limits and competing packets, so it is an upper bound on its attainable successful count. For an integer C ≥ 0, define the expected Poisson excess 
+
+HC (μ) = E[Z − C]+, Z ∼ Poisson( μ). (16) This is the first-order loss function of the Poisson distribu-tion, with HC (μ) = μ Pr {Z ≥ C} − C Pr {Z ≥ C + 1 } and 
+
+H0(μ) = μ.
+
+Proposition 2 (Ordering and Cohort-Capacity Bound): For every λ > 0 and π ∈ Π( w),
+
+M πj (λ, w ) ≥ Ψj (λ, w ) ≡ 1
+
+λp j P 
+
+> P−1
+
+X
+
+> r=0
+
+HCj (r;w)(λp j ). (17) If no ordered path exists, choose k as the earliest service slot in [r, r + Dj − 2] ; the service sum is zero, and the feeder sum must also be zero. If that interval has no service slot, choose 
+
+k = r + Dj − 1. Thus an excluded phase has Cj (r; w) = 0 .Conversely, an existing ordered path makes every cut in (15) positive, so Cj (r; w) ≥ 1. Consequently, 
+
+Ψj (λ, w ) ≥ qj (w), lim  
+
+> λ↓0
+
+Ψj (λ, w ) = qj (w), (18) since HC (μ)/μ → 0 for each fixed C ≥ 1. Thus (17) extends Proposition 1 to a traffic-dependent necessary con-dition, Ψj (λ, w ) ≤ ηj . It accounts for Poisson batches that exceed the ordered contact capacity even at phases admitting an individual path. Finite deadlines and capacities imply a positive miss floor at every positive Poisson arrival rate, so an exact zero-miss target is infeasible under this arrival model. Proposition 2 treats each single-slot generation cohort sep-arately. A bound over multi-slot cohorts, applying a common cut to all packets generated in a window whose deadline intervals overlap, may yield additional necessary restrictions; it need not be strictly stronger, since consecutive cohorts can use disjoint service and feeder slots. We do not pursue it here: the single-slot version already separates calendars with equal average capacity, and the aggregate condition of Section IV-D captures the coarse effect of sustained competition. 
+
+C. Ordering-Induced Freshness Conditions 
+
+The ordering restriction expressed by (13) applies to status updates as well, where it limits not the existence of a deadline path but the minimum age at which information can arrive. For status flow i, let 
+
+Ri = {(oi + nh i) mod P : n ∈ Z≥0},ℓmin  
+
+> i
+
+(w) = min 
+
+> r∈R i
+
+ℓ(r; w). (19) 
+
+Proposition 3 (Freshness Floor and Required Delivery Rate): Fix a status flow i. For every λ ≥ 0 and π ∈ Π( w):1) every delivered packet p ∈ Pi satisfies dp − gp ≥
+
+ℓmin  
+
+> i
+
+(w);2) if Ai < ℓ min  
+
+> i
+
+(w), then V πi (λ, w ) = 1 , so the flow is infeasible for every εi < 1;3) if Ai ≥ ℓmin  
+
+> i
+
+(w) and V πi (λ, w ) ≤ εi, then, with Ki(T )
+
+the number of delivered packets of flow i with dp < T ,
+
+lim inf  
+
+> T→∞
+
+Eπ [Ki(T )] 
+
+T ≥ ρi(w) ≡ 1 − εi
+
+Ai − ℓmin  
+
+> i
+
+(w) + 1 .
+
+(20) Requiring a minimum update rate to hold an age threshold is the standard freshness–rate trade-off [2]; (20) makes the constant calendar-dependent through ℓmin  
+
+> i
+
+(w).Because flow i generates only one update every hi slots, 
+
+Ki(T ) ≤ T /h i + 1 , so ρi(w) ≤ 1/h i is necessary as well, at each w. The universal two-slot delivery-rate bound is recov-ered when ℓmin  
+
+> i
+
+(w) = 2 , attained when some generation phase of the flow permits collection immediately upon generation and forwarding in the following slot. The bound (20) constrains the required delivery rate. The stale-slot fraction itself admits an exact expression, obtained by asking which timestamp the destination can hold at each boundary. Let 
+
+σ(x) = max {u ∈ Z≥0 : u ≤ x, a (u) = 1 },
+
+Gi = {oi + nh i : n ∈ Z≥0},g⋆i (d) = max {g ∈ G i : g ≤ σ(d − 2) },
+
+(21) and let D = {v + 1 : v ∈ Z≥0, b w(v) = 1 } be the feeder completion boundaries, D(t) = max {d ∈ D : d ≤ t}, and 
+
+d+ = min {d′ ∈ D : d′ > d }. For d ∈ D , g⋆i (d) is the freshest timestamp eligible for delivery at d with contention removed, and both σ and g⋆i are nondecreasing. Write Li = lcm( P, h i)
+
+and 
+
+T ⋆i = oi + 2 P. (22) 
+
+Lemma 1 (Periodicity): Let w ≥ 1. For every t ≥ T ⋆i the quantities D(t) and g⋆i (D(t)) are defined and g⋆i (D(t)) ≥
+
+oi ≥ u0 
+
+> i
+
+. Moreover, for every d ∈ D with d ≥ T ⋆i ,
+
+g⋆i (d + Li) = g⋆i (d) + Li, (d + Li)+ = d+ + Li. (23) Consequently the summand of (24) below depends on d only through d mod Li, so Φi(w) does not depend on which Li-period of D is used. 
+
+Theorem 1 (Exact Stale-Slot Floor): Let w ≥ 1 and set 
+
+Φi(w) = 1
+
+Li
+
+X
+
+> d∈D i
+
+[ d+ − 1 − max {d − 1, g ⋆i (d) + Ai} ]+, (24) where Di is any one Li-period of D∩ [T ⋆i , ∞). Then, for every 
+
+λ ≥ 0 and every π ∈ Π( w),(i) ∆i(t) ≥ t − g⋆i (D(t)) for all t ≥ T ⋆i ,
+
+(ii) V πi (λ, w ) ≥ Φi(w). (25) 
+
+(iii) If cs ≥ |I| , cf ≥ |I| and B ≥ |I| , equality holds in the second inequality for the policy that retains only the newest pending source update per flow, collects it in each service slot if present, and forwards the newest onboard update of each flow in each feeder slot if present. Before a collection, it discards any older onboard update of that flow not selected for forwarding. This construction discards all events, if present; attainment concerns freshness only. Part (iii) specializes a known fact: serving the most recently generated packet is age-optimal in multihop networks [7]. The contribution is parts (i)–(ii), which evaluate the resulting optimum in closed form for a periodic two-hop calendar with a deterministic generation lattice. For w = 0 no ground delivery occurs and V πi (λ, 0) = 1 , so any nonempty status-flow set requires w ≥ 1. A blackout-only lower bound follows by replacing g⋆i (d) with its bound d − 2:for the last completion boundary d1 of a window, d+1 − d1 =
+
+P −w+1 and the summand of (24) is at least [P −w+2 −Ai]+,so 
+
+Φi(w) ≥ Γi(w) ≡ [P − w + 2 − Ai]+
+
+P . (26) Equation (26) is blind to ϕ and to the position of the service window, which is what g⋆i records; (24) is therefore strictly informative where (26) is vacuous. As a boundary check, S =
+
+P , hi = 1 , w = P and Ai = 2 give σ(d−2) = d−2 = g⋆i (d),
+
+d+ = d + 1 and Φi(P ) = 0 , consistent with ℓmin  
+
+> i
+
+(P ) = 2 and 
+
+ρi(P ) = 1 − εi.
+
+Example 2. Let P = 10 , S = 1, w = 1, ϕ = 0,
+
+cs = cf = 1, and one status flow with hi = 1. This is the second calendar of Example 1, whose delays are 
+
+(11 , 20 , 19 , 18 , 17 , 16 , 15 , 14 , 13 , 12) , so ℓmin  
+
+> i
+
+(1) = 11 : an update collected in the service slot has already missed that period’s feeder slot. Two operating points illustrate the gap. Here Φi(1) = 1 , 0.9, 0.8, 0 for Ai = 10 , 11 , 12 , 20 , against 
+
+Γi(1) = 0 .1, 0, 0, 0. At Ai = 10 the flow is infeasible for every εi < 1, whereas (26) would admit any εi ≥ 0.1.At Ai = 11 and εi = 0 .5 the point is infeasible because 
+
+Φi(1) = 0 .9 > ε i; (20) detects it independently, since ρi(1) = 0.5 exceeds the per-slot delivery capacity min {csS, c f w}/P =0.1 of Section IV-D, whereas the universal two-slot form would have given 0.05 and admitted it. Corollary 1 (Equal Airtime, Unequal Freshness): Consider one status flow with no event traffic. Fix P ≥ 2, S = w = 1 ,
+
+hi = 1 , oi = 0 and Ai = P . Then 
+
+Φi(1; ϕ = 1) = 1
+
+P , Φi(1; ϕ = 0) = 1 , (27) while Γi(1) = 1 /P for every ϕ. Two calendars with identical service and feeder airtime therefore differ by 1 − 1/P in the attainable stale-slot fraction. The first admits precisely the tolerances εi ∈ [1 /P, 1) , whereas the second admits none with 
+
+εi < 1. Every fixed positive tolerance is therefore feasible for the first calendar for sufficiently large P .We display the dependence on ϕ where it is the object of study; elsewhere it is suppressed as in Section III. 
+
+D. Aggregate Delivery-Rate Condition 
+
+The successful event rate required by class j is at least 
+
+λp j (1 − ηj ), and the required status delivery rate is ρi(w) by Proposition 3. Each delivered packet, of either type, consumes one service transmission and one feeder transmission. Because the two links operate concurrently and have separate capaci-ties, the binding constraint is the smaller of the two per-slot budgets rather than their sum, and 
+
+X
+
+> i∈I
+
+ρi(w) + λ X
+
+> j∈J
+
+pj (1 − ηj ) ≤ min 
+
+ csSP , cf wP
+
+
+
+. (28) Collected packets that are later discarded consume service capacity as well, so (28) remains valid as an inequality. To relate the generation-cohort definition in (9) to delivery counts strictly before a horizon T , only events generated in the final max j Dj slots can have an on-time delivery at or after 
+
+T . Their expected count is bounded independently of T , so the difference vanishes after normalization. Initial information likewise contributes only a finite number of fresh boundaries. 
+
+E. Outer Region and Scope of the Characterization 
+
+For the mixed-traffic setting, let O consist of the points 
+
+(λ, w ), with λ ≥ 0 and w ∈ { 1, . . . , P }, satisfying 
+
+ρi(w) ≤ 1/h i,
+
+Φi(w) ≤ εi, ∀i ∈ I ,
+
+X
+
+> i
+
+ρi(w) + λ X
+
+> j
+
+pj (1 − ηj ) ≤ min {csS/P, c f w/P },
+
+Ψj (λ, w ) ≤ ηj ∀j ∈ J , λ > 0,
+
+(29) When I = ∅, additionally include (0 , 0) in O. The event inequalities are omitted at λ = 0 . The preceding arguments establish 
+
+F ⊆ O . (30) On the status-only slice the inclusion is an equality under the resource assumptions below. This is a consequence of Theorem 1 rather than an independent result: necessity is part (ii) and sufficiency is part (iii). 
+
+Corollary 2 (A Tight Regime): Let cs ≥ |I| , cf ≥ |I| and 
+
+B ≥ |I| . Then, for w ≥ 1,
+
+(0 , w ) ∈ F ⇐⇒ Φi(w) ≤ εi ∀i ∈ I , (31) and consequently F and O have the same λ = 0 slice. Three of these conditions depend on the position of the windows and not only on their durations: the temporal-cut term in (17), which couples that dependence to the offered event rate, the minimum-delay term ℓmin  
+
+> i
+
+(w) in (20), which couples it to the freshness targets, and Φi(w) itself, which by (27) separates calendars of equal airtime. The remaining conditions account for the unavoidable feeder gap and the aggregate capacity required by the contracts. Away from that slice the conditions are not sufficient. The cohort bounds grant overlapping cohorts the same resources; the delivery-rate condition ignores the ordering constraints that (15) makes explicit; and neither enforces the joint com-petition of status updates and events for the finite onboard buffer, nor the contention among status flows when cf < |I| .Points outside O are infeasible; membership in O alone does not establish joint feasibility. Section V gives an exact joint characterization for one status flow and one event class with a single adjacent contact pair per period, synchronized status generation, and deadlines allowing only one eligible contact pair. V. J OINT FEASIBILITY FOR ARBITRARY FRESHNESS 
+
+THRESHOLDS 
+
+This section characterizes joint freshness and event-delivery feasibility for one status flow and one event class with a single adjacent service–feeder contact pair per period. 
+
+A. Contact-Pair Regime and a Lossless Policy Reduction 
+
+Consider the dynamics, information constraints, and con-tracts of Section III, with one status flow and one event class and specialize the remaining parameters to 
+
+P ≥ 2, S = w = 1 , ϕ = 1 ,h = P, o = 0 , A ∈ Z≥1, D ∈ { 2, . . . , P + 1 }. (32) Write 
+
+uk = kP, vk = kP + 1 , dk = kP + 2 ,
+
+Bk = {dk, . . . , d k + P − 1},C = min {cs, c f , B }, m = D − 1,ν = mλ, q = 1 − m/P. 
+
+(33) Arrivals remain independent Poisson counts of mean λ per slot. The generation cohort {(k − 1) P + 1 , . . . , kP } first encounters service at uk. Its eligible arrivals are exactly 
+
+Nk =
+
+> kP
+
+X 
+
+> t=kP +2 −D
+
+Z(t) iid 
+
+∼ Poisson( ν). (34) They can succeed only at dk, since any event in the cohort has deadline at most kP + P + 1 < d k+1 . The fraction q of generation phases is excluded. An older onboard update can remain useful when A is large. Eliminating such packets therefore requires a dominance argument. 
+
+Lemma 2 (Lossless Reduction to Current Updates): For feasibility and maximum event-delivery rate under (32), there is no loss in restricting policies to collect and forward, in each pair (uk, v k), at most the current status update and eligible events, and to retain no packets onboard after that pair. With 
+
+Xk indicating delivery of the update generated at kP and Yk
+
+counting event successes, the reduced actions satisfy 
+
+Xk ∈ { 0, 1}, Yk = min {Nk, C − Xk}. (35) Furthermore, one may always take Xk = 1 when Nk < C ,without reducing event delivery or worsening freshness. 
+
+B. Exact Age Accounting with a Finite State 
+
+For the reduced policy class, after a current update is first delivered, let ℓk be the number of cycles since the newest delivered generation, measured just after dk. Then 
+
+ℓk =
+
+(
+
+0, Xk = 1 ,ℓk−1 + 1 , Xk = 0 ,
+
+∆( dk + s) = P ℓ k + 2 + s (0 ≤ s < P ).
+
+(36) Consequently the stale fraction of block Bk is 
+
+ωA(ℓk) = 1
+
+P min {P, [P (ℓk + 1) + 1 − A]+}. (37) For A = P + 1 + κ with κ ≥ 0, a delivery followed by one omitted cycle gives stale fraction [P − κ]+/P in that cycle. The minimum possible stale fraction is 
+
+ΦA = ωA(0) = [P + 1 − A]+
+
+P . (38) Thus A = 1 is infeasible for every allowed ε < 1. For A ≥ 2,set 
+
+L =
+
+ A − 1
+
+P
+
+
+
+, Sk = min {ℓk−1, L } ∈ { 0, . . . , L }.
+
+(39) All lags at least L have block cost one. Their exact magnitude is irrelevant: a delivery resets the lag, and an omission keeps the block fully stale. Hence 
+
+Sk+1 =
+
+(
+
+0, Xk = 1 ,
+
+min {Sk + 1 , L }, Xk = 0 . (40) 
+
+Sk is known before observing Nk, and Nk is independent of its history. The current block has cost ωA(Sk+1 ).For any reduced policy, boundary and generation-cohort accounting give 
+
+V π (λ, 1) = lim sup 
+
+> n→∞
+
+1
+
+n
+
+> n
+
+X
+
+> k=1
+
+Eπ ωA(Sk+1 ),M π (λ, 1) = 1 − 1
+
+λP lim inf 
+
+> n→∞
+
+1
+
+n
+
+> n
+
+X
+
+> k=1
+
+Eπ Yk, λ > 0.
+
+(41) Initial information and incomplete terminal blocks contribute vanishing normalized terms. The age formula can be initialized by one current delivery; before any such delivery, a sufficiently old initial timestamp belongs to the saturated state. 
+
+C. A General Obstruction and an Exact Linear Program 
+
+For N ∼ Poisson( ν), define 
+
+Gc(ν) = E min {N, c } =
+
+> c
+
+X
+
+> j=1
+
+Pr {N ≥ j}, G0 = 0 ,p = Pr {N ≥ C} = GC (ν) − GC−1(ν),r = λP (1 − η), βA = P (1 − ε)
+
+A − 1 (A ≥ 2) .
+
+(42) For finite λ > 0, 0 < p < 1. The quantity p is the proba-bility that delivering a status update displaces one otherwise successful event. 
+
+Proposition 4 (Joint Necessary Condition for Arbitrary A): 
+
+For A ≥ 2 and λ > 0, feasibility under (32) requires 
+
+ε ≥ ΦA, r ≤ GC (ν), r ≤ GC−1(ν) + 1 − βA. (43) These inequalities need not be sufficient when A > P + 1 .To capture the complete age history, let zs be the long-run occupation of state s, and let ξs be the long-run fraction of cycles with state s, Nk ≥ C, and Xk = 1 . Define C∗
+
+> A
+
+(ν, ε ; C)
+
+as the value of the following finite linear program: 
+
+minimize 
+
+> z,ξ L
+
+X
+
+> s=0
+
+ξs
+
+subject to 
+
+> L
+
+X
+
+> s=0
+
+zs = 1 , zs ≥ 0,
+
+0 ≤ ξs ≤ pz s (0 ≤ s ≤ L),z0 = 1 − p +
+
+> L
+
+X
+
+> s=0
+
+ξs,zs = pz s−1 − ξs−1 (1 ≤ s < L ),zL = pz L−1 − ξL−1 + pz L − ξL,
+
+> L
+
+X
+
+> s=0
+
+ωA(s)zs ≤ ε. 
+
+(44) The interior balance equations are omitted when L = 1.An infeasible program has value +∞. The objective counts status transmissions that displace events. All other status transmissions occur when Nk < C and have no event cost. The state cost may be written at Sk rather than Sk+1 because their finite-horizon sums differ only by two bounded endpoint terms. There are 2( L+1) decision variables. The unbounded Pois-son arrivals have not been truncated: their effect is represented exactly by GC and p.
+
+Theorem 2 (Exact Joint Feasibility for Arbitrary Integer A): 
+
+Assume (32), A ≥ 2, and λ > 0. Program (44) is feasible if and only if ε ≥ ΦA. When feasible, the maximum successful event count per cycle, in the lim inf expected-average sense, is 
+
+T ∗ 
+
+> C
+
+(ν, ε ; A) = GC (ν) − C ∗
+
+> A
+
+(ν, ε ; C). (45) It is attained by a causal policy in the original model. In particular, 
+
+(λ, 1) ∈ F ⇐⇒ 
+
+(
+
+ε ≥ ΦA,λP (1 − η) ≤ T ∗ 
+
+> C
+
+(mλ, ε ; A). (46) The minimum event-miss fraction subject to freshness is 
+
+M ∗
+
+> A
+
+(λ) = 1 − T ∗ 
+
+> C
+
+(mλ, ε ; A)
+
+λP 
+
+= q + HC (ν) + C∗
+
+> A
+
+(ν, ε ; C)
+
+λP ,
+
+(47) where HC (ν) = ν − GC (ν) is the Poisson excess in (16). At 
+
+λ = 0 , feasibility is equivalent to ε ≥ ΦA.
+
+D. Closed-Form Characterizations Corollary 3 (Thresholds No Larger Than One Fresh Block): 
+
+Let 2 ≤ A ≤ P + 1 and ε ≥ ΦA. Set 
+
+δA = ε − ΦA
+
+1 − ΦA
+
+= 1 − βA. (48) Then 
+
+T ∗ 
+
+> C
+
+(ν, ε ; A) = min {GC (ν), G C−1(ν) + δA}. (49) In particular, at A = P + 1 , ΦA = 0 , δA = ε, and 
+
+T ∗ 
+
+> C
+
+(ν, ε ; P + 1) = min {GC (ν), G C−1(ν) + ε}. (50) 
+
+Corollary 4 (Zero Stale Fraction with Arbitrary A): Let 
+
+A ≥ P + 1 , ε = 0 , and R = ⌊(A − 1) /P ⌋. Then 
+
+C∗
+
+> A
+
+(ν, 0; C) = pR
+
+PR−1 
+
+> j=0
+
+pj ,T ∗ 
+
+> C
+
+(ν, 0; A) = GC (ν) − pR
+
+PR−1 
+
+> j=0
+
+pj .
+
+(51) An attaining policy refreshes whenever Nk < C ; when Nk ≥
+
+C, it refreshes only if Sk = R − 1.
+
+R is the number of complete fresh blocks that one delivery can support. At A = P + 1 , R = 1 and every busy cycle must carry status if ε = 0 . At A = 2 P + 1 , R = 2 : one cycle may be skipped, and the minimum busy-refresh rate decreases from p to p2/(1 + p).
+
+E. Admission and Provisioning 
+
+Within the regime of (32), the joint characterization answers three deployment questions: how much traffic to admit, how much packet capacity to provide, and how much freshness flexibility is needed. First check ε ≥ ΦA; otherwise, increasing link capacity or storage cannot meet the freshness contract. When this check passes, the required effective capacity is 
+
+Creq (λ; A) = min {c ∈ Z≥1 : λP (1 − η)
+
+≤ T ∗ 
+
+> c
+
+(mλ, ε ; A)}, (52) and feasibility requires and is ensured by 
+
+cs, c f , B ≥ Creq (λ; A). (53) For fixed resources, the admission limit and minimum accept-able age threshold are 
+
+λadm (C; A) = sup  {0} ∪ { λ > 0 : r ≤ T ∗ 
+
+> C
+
+(mλ, ε ; A)},
+
+(54) 
+
+Areq = min {a ∈ Z≥2 : ε ≥ Φa,r ≤ T ∗ 
+
+> C
+
+(mλ, ε ; a)}. (55) An empty minimum is ∞; each search varies only its stated parameter while holding the other parameters and targets fixed. 
+
+Proposition 5 (Provisioning and Admission): For λ > 0 and 
+
+ε ≥ ΦA, a finite Creq exists if and only if η > q . The optimal event rate is nondecreasing in C, and increasing A cannot destroy feasibility. Feasibility is downward closed in λ, so a scalar search using (44) determines (54). The distinction is operational: if ε < ΦA or η ≤ q, adding packet capacity cannot repair the deployment. Otherwise, the characterization supports admission control and integer searches over capacity or age threshold. Section VI compares these choices for a reference deployment. VI. N UMERICAL RESULTS AND DEPLOYMENT 
+
+IMPLICATIONS 
+
+The reference deployment has one status flow and one event class, with P = h = 10 , S = w = 1 , ϕ = 1 , and o = 0 .Unless varied in a figure, the remaining parameters are cs =
+
+cf = B = 2 , D = 11 , λ = 0 .1, A = 11 , ε = 0 , and η = 0 .2.We write C = min {cs, c f , B } for the effective packet capacity of the contact pair. The curves evaluate the exact joint characterization in MATLAB. To check its attainment, we also simulate indi-vidual packets through both hops, enforcing onboard storage, deadlines, and post-delivery age sampling. 
+
+A. The Cost of Sharing Contacts 
+
+Figure 2 explains the gap at the reference load. Events alone meet the target. Requiring A = 11 with no stale slots raises loss to 0.3679 : status refreshes displace event deliveries even though every arrival phase admits a timely two-hop path at 
+
+D = 11 . The timing-loss component is therefore zero in this example. Increasing A to 21 reduces the refresh cost sufficiently to bring the total loss below the target, at 0.1589 .Increasing all three resources to three achieves 0.1036 with 
+
+A = 11 ; in that case, the event-only overflow itself is smaller, but freshness competition still contributes to the total. The two remedies thus recover feasibility through different changes in the loss budget. 
+
+B. How Much Freshness Flexibility Is Useful? 
+
+A freshness contract can be relaxed by increasing either the age threshold or the permitted stale fraction. Their effects are related but distinct. In Fig. 3, A = 11 and A = 16 have the same event loss at ε = 0 , but allowing stale slots immediately separates their curves. A missed refresh produces fewer stale boundaries at the larger threshold, allowing more capacity to be reassigned to events for the same stale allowance. At A =11 , an allowance of approximately 0.17 is needed to meet the target. With A = 21 , the target is already met at zero staleness. (A, C) 
+
+11, 2 21, 2 11, 3 
+
+> Minimum deadline-miss fraction
+
+00.1 0.2 0.3 0.4 0.368 0.159 0.104 
+
+> Event-only overflow Freshness competition Deadline-miss target
+
+Fig. 2. Exact event-loss decomposition at λ = 0 .1, D = 11 , and ε = 0 .The pairs on the horizontal axis specify (A, C ). Contact-timing loss is zero for all three cases; the dashed line is the deadline-miss target. Allowed stale fraction, 0
+
+0 0.1 0.2 0.3 0.4 
+
+> Event-miss fraction
+
+0.1 0.15 0.2 0.25 0.3 0.35 0.4 
+
+Deadline target 
+
+> A = 11: exact A = 16: exact A = 21: exact
+
+Fig. 3. Minimum event-miss fraction as the stale allowance varies for A ∈{11 , 16 , 21 }. Lines evaluate the exact characterization; markers and intervals are packet-level simulation estimates. The dashed line marks η = 0 .2.
+
+All three curves eventually reach the event-only floor of 
+
+0.1036 . Beyond this point, relaxing freshness further releases no additional useful event capacity. This saturation also ap-pears in Fig. 4: the selected attaining policy uses the available stale budget until it reaches the event-only limit, then leaves the additional allowance unused. The close agreement between the packet estimates and analytical curves holds for both the event loss and the resulting stale fraction. 
+
+C. Using the Freshness Margin 
+
+At A = 21 , the destination can remain fresh allowing the scheduler to share contact capacity. Figure 5 compares simulated event-miss fractions for three rules: refreshing ev-Allowed stale fraction, 0
+
+0 0.1 0.2 0.3 0.4 
+
+> Stale-slot fraction
+
+00.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 
+
+> A = 11: exact A = 16: exact A = 21: exact Allowed f raction
+
+Fig. 4. Stale fraction of the selected attaining policy under the contracts in Fig. 3. The dashed diagonal is the allowed fraction. Markers and intervals show packet-level estimates. Attaining Status every cycle Events first 
+
+> Event-miss fraction
+
+00.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 
+
+Contract 
+
+Fig. 5. Simulated event-miss fractions for three allocation rules at A = 21 
+
+and ε = 0 . The dashed line marks η = 0 .2; error bars are pointwise 95% confidence intervals. 
+
+ery cycle yields 0.37 , event-first service yields 0.1, and the attaining policy yields 0.16 . Event-first service achieves the lowest miss fraction but produces a stale fraction of 0.07 ,violating the zero-stale contract. The attaining policy instead uses the available freshness margin to defer updates when possible while maintaining the required freshness. 
+
+D. From Feasibility to a Deployment Choice 
+
+Figure 6 gives the admission consequence of these alterna-tives. With the original resources and A = 11 , the admissible rate ends at approximately 0.04642 events per slot. Supporting 
+
+λ = 0 .1 therefore requires a change: either increase both link Offered event rate (events/slot) 
+
+0 0.05 0.1 0.15 
+
+> Minimum event-miss fraction
+
+00.1 0.2 0.3 0.4 0.5 
+
+Deadline target            
+
+> Baseline: A=11, C=2 All resources=3, A=11 A=21, C=2 Admission limit: 0.04642 Fig. 6. Exact event-miss fractions versus offered rate for D= 11 and ε= 0 .The marked crossing gives the baseline admission limit. The capacity upgrade sets cs=cf=B= 3 .
+
+capacities and storage to three, or retain the resources and accept A = 21 . Increasing the feeder capacity alone leaves 
+
+C = 2 and the baseline curve unchanged, because service reception and onboard storage remain bottlenecks. The deadline must be included in that decision. Figure 7 keeps the load at 0.1 and varies D. At D = 10 , the capacity upgrade gives a minimum miss fraction of 0.1791 and meets the contract, whereas relaxing the age threshold gives 0.2212 
+
+and fails. Both remedies become feasible at D = 11 . An operator retaining the original hardware can therefore admit up to 0.04642 events per slot under the original contracts, or support 0.1 by allowing A = 21 when D = 11 is acceptable. If the application instead requires D = 10 , increasing both link capacities and storage to three supports the same load while keeping A = 11 . These choices follow from the joint contracts and contact calendar; an improvement in either freshness tolerance or feeder capacity alone need not resolve the deployment’s limiting constraint. VII. C ONCLUSION 
+
+The principal finding is that separate freshness and deadline tests, as well as average capacity alone, do not determine whether both contracts can be met under ordered two-hop con-tacts. Theorem 1 gives the exact stale-slot floor for status-only operation and an attaining policy when resources suffice. For mixed traffic, Lemma 2 shows that the restricted contact-pair model admits a lossless reduction to current status updates and eligible events; Theorem 2 then characterizes joint feasibility by a finite occupation program. The phase, cohort-capacity, and aggregate-rate bounds sup-port screening under general calendars but are not sufficient for joint feasibility. The exact mixed-traffic result is restricted to one status flow and one Poisson event class, synchronized Event deadline D (slots) 
+
+2 3 4 5 6 7 8 9 10 11 
+
+> Minimum event-miss fraction
+
+0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+
+Deadline target      
+
+> Baseline: A=11, C=2 All resources=3, A=11 A=21, C=2
+> Fig. 7. Deadline sensitivity at λ= 0 .1and ε= 0 . Lines are exact evaluations; square markers and intervals show packet-level estimates. The dashed line marks the deadline-miss target.
+
+status generation with h = P and o = 0 , one adjacent one-slot service–feeder pair per period ( S = w = 1 , ϕ = 1 ), and deadlines D ∈ { 2, . . . , P + 1 }. Within this regime it covers all integer age thresholds A ≥ 2 (while A = 1 is infeasible for the stated freshness targets). Extending exact joint characterization to general contact calendars, multiple contact pairs, and multiple flows or event classes remains open. APPENDIX APROOFS FOR TRAFFIC -C ONTACT FEASIBILITY 
+
+A. Proof of Proposition 1 Proof: Put μj = λp j > 0. Every packet generated at an excluded phase misses under every policy. Since E[Zj (kP +
+
+r)] = μj ,
+
+Eπ [N miss  
+
+> j
+
+(nP )] ≥ nμ jP −1X
+
+> r=0
+
+1{ℓ(r; w) > D j }
+
+= nμ j P q j (w).
+
+Dividing by E[Nj (nP )] = nP μ j shows that the ratio in (9) is at least qj (w) for every n, hence so is its limit superior. The phase share is 1/P in expected offered counts; realized counts need not be identical across phases. 
+
+B. Proof of Proposition 2 Proof: Let Lj,t be the number of eventual deadline misses in the class-j cohort generated at t. For t = kP + r, the pe-riodic temporal-cut bound (15) limits that cohort’s successful deliveries to Cj (r; w), regardless of other traffic. Hence, on every sample path, 
+
+Lj,kP +r ≥ [Zj (kP + r) − Cj (r; w)] +.
+
+The generation cohorts are disjoint, even when their delivery intervals overlap. With μj = λp j , their expected misses therefore satisfy 
+
+Eπ [N miss  
+
+> j
+
+(nP )] = 
+
+> n−1
+
+X 
+
+> k=0
+> P−1
+
+X
+
+> r=0
+
+Eπ [Lj,kP +r ]
+
+≥ n 
+
+> P−1
+
+X
+
+> r=0
+
+HCj (r;w)(μj ).
+
+Divide by nP μ j and use the complete-period subsequence in (9) to obtain (17). All cohorts are scored after their deadlines, as required by (9). 
+
+C. Proof of Proposition 3 Proof: (i) Each gp has a phase in Ri, and by Section IV-A a packet generated at phase r cannot be delivered earlier than 
+
+gp + ℓ(r; w).(ii) Boundary t is fresh only if ui(t) ≥ t − Ai. By (i), any delivered packet with dp ≤ t has gp ≤ dp − ℓmin  
+
+> i
+
+(w) ≤
+
+t − ℓmin  
+
+> i
+
+(w) < t − Ai, so no delivery can make t fresh. Only the initial timestamp can, and u0 
+
+> i
+
+≥ t − Ai holds for at most finitely many t. The fresh-boundary count is therefore bounded uniformly in T , and (8) equals one. (iii) A delivered packet p can make boundary t fresh only if dp ≤ t ≤ gp + Ai, so it accounts for at most 
+
+[gp + Ai − dp + 1] + ≤ Ai − ℓmin  
+
+> i
+
+(w) + 1 
+
+fresh boundaries, using (i). Let Fi(T ) = PT −1 
+
+> t=0
+
+1{∆i(t) ≤
+
+Ai}. Every fresh boundary t < T is accounted for by the initial timestamp or by a delivered packet with dp ≤ t < T ,hence counted in Ki(T ). Therefore 
+
+Fi(T ) ≤ b0 
+
+> i
+
++  Ai − ℓmin  
+
+> i
+
+(w) + 1 Ki(T )
+
+for a finite constant b0 
+
+> i
+
+accounting for initial information. Since (8) implies lim inf T →∞ Eπ [Fi(T )] /T ≥ 1 − εi, the claim follows. 
+
+D. Proof of Lemma 1 Proof: Since S ≥ 1 and w ≥ 1, every P consecutive slots contain a service slot and a feeder slot, so σ(x) ≥ x − P + 1 
+
+and D(t) ≥ t − P + 1 wherever they are defined. Hence 
+
+σ(D(t) − 2) ≥ t − 2P ≥ oi for t ≥ T ⋆i , which makes the set defining g⋆i (D(t)) nonempty, and g⋆i (D(t)) ≥ oi ≥ 0 ≥ u0 
+
+> i
+
+.For (23), the indicators a(·) and bw(·) have period P and 
+
+P | Li, so σ(x+Li) = σ(x)+ Li and D+Li = D∩ [Li+1 , ∞);and hi | Li gives max {g ∈ G i : g ≤ y + Li} = max {g ∈ G i :
+
+g ≤ y} + Li. These identities give both equalities. 
+
+E. Proof of Theorem 1 Proof: Let t ≥ T ⋆i . A packet p ∈ P i with dp ≤ t was forwarded in slot v = dp − 1, hence was onboard at v and collected in some slot u ≤ dp − 2 with a(u) = 1 . Therefore 
+
+gp ≤ u ≤ σ(dp − 2) and so gp ≤ g⋆i (dp). Since dp ∈ D 
+
+and dp ≤ t give dp ≤ D(t), and g⋆i is nondecreasing, every delivered packet counted in (6) satisfies gp ≤ g⋆i (D(t)) , and 
+
+u0 
+
+> i
+
+≤ g⋆i (D(t)) by Lemma 1. Hence ui(t) ≤ g⋆i (D(t)) , which is part (i). Part (ii) follows next, and Lemma 1 makes Φi(w)
+
+well defined. Fix d ∈ D . For t ∈ { d, . . . , d + − 1} we have D(t) = d,so ∆i(t) > A i whenever t > g ⋆i (d) + Ai, and the number of such boundaries in that interval is exactly the summand of (24). The intervals {d, . . . , d + − 1} are disjoint and tile the boundaries after the transient, and the summand depends on 
+
+d only through d mod Li; averaging over one Li-period gives 
+
+V πi (λ, w ) ≥ Φi(w).For attainment, the stated policy uses at most one transmis-sion per flow on each link and leaves at most one waiting onboard packet per flow after each slot. Its discards and selections therefore satisfy (3) under the stated capacity as-sumptions and use only locally available information. Let v = D(t) − 1, u = σ(v − 1) , and g = g⋆i (D(t)) . The packet generated at g is the newest update generated by slot 
+
+u. If still source-held, it is collected in slot u; otherwise it has already been collected and is either onboard or delivered. It cannot have been discarded in favor of a newer collected update before v: no newer update was generated by u, and no service slot lies between u + 1 and v − 1. Thus the packet is either delivered before v, or is onboard and forwarded in slot 
+
+v. A collection in slot v does not discard a packet selected for forwarding. Hence ui(t) ≥ g, and the preceding upper bound on the delivered timestamp gives ui(t) = g⋆i (D(t)) after the transient. This attains (25) and therefore Φi(w).F. Proof of Corollary 2 Proof: Necessity is part (ii) of Theorem 1. For sufficiency, the event contracts are vacuous at λ = 0 , and the policy in part (iii) of Theorem 1 attains V πi (0 , w ) = Φ i(w) ≤ εi for every flow, so (0 , w ) ∈ F , which gives (31). For the slices with 
+
+w ≥ 1, every inequality of (29) is necessary for feasibility, so all of them hold at such a point and (0 , w ) ∈ O ; conversely a point of O with λ = 0 satisfies Φi(w) ≤ εi and is therefore feasible by (31). For w = 0 , both sets contain (0 , 0) exactly when I = ∅.APPENDIX BPROOFS FOR JOINT FEASIBILITY 
+
+A. Proof of Lemma 2 Proof: Events generated between consecutive service slots can succeed only through the following pair: their latest possible deadline is dk+1 − 1. Thus no successful event can be carried across pairs. Put K = min {cf , B }. If cs ≥ K, retain all its successful events at dk and replace any status deliveries at dk by one delivery of the current update. Their total count is at most 
+
+K, since all original forwarded packets were onboard at vk
+
+and obeyed the feeder limit. The replacement set therefore fits service, feeder, and buffer capacities when collected at uk. Its timestamp is at least every replaced timestamp, so destination age cannot increase. The choice is causal: between uk and vk
+
+there is no new source observation; any private randomization used at vk can be drawn at uk.If cs < K , instead advance every collected status packet to completion in its collection pair, replacing multiple collected status packets by the single current update. Forward all eligible events collected in that pair. There are at most cs such packets, which fit both feeder and buffer capacities. Every originally successful event still succeeds. Whenever the emulated policy eventually delivers a status packet, the new policy has already delivered an update with a timestamp at least as recent in that packet’s collection pair. Its destination age therefore cannot be larger. Both constructions leave no onboard backlog and need only observed metadata and a simulated history of the original policy, not future arrivals. Within the resulting class, serving min {Nk, C −Xk} events can only increase successful deliveries. If Nk < C , adding a current status update when none was selected leaves this event count unchanged and weakly improves all future ages; the original future decisions can still be emulated. Thus refreshing in such cycles also incurs no loss. The observation constraints are preserved. 
+
+B. Proof of Proposition 4 Proof: A delivery at dk has timestamp kP and sampled age two. Omissions increment the generation lag by one cycle, giving (36). Counting integers s ∈ {0, . . . , P − 1} with 
+
+P ℓ k + 2 + s > A proves (37). For ℓ ≥ L, the first sample is already stale, so saturation preserves every block cost and future transition. The lowest cost is ωA(0) = Φ A.The blocks tile the boundary samples after startup. Genera-tion cohorts likewise partition event arrivals; their expected offered count per cycle is λP . Initial and terminal partial cohorts contribute O(P λ ) expected packets. These facts give (41), including its limsup/liminf conventions. Each delivered current update can account for at most A −
+
+1 fresh boundaries starting at its delivery. A union bound, including finite initial information, therefore gives 
+
+#{fresh boundaries in n blocks } ≤ (A − 1) 
+
+> n
+
+X
+
+> k=1
+
+Xk + O(1) .
+
+Freshness implies lim inf n n−1 P 
+
+> k
+
+EXk ≥ βA. On every reduced sample path, 
+
+Yk ≤ min {Nk, C }, Yk ≤ min {Nk, C − 1} + 1 − Xk.
+
+Expectations and the event contract yield (43). Lemma 2 makes these necessary for the original policy class as well. 
+
+C. Proof of Theorem 2 Proof: For a reduced policy that always refreshes when 
+
+Nk < C , define expected empirical measures 
+
+z(n) 
+
+> s
+
+= 1
+
+n
+
+> n
+
+X
+
+> k=1
+
+Pr {Sk = s},ξ(n) 
+
+> s
+
+= 1
+
+n
+
+> n
+
+X
+
+> k=1
+
+Pr {Sk = s, N k ≥ C, X k = 1 }.
+
+Independence of Nk from the prior state gives 0 ≤ ξ(n) 
+
+> s
+
+≤
+
+pz (n) 
+
+> s
+
+. A visit to s resets with mass (1 − p)z(n) 
+
+> s
+
++ ξ(n) 
+
+> s
+
+and advances with mass pz (n) 
+
+> s
+
+− ξ(n) 
+
+> s
+
+. Finite-horizon flow imbal-ance is an endpoint term of order 1/n . Consequently every subsequential limit of these bounded measures satisfies the balance and normalization constraints in (44). The freshness contract ensures its cost constraint. Moreover, (35) gives the exact expected-average identity 
+
+1
+
+n
+
+> n
+
+X
+
+> k=1
+
+EYk = GC (ν) −
+
+> L
+
+X
+
+> s=0
+
+ξ(n) 
+
+> s
+
+.
+
+Every feasible limit point has objective at least C∗
+
+> A
+
+, so the event rate cannot exceed (45). Compactness of the feasible set gives an optimal solution whenever it is nonempty. Given an optimal (z, ξ ), refresh whenever Nk < C . When 
+
+Nk ≥ C and Sk = s, refresh with probability 
+
+bs =
+
+(
+
+ξs/(pz s), zs > 0,
+
+0, zs = 0 . (56) Forward min {Nk, C − Xk} eligible events. These actions are causal and physically feasible by the reduction lemma. Their transition matrix has probability at least 1 − p > 0
+
+of jumping to state zero from every state. Coupling chains at their first such reset proves uniqueness of the invariant distribution and geometric convergence from any initial state. The balance equations make z that invariant distribution, with busy-refresh masses ξ. Hence the stated cost and reward are attained, including at equality of the QoS constraints. Every state has cost at least ΦA; always refreshing attains that cost, with z0 = 1 and ξ0 = p. Thus the program is feasible exactly when ε ≥ ΦA. The cohort identity gives (46), and 
+
+ν = mλ with HC = ν − GC gives (47). At zero event rate the same isolated freshness floor is attained by refreshing every cycle. 
+
+D. Proof of Corollary 3 Proof: Here L = 1 , ωA(0) = Φ A, and ωA(1) = 1 . Write 
+
+c = ξ0 + ξ1. The balance equations give z0 = 1 − p + c, so the cost is 
+
+ΦAz0 + 1 − z0 = 1 − (1 − ΦA)(1 − p + c).
+
+The budget requires c ≥ p − δA, with c ≥ 0. This lower bound is attainable by a state-independent busy-refresh probability 
+
+[p − δA]+/p . Therefore C∗ 
+
+> A
+
+= [ p − δA]+, proving (49) and its specialization (50). 
+
+E. Proof of Corollary 4 Proof: The zero-cost states are exactly 0, . . . , R − 1.A feasible occupation measure puts no mass elsewhere. The balance constraints give zs ≤ pz s−1 for 1 ≤ s < R , hence 
+
+1 = 
+
+> R−1
+
+X
+
+> s=0
+
+zs ≤ z0
+
+> R−1
+
+X
+
+> s=0
+
+ps.
+
+Since P 
+
+> s
+
+ξs = z0 − (1 − p), every feasible objective is at least 
+
+1
+
+PR−1 
+
+> s=0
+
+ps − (1 − p) = pR
+
+PR−1 
+
+> s=0
+
+ps .
+
+Refresh freely whenever Nk < C and refresh in a busy cycle only at state R − 1. Then zs = ps/ PR−1 
+
+> j=0
+
+pj for 0 ≤ s < R ,and the bound is attained with zero stale cost. 
+
+F. Proof of Proposition 5 Proof: Additional service capacity, feeder capacity, or storage can be left unused, so the optimal event rate is nonde-creasing in C. Similarly, increasing A weakly reduces every policy’s stale fraction. This justifies (53) and the threshold comparison in (55). Finite C gives GC (ν) < ν , so M ∗ 
+
+> A
+
+> q .Conversely, when ε ≥ ΦA, refreshing every cycle is freshness-feasible and supports GC−1(ν) → ν as C → ∞ . Thus η > q 
+
+is precisely the condition for finite required resources. To prove downward closure in event load, start with any feasible policy at λ2 > λ 1 > 0. At load λ1, internally add independent Poisson arrivals of rate λ2 − λ1 and emulate that policy while ignoring which packets are virtual. Selected virtual packets simply leave their reserved resources idle. Conditional on the superposed arrival process, each event is real with probability λ1/λ 2, independently of the emulated de-cisions. Expected real successes therefore scale by this factor, preserving the event success fraction and the status decisions. All virtual arrivals needed for a decision can be generated causally at the corresponding contact. Thus feasibility at λ2
+
+implies feasibility at λ1.REFERENCES [1] 3GPP, “General packet radio service (gprs) enhancements for evolved universal terrestrial radio access network (e-utran) access,” 3rd Genera-tion Partnership Project, Technical Specification TS 23.401, 2025. [2] R. D. Yates, Y. Sun, D. R. Brown, S. K. Kaul, E. Modiano, and S. Ulukus, “Age of information: An introduction and survey,” IEEE Journal on Selected Areas in Communications , vol. 39, no. 5, pp. 1183– 1210, 2021, arXiv:2007.08564. [3] J. A. Fraire and J. M. Finochietto, “Design challenges in contact plans for disruption-tolerant satellite networks,” IEEE Communications Magazine , vol. 53, no. 5, 2015. [4] C¸ . Arı, ¨O. T. Kartal, A. Munari, L. Badia, E. Uysal, and O. Kaya, “Optimizing peak age under intermittent satellite connectivity and store-and-forward,” in 2025 59th Asilomar Conference on Signals, Systems, and Computers . IEEE, 2025, pp. 140–144. [5] J. Sun, L. Wang, Z. Jiang, S. Zhou, and Z. Niu, “Age-optimal scheduling for heterogeneous traffic with timely throughput constraints,” IEEE Journal on Selected Areas in Communications , vol. 39, no. 5, pp. 1485– 1498, 2021. [6] E. Fountoulakis et al. , “Scheduling policies for AoI minimization with timely throughput constraints,” IEEE Transactions on Communications ,vol. 71, no. 7, pp. 3905–3917, 2023. [7] A. M. Bedewy, Y. Sun, and N. B. Shroff, “The age of information in multihop networks,” IEEE/ACM Transactions on Networking , 2019, arXiv:1712.10061; conference version arXiv:1701.05711. [8] R. Li, C. Huang, X. Qin, and L. Yang, “Aoi-delay tradeoff in mobile edge caching: A mixed-order drift-plus-penalty algorithm,” arXiv preprint arXiv:2304.08781 , 2023. [9] J. Wang, W. Cheng, and H. V. Poor, “Statistical aoi, delay, and error-rate bounded qos provisioning for satellite-terrestrial integrated networks,” 
+
+arXiv preprint arXiv:2406.05165 , 2024. [10] I.-H. Hou, V. Borkar, and P. R. Kumar, “A theory of QoS for wireless,” in Proc. IEEE INFOCOM , 2009. [11] I. Shin and I. Lee, “Periodic resource model for compositional real-time guarantees,” in Proc. 24th IEEE Real-Time Systems Symposium (RTSS) ,2003, pp. 2–13.

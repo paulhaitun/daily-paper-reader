@@ -1,0 +1,313 @@
+{
+  "date": "20261023",
+  "date_label": "",
+  "generated_at": "2026-10-23 21:59:30 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.21095v1",
+      "route": "202610/23/2610.21095v1-can-world-and-action-modeling-benefit-each-other-under-unified-causal-training",
+      "title": "Can World and Action Modeling Benefit Each Other under Unified Causal Training?",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向具身预测与策略学习的世界模型与动作建模统一训练",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.26844v1",
+      "route": "202610/23/2610.26844v1-anygoal-on-world-model-generalization-beyond-expert-rollouts",
+      "title": "AnyGoal: On World Model Generalization Beyond Expert Rollouts",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向智能体规划的世界模型泛化",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.28259v1",
+      "route": "202610/23/2610.28259v1-large-multimodal-models-for-direct-robot-control-gpt-6-as-a-beginning",
+      "title": "Large Multimodal Models for Direct Robot Control: GPT-6 as a Beginning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "多模态模型闭环机器人操作，考察深度、上下文学习与触觉",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.29037v1",
+      "route": "202610/23/2610.29037v1-near-optimal-consistency-robustness-bounds-for-non-clairvoyant-scheduling",
+      "title": "Near-Optimal Consistency-Robustness Bounds for Non-Clairvoyant Scheduling",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "带预测处理时间的作业调度一致性与鲁棒性界",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.29503v2",
+      "route": "202610/23/2610.29503v2-hard-and-soft-real-time-dnn-inference-scheduling-on-heterogeneous-multi-accelerator-systems-via-reinforcement-learning",
+      "title": "Hard and Soft Real-Time DNN Inference Scheduling on Heterogeneous Multi-Accelerator Systems via Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向异构加速器硬软实时DNN推理的强化学习调度器",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.30789v1",
+      "route": "202610/23/2610.30789v1-an-introduction-to-world-models-for-generalist-agents",
+      "title": "An Introduction to World Models for Generalist Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "支撑智能体预测与交互的世界模型",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2609.39416v1",
+      "route": "202610/23/2609.39416v1-communication-free-distributed-multi-robot-task-allocation-under-partial-observations-using-labeled-multi-bernoulli-filtering",
+      "title": "Communication-Free Distributed Multi-Robot Task Allocation under Partial Observations Using Labeled Multi-Bernoulli Filtering",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "仅依赖局部观测的无通信分布式多机器人任务分配",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.00605v1",
+      "route": "202610/23/2610.00605v1-aging-aware-online-distributed-scheduling-for-lifecycle-carbon-reduction-in-geo-distributed-data-centers",
+      "title": "Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "地理分布式数据中心的在线分布式调度与资源分配",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.01343v1",
+      "route": "202610/23/2610.01343v1-robust-non-clairvoyant-scheduling-with-classification-models",
+      "title": "Robust Non-Clairvoyant Scheduling with Classification Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "结合分类模型的学习增强非先知调度",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.01887v1",
+      "route": "202610/23/2610.01887v1-trace-tackling-real-world-resource-assignment-problems-via-agentic-heuristic-design",
+      "title": "TRACE: Tackling Real-World Resource Assignment Problems via Agentic Heuristic Design",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向动态资源分配与调度的LLM智能体自动启发式设计",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.22433v1",
+      "route": "202610/23/2610.22433v1-bolt-multi-bottleneck-bound-guided-learning-for-flexible-job-shop-scheduling-with-time-lags-and-resource-coupled-transport",
+      "title": "BOLT: Multi-Bottleneck Bound-Guided Learning for Flexible Job-Shop Scheduling with Time Lags and Resource-Coupled Transport",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "带车队运输耦合的柔性作业车间调度与界引导学习",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.23768v1",
+      "route": "202610/23/2610.23768v1-dynamic-load-balancing-under-restricting-updates",
+      "title": "Dynamic Load Balancing under Restricting Updates",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "动态负载均衡中将作业分配到机器以最小化最大负载",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.24804v1",
+      "route": "202610/23/2610.24804v1-saram-sparse-adapter-allocation-with-reuse-and-merging-for-lifelong-robot-learning",
+      "title": "SARAM: Sparse Adapter Allocation with Reuse and Merging for Lifelong Robot Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "基于VLA骨干的终身机器人学习与适配器复用",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.26239v1",
+      "route": "202610/23/2610.26239v1-cors-fast-neural-flexible-job-shop-scheduling-via-composite-interval-state-reuse",
+      "title": "CoRS: Fast Neural Flexible Job-Shop Scheduling via Composite Interval State Reuse",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "基于区间状态复用的神经柔性作业车间调度",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.26609v1",
+      "route": "202610/23/2610.26609v1-cqtwin-a-digital-twin-toolkit-for-operational-analytics-of-hpc-schedulers",
+      "title": "CQTwin: A Digital-Twin Toolkit for Operational Analytics of HPC Schedulers",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "用于分析与比较HPC作业调度策略的数字孪生工具",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.26142v1",
+      "route": "202610/23/2610.26142v1-fault-tolerant-offloading-framework-for-real-time-applications-in-mobile-edge-computing",
+      "title": "Fault-Tolerant Offloading Framework for Real-Time Applications in Mobile Edge Computing",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "带截止期的任务卸载与计算资源分配",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.27966v1",
+      "route": "202610/23/2610.27966v1-joint-freshness-and-deadline-feasibility-in-store-and-forward-satellite-iot-networks",
+      "title": "Joint Freshness and Deadline Feasibility in Store-and-Forward Satellite IoT Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "存储转发卫星物联网中的截止期限与新鲜度调度",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.30430v1",
+      "route": "202610/23/2610.30430v1-tight-bounds-for-paging-with-time-windows-and-joint-replenishment-with-varying-opening-costs",
+      "title": "Tight Bounds for Paging with Time Windows and Joint Replenishment with Varying Opening Costs",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "带时间窗的在线调度算法与竞争比界",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    },
+    {
+      "paper_id": "2610.30768v1",
+      "route": "202610/23/2610.30768v1-adaptive-deadline--and-energy-aware-caching-algorithms-in-dynamic-multi-uav-edge-networks",
+      "title": "Adaptive Deadline- and Energy-Aware Caching Algorithms in Dynamic Multi-UAV Edge Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "多无人机边缘网络中考虑截止期与能耗的缓存放置与替换",
+      "first_seen_at": "2026-10-23 21:59:30 UTC",
+      "updated_at": "2026-10-23 21:59:30 UTC"
+    }
+  ]
+}

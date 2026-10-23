@@ -1,0 +1,2710 @@
+Title: Dynamic Load Balancing under Restricting Updates
+
+URL Source: https://arxiv.org/pdf/2610.23768v1
+
+Published Time: Mon, 19 Oct 2026 01:39:06 GMT
+
+Number of Pages: 44
+
+Markdown Content:
+# Dynamic Load Balancing under Restricting Updates 
+
+Aaron Bernstein ∗ Sayan Bhattacharya † Peter Kiss ‡ Thatchaphol Saranurak §
+
+Abstract 
+
+We study the problem of load balancing in the dynamic setting. The input is a bipartite graph 
+
+G = ( J ∪ M, E ) of jobs J and machines M . Every job has a positive weight w(j). The goal is to assign every job in J to an adjacent machine in M so as to minimize the maximum machine load, where the load of a machine is the sum of the weights of the jobs assigned to it. Although load balancing has been studied extensively in many models of computation, the only previous result in the dynamic model addresses the incremental setting, where updates take the form of edge insertions and job deletions [BKS23b]. The authors show a (1 + ϵ)-approximation for incremental fractional load balancing with poly(log( n), 1/ϵ ) update time; they point out that their techniques do not extend to the decremental setting. 
+
+Main Result: We obtain a near-optimal algorithm for fractional load balancing in the decre-mental setting, where updates take the form of edge deletions and job insertions: a (1 + ϵ)-approximation with poly(log( n), 1/ϵ ) update time. Our techniques are very different from those of the incremental algorithm of [BKS23b]. Instead, our algorithm is inspired by a load-balancing algo-rithm from the congest model of computation [ALPZ21]. We develop a novel analytic framework for this algorithm, which allows us to show that it performs well in the dynamic setting. 
+
+Rounding Scheme: We also present a black-box rounding scheme for dynamic load balancing. Plugging in our fractional algorithm, we obtain a decremental algorithm for (2 + ϵ)-approximate 
+
+integral load balancing with poly(log( n), 1/ϵ ) update time. We also obtain the same bounds for incremental load balancing by plugging in the fractional algorithm of [BKS23b]. The approximation ratio nearly matches the 2-approximation achieved by the state-of-the-art static algorithms for this problem. 
+
+> ∗
+
+New York University, bernstei@gmail.com . Supported by Sloan Fellowship, NSF Grant 1942010, and Charles S. Baylis endowment at NYU. 
+
+> †
+
+University of Warwick, S.Bhattacharya@warwick.ac.uk .
+
+> ‡
+
+University of Vienna, peter.kiss@univie.ac.at This research was funded in whole or in part by the Austrian Science Fund (FWF) 10.55776/ESP6088024, Part of this work was done while at the University of Warwick. 
+
+> §
+
+University of Michigan, thsa@umich.edu . Supported by NSF Grant CCF-2238138 and a Sloan Fellowship. Part of this work was done while at INSAIT, Sofia University “St. Kliment Ohridski”, Bulgaria. This work was partially funded from the Ministry of Education and Science of Bulgaria (support for INSAIT, part of the Bulgarian National Roadmap for Research Infrastructure). arXiv:2610.23768v1 [cs.DS] 16 Oct 2026 Contents 
+
+1 Introduction 1
+
+1.1 Our Contributions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11.2 Related Work: Maximum Flow and Maximum Matching . . . . . . . . . . . . . . . . . 2
+
+2 Overview 3
+
+2.1 Maintaining a Fractional Assignment . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32.2 Rounding the Dynamic Fractional Assignment . . . . . . . . . . . . . . . . . . . . . . 7
+
+3 Preliminaries 94 Core Components 10 5 Maintaining an ϵ-Fractional Assignment: The Algorithm 11 6 Maintaining an ϵ-Fractional Assignment: The Analysis 14 
+
+6.1 The History Graph G = ( J ∪ M , E) and the History Flow z : E → R≥0 . . . . . . . . . 15 6.2 Establishing the Correctness of Our Algorithm: Proof of Lemma 6.2 . . . . . . . . . . 16 6.2.1 Bounding the Total Flow out of Job-Level Nodes: Proof of Lemma 6.9 . . . . . 21 6.2.2 Bounding the Total Weighted Flow into Machine-Level Nodes: Proof of Lemma 6.11 23 
+
+7 Fully Dynamic Rounding for Load Balancing 26 
+
+7.1 Proof of Lemma 7.4 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 7.2 Proof of Lemma 7.5 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33 
+
+A Dynamic Matching via Dynamic Load Balancing 37 B 2 − ϵ-Approximation Hardness for Full Dynamic Load Balancing 41 1 Introduction 
+
+We study the load balancing problem in the dynamic setting. The input is a bipartite graph G =(J ∪ M, E ), where we refer to the vertices in J as jobs, and those in M as machines. Each job also has a positive weight w(j). The goal is to find an assignment from jobs to adjacent machines that minimizes the maximum machine load, where the load of a machine i is defined as the sum of the weights of all jobs assigned to i.There is a rich literature on load balancing in many models of computation, from standard ap-proximation algorithms [LST90, ST93, Sve11, JR20], to classic online algorithms [ANR95, AAF +97], streaming algorithms [KR16, ABL23, ABL +25], and parallel/distributed algorithms [You01, MRWZ16, Li23, HKPSR18, ABL20, ALPZ21]. One particularly relevant line of research is online algorithms with recourse, where the graph is changing over time, and the goal is to upper-bound how often the (ap-proximately) optimal assignment needs to change [GKS14, BEM22, KLS23, FGK24]. But the results for this model do not provide efficient algorithms for actually maintaining the assignment – that is the goal of dynamic algorithms. 
+
+Dynamic Load Balancing: In the fully dynamic model, each update either inserts or deletes an edge in the graph, and the goal is to maintain an approximately optimal assignment with small update time. There are also two commonly studied special cases, which are called partially dynamic 
+
+models: in the incremental (resp. decremental) model the only allowed updates are edge insertions (resp. deletions) and job deletions (resp. insertions); in short, updates in the incremental model can only decrease the optimum max load, while those in the decremental model can only increase it. Despite the rich literature on load balancing in other models, the only result we know of on dynamic load balancing is an algorithm of [BKS23b] for incremental load balancing: they maintain a (1 + ϵ)-approximate fractional assignment in total update time ˜O(m), which implies amortized update time poly(log( n)/ϵ ). However, the authors of [BKS23b] note that their techniques fail to extend to the decremental setting. Our main result obtains the same bounds in the decremental setting. We also develop a black-box rounding scheme to produce an integral assignment. We thus essentially settle the complexity of the problem for partially dynamic algorithms. One of the reasons to focus on the partially dynamic model is that similarly strong results for the fully dynamic model are currently beyond our reach, even for the much simpler problem of dynamic matching; see the discussion in Section 1.2 on the relationship to matching. 
+
+1.1 Our Contributions 
+
+Our main contribution is a nearly optimal algorithm for fractional load balancing in the decremental model. 
+
+Theorem 1.1. Let G = ( J ∪ M, E ) be a graph with job weights in [1 , W ] that is subject to a sequence of edge deletions and job insertions. There is an algorithm that maintains a fractional assignment whose maximum machine load is a (1 + ϵ)-approximation to the optimum. The total update time is 
+
+O(m poly(log( nW )/ϵ )) , where m is the total number of edges ever present in the graph and n = |J ∪M |
+
+is the total number of nodes at the end of the last update. 
+
+We also design a black-box rounding scheme, which is based on an earlier rounding scheme of [KLS23] for online algorithms, but makes several significant modifications to ensure efficient update time. Applying the rounding scheme (Section 7) to Theorem 1.1 yields the following integral algorithm: 
+
+Theorem 1.2. Let G = ( J ∪ M, E ) be a graph with job weights in [1 , W ] that is subject to a sequence of edge deletions and job insertions. There is a randomized algorithm that maintains an integral 
+
+assignment whose maximum machine load is a (2 + ϵ)-approximation to the optimum, using total 
+
+1update time O(m poly(log( nW )/ϵ )) with high probability. In fact, the approximation guarantee is slightly stronger: each machine in our assignment has load at most (1 + ϵ) · Opt + W ≤ (2 + ϵ) · Opt .The algorithm works against an adaptive adversary. 
+
+The approximation ratio of the integral algorithm is essentially the best we can hope for: it matches up to a (1 + ϵ) factor the best-known polynomial-time algorithms in the static setting [LST90, ST93]. 1
+
+Applying our black-box rounding scheme to the incremental (fractional) algorithm of [BKS23b] also yields the first efficient algorithm for incremental integral load balancing; the bounds are the same as in Theorem 1.2. 
+
+1.2 Related Work: Maximum Flow and Maximum Matching 
+
+Our results have significant connections to dynamic algorithms for several related problems. 
+
+Maximum Flow: It is not hard to check that incremental/decremental load balancing is a spe-cial case of incremental/decremental maximum flow. There is an algorithm for incremental (1 + ϵ)-approximate maximum flow with update time no(1) [CKL +24]. This same algorithm thus also solves incremental load balancing, although the algorithm is significantly more complicated than the incre-mental load balancing algorithm of [BKS23b] and has update time no(1) rather than polylog. In the decremental setting, by contrast, while there exists a recent flow algorithm with the same no(1) update time [vdBCK +24], that algorithm cannot actually maintain the approximate assignment itself ; it only maintains a single number, which is an approximation to the optimum max load. Ours is thus the first efficient algorithm to maintain the assignment itself in the decremental setting. 
+
+Matching: Load balancing can be viewed as a generalization of the matching problem. There is a long line of work on this problem in partially dynamic settings, and here too efficient incremental algorithms [Gup14, GLS +19, BK23] came before decremental ones [BGS20, JJST22, ABD22, Dud24, CST25]. The connection to matching also implies a crucial barrier for our problem. Even for the simpler problem of matching, a fully dynamic (1 + ϵ)-approximation in polylog (or even n1−Ω(1) ) update time is not known, and this is widely considered one of the main open problems in the field. In fact, there are conditional lower bounds that rule out such a result if we seek a polynomial dependence on 1 /ϵ [Liu24]. At the same time, it is not hard to show that a (1 + ϵ)-approximation for fractional 
+
+load balancing would immediately imply the same bounds for fully dynamic integral matching; see Appendix A for details. Generalizing our (1 + ϵ)-approximate decremental load balancing algorithm to the fully dynamic setting is thus out of reach, as we should first aim to understand the simpler problem of fully dynamic (1 + ϵ)-approximate matching. That still leaves open the question of whether one can get an efficient algorithm for fully dynamic load balancing with a worse approximation. We show a conditional lower bound which proves that even in unweighted graphs, a 2 − Ω(1)-approximation for integral load balancing requires large update time (Appendix B). But neither upper nor lower bounds are known for approximation better than 2. Matching is no longer a barrier here, as an efficient algorithm for fully dynamic 2-approximate matching is known [BGS11, Sol16]. At the same time, load balancing is a significantly harder problem than matching, and in fact there are models of computation where it is provably much harder [ABL +25]. We leave it as an open question whether there exists an efficient algorithm for O(1)- or even polylog-approximate fully dynamic load balancing, or whether there are conditional lower bounds suggesting such bounds are not possible.   
+
+> 1There are better-than-two approximations for the value version of the problem, but these cannot compute an actual assignment; they also have large polynomial running time and hence cannot lead to efficient dynamic algorithms [Sve11, JR20].
+
+2Mixed packing-covering LP [BKS23b] showed how to maintain a (1 + ϵ)-approximate solution of mixed packing-covering LPs under relaxing (i.e. incremental) updates in near-optimal update time, and left as an open problem whether non-trivial algorithms exist for “restricting” (i.e. decremental) updates. Load balancing is one of the most basic instances of mixed packing-covering LP, and we show a near-optimal algorithm for it under restricting updates. Hence, this work makes a first step toward resolving the open problem of [BKS23b]. 
+
+# 2 Overview 
+
+We give an informal overview of the two main ingredients of the paper. First, we explain a dynamic algorithm for maintaining a nearly optimal fractional assignment in Section 2.1. Second, we explain in Section 2.2 a black-box dynamic rounding algorithm that converts such a fractional assignment into an integral assignment with only a small additional loss. 
+
+2.1 Maintaining a Fractional Assignment 
+
+Let G = ( J, M, E ) be the bipartite graph between jobs J and machines M . The graph undergoes edge deletions and job insertions. Let n = |J| + |M | and let m be the number of edges that ever appear in 
+
+G.To keep the exposition clean, we describe the fractional algorithm in the simple case where all jobs have weight 1 and where we assume that at all times the current graph G admits an integral 
+
+assignment x∗ ∈ { 0, 1}E where each job sends x∗(j) := P 
+
+> i∈M
+
+x∗(j, i ) = 1 unit of flow and each machine receives x∗(i) := P 
+
+> j∈J
+
+x∗(j, i ) ≤ 1 unit. Our goal is to maintain a fractional assignment 
+
+x ∈ [0 , 1] E such that each job sends x(j) := P 
+
+> i
+
+x(j, i ) ≥ 1/(1 + ϵ) units and each machine receives 
+
+x(i) := P 
+
+> j
+
+x(j, i ) ≤ (1 + ϵ)β, where β := 1 + 10 ϵ. Scaling all values of x by a factor of at most (1 + ϵ)then gives a fractional assignment of load at most (1 + ϵ)2β = 1 + O(ϵ). The assumption that x∗ is integral is only for the sake of this overview; the actual proof handles fractional optimum assignments by replacing the injection arguments below with flow-counting arguments. 
+
+Starting point: CONGEST Algorithm. The starting point is an extremely simple multiplicative-update algorithm from the congest literature by Ahmadian, Liu, Peng, and Zadimoghaddam [ALPZ21]. Each job j and each machine i has a nonnegative integer level, denoted by ℓ(j) and ℓ(i), initialized ats zero. The algorithm maintains a flow value on each current edge ( j, i ) of the form 
+
+x(j, i ) = η · (1 + ϵ)ℓ(j)−ℓ(i),
+
+where η > 0 is a very small number; for the unweighted overview, one may take η = n−20 . Increasing the level of a job multiplies all of its incident flow values by (1 + ϵ), while increasing the level of a machine divides all of its incident flow values by (1 + ϵ). We call these two operations boosting the job and whacking the machine. The algorithm repeatedly performs the following local repairs. If some machine has load larger than (1 + ϵ)β, we whack it. Otherwise, if some job sends less than 1 /(1 + ϵ) total flow, we boost it. We always give priority to whacking machines before boosting jobs. This priority rule ensures that every machine has load at most (1 + ϵ)2β < 2β throughout the algorithm. When the local repair loop stops, every job sends at least 1 /(1 + ϵ) flow and every machine receives load at most (1 + ϵ)β, as desired. Thus, the only remaining issue is to prove that the repair loop cannot run for too long while x∗ exists. Equivalently, we need to prove the following key claim. 
+
+Key claim. If the current instance admits an assignment of maximum load one, then no job or machine can reach level Lmax = poly(log n, 1/ϵ ). 3Once this claim is known, the total running time is immediate. A boost or whack costs time propor-tional to the current degree of the vertex being updated. Since each edge is charged only when one of its endpoints increases level, and each endpoint increases level only Lmax times, the total update time is ˜O(mL max ), near-linear in the number of edges that ever appear. 
+
+A warm-up without edge deletions. Ahmadian, Liu, Peng, and Zadimoghaddam [ALPZ21] proved the key claim when no edge is deleted using the following crucial observation: every machine i
+
+with positive level receives flow at least x(i) ≥ β. Indeed, once i was whacked, its load right after the whack was at least β and can only increase until i is whacked again. On the other hand, every job always sends total flow x(j) < 1. Let M≥k and J≥k be the machines and jobs whose current levels are at least k. The proof has two simple inequalities. First, for every k > 0, 
+
+|J≥k| ≥ β|M≥k| − (negligible term) . (1) Consider the total flow from J≥k to M≥k, denoted by x(J≥k, M ≥k). Observe that every machine i
+
+essentially only receives flow from jobs j with higher level ℓ(j) > ℓ (i). Otherwise, if ℓ(j) ≤ ℓ(i), the flow value x(j, i ) = η(1 + ϵ)ℓ(j)−ℓ(i) ≤ η is negligible. Thus, x(J≥k, M ≥k) ≥ | M≥k|β − (negligible term) as each machine receives at least β. On the other hand, x(J≥k, M ≥k) ≤ | J≥k| as every job sends less than one unit. 1 follows from combining the two bounds. Second, let L := ⌈log 1+ ϵ(1 /η )⌉ = O(log( n)/ϵ ). For every k ≥ 0, 
+
+|M≥k−L| ≥ | J≥k|. (2) To see this, take a job j ∈ J≥k and let i be the machine to which j is assigned by the assumed optimum assignment x∗. Since ( j, i ) is a current edge and 1 > x (j) ≥ x(j, i ) = η · (1 + ϵ)ℓ(j)−ℓ(i), we must have 
+
+ℓ(i) ≥ ℓ(j) − L ≥ k − L. Thus x∗ assigns all jobs in J≥k into only machines in M≥k−L. Since x∗ has load at most one and jobs have unit size, this assignment is injective, proving (2). Combining the two inequalities and ignoring the negligible term yields 
+
+|M≥k−L| ≥ β|M≥k|.
+
+Thus, as we lower the level threshold, the number of high-level machines grows geometrically. This cannot happen for more than logarithmically many thresholds, so levels are bounded by O(L log β n) = poly(log n, 1/ϵ ). This is the whole strategy: to forbid high-level vertices, we establish a job-machine flow gap and apply an expansion argument over level sets as above. 
+
+Why deletions break the warm-up. Under edge deletions, the sentence “every machine i with positive level receives flow at least x(i) ≥ β” is completely false. While the load of machine i is still at least β right after being whacked, it may decrease arbitrarily later because incident edges are deleted. 
+
+First key idea: history graph To fix this, our first key idea is to introduce another graph that records the relevant events of the algorithm, including the moments when machine loads are large. We call it the history graph G = ( J , M, E). For every job j and every level k that j has ever reached, the history graph contains a job-level node (j, k ) ∈ J . Similarly, for every machine i and every level k that i has ever reached, it contains a machine-level node (i, k ) ∈ M . Whenever an original edge ( j, i ) is present while the endpoints have levels kj and ki, the history graph contains an edge (( j, k j ), (i, k i)) ∈ E . The history flow z ∈ [0 , 1] E sends 
+
+z(( j, k j ), (i, k i)) = η · (1 + ϵ)kj −ki
+
+4units over this history edge. This is exactly the value of the original flow on ( j, i ) at the time this historical event occurred. The key property is that the history graph is incremental under edge deletions: even after an edge is deleted from the current graph, the corresponding historical record is kept, and its z-value never changes. This idea alone already handles edge deletions, but only if we allow a O(1 /ϵ )-approximation to the optimum max load. Let z(i, k ) be the total incoming history flow of the machine-level node ( i, k ), and let z(j, k ) be the total outgoing history flow of the job-level node ( j, k ). Each machine-level node (i, k ) with k > 0 receives at least 
+
+z(i, k ) ≥ β
+
+units, because this was true right after the corresponding whack, and later history edges can only add to z(i, k ). On the other hand, a single job-level node ( j, k ) may send as much as 
+
+z(j, k ) ≤ 1 + 11 + ϵ + 1(1 + ϵ)2 + · · · ≤ 1 + ϵϵ
+
+units of history flow. This happens because, while j stays at level k, neighboring machines may be whacked many times. Each such whack reduces the current flow in the original graph by a 1 + ϵ factor, but it creates a new historical record and increases z(j, k ). If we set β = 2 /ϵ , this creates the desired gap: z(i, k ) ≥ 2/ϵ for all machine-level nodes ( i, k ) and z(j, k ) ≤ 1+ ϵϵ for all job-level nodes ( j, k ), and we can apply a similar expansion argument to bound the level of vertices. However, as β = Θ(1 /ϵ ), this gives only an O(1 /ϵ )-approximation. 
+
+Second key idea: average over suffixes of levels. The second key idea is to stop looking at one history node at a time. A single job-level node can be misleading, because it may accumulate a long geometric tail of historical records while the job waits at that level. Instead, for a vertex v whose current level is ℓ(v), and for a threshold k ≤ ℓ(v), we look at the whole suffix of history nodes (v, k ), (v, k + 1) , . . . , (v, ℓ (v)) .
+
+The point is that the bad Θ(1 /ϵ ) contribution for a job is an additive cost over the whole suffix, not a cost paid at every level. Once the suffix is long, this additive cost is small compared to the number of levels in the suffix. Let us make this precise for jobs. Fix a job j and a threshold k ≤ ℓ(j), and write 
+
+q := ℓ(j) − k + 1 for the number of job-level nodes in the suffix. We want to upper bound 
+
+Z(j, k ) := 
+
+> ℓ(j)
+
+X
+
+> r=k
+
+z(j, r ),
+
+the total outgoing history flow of this suffix. To do this, we will decompose Z(j, k ) into two parts as follows. For a level r ∈ [k, ℓ (j)], we write z(j, r ) = zinit (j, r )+ znew (j, r ) where zinit (j, r ) is the total flow out of ( j, r ) right after j is boosted into level r, and znew (j, r ) is the increase in z(j, r ) while j remains at some level r and neighboring machines are whacked. Then, define Zinit (j, k ) := Pℓ(j) 
+
+> r=k
+
+zinit (j, r ) and 
+
+Znew (j, k ) := Pℓ(j) 
+
+> r=k
+
+znew (j, r ). Now, we can decompose Z(j, k ) as 
+
+Z(j, k ) = Zinit (j, k ) + Znew (j, k ).
+
+As j sends less than 1 unit right after being boosted, we have zinit (j, r ) < 1 for every r and so 
+
+Zinit (j, k ) < q. 
+
+5Next, we bound Znew (j, k ). During the whole suffix from level k to ℓ(j), let Loss( j, k ) and Gain( j, k ) be the total decrease and total increase of x(j), respectively. That is, whenever the flow x(j) decreases while ℓ(j) ≥ k (for example, because a neighboring machine is whacked, or because an edge gets deleted), this decrease contributes to Loss( j, k ); Gain( j, k ) is defined analogously. Observe that Znew (j, k ) ≤ 1 
+
+> ϵ
+
+Loss( j, k ) because, whenever neighboring machine i is whacked, x(j)decreases by x(j, i ) − 11+ ϵ x(j, i ) = ϵ 
+
+> 1+ ϵ
+
+x(j, i ) but Znew (j, k ) increases by 11+ ϵ x(j, i ). This inequality would actually be an equality without edge deletions, but edge deletions can contribute to Loss( j, k )without increasing Znew (j, k ). Next, we have Loss( j, k ) ≤ Gain( j, k ) + 1 because x(j) always remains between zero and one. Furthermore, Gain( j, k ) ≤ ϵ 
+
+> 1+ ϵ
+
+q because the maximum increase of x(j) per level is 1 − 11+ ϵ = ϵ 
+
+> 1+ ϵ
+
+. Combining three bounds, we get 
+
+Znew (j, k ) ≤ q + 1
+
+ϵ
+
+and, hence, 
+
+Z(j, k ) ≤ 2q + 1
+
+ϵ . (3) In particular, if q ≥ α, where α := ⌈100 /ϵ 2⌉, then 
+
+Z(j, k ) ≤
+
+
+
+2 + ϵ
+
+10 
+
+
+
+q. (4) So a long job suffix sends, on average, only slightly more than two units of history flow per level. Next, we prove a lower bound for the machine side using an analogous argument. Consider a machine i and a threshold k ≤ ℓ(i). Let 
+
+q := ℓ(i) − k + 1 and Z(i, k ) := 
+
+> ℓ(i)
+
+X
+
+> r=k
+
+z(i, r ).
+
+We want a lower bound on Z(i, k ) by similarly decomposing it into two parts Z(i, k ) = Zinit (i, k ) + 
+
+Znew (i, k ). We have, for k > 0, 
+
+Zinit (i, k ) ≥ βq 
+
+because each time machine i is whacked, it receives at least β units of flow immediately afterward. With an argument analogous to the one used to upper-bound Znew (j, k ), we obtain a lower bound 
+
+Znew (i, k ) ≥ (1 + ϵ)β(q − 1) − (1 + ϵ)2 βϵ
+
+where the additive term follows from the fact that the machine load x(i) is always at most 2 β. This is where we crucially exploited prioritizing whacking over boosting. The two bounds give 
+
+Z(i, k ) ≥ (2 + ϵ)βq − 3βϵ . (5) Thus, if q ≥ α = ⌈100 /ϵ 2⌉, then 
+
+Z(i, k ) ≥
+
+
+
+2 + ϵ
+
+2
+
+
+
+βq. (6) So a long machine suffix receives, on average, noticeably more than 2 β units of history flow per level. Thus, we established the job-machine flow gap: for a long enough suffix, we have Z(i, k ) ≥ 2 + ϵ
+
+> 2
+
+ βq while Z(j, k ) ≤  2 + ϵ
+
+> 10
+
+ q. This creates a constant-factor slack of 1 + Θ( ϵ) between the two sides. 6The final expansion argument on long suffixes in the history graph. We now apply the same level-set expansion strategy as in the warm-up, but to long suffixes in the history graph. For a threshold k, define bJ≥k := {(j, r ) : k ≤ r ≤ ℓ(j) and ℓ(j) ≥ k + α},
+
+and define cM≥k analogously. Thus, bJ≥k contains exactly the job-level nodes that belong to job suffixes of length at least α + 1 starting from level k, and similarly for machines. The first inequality says that many job-level nodes must feed the high machine suffixes. Consider 
+
+cM≥k. By (6), the total incoming history flow of these machine-level nodes is at least 
+
+
+
+2 + ϵ
+
+2
+
+
+
+β · | cM≥k|.
+
+Ignoring only the globally negligible contribution of tiny history edges, this flow can essentially only come from job-level nodes whose levels are at least k. Every such node is contained in bJ≥k−α: the extra shift by α ensures that the relevant job suffix is long enough for (4). By (4), the total outgoing history flow of bJ≥k−α is at most 
+
+2 + ϵ
+
+10 
+
+
+
+| bJ≥k−α|.
+
+Double-counting the same history flow gives 
+
+
+
+2 + ϵ
+
+10 
+
+
+
+| bJ≥k−α| ≥ 
+
+
+
+2 + ϵ
+
+2
+
+
+
+β| cM≥k|.
+
+Since β = 1 + 10 ϵ, the ratio on the right is at least 1 + ϵ times | cM≥k| after decreasing constants to absorb the negligible tiny-edge term. Hence 
+
+| bJ≥k−α| ≥ (1 + ϵ)| cM≥k|. (7) This is the history-graph analogue of the first warm-up inequality. The second inequality uses the current optimum assignment x∗, just as in the warm-up. Take a node (j, r ) ∈ bJ≥k, and let i be the machine to which j is assigned by x∗. We know that ℓ(i) ≥ ℓ(j)−L ≥ k−L,otherwise x(j, i ) exceeds one. Therefore, for every r ∈ [k, ℓ (j)], the machine-level node ( i, r − L) exists and belongs to cM≥k−L. Because x∗ assigns at most one unit job to each machine, this maps distinct job suffix nodes to distinct machine suffix nodes. Hence 
+
+| cM≥k−L| ≥ | bJ≥k|. (8) Combining (7) and (8), with the second inequality applied at threshold k − L − α, gives 
+
+| cM≥k−L−α| ≥ | bJ≥k−α| ≥ (1 + ϵ)| cM≥k|.
+
+Thus, whenever a high machine suffix exists, lowering the threshold by L + α increases the number of counted machine-level nodes by a factor of at least 1 + ϵ. This cannot repeat too many times, because the history graph contains only one node per vertex-level pair. Therefore no vertex reaches level larger than poly(log n, 1/ϵ ). This proves the key claim and completes the overview of the fractional algorithm. 
+
+2.2 Rounding the Dynamic Fractional Assignment 
+
+The fractional algorithm maintains a (1 + O(ϵ))-approximate fractional assignment. We now explain how to round a dynamic fractional assignment with maximum load Γ and maximum job weight W to an integral assignment with maximum load (1 + ϵ)Γ + W .7Background: the Shmoys Tardos slot graph. The starting point is the classical Shmoys Tardos rounding scheme. Let G = ( J ∪ M, E ) be an input graph with maximum job weight W and x be a fractional assignment with load Γ. Shmoys and Tardos construct a slot graph H = ( J ∪ S, E H ) whose left side is the set of jobs and whose right side is obtained by replacing each machine i with a set of 
+
+slots S(i) ⊆ S.The key property is that any job-perfect matching in H gives an integral assignment in the original instance: if job j is matched to a slot of machine i, then we assign j to i. Moreover, the load of the resulting integral assignment is Γ+ W . Thus, using the fractional assignment, they reduce the problem of finding a (weighted) assignment to that of finding an (unweighted) perfect matching. 
+
+The online rounding framework of KLS. Krishnaswamy, Li, and Suriyanarayana [KLS23] showed how to adapt the Shmoys–Tardos rounding scheme to the online setting. Given a graph G
+
+and a fractional assignment x undergoing updates, the goal here is to maintain an integral assignment with low recourse , i.e., a small number of reassignments. They define a similar slot graph H = ( J ∪ S, E H ) with a slightly weaker approximation: any job-perfect matching in H yields an integral assignment of load (1 + O(ϵ))Γ + W . However, their slot graph H has nicer structural properties: 1. (Vertex expansion): every set A of jobs has at least (1 + Ω( ϵ)) |A| neighboring slots, and 2. (Stable slots) : the number of slot insertions and deletions is bounded in terms of the number of updates to x.2
+
+The algorithm of [KLS23] simply maintains the slot graph H and a job-perfect matching MH in H.Whenever MH is not perfect, they simply augment through an O( log nϵ )-length augmenting path; such a short path is guaranteed to exist by the vertex expansion of H and induces only O( log nϵ ) recourse. Vertices in MH are not unmatched often because slots are stable. These facts imply a left-perfect matching with small recourse, but not yet with small update time .
+
+Barriers to making KLS fast. There are two barriers. 1. (Representation barrier) : Edges of H are not stable. A small change in the fractional assignment x can change many edges of the slot graph H. Thus explicitly maintaining all edges of H will be too expensive. 2. (Algorithmic barrier): Even if we ignore the representation issue, we do not know a fast fully dynamic algorithm for maintaining a left-perfect matching in a changing bipartite graph merely from the promise that the graph has vertex expansion 1+ ϵ. Expansion guarantees that a perfect matching exists, but it does not directly tell us how to find short augmenting paths quickly after dynamic updates. 
+
+Our strategy: random augmenting path based on fractional matching with gap. Based on the fractional assignment x in G, [KLS23] also defined a fractional assignment y with a gap guarantee: each job j sends y(j) = 1 unit and each slot s receives at most y(s) < 1 − 2ϵ units. They used y
+
+in the analysis to prove the vertex expansion of H and the approximation guarantee of a left-perfect matching in H.Our key observation is that y is, in fact, extremely helpful algorithmically , not just in analysis. Moreover, although y changes substantially under updates, as H does, we can still implicitly maintain it. Suppose for the moment that we have oracle access to y. We can explicitly maintain a left-perfect matching MH in the slot graph H undergoing fully dynamic updates with only ˜O(1 /ϵ ) update time.     
+
+> 2In fact, it is O(1 /ϵ 2) times the total ℓ1change of x.
+
+8Whenever a job becomes unmatched, we can very quickly repair the matching by finding a random augmenting path from this unmatched job: Starting from the current unmatched job j, we sample a neighboring slot s with probability proportional to y(j, s ). If s is unmatched, we have found an augmenting path and we augment along it. If s is matched, we follow the matching edge from s to the job currently matched to s, and then repeat the same sampling step from that job. The reason this walk is short is exactly the gap in y: each job sends at least 1 unit, but each slot receives at most 1 − 2ϵ units. Intuitively, when the walk samples according to y, the matched slots cannot absorb all of the probability forever, because the slot side has slack. At each step, a constant Ω( ϵ) fraction of the remaining probability reaches unmatched slots. Therefore the augmenting-path length is O(log( n)/ϵ ) with high probability. This bounds the update time of ˜O(1 /ϵ ) as well. Thus, the fractional assignment y with a gap guarantee is stronger than merely the graph H with vertex expansion. This allows us to maintain a left-perfect matching and overcome the algorithmic barrier above. 
+
+Dynamic rounding without explicit slot graph. The simplicity of the random augmenting path algorithm allows us to work without explicitly storing the full slot graph H or the fractional assignment y, overcoming the representation barrier too. Indeed, the random walk needs only very limited access to y: given a job j, sample a slot s with probability proportional to y(j, s ); given a slot 
+
+s, determine whether it is matched and, if so, to which job; and after an update, identify the small set of slots or matched jobs whose status may have become invalid. These operations can be supported implicitly. For each machine i, its slots S(i) form an ordered set of intervals. Using standard interval data structures, given a job-machine pair ( j, i ), we can find O(1) slots s of machine i where ( j, s ) ∈ EH , as well as sample a neighbor of j according to the y-distribution. Thus the algorithm never materializes all edges of H. The explicit object we maintain is only the integral matching MH , plus compact interval data structures that allow the required sampling queries. Updates to the fractional assignment may implicitly change many edges of H, but will lead to few slot updates because slots are stable. Each slot update can unmatch one job. Each unmatched job can be repaired very quickly by a short random augmenting path. Hence, the final update time is small. 
+
+Putting the pieces together. The fractional algorithm supplies a dynamic fractional assignment with load 1+ O(ϵ) and bounded total change. The rounding algorithm treats this fractional assignment as a black box, maintains the implicit slot graph H and the matching MH , and repairs the matching 
+
+MH using short random augmenting paths guided by y. Combining the two parts gives a decremental algorithm for load balancing under edge deletions with near-linear total update time and integral load (1 + O(ϵ))Γ + W .We note that the rounding framework is completely black-box and could be applied to other dynamic fractional load-balancing algorithms as well, whether decremental, incremental, or fully dy-namic. For example, we can apply it to the incremental algorithm of Bhattacharya, Kiss, and Sara-nurak [BKS23b]. 
+
+# 3 Preliminaries 
+
+Input graph. Consider a bipartite graph G = ( J ∪ M, E ), where the nodes in J (resp. M ) are referred to as jobs (resp. machines ), and a function w : J → [1 , W ] where w(j) denotes the weight of a job j ∈ J, for some parameter W > 1. We use the index j (resp. i) to denote a job (resp. machine). For any subset of jobs J′ ⊆ J, we define w(J′) := P 
+
+> j∈J′
+
+w(j). For any node v ∈ J ∪ M , let 
+
+NG(v) := {u ∈ J ∪ M : ( u, v ) ∈ E} denote the set of neighbors of v in G. Whenever the graph G is clear from the context, we omit the subscript G and simply write N (v) instead of NG(v). 9Flow. We refer to any function x : E → R≥0 as a flow in G. In particular, we say that x(j, i ) is the flow on the edge (j, i ) ∈ E in x; it specifies the fractional extent to which x assigns the job j to the machine i. For all jobs j ∈ J, we define x(j) := P  
+
+> i∈N(j)
+
+x(j, i ) to be the total flow sent out by j.Similarly, for all machines i ∈ M , we define x(i) := P  
+
+> j∈N(i)
+
+x(j, i ) to be the total flow absorbed by i.
+
+Weighted flow. For each ( j, i ) ∈ E, we refer to the quantity w(j) · x(j, i ) as the weighted flow on the edge ( j, i ). For all jobs j ∈ J, we define wx(j) := P  
+
+> i∈N(j)
+
+w(j) · x(j, i ) to be the total weighted flow sent out by j. Similarly, for all machines i ∈ M , we define wx(i) := P  
+
+> j∈N(i)
+
+w(j) · x(j, i ) to be the total weighted flow absorbed by i. We also refer to wx(i) as the load of a machine i ∈ M under x.The load of x is defined to be max i∈M wx(i), i.e., it equals the maximum load of any machine. 
+
+Assignment. We say that a flow x is an assignment iff x(j) = 1 for all jobs j ∈ J. We say that x
+
+is an integral assignment iff x is an assignment and x(j, i ) ∈ { 0, 1} for every edge ( j, i ) ∈ E. We use the phrase fractional assignment to refer to an assignment that might or might not be integral. We say that x : E → R≥0 is an ϵ-fractional assignment iff x(j) ≥ (1 + ϵ)−1 for every job j ∈ J.
+
+Load balancing instance. In the load balancing problem, we receive ( G = ( J ∪ M, E ), w ) as input, and our goal is to compute an integral assignment with minimum load. We let Opt f (G, w ) and 
+
+Opt (G, w ) respectively denote the load of an optimal fractional assignment in ( G, w ) and the load of an optimal integral assignment in ( G, w ). 
+
+Dynamic setting. At preprocessing, we receive an input ( G, w ), and subsequently this input goes through a sequence of restricting updates : Each update either deletes an existing edge ( j, i ) ∈ E, or inserts a job j and specifies its weight w(j) and all its incident edges. Throughout the rest of this paper, we let m and n respectively denote the number of edges that ever appear and the total number of jobs and machines present in the input at the end of the last update. For ease of presentation, we will assume that our algorithm knows the value of n in advance. 3
+
+Parameters. For the rest of the paper, we define the following parameters: 
+
+ϵ ∈ (0 , 1/100) , α := 5
+
+ϵ3 , β := 1 + 10 ϵ, L := log (1+ ϵ)
+
+ W mn ϵ
+
+2
+
+, κ := log (1+ ϵ/ 2) 
+
+ W mn ϵ
+
+6
+
+. (9) For ease of exposition, throughout the rest of the paper we will assume that L and κ are integers. 
+
+# 4 Core Components 
+
+Our dynamic algorithm will consist of two steps. First, we show how to maintain a good ϵ-fractional assignment, as summarized in Theorem 4.1 below. Next, we design an efficient rounding scheme that converts this ϵ-fractional assignment into an integral assignment, with only a small overhead in the approximation guarantee and total update time. 
+
+Theorem 4.1. Consider an input (G = ( J ∪ M, E ), w ) to the load balancing problem undergoing a sequence of restricting updates,and a parameter Γ > 0. Then, there is a deterministic algorithm that 
+
+• Either maintains an ϵ-fractional assignment x in (G, w ) with load at most β(1 + ϵ) · Γ,
+
+• Or certifies that Opt f (G, w ) > Γ.    
+
+> 3We can easily modify our algorithm to work without this assumption by guessing the value of n.Whenever the actual value of nexceeds this guess, we double our guess and restart the algorithm from scratch on the current input. This incurs only an extra logarithmic-factor overhead in our total update time.
+
+10 The algorithm has a total update time of ˜O(m/ϵ 4), where the ˜O(.) notation hides polylogarithmic factors in m, n, W and 1/ϵ .
+
+The guarantees of our rounding scheme are summarized by the following theorem. Note that the rounding scheme functions under fully dynamic vertex and edge updates. We treat the insertion or deletion of a vertex v as deg G(v) edge updates to the underlying fractional assignment. 
+
+Theorem 4.2. Let (Gt = ( Jt ∪ Mt, E t), w t) be a dynamic load balancing instance with maximum job weight W . Let xt denote an ϵ-fractional assignment at time t with maximum load Γt. Over a sequence of updates to the instance (which could consist of both edge and vertex insertions and deletions), let U
+
+denote the total number of edge updates to the fractional assignment xt.There exists a randomized dynamic algorithm that, given access to Gt, w t, x t, maintains an integral assignment of (Gt, w t) with maximum load at most (1 + O(ϵ))Γ t + W at time t. The algorithm has total update time ˜O(( m + U )/ϵ 3) with high probability and works against an adaptive adversary. 
+
+Deriving the main theorems. Run the algorithms of Theorems 4.1 and 4.2 with accuracy δ = cϵ ,where c > 0 is a sufficiently small constant. In parallel, run Theorem 4.1 for the guesses Γr := (1 + δ)r
+
+n , 0 ≤ r ≤ log 1+ δ(n2W ) .
+
+For every feasible nonempty instance, 1 /n ≤ Opt f ≤ nW . Hence, if bΓ is the smallest guess not certified as too small by Theorem 4.1, then 
+
+bΓ ≤ (1 + δ)Opt f . (10) There are O(δ−1 log( nW )) guesses, so running all instances only increases the total update time by a factor polynomial in log( nW )/ϵ .
+
+Proof of Theorem 1.1. Let x be the δ-fractional assignment for bΓ, and normalize it job by job: ¯ x(j, i ) := 
+
+x(j, i )/x (j). Then ¯ x is a fractional assignment and its load is at most (1 + δ) times that of x. Since 
+
+β = 1 + 10 δ, Theorem 4.1 and (10) imply that its load is at most 
+
+β(1 + δ)3Opt f = (1 + O(δ)) Opt f ≤ (1 + ϵ)Opt f ,
+
+where the last inequality follows by choosing c sufficiently small. The claimed total update time follows from the bound on the number of guesses. 
+
+Proof of Theorem 1.2. For every guess, apply Theorem 4.2 to the fractional assignment maintained by Theorem 4.1. The number of edge-value changes in each such assignment is at most its total update time, so U = eO(m/δ 4). Thus, Theorem 4.2, summed over all guesses, still takes total time 
+
+m poly(log( nW )/ϵ ) with high probability. Output the rounded assignment for bΓ. Its load is at most (1 + O(δ)) β(1 + δ)bΓ + W ≤ (1 + ϵ)Opt + W ≤ (2 + ϵ)Opt ,
+
+where we used (10), Opt f ≤ Opt , and W ≤ Opt . A union bound over all guesses gives the claimed high-probability guarantee, including against an adaptive adversary. 
+
+# 5 Maintaining an ϵ-Fractional Assignment: The Algorithm 
+
+Note that if Γ < 1/n , then we can easily certify that Opt f (G, w ) > Γ at preprocessing. Accordingly, throughout the rest of the paper, we assume that Γ ≥ 1/n. (11) 11 We will show how to maintain an ϵ-fractional assignment x in an input ( G = ( J ∪ M, E ), w ) under-going decremental updates. Our dynamic algorithm repeatedly invokes two simple subroutines. The subroutine Boost (j, G, x ) increases the flow on each edge incident on the job j ∈ J by a multiplicative (1 + ϵ) factor (see Algorithm 1). In contrast, the subroutine Whack (i, G, x ) decreases the flow on each edge incident on the machine i ∈ M by a multiplicative (1 + ϵ) factor (see Algorithm 2). Whenever we call the subroutine Boost (j, G, x ), we say that the job j gets boosted . Similarly, whenever we call the subroutine Whack (i, G, x ), we say that the machine i gets whacked .
+
+Algorithm 1: Boost (j, G = ( J ∪ M, E ), x ), for some job j ∈ J. 
+
+> 1
+
+for every i ∈ N (j) do  
+
+> 2
+
+x(j, i ) ← (1 + ϵ) · x(j, i ).  
+
+> 3
+
+return x.
+
+Algorithm 2: Whack (i, G = ( J ∪ M, E ), x ), for some machine i ∈ M . 
+
+> 1
+
+for every j ∈ N (i) do  
+
+> 2
+
+x(j, i ) ← (1 + ϵ)−1 · x(j, i ).  
+
+> 3
+
+return x.
+
+Algorithm 3: Preprocess (G = ( J ∪ M, E ), w ) 
+
+> 1
+
+for every job j ∈ J do  
+
+> 2
+
+Initialize ℓ(j) ← 0.  
+
+> 3
+
+for every machine i ∈ M do  
+
+> 4
+
+Initialize ℓ(i) ← 0.  
+
+> 5
+
+for every edge (j, i ) ∈ E do  
+
+> 6
+
+Initialize x(j, i ) ←   ϵW mn 
+
+2 · (1 + ϵ)ℓ(j)−ℓ(i) =   ϵW mn 
+
+2. 
+
+> 7
+
+while x is not an ϵ-fractional assignment in (G, w ) with load at most β(1 + ϵ) · Γ do  
+
+> 8
+
+if there exists some machine i ∈ M with wx(i) > β (1 + ϵ) · Γ then  
+
+> 9
+
+Whack (i, G, x ). // See Algorithm 2  
+
+> 10
+
+ℓ(i) ← ℓ(i) + 1.  
+
+> 11
+
+if ℓ(i) ≥ 10 κ(7 L + α) then  
+
+> 12
+
+terminate . // We will show that this implies Opt f (G, w ) > Γ.  
+
+> 13
+
+else  
+
+> 14
+
+There must necessarily exist some job j ∈ J with x(j) < (1 + ϵ)−1. 
+
+> 15
+
+Boost (j, G, x ). // See Algorithm 1  
+
+> 16
+
+ℓ(j) ← ℓ(j) + 1.  
+
+> 17
+
+if ℓ(j) ≥ 10 κ(7 L + α) then  
+
+> 18
+
+terminate . // We will show that this implies Opt f (G, w ) > Γ.  
+
+> 19
+
+return x.We define the level of a job (resp. machine ) to be the number of times it has been boosted (resp. whacked) until now. Let ℓ(j) and ℓ(i) respectively denote the levels of a job j ∈ J and a machine i ∈ M . At the start of preprocessing, we initialize ℓ(j) = ℓ(i) = 0 for every job j ∈ J and machine i ∈ M . While dealing with the sequence of updates, whenever a job j gets inserted, we 12 initialize ℓ(j) = 0. Subsequently, the level of a job (resp. machine) increases monotonically with time as it keeps getting boosted (resp. whacked). 
+
+Algorithm 4: Handle-Update  
+
+> 1
+
+if the update consists of the deletion of an edge (j, i ) from E then  
+
+> 2
+
+Delete the edge ( j, i ) from the input.  
+
+> 3
+
+else if the update consists of the insertion of a job j then  
+
+> 4
+
+Initialize ℓ(j) ← 0.  
+
+> 5
+
+for all i ∈ N (j) do  
+
+> 6
+
+x(j, i ) ←   ϵW mn 
+
+2 · (1 + ϵ)ℓ(j)−ℓ(i) =   ϵW mn 
+
+2 · (1 + ϵ)−ℓ(i). 
+
+> 7
+
+while x is not an ϵ-fractional assignment in (G, w ) with load at most β(1 + ϵ) · Γ do  
+
+> 8
+
+if there exists some machine i ∈ M with wx(i) > β (1 + ϵ) · Γ then  
+
+> 9
+
+Whack (i, G, x ). // See Algorithm 2  
+
+> 10
+
+ℓ(i) ← ℓ(i) + 1.  
+
+> 11
+
+if ℓ(i) ≥ 10 κ(7 L + α) then  
+
+> 12
+
+terminate . // We will show that this implies Opt f (G, w ) > Γ.  
+
+> 13
+
+else  
+
+> 14
+
+There must necessarily exist some job j ∈ J with x(j) < (1 + ϵ)−1. 
+
+> 15
+
+Boost (j, G, x ). // See Algorithm 1  
+
+> 16
+
+ℓ(j) ← ℓ(j) + 1.  
+
+> 17
+
+if ℓ(j) ≥ 10 κ(7 L + α) then  
+
+> 18
+
+terminate . // We will show that this implies Opt f (G, w ) > Γ. At preprocessing, we receive the input ( G = ( J ∪ M, E ), w ), and we initialize the flow x by calling Algorithm 3. The algorithm starts by setting a flow of ϵ2/(W mn )2 on each edge. Next, as long as x
+
+is not an ϵ-fractional assignment with load at most β(1 + ϵ) · Γ, we repeatedly perform the following operation: If there is a machine i ∈ M with load more than β(1 + ϵ) · Γ, then we whack the machine i.Otherwise, there must exist some job j ∈ J with x(j) < (1+ ϵ)−1, and we boost the job j. Note that we always prioritize whacking machines over boosting jobs, and this tie-breaking rule will play a crucial role in our analysis. Furthermore, whenever the level of any job or machine becomes ≥ 10 κ(7 L + α), we terminate the algorithm. We will show that this occurs only if Opt f (G, w ) > Γ. We handle each update as described in Algorithm 4. In a bit more detail, if the update involves insertion of a new job j, then we initialize ℓ(j) = 0 and a flow x(j, i ) =   ϵW mn 
+
+2 · (1 + ϵ)−ℓ(i) on each edge ( j, i ) ∈ E incident on j. In contrast, if the update involves the deletion of an edge ( j, i ), then we simply remove the flow x(j, i ). After this, we perform the same operations as we did at preprocessing, until either x is an ϵ-fractional assignment with load at most β(1 + ϵ) · Γ, or the level of any job or machine becomes ≥ 10 κ(7 L + α). In the latter case, we terminate the algorithm and declare that 
+
+Opt f (G, w ) > Γ. We conclude this section with a few crucial observations. 
+
+Observation 5.1. The flow on an edge (j, i ) ∈ E is always equal to x(j, i ) =   ϵW mn 
+
+2 · (1 + ϵ)ℓ(j)−ℓ(i).Proof. The observation clearly holds when we first initialize the flow on this edge (see Line 6 in Algorithm 3 and Line 6 in Algorithm 4). Subsequently, whenever we boost the job j, the flow x(j, i )increases by a multiplicative (1 + ϵ) factor and the level ℓ(j) increases by an additive one. In contrast, whenever we whack the machine i, the flow x(j, i ) decreases by a multiplicative (1 + ϵ) factor and the level ℓ(i) increases by an additive one. Thus, the observation continues to hold at all times. 
+
+Observation 5.2. For every job j ∈ J, we always have 0 ≤ x(j) < 1.
+
+13 Proof. If the job j is present at preprocessing, then we initialize x(j) = P  
+
+> i∈N(j)
+
+x(j, i ) = |N (j)| · 
+
+  ϵW mn 
+
+2 ≤ m ·   ϵW mn 
+
+2 ≤ 1 (see Line 6 in Algorithm 3). Otherwise, when it is inserted, we ini-tialize x(j) = P  
+
+> i∈N(j)
+
+x(j, i ) = P 
+
+> i∈N(j)
+
+  ϵW mn 
+
+2 · (1 + ϵ)−ℓ(j) ≤ | N (j)| ·   ϵW mn 
+
+2 ≤ 1 (see Line 6 in Algorithm 4). Subsequently, the value of x(j) increases only when the job j gets boosted. We decide to boost the job j only if x(j) < (1 + ϵ)−1. On the other hand, whenever we boost the job j, the value of x(j)increases by a multiplicative (1 + ϵ) factor. Thus, we always continue to have x(j) < 1. 
+
+Corollary 5.3. For every edge (j, i ) ∈ E, we always have 0 ≤ x(j, i ) < 1.Proof. Follows from Observation 5.2, since x(j) = P  
+
+> i∈N(j)
+
+x(j, i ). 
+
+Observation 5.4. For all i ∈ M and j ∈ J, we have ℓ(i) ≤ 10 κ(7 L + α) and ℓ(j) ≤ 10 κ(7 L + α).Proof. We terminate when a job or a machine reaches level 10 κ(7 L + α) (see Algorithm 3 and Algo-rithm 4). 
+
+# 6 Maintaining an ϵ-Fractional Assignment: The Analysis 
+
+We analyze the update time of our algorithm in the lemma below. 
+
+Lemma 6.1. Our dynamic algorithm, as described in Section 5, has a total update time of ˜O(m/ϵ 4).Proof. Using standard data structures, our total update time is dominated (up to a polylogarithmic factor) by the time spent on the calls to the Boost (j, G, x ) and Whack (i, G, x ) subroutines. Further-more, a call to Boost (j, G, x ) takes time proportional to the current degree of the job j in G, whereas a call to Whack (i, G, x ) takes time proportional to the current degree of the machine i in G.Suppose that whenever we make a call to Boost (j, G, x ) (resp. Whack (i, G, x )), we place one unit of token on each of the edges currently incident on the job j (resp. the machine i). Evidently, we terminate the algorithm whenever the level of any job or machine becomes equal to 10 κ(7 L + α) (see Observation 5.4). Hence, throughout the entire duration of our algorithm, each edge that is ever present in the input receives at most O(κ(L + α)) = ˜O(1 /ϵ 4) tokens (see Equation (9)). This implies that the total number of tokens that ever get created is at most ˜O(m/ϵ 4). As discussed above, these tokens are sufficient to pay for the total update time of our algorithm. This concludes the proof. Our key technical contribution is to prove the following lemma. 
+
+Lemma 6.2. Throughout the sequence of updates, as long as Opt f (G) ≤ Γ, it must necessarily be the case that ℓ(j) < 10 κ(7 L + α) for all jobs j ∈ J and ℓ(i) < 10 κ(7 L + α) for all machines i ∈ M .
+
+It is trivial to verify that as long as the levels of all jobs and machines remain below 10 κ(7 L + α)after handling the current update, our algorithm maintains an ϵ-fractional assignment x in ( G, w ) with load at most β(1 + ϵ) · Γ. Accordingly, Theorem 4.1 follows from Lemma 6.1 and Lemma 6.2. 
+
+Roadmap for the rest of this section. We devote the rest of Section 6 towards proving Lemma 6.2. We start by introducing the concepts of an history graph G and its history flow z in Section 6.1. We emphasize that these concepts are used only for the sake of analysis. Our algorithm, as described in Section 5, is oblivious to them. Finally, we derive the proof of Lemma 6.2 in Section 6.2. 14 6.1 The History Graph G = ( J ∪ M , E) and the History Flow z : E → R≥0
+
+Time-steps. We think of time as consisting of a sequence of discrete steps t ∈ Z≥0.4 Time-step 
+
+t = 0 refers to the scenario before preprocessing. Each subsequent time-step t > 0 corresponds to one of the following types of events: (i) deletion of an edge, (ii) insertion of a job, (iii) boosting a job, and (iv) whacking a machine. We use the superscript t to denote the status of any object at the end of time-step t. We are now ready to define the history graph and its history flow. 
+
+Definition 6.3. At the end of time-step t ∈ Z≥0, the history graph G = ( J ∪ M , E) is given by: 
+
+J (t) := 
+
+n
+
+(j, k j ) ∈ J(t) × Z≥0 : kj ≤ ℓ(t)(j)
+
+o
+
+.
+
+M(t) := 
+
+n
+
+(i, k i) ∈ M (t) × Z≥0 : ki ≤ ℓ(t)(i)
+
+o
+
+.
+
+E(t) := 
+
+n
+
+(( j, k j ), (i, k i)) ∈ J (t) × M (t) : ∃ t′ ∈ [0 , t ] s.t. (j, i ) ∈ E(t′), k j = ℓ(t′)(j), k i = ℓ(t′)(i)
+
+o
+
+.
+
+Furthermore, the history flow z : E → R≥0 at the end of time-step t ∈ Z≥0 is given by: 
+
+z(t) (j, k j ), (i, k i) =
+
+ ϵW mn 
+
+2
+
+· (1 + ϵ)kj −ki for every edge (( j, k j ), (i, k i)) ∈ E (t).
+
+We refer to each node (j, k j ) ∈ J as an job-level node at level kj , each node (i, k i) ∈ M as an 
+
+machine-level node at level ki, and each edge  (j, k j ), (i, k i) ∈ E as an history edge . We also abuse notation and define w : J → [1 , W ] such that w(j, k j ) = w(j) for all (j, k j ) ∈ J .
+
+Observation 6.4. Consider any time-step t′ ∈ Z≥0, and any edge e = ( j, i ) ∈ E(t′) with ℓ(t′)(j) = 
+
+kj and ℓ(t′)(i) = ki. Then, at every future time-step t ≥ t′, there exists a history edge ehist = (j, k j ), (i, k i) ∈ E (t) with history flow z(t)(ehist ) = x(t′)(e). Furthermore, these are the only history edges that are present in G at any given time-step. Proof. Follows from Definition 6.3 and Observation 5.1. By Observation 6.4, the history graph G and the history flow z evolve monotonically over time, in contrast with the input ( G, w ) and the flow x. This is summarized in the corollary below. 
+
+Corollary 6.5. No job-level node, machine-level node or history edge ever gets deleted from G. More-over, the history flow z(ehist ) on a history edge ehist gets fixed at the time ehist is inserted into G, and it never changes subsequently in the future. 
+
+Notational Conventions. While dealing with the history graph ( G, w ) and the history flow z, we will use the same notational conventions introduced in Section 3. For example, the symbol 
+
+wz (i, k i) := X  
+
+> (j,k j)∈NG(i,k i)
+
+w(j, k j ) · z (j, k j ), (i, k i) = X  
+
+> (j,k j)∈NG(i,k i)
+
+w(j) · z (j, k j ), (i, k i)
+
+denotes the load of a machine-level node ( i, k i). Whenever we use the phrases “ total weighted flow absorbed by the machine-level node (i, k i)’’ and “ total flow sent out by the job-level node (j, k j )”, we respectively refer to wz (i, k i) and z(j, k j ). In contrast, the phrases “ total weighted flow absorbed by the machine i” and “ total flow sent out by the job j” respectively refer to wx(i) and x(j).   
+
+> 4Throughout this paper, the symbol Z≥0denotes the set of nonnegative integers.
+
+15 6.2 Establishing the Correctness of Our Algorithm: Proof of Lemma 6.2 
+
+Key Notations. We introduce some notations that will be used throughout the rest of this section. For every level k ∈ Z≥0, we define 
+
+J≥k := {j ∈ J : ℓ(j) ≥ k} .
+
+J≥k := {(j, k j ) ∈ J : kj ≥ k} .M≥k := {i ∈ M : ℓ(i) ≥ k} .
+
+M≥k := {(i, k i) ∈ M : ki ≥ k} .
+
+Next, recall the parameter α from Equation (9). For every k ∈ Z≥0, we define ˆJ≥k := {j ∈ J≥k : ℓ(j) ≥ k + α − 1} .
+
+ˆJ≥k := 
+
+n
+
+(j, k j ) ∈ J ≥k : j ∈ ˆJ≥k
+
+o
+
+.
+
+ˆM≥k := {i ∈ M≥k : ℓ(i) ≥ k + α − 1} .
+
+ˆM≥k := 
+
+n
+
+(i, k i) ∈ M ≥k : i ∈ ˆM≥k
+
+o
+
+.
+
+In words, the set ˆJ≥k consists of all jobs in J≥k whose levels are at least α − 1 larger than the threshold k, and the set ˆJ≥k consists of all the job-level nodes in J≥k that originate from ˆJ≥k. Thus, each job in ˆJ≥k contributes at least α job-level nodes to the set ˆJ≥k. The symbols ˆM≥k and ˆM≥k are defined analogously. It is easy to verify that 
+
+ˆJ≥k = X 
+
+> j∈ˆJ≥k
+
+(ℓ(j) − k + 1) and ˆM≥k = X 
+
+> i∈ˆM≥k
+
+(ℓ(i) − k + 1) . (12) We next classify each history edge as either big or small , as follows. 
+
+Definition 6.6. A history edge ehist ∈ E is big if z(ehist ) ≥   ϵW mn 
+
+14 , and small otherwise. 
+
+Roadmap for the Rest of Section 6.2. We start by showing that the levels of any two neighboring jobs and machines are very close to each other, for most edges. Specifically, Claim 6.7 implies that 
+
+ℓ(i) ≥ ℓ(j) − L for all ( j, i ) ∈ E. In contrast, Claim 6.8 implies that as long as any given edge ( j, i ) ∈ E
+
+carries nontrivial amount of flow, we must have ℓ(j) ≥ ℓ(i) − 6L.Next, in Corollary 6.10 we derive that for every level kj > 0, each job-level node ( j, k ) ∈ ˆJ≥kj
+
+sends out at most 2(1 + ϵ2/10) · w(j) units of weighted flow, on average. Corollary 6.10 is obtained from Lemma 6.9. The proof of Lemma 6.9 is delegated to Section 6.2.1. In a similar vein, Corollary 6.12 shows that for every level ki > 6L + α, each machine-level node (i, k ) ∈ ˆM≥ki receives at least 2(1+ ϵ−ϵ2)·Γ units of weighted flow, on average, from the job-level nodes in ˆJ≥ki−6L−α. Corollary 6.12, whose proof crucially uses Claim 6.8, is obtained from Lemma 6.11. We delegate the proof of Lemma 6.11 to Section 6.2.2. Lemma 6.13 presents the first part of our expansion argument . In a bit more detail, Lemma 6.13 upper bounds the number of machine-level nodes in ˆM≥k in terms of the total weight of the job-level nodes in ˆJ≥k−6L−α. The proof of Lemma 6.13 relies upon Corollary 6.10 and Corollary 6.12. Lemma 6.14 presents the second part of our expansion argument, by complementing Lemma 6.13. Intuitively, Lemma 6.14 upper bounds the total weight of the job-level nodes in ˆJ≥k in terms of the number of machine-level nodes in ˆM≥k−L.In Corollary 6.15, we combine the statements of Lemma 6.13 and Lemma 6.14, to argue that the size of the set ˆM≥k expands geometrically whenever we decrease the value of k by an additive 7 L + α.At the end of Corollary 6.15, we finally present the proof of Lemma 6.2. This proof relies upon the insight that the geometric expansion guaranteed by Corollary 6.15 above cannot be repeated for more than logarithmic many iterations. 16 Claim 6.7. For every history edge  (j, k j ), (i, k i) ∈ E , we have ki ≥ kj − L.Proof. Consider any time-step t ∈ Z≥0 and any history edge ehist =  (j, k j ), (i, k i) ∈ E (t). Let e =(j, i ). By Observation 6.4, there is a time-step t′ ∈ [0 , t ] where z(t)(ehist ) = x(t′)(e). By Corollary 5.3, we have x(t′)(e) < 1. Finally, by Definition 6.3, we have z(t)(ehist ) = ( ϵ/ (W mn )) 2 · (1 + ϵ)kj −ki .Putting everything together, we get ( ϵ/ (W mn )) 2 · (1 + ϵ)kj −ki < 1, which implies that kj − ki ≤
+
+log (1+ ϵ)(W mn/ϵ )2 = L (see Equation (9)). 
+
+Claim 6.8. For every big history edge  (j, k j ), (i, k i) ∈ E , we have kj ≥ ki − 6L.Proof. Consider any big history edge ehist =  (j, k j ), (i, k i) ∈ E . Since ehist is big, it follows that 
+
+z(ehist ) ≥ (ϵ/ (W mn )) 14 . Moreover, by Definition 6.3, we have z(ehist ) = ( ϵ/ (W mn )) 2 · (1 + ϵ)kj −ki .Thus, we conclude that ( ϵ/ (W mn )) 14 ≤ (ϵ/ (W mn )) 2 ·(1+ ϵ)kj −ki , and hence (1+ ϵ)ki−kj ≤ (W mn/ϵ )12 .In other words, this means that ki − kj ≤ log (1+ ϵ)(W mn/ϵ )12 = 6 L (see Equation (9)). 
+
+Lemma 6.9. For every job j ∈ J and level 0 < k j < ℓ (j), we have 
+
+> ℓ(j)
+
+X
+
+> k=kj
+
+z(j, k ) ≤ 2 · (ℓ(j) − kj + 1) + 
+
+ 1
+
+ϵ
+
+
+
+.
+
+We will prove the above lemma in Section 6.2.1. From this, we can conclude the following useful observation. Consider a level k and a job j whose current level is significantly higher than k, i.e., at least k + α − 1. When we average over the job-level nodes ( j, k ), . . . , (j, ℓ (j)), each of them sends at most 2  1 + ϵ2/10  times its weight units of weighted flow. This is summarized in the corollary below. 
+
+Corollary 6.10. For every level kj > 0 and job j ∈ ˆJ≥kj , we have 
+
+Pℓ(j) 
+
+> k=kj
+
+wz (j, k )(ℓ(j) − kj + 1) ≤ 2
+
+
+
+1 + ϵ2
+
+10 
+
+
+
+· w(j).
+
+Proof. From Lemma 6.9, we infer that: 
+
+Pℓ(j) 
+
+> k=kj
+
+wz (j, k )(ℓ(j) − kj + 1) = w(j) ·
+
+Pℓ(j) 
+
+> k=kj
+
+z(j, k )(ℓ(j) − kj + 1) 
+
+≤ w(j) ·
+
+
+
+2 + 1
+
+ϵ (ℓ(j) − kj + 1) 
+
+
+
+≤ w(j) ·
+
+
+
+2 + 1
+
+ϵα 
+
+
+
+,
+
+≤ w(j) · 2
+
+
+
+1 + ϵ2
+
+10 
+
+
+
+,
+
+where the penultimate inequality holds since j ∈ ˆJ≥kj (i.e., ℓ(j) − kj + 1 ≥ α) and the last inequality holds because of Equation (9). This concludes the proof. 
+
+Lemma 6.11. For every machine i ∈ M and level 0 < k i < ℓ (i), we have 
+
+> ℓ(i)
+
+X
+
+> k=ki
+
+wz (i, k ) ≥ 2(1 + ϵ) · (ℓ(i) − ki + 1) · Γ −
+
+ 5
+
+ϵ
+
+
+
+· Γ.
+
+We will prove the above lemma in Section 6.2.2. Given this, we can conclude the following useful observation that complements Corollary 6.10. Consider a level k and a machine i whose current level is significantly higher than k, i.e., at least k + α − 1. When we average over machine-level nodes (i, k ), . . . , (i, ℓ (i)), each of them receives at least 2  1 + ϵ − ϵ2 Γ units of weighted flow only from 
+
+job-level nodes whose current level is at least k − 6L − 1. This is captured by the corollary below. 17 Corollary 6.12. Consider any level ki > 6L + α and any machine i ∈ ˆM≥ki . Then, we must have 
+
+Pℓ(i)
+
+> k=ki
+
+P     
+
+> (j,k j)∈NG(i,k )∩ˆJ≥ki−6L−α
+
+w(j, k j ) · z (j, k j ), (i, k )
+
+(ℓ(i) − k + 1) ≥ 2(1 + ϵ − ϵ2) · Γ.
+
+Proof. Consider any level k ∈ [ki, ℓ (i)], and focus on the machine-level node ( i, k ) ∈ ˆM≥ki . We define 
+
+J1(k) := {(j, k j ) ∈ NG (i, k ) : kj ≥ k − 6L} and J2(k) := {(j, k j ) ∈ NG (i, k ) : kj < k − 6L}.
+
+The set of neighbors of the machine-level node ( i, k ) is partitioned into the subsets J1(k) and J2(k). Claim 6.8 implies that  (j, k j ), (i, k ) is a small history edge for every job-level node ( j, k j ) ∈ J 2(k). This means that z (( j, k j ), (i, k )) < (ϵ/ (W mn )) 14 for all ( j, k j ) ∈ J 2(k). Next, from Observation 5.4 and Equation (9), we infer that 
+
+|J 2(k)| ≤ n · k ≤ n · 10 κ(7 L + α)
+
+≤ 100 · nLκα 
+
+≤ 100 · n ·
+
+ W mn ϵ
+
+8
+
+· 5
+
+ϵ3
+
+= 500 · n · (W mn )8
+
+ϵ11 .
+
+Accordingly, we get 
+
+X 
+
+> (j,k j)∈J 2(k)
+
+w(j, k j ) · z (j, k j ), (i, k ) ≤ |J 2(k)| · W ·
+
+ ϵW mn 
+
+14 
+
+≤ 500 · n · (W mn )8
+
+ϵ11 · W ·
+
+ ϵW mn 
+
+14 
+
+≤
+
+ W mn ϵ
+
+11 
+
+·
+
+ ϵW mn 
+
+14 
+
+(13) =
+
+ ϵW mn 
+
+3
+
+≤ ϵ2Γ. (14) In the above derivation, Equation (13) holds as long as W mn is larger than some absolute constant (independent of ϵ), and the last step holds since Γ ≥ 1/n (see Equation (11)). At this point, since the set NG (i, k ) is partitioned into J1(k) and J2(k), Equation (14) implies that 
+
+X 
+
+> (j,k j)∈J 1(k)
+
+w(j, k j ) · z (j, k j ), (i, k ) = wz (i, k ) − X 
+
+> (j,k j)∈J 2(k)
+
+w(j, k j ) · z (j, k j ), (i, k )
+
+≥ wz (i, k ) − ϵ2 · Γ.
+
+Next, observe that since k ≥ ki, we have J1(k) ⊆ NG (i, k ) ∩ ˆJ≥ki−6L−α, by definition. Thus, we get: 
+
+X    
+
+> (j,k j)∈NG(i,k )∩ˆJ≥ki−6L−α
+
+w(j, k j ) · z (j, k j ), (i, k ) ≥ wz (i, k ) − ϵ2 · Γ. (15) Summing Equation (15) over all k ∈ [ki, ℓ (i)], we get: 
+
+> ℓ(i)
+
+X
+
+> k=ki
+
+X    
+
+> (j,k j)∈NG(i,k )∩ˆJ≥ki−6L−α
+
+w(j, k j ) · z (j, k j ), (i, k ) ≥
+
+> ℓ(i)
+
+X
+
+> k=ki
+
+wz (i, k ) − ϵ2Γ · (ℓ(i) − ki + 1) . (16) 18 Now, diving both sides of Equation (16) by ( ℓ(i) − ki + 1) and applying Lemma 6.11, we get: 
+
+Pℓ(i)
+
+> k=ki
+
+P     
+
+> (j,k j)∈NG(i,k )∩ˆJ≥ki−6L−α
+
+w(j, k j ) · z (j, k j ), (i, k )
+
+(ℓ(i) − ki + 1) ≥ 2(1 + ϵ)Γ − ϵ2Γ − 5Γ 
+
+ϵ (ℓ(i) − ki + 1) 
+
+≥ 2(1 + ϵ)Γ − ϵ2Γ − 5Γ 
+
+ϵα 
+
+≥ 2(1 + ϵ − ϵ2) · Γ,
+
+where the penultimate inequality holds since i ∈ ˆM≥ki (i.e., ℓ(i) − ki + 1 ≥ α) and the last inequality holds because of Equation (9). This concludes the proof. 
+
+Lemma 6.13. For every level k > 6L + α, we have w
+
+ ˆJ≥k−6L−α
+
+
+
+≥  1 + ϵ
+
+> 2
+
+ · Γ · ˆM≥k .Proof. Corollary 6.10 implies that on average a job-level node ( j, k j ) ∈ ˆJ≥k−6L−α sends out at most 2  1 + ϵ2/10  · w(j) = 2  1 + ϵ2/10  · w(j, k j ) units of weighted flow. On the other hand, Corollary 6.12 implies that on average a machine-level node ( i, k i) ∈ ˆM≥k receives at least 2(1 + ϵ − ϵ2) · Γ units of weighted flow from the job-level nodes in ˆJ≥k−6L−α. Thus, a simple counting argument implies that 2(1 + ϵ2/10) · w( ˆJ≥k−6L−α) ≥ 2(1 + ϵ − ϵ2) · Γ · | ˆM≥k|, or equivalently, 
+
+w( ˆJ≥k−6L−α) ≥
+
+ 1 + ϵ − ϵ2
+
+1 + ϵ2
+
+> 10
+
+ · Γ · | ˆM≥k| ≥ 
+
+
+
+1 + ϵ
+
+2
+
+
+
+· Γ · | ˆM≥k|,
+
+where the last inequality holds since ϵ < 1/100 (see Equation (9)). 
+
+Lemma 6.14. As long as Opt f (G, w ) ≤ Γ, we must have Γ · ˆM≥k−L ≥ w
+
+ ˆJ≥k
+
+
+
+for all k > L .Proof. Throughout the proof, we will focus on a specific time-step t such that Opt (t) 
+
+> f
+
+(G, w ) ≤ Γ. Accordingly, for ease of notation, throughout the proof we will omit the superscript t from all objects. By Observation 6.4 and Claim 6.7, we have ℓ(i) ≥ ℓ(j) − L for all ( j, i ) ∈ E. Hence, we get: 
+
+NG(j) ⊆ ˆM≥k−L for all jobs j ∈ ˆJ≥k. (17) (ℓ(i) − (k − L) + 1) ≥ (ℓ(j) − k + 1) for all jobs j ∈ ˆJ≥k and machines i ∈ NG(j). (18) Let x⋆ : E → [0 , 1] be a fractional assignment in ( G, w ) with load at most Γ. Such an assignment exists because Opt f (G, w ) ≤ Γ. In particular, this means that wx⋆ (j) = w(j) for all jobs j ∈ J,and wx⋆ (i) ≤ Γ for all machines i ∈ M . Now, consider any job j ∈ ˆJ≥k. By definition, we have P 
+
+> i∈NG(j)
+
+w(j) · x⋆(j, i ) = wx⋆ (j) = w(j). At this point, Equation (18) implies that: 
+
+X
+
+> i∈NG(j)
+
+(ℓ(i) − (k − L) + 1) · w(j) · x⋆(j, i ) ≥ (ℓ(j) − k + 1) · w(j) for all jobs j ∈ ˆJ≥k. (19) 19 Armed with all these observations, we now derive that: Γ · | ˆMk−L| = X 
+
+> i∈ˆM≥k−L
+
+(ℓ(i) − (k − L) + 1) · Γ (20) 
+
+≥ X 
+
+> i∈ˆM≥k−L
+
+(ℓ(i) − (k − L) + 1) · wx⋆ (i) (21) = X 
+
+> i∈ˆM≥k−L
+
+X
+
+> j∈NG(i)
+
+(ℓ(i) − (k − L) + 1) · w(j) · x⋆(j, i ) (22) 
+
+≥ X 
+
+> i∈ˆM≥k−L
+
+X 
+
+> j∈NG(i)∩ˆJ≥k
+
+(ℓ(i) − (k − L) + 1) · w(j) · x⋆(j, i )= X 
+
+> j∈ˆJ≥k
+
+X 
+
+> i∈NG(j)∩ˆM≥k−L
+
+(ℓ(i) − (k − L) + 1) · w(j) · x⋆(j, i ) (23) = X 
+
+> j∈ˆJ≥k
+
+X
+
+> i∈NG(j)
+
+(ℓ(i) − (k − L) + 1) · w(j) · x⋆(j, i ) (24) 
+
+≥ X 
+
+> j∈ˆJ≥k
+
+(ℓ(j) − k + 1) · w(j) (25) = w
+
+ ˆJ≥k
+
+
+
+. (26) In the above derivation, Equation (20) holds because of Equation (12). Equation (21) holds because x⋆ is a fractional assignment with load at most Γ, and hence wx⋆ (i) ≤ Γ for all machines 
+
+i ∈ M . Equation (22) follows from the definition of the load wx⋆ (i) on a machine i ∈ M w.r.t. x⋆.Equation (23) follows from changing the order of the two summations. Equation (24) follows from Equation (17). Equation (25) follows from Equation (19). Finally, Equation (26) holds because of Equation (12). The lemma follows from Equation (26). 
+
+Corollary 6.15. If Opt f (G, w ) ≤ Γ, then ˆM≥k−(7 L+α) ≥ (1 + ϵ/ 2) · ˆM≥k for all k > 7L + α.Proof. From Lemma 6.13 and Lemma 6.14, we infer that Γ · ˆM≥k−7L−α ≥ w
+
+ ˆJ≥k−6L−α
+
+
+
+≥
+
+
+
+1 + ϵ
+
+2
+
+
+
+· Γ · ˆM≥k .
+
+Dividing both sides of the resulting inequality by Γ, we get ˆM≥k−7L−α ≥ (1 + ϵ/ 2) · ˆM≥k .
+
+Proof of Lemma 6.2. For the sake of contradiction, suppose that Opt f (G, w ) ≤ Γ, and 
+
+• (a) either there is a machine i ∈ M at level ℓ(i) = 10 κ(7 L + α), 
+
+• (b) or there is a job j ∈ J at level ℓ(j) = 10 κ(7 L + α). If we are in case (a), then i ∈ ˆM≥10 κ(7 L+α)−α+1 ⊆ ˆM≥5κ(7 L+α), and hence 
+
+ˆM≥5κ(7 L+α) ≥ 1. (27) Otherwise, if we are in case (b), then Observation 6.4 and Claim 6.7 imply that ℓ(i) ≥ ℓ(j) − L for all machines i ∈ NG(j). Clearly, we have NG(j)̸ = ∅, for otherwise the input ( G, w ) does not admit any valid assignment. Accordingly, we get 
+
+∅ ⊂ NG(j) ⊆ M≥ℓ(j)−L = M≥10 κ(7 L+α)−L ⊆ ˆM≥10 κ(7 L+α)−L−α+1 ⊆ ˆM≥5κ(7 L+α).
+
+20 This implies that ˆM≥5κ(7 L+α)̸ = ∅. In other words, Equation (27) holds even under case (b). Now, starting from Equation (27), we invoke Corollary 6.15 for κ successive iterations, to get: 
+
+ˆM≥4κ(7 L+α) ≥ (1 + ϵ/ 2) κ · ˆM≥5κ(7 L+α) ≥ (1 + ϵ/ 2) κ. (28) In contrast, by Observation 5.4, every machine i ∈ M contributes at most 10 κ(7 L + α) machine-level nodes to the set ˆM≥4κ(7 L+α). This implies that 
+
+ˆM≥4κ(7 L+α) ≤ 10 mκ (7 L + α). (29) From Equation (28), Equation (29) and Equation (9), we derive that 10 mκ (7 L + α) ≥ (1 + ϵ/ 2) κ = ( W mn/ϵ )6. (30) However, Equation (9) implies that Equation (30) cannot hold, as long as mnW is larger than some absolute constant (independent of ϵ). This leads to the desired contradiction. 
+
+6.2.1 Bounding the Total Flow out of Job-Level Nodes: Proof of Lemma 6.9 
+
+Throughout the proof, we fix a time-step t, job j ∈ J(t) and level 0 < k j < ℓ (t)(j). We will show that 
+
+> ℓ(t)(j)
+
+X
+
+> k=kj
+
+z(t)(j, k ) ≤ 2 ·
+
+
+
+ℓ(t)(j) − kj + 1 
+
+
+
++
+
+ 1
+
+ϵ
+
+
+
+.
+
+For every level 0 < k j ≤ k ≤ ℓ(t)(j), let tk denote the time-step at which the job j entered level k. To ensure consistency of notations, we let tℓ(t)(j)+1 := t. For every level 0 < k j ≤ k ≤ ℓ(t)(j), we define 
+
+zgain (j, k ) := z(tk )(j, k ) and zloss (j, k ) := z(tk+1 )(j, k ) − z(tk )(j, k ). (31) To interpret these notations, consider the time-interval [ tk, t k+1 ], and recall that the value of z(j, k )can only increase over time throughout this interval (see Observation 6.4). At time-step tk, the job j
+
+gets boosted for the kth time and increases its level from k − 1 to k. The symbol zgain (j, k ) denotes the total flow sent out by the job j immediately after this event. The subscript “ gain ” refers to the fact that the job j gains flow due to this event at time-step tk. Subsequently, as long as the job j
+
+continues to remain at level k, it can potentially lose parts of the flow it is sending out, due to one of the following two types of events. 
+
+• (i) An edge incident on j gets deleted from G. This does not lead to any change in z(j, k ). 
+
+• (ii) A machine i ∈ NG(j) gets whacked. This leads to a loss in the flow sent out by j and an increase in the value of z(j, k ), along with the insertion of a new history edge incident on ( j, k ). The symbol zloss (j, k ) denotes the total increase in the value of z(j, k ) during the time-interval [tk, t k+1 ], due to all events of type (ii). The subscript “ loss ” refers to the fact that the job j loses 
+
+flow during all these concerned events. If k < ℓ (t)(j), then it is easy to verify that tk+1 ≤ t and that the value of z(j, k ) remains unchanged during the time-interval [ tk+1 , t ]; this is because no history edge incident on ( j, k ) gets inserted into G
+
+when the job j is at level ≥ k+1. In contrast, if k = ℓ(t)(j), then we have defined tk+1 := t for notational consistency. Accordingly, from Equation (31) we infer that z(t)(j, k ) = zgain (j, k ) + zloss (j, k ) for all 
+
+kj ≤ k ≤ ℓ(t)(j). Summing this equality over all k ∈ kj , ℓ (t)(j), we get: 
+
+> ℓ(t)(j)
+
+X
+
+> k=kj
+
+z(t)(j, k ) = 
+
+> ℓ(t)(j)
+
+X
+
+> k=kj
+
+zgain (j, k ) + 
+
+> ℓ(t)(j)
+
+X
+
+> k=kj
+
+zloss (j, k ). (32) We will now upper bound the two summations on the right hand side of Equation (32), one after another. In Claim 6.16, we upper bound the first of these summations. 21 Claim 6.16. We have Pℓ(t)(j) 
+
+> k=kj
+
+zgain (j, k ) ≤  ℓ(t)(j) − kj + 1 .Proof. Consider any level k ∈ kj , ℓ (t)(j). By definition, the value of zgain (j, k ) equals the total amount of flow sent out by the job j when it first enters level k. So, Observation 5.2 implies that 
+
+zgain (j, k ) ≤ 1. The claim follows from summing this inequality over all k ∈ kj , ℓ (t)(j).It now remains to upper bound the second summation on the right hand side of Equation (32). Towards this end, we define two quantities Fgain and Floss , which respectively correspond to the total gain and total loss in the flow x(j) during the time-interval tkj , t , as described below. At time-step tkj , we initialize Fgain ← 0 and Floss ← 0. Subsequently, at each time-step t′ ∈ tkj , t , we update the values of Fgain and Floss as per the following rules. 1. Suppose that the job j gets boosted during time-step t′, which implies that x(t′)(j) >x(t′−1) (j). In this case, we set Fgain ← Fgain +
+
+
+
+x(t′)(j) − x(t′−1) (j)
+
+
+
+.2. Suppose that some machine i ∈ NG(j) gets whacked during time-step t′, which implies that 
+
+x(t′)(j) < x (t′−1) (j). In this case, we set Floss ← Floss +
+
+
+
+x(t′−1) (j) − x(t′)(j)
+
+
+
+.3. Suppose that some edge ( j, i ) ∈ E incident on j gets deleted during time-step t′, which implies that x(t′)(j) < x (t′−1) (j). In this case, we set Floss ← Floss +
+
+
+
+x(t′−1) (j) − x(t′)(j)
+
+
+
+.4. Otherwise, we have x(t′)(j) = x(t′−1) (j), and Fgain , F loss also remain unchanged. Henceforth, unless explicitly specified otherwise, the symbols Floss and Fgain will refer to their values at the end of time-step t.Next, we upper bound Floss in terms of Fgain , as stated in the claim below. 
+
+Claim 6.17. We have Floss ≤ Fgain + 1 .Proof. From the definitions of Floss and Fgain , we conclude that x(t)(j) = x(tkj )(j) + Fgain − Floss , or equivalently, Floss = Fgain +
+
+
+
+x(tkj )(j) − x(t)(j)
+
+
+
+. The claim now follows from Observation 5.2. Next, we relate Fgain to the number of times the job j gets boosted during the time-interval ( tkj , t ]. 
+
+Claim 6.18. We have Fgain ≤ ϵ ·  ℓ(t)(j) − kj
+
+.Proof. The value of Fgain is initialized at 0 when the job j enters level kj . Subsequently, the value of Fgain increases if and only if the job j moves up from some level k ∈ kj , ℓ (t)(j) to level k + 1. Consider the time-step tk+1 at which such an event occurs. When the job j gets boosted at time-step 
+
+tk+1 , we set x(j, i ) ← (1 + ϵ) · x(j, i ) for every machine i ∈ N (tk+1 ) 
+
+> G
+
+(j). Let ∆ gain (tk+1 ) denote the increase in the value of Fgain at time-step tk+1 . Accordingly, we get: ∆gain (tk+1 ) = x(tk+1 )(j) − x(tk+1 −1) (j) = ϵ · x(tk+1 −1) (j) ≤ ϵ. (33) The last inequality follows from Observation 5.2. Since Fgain = Pℓ(t)(j)−1 
+
+> k=kj
+
+∆gain (tk+1 ), we obtain the claim by summing Equation (33) over all k ∈ kj , ℓ (t)(j).Finally, we upper bound the sum Pℓ(t)(j) 
+
+> k=kj
+
+zloss (j, k ) in terms of Floss .22 Claim 6.19. We have Pℓ(t)(j) 
+
+> k=kj
+
+zloss (j, k ) ≤ (1 /ϵ ) · Floss .Proof. Consider any time-step t′ ∈ (tkj , t ] with ℓ(t′)(j) = k′ ∈ [kj , ℓ (t)(j)] (say), which involves the whacking of some machine i ∈ N (t′) 
+
+> G
+
+(j). During this event, we set x(j, i ) ← (1 + ϵ)−1 · x(j, i ), and hence x(t′)(j, i ) ← (1 + ϵ)−1 · x(t′−1) (j, i ). Let x(t′−1) (j, i ) = λ (say), so that x(t′)(j, i ) = λ/ (1 + ϵ). Due to this event, the value of zloss (j, k ′) increases by λ/ (1 + ϵ), whereas the value of Floss increases by 
+
+λ − λ/ (1 + ϵ) = ϵ · λ/ (1 + ϵ). Moreover, the value of zloss (j, k ′) increases if and only if some machine neighboring the job j gets whacked. In other words, for all k′ ∈ [kj , ℓ (t)(j)], every unit increase in 
+
+zloss (j, k ′) can be charged to an ϵ unit increase in Floss . This implies the claim. We are now ready to upper bound the second summation on the right hand side of Equation (32). 
+
+Corollary 6.20. We have Pℓ(t)(j) 
+
+> k=kj
+
+zloss (j, k ) ≤  ℓ(t)(j) − kj
+
+ + (1 /ϵ ).Proof. From Claim 6.17, Claim 6.18 and Claim 6.19, we infer that 
+
+> ℓ(t)(j)
+
+X
+
+> k=kj
+
+zloss (j, k ) ≤ (1 /ϵ ) · Floss ≤ (1 /ϵ ) · Fgain + (1 /ϵ ) ≤
+
+
+
+ℓ(t)(j) − kj
+
+
+
++ (1 /ϵ ).
+
+This concludes the proof of the corollary. At this point, Lemma 6.9 follows from Equation (32), Claim 6.16 and Corollary 6.20. 
+
+6.2.2 Bounding the Total Weighted Flow into Machine-Level Nodes: Proof of Lemma 6.11 
+
+Throughout the proof, we fix a time-step t, machine i ∈ M and level 0 < k i < ℓ (t)(i). We will show: 
+
+> ℓ(t)(i)
+
+X
+
+> k=ki
+
+w(t) 
+
+> z
+
+(i, k ) ≥ 2(1 + ϵ) ·
+
+
+
+ℓ(t)(i) − ki + 1 
+
+
+
+· Γ −
+
+ 5
+
+ϵ
+
+
+
+· Γ.
+
+We start with two useful observations which bound the total weighted flow absorbed by i.
+
+Observation 6.21. Immediately after the machine i gets whacked, we must have wx(i) > β · Γ.Proof. The machine i gets whacked only if wx(i) > β (1 + ϵ) · Γ (see Line 9 in Algorithm 3, and Line 9 in Algorithm 4). Further, whenever the machine i gets whacked, we set x(j, i ) ← x(j, i ) · (1 + ϵ)−1 for all j ∈ NG(i). Now, suppose that the machine i gets whacked at a time-step (say) t′. Then, we must have w(t′) 
+
+> x
+
+(i) = w(t′−1)  
+
+> x
+
+(i) · (1 + ϵ)−1 > β (1 + ϵ) · Γ · (1 + ϵ)−1 > β · Γ. 
+
+Observation 6.22. We always have 0 ≤ wx(i) ≤ 3Γ .Proof. At the start of preprocessing (specifically, after Line 6 in Algorithm 3), we have wx(i) = 
+
+P 
+
+> j∈NG(i)
+
+w(j) · x(j, i ) ≤ P 
+
+> j∈NG(i)
+
+W · x(j, i ) = P 
+
+> j∈NG(i)
+
+W ·   ϵW mn 
+
+2 ≤ nW ·   ϵW mn 
+
+2 ≤ Γ, where the last inequality holds since Γ ≥ 1/n (see Equation (11)). Before proceeding any further, recall that our algorithm prioritizes whacking machines over boost-ing jobs (see the while loops in Algorithm 3 and Algorithm 4). In a bit more detail, as long as there exists at least one machine with load more than β(1 + ϵ) · Γ, our algorithm does not boost any job. Furthermore, whacking a machine i′̸ = i does not change the load of the machine i.Next, note that whenever a job j ∈ NG(i) gets boosted at (say) a time-step t′, the value of wx(i)increases by w(j)·
+
+
+
+x(t′)(j, i ) − x(t′−1) (j, i )
+
+
+
+= ϵ·w(j)·x(t′−1) (j, i ) ≤ ϵ·w(t′−1)  
+
+> x
+
+(i) ≤ ϵ·β(1+ ϵ)·Γ ≤ 2ϵ·Γ, where the penultimate inequality follows from the discussion in the preceding paragraph and the last inequality follows from Equation (9). Similarly, whenever a job j ∈ NG(i) gets inserted, the value of 23 wx(i) increases by   ϵW mn 
+
+2 · (1 + ϵ)−ℓ(i) ≤ ϵ2Γ (see Line 6 of Algorithm 4), where the last inequality holds since Γ ≥ 1/n (see Equation (11)). In contrast, deletion of an edge incident on the machine 
+
+i decreases the value of wx(i). To summarize, the value of wx(i) starts at ≤ Γ, and increases in increments of at most an additive max(2 ϵΓ, ϵ 2Γ) ≤ Γ. According, we infer that we always have wx(i) ≤ β(1 + ϵ) · Γ + Γ ≤ 3Γ (see Equation (9)). For every level 0 < k i ≤ k ≤ ℓ(t)(i), let tk be the time-step at which the machine i entered level k.To ensure consistency of notations, we let tℓ(t)(i)+1 := t. For every level 0 < k i ≤ k ≤ ℓ(t)(i), we define: 
+
+wzloss (i, k ) := w(tk ) 
+
+> z
+
+(i, k ) and wzgain (j, k ) := w(tk+1 ) 
+
+> z
+
+(i, k ) − w(tk ) 
+
+> z
+
+(i, k ). (34) To interpret these notations, observe that at the time-step tk, the machine i gets whacked for the 
+
+kth time and increases its level from k − 1 to k. The symbol wzloss (i, k ) denotes the total weighted flow absorbed by i immediately after this event. The subscript “ loss ” refers to the fact that the machine 
+
+i loses flow due to this event. Subsequently, as long as the machine i remains at level k, it gains flow only if either (i) a job j ∈ NG(i) gets boosted or (ii) a job j adjacent to the machine i gets inserted. Any such event leads to an increase in the value of wz (i, k ), accompanied by the insertion of a new history edge incident on ( i, k ) in G.The symbol wzgain (i,k ) denotes the total increase in the value of wz (i, k ) during the time-interval [tk, t k+1 ] due to all events described above. 5 The subscript “ gain ” refers to the fact that the machine 
+
+i gains weighted flow during all these concerned events. If k < ℓ (t)(i), then it is easy to verify that tk+1 ≤ t, and that the value of wz (i, k ) remains unchanged during the time-interval [ tk+1 , t ]; this is because no history edge incident on ( i, k ) gets inserted into G when the machine i is at level ≥ k + 1. In contrast, if k = ℓ(t)(i), then we have defined 
+
+tk+1 := t. Accordingly, from Equation (34) we infer that w(t) 
+
+> z
+
+(i, k ) = wzgain (i, k ) + wzloss (i, k ) for all 
+
+ki ≤ k ≤ ℓ(t)(i). Summing this equality over all k ∈ ki, ℓ (t)(i), we get: 
+
+> ℓ(t)(i)
+
+X
+
+> k=ki
+
+w(t) 
+
+> z
+
+(i, k ) = 
+
+> ℓ(t)(i)
+
+X
+
+> k=ki
+
+wzloss (i, k ) + 
+
+> ℓ(t)(i)
+
+X
+
+> k=ki
+
+wzgain (i, k ). (35) We will now lower bound the two summations on the right hand side of Equation (35), one after another. In Claim 6.23, we lower bound the first of these summations. 
+
+Claim 6.23. We have Pℓ(t)(i) 
+
+> k=ki
+
+wzloss (i, k ) > β  ℓ(t)(i) − ki + 1  · Γ.Proof. Consider any level 0 < k i ≤ k ≤ ℓ(t)(i). Equation (34) implies that wzloss (i, k ) equals the value of wx(i) immediately after the machine i gets whacked for the kth time. Hence, by Observation 6.21, we have wzloss (i, k ) > β ·Γ. The claim follows from summing this inequality over all k ∈ ki, ℓ (t)(i).It now remains to lower bound the second summation on the right hand side of Equation (34). Towards this end, we define three quantities Wgain , W ⋆ 
+
+> gain
+
+and Wloss , which respectively correspond to the total gain in the flow wx(i) during the time-interval [ tki , t ] due to boosting of jobs, the total gain in the flow wx(i) during the time-interval [ tki , t ] due to insertions of jobs, and the total loss in the flow wx(i) during the time-interval [ tki , t ], as described below.             
+
+> 5We remark that, as long as the machine iremains at level k, it loses flow whenever an edge ( j, i )∈Eincident on
+> igets deleted. However, these edge deletions do not change the value of wz(i, k ) and do not influence our definition of
+> wzloss (i, k ).
+
+24 At time-step tki , we initialize Wgain ← 0, W ⋆ 
+
+> gain
+
+← 0 and Wloss ← 0. Subsequently, at each time-step t′ ∈ (tki , t ], we update the values of Wgain , W ⋆
+
+> gain
+
+, W loss as per the following rules. 1. Suppose that the machine i gets whacked during time-step t′, which implies that w(t′) 
+
+> x
+
+(i) <w(t′−1)  
+
+> x
+
+(i). In this case, we set Wloss ← Wloss +
+
+
+
+w(t′−1)  
+
+> x
+
+(i) − w(t′) 
+
+> x
+
+(i)
+
+
+
+.2. Suppose that some job j ∈ N (t′) 
+
+> G
+
+(i) gets boosted during time-step t′, which implies that 
+
+w(t′) 
+
+> x
+
+(i) > w (t′−1)  
+
+> x
+
+(j). In this case, we set Wgain ← Wgain +
+
+
+
+w(t′) 
+
+> x
+
+(i) − w(t′−1)  
+
+> x
+
+(i)
+
+
+
+.3. Suppose that some job j gets inserted during time-step t′, with ( j, i ) ∈ E(t′). This implies that w(t′) 
+
+> x
+
+(i) > w (t′−1)  
+
+> x
+
+(j). In this case, we set W ⋆ 
+
+> gain
+
+← W ⋆ 
+
+> gain
+
++
+
+
+
+w(t′) 
+
+> x
+
+(i) − w(t′−1)  
+
+> x
+
+(i)
+
+
+
+.4. Suppose that some edge ( j, i ) ∈ E(t′−1) \E(t′) gets deleted during time-step t′, which implies that w(t′) 
+
+> x
+
+(i) < w (t′−1)  
+
+> x
+
+(i). In this case, we set Wloss ← Wloss +
+
+
+
+w(t′−1)  
+
+> x
+
+(i) − w(t′) 
+
+> x
+
+(i)
+
+
+
+.5. Otherwise, we have w(t′) 
+
+> x
+
+(i) = w(t′−1)  
+
+> x
+
+(i), and Wgain , W ⋆
+
+> gain
+
+, W loss also remain unchanged. Henceforth, unless explicitly specified otherwise, we use the symbols Wgain , W ⋆
+
+> gain
+
+, W loss to refer to their values at the end of time-step t.Next, we lower bound Wgain + W ⋆ 
+
+> gain
+
+in terms of Wloss , as stated in the claim below. 
+
+Claim 6.24. We have Wgain + W ⋆ 
+
+> gain
+
+≥ Wloss − 3Γ .Proof. From the definitions of Wloss , W gain and W ⋆
+
+> gain
+
+, we conclude that w(t) 
+
+> x
+
+(i) = w(tki ) 
+
+> x
+
+(i) + Wgain +
+
+W ⋆ 
+
+> gain
+
+− Wloss , or equivalently, Wgain + W ⋆ 
+
+> gain
+
+= Wloss +
+
+
+
+w(t) 
+
+> x
+
+(i) − w(tki ) 
+
+> x
+
+(i)
+
+
+
+. The claim now follows from Observation 6.22. Moving forward, we show that the value of W ⋆ 
+
+> gain
+
+is negligibly small. 
+
+Claim 6.25. We have W ⋆ 
+
+> gain
+
+≤ ϵ2Γ.Proof. At time-step tki , we have W ⋆ 
+
+> gain
+
+= 0. Subsequently, during the time-interval ( tki , t ], whenever a job j adjacent to the machine i gets inserted, the value of W ⋆ 
+
+> gain
+
+increases by   ϵW mn 
+
+2 · (1 + ϵ)−ℓ(i) ≤
+
+  ϵW mn 
+
+2 (see Line 6 of Algorithm 4). Since there can be at most n job insertions during the time-interval ( tki , t ], at time-step t we must have W ⋆ 
+
+> gain
+
+≤ n · (ϵ/ (W mn )) 2 ≤ ϵ2/n ≤ ϵ2Γ, where the last inequality holds since Γ ≥ 1/n (see Equation (11)). 
+
+Corollary 6.26. We have Wgain ≥ Wloss − (3 + ϵ2)Γ .Proof. Follows from Claim 6.24 and Claim 6.25. Next, we relate Wloss to the number of times i gets whacked during the time-interval ( tki , t ]. 
+
+Claim 6.27. We have Wloss ≥ ϵΓ ·  ℓ(t)(i) − ki
+
+.Proof. The value of Wloss is initialized at 0 when the machine i enters level ki. Subsequently, whenever the machine i moves up from some level k ∈ ki, ℓ (t)(i) to level k + 1, the value of Wloss increases. Consider the time-step tk+1 at which such an event occurs. When the machine i gets whacked at time-step tk+1 , we set x(j, i ) ← (1 + ϵ)−1 · x(j, i ) for every job j ∈ N (tk+1 ) 
+
+> G
+
+(i). This implies that 
+
+w(tk+1 ) 
+
+> x
+
+(i) = (1 + ϵ)−1 · w(tk+1 −1)  
+
+> x
+
+(i). Furthermore, by Observation 6.21, we have w(tk+1 ) 
+
+> x
+
+(i) > β Γ > Γ. 25 Let ∆ loss (tk+1 ) denote the increase in the value of Wloss , which occurs due to the machine i
+
+getting whacked at time-step tk+1 . From the discussion in the preceding paragraph, we infer that: ∆loss (tk+1 ) = w(tk+1 ) 
+
+> x
+
+(i) − w(tk+1 −1)  
+
+> x
+
+(i) = ϵ · w(tk+1 ) 
+
+> x
+
+(i) ≥ ϵΓ. (36) Since Wloss ≥ Pℓ(t)(i)−1 
+
+> k=ki
+
+∆loss (tk+1 ), the claim follows from Equation (36). Finally, we lower bound Pℓ(t)(i) 
+
+> k=ki
+
+wzgain (j, k ) in terms of Wgain .
+
+Claim 6.28. We have Pℓ(t)(i) 
+
+> k=ki
+
+wzgain (i, k ) ≥ (1+ ϵ) 
+
+> ϵ
+
+· Wgain .Proof. Consider any time-step t′ ∈ (tki , t ] with ℓ(t′)(i) = k′ ∈ [ki, ℓ (t)(i)] (say), which involves the boosting of some job j ∈ N (t′) 
+
+> G
+
+(i). During this event, we set x(j, i ) ← (1 + ϵ) · x(j, i ). Let w(i) ·
+
+x(t′−1) (j, i ) = λ (say), so that w(i) · x(t′)(j, i ) = (1 + ϵ)λ. Due to this event, the value of wzgain (j, k ′)increases by (1 + ϵ)λ, whereas the value of Wgain increases by (1 + ϵ)λ − λ = ϵλ . Moreover, the value of Wgain increases if and only if some job neighboring the machine i gets boosted. In other words, every unit increase in the value of Wgain can be charged to a (1 + ϵ)/ϵ unit increase in the value of 
+
+wzgain (i, k ′), for some k′ ∈ [kj , ℓ (t)(i)]. This implies the claim. We are now ready to lower bound the second summation on the right hand side of Equation (35). 
+
+Corollary 6.29. We have Pℓ(t)(i) 
+
+> k=ki
+
+wzgain (i, k ) ≥ (1 + ϵ) ·  ℓ(t)(i) − ki + 1  · Γ − (5 /ϵ ) · Γ.Proof. From Corollary 6.26, Claim 6.27 and Claim 6.28, we infer that 
+
+> ℓ(t)(i)
+
+X
+
+> k=ki
+
+wzgain (i, k ) ≥ (1 + ϵ)
+
+ϵ · Wgain 
+
+≥ (1 + ϵ)
+
+ϵ ·  Wloss − (3 + ϵ2) · Γ
+
+≥ (1 + ϵ)
+
+ϵ · Wloss − 4
+
+ϵ · Γ
+
+≥ (1 + ϵ) · Γ ·
+
+
+
+ℓ(t)(i) − ki
+
+
+
+− 4
+
+ϵ · Γ
+
+≥ (1 + ϵ) · Γ ·
+
+
+
+ℓ(t)(i) − ki + 1 
+
+
+
+− 5
+
+ϵ · Γ,
+
+where the third and the last inequality hold because ϵ < 1/100 (see Equation (9)). At this point, Lemma 6.11 follows from Claim 6.23, Corollary 6.29 and Equation (9). 
+
+# 7 Fully Dynamic Rounding for Load Balancing 
+
+In this section, we present our algorithm for rounding a dynamic ϵ-fractional assignment. We restate the theorem summarizing the guarantees of our rounding framework for convenience. 
+
+Theorem 4.2. Let (Gt = ( Jt ∪ Mt, E t), w t) be a dynamic load balancing instance with maximum job weight W . Let xt denote an ϵ-fractional assignment at time t with maximum load Γt. Over a sequence of updates to the instance (which could consist of both edge and vertex insertions and deletions), let U
+
+denote the total number of edge updates to the fractional assignment xt.There exists a randomized dynamic algorithm that, given access to Gt, w t, x t, maintains an integral assignment of (Gt, w t) with maximum load at most (1 + O(ϵ))Γ t + W at time t. The algorithm has total update time ˜O(( m + U )/ϵ 3) with high probability and works against an adaptive adversary. 
+
+26 Our rounding framework consists of two components. First, we show that the online load balancing rounding framework of Krishnaswamy et al. [KLS23] can be seamlessly extended to the dynamic setting using folklore dynamic data structures. Their algorithm, for a given load balancing instance (G = ( J ∪ M, E ), w ) and an ϵ-fractional assignment x, maintains a dynamic graph H = ( J ∪ S, E H )between jobs and slots . We refer to such a structure as a slot-decomposition , following the terminology of Shmoys and Tardos [ST93]; it is formally defined in Definition 7.2. In H, each machine i ∈ M is represented by a set of vertices S(i), which we refer to as slots . Let 
+
+μ∗ be a job-perfect matching of H, that is, a matching covering all jobs in J. Consider the integral assignment that assigns every job j ∈ J to the machine associated with the slot matched to j in μ∗.The data structure ensures that such an assignment has low maximum load. Furthermore, the graph 
+
+H is robust under updates to x.In the dynamic setting, we are not able to explicitly maintain H. Instead, we maintain an implicit representation of H. This representation explicitly maintains the nodes of H and, for any job–machine pair j, i , can efficiently return the set of slots in S(i) to which j is adjacent in H.The second component of our framework enables us to efficiently maintain a job-perfect matching of H as it undergoes updates. To achieve this, we exploit the fact that the fractional assignment x,when projected onto the edges of H, assigns weight at least 1 − ϵ to nodes in J and at most 1 − 2ϵ
+
+to nodes in S. Lemma 7.5 shows that, given access to such a fractional matching, we can match any unmatched node in J via a random augmenting walk defined by x in O(log( n)/ϵ ) steps. The following definitions are used to formalize the slot-decomposition framework of Krishnaswamy et al. [KLS23]. 
+
+Definition 7.1. For an ordered set S = {s1, . . . , s k} of vertices with weights w : S → R, the interval of si | i ∈ [k] in S with respect to w is defined as 
+
+I(S, w, s i) = [ X
+
+> i′<i
+
+w(si′ ), X
+
+> i′≤i
+
+w(si′ )] .
+
+For a fractional assignment x of a load balancing instance ( G = ( J ∪ M, E ), w ) and a machine 
+
+i ∈ M , let x[i] : NG(i) → [0 , 1] denote the weight function that assigns weight x(j, i ) to each job 
+
+j ∈ NG(i). 
+
+Definition 7.2. A slot-decomposition of a load balancing instance (G = ( J ∪ M, E ), w ) with a corre-sponding ϵ-fractional assignment x is an assignment of sets of ordered vertices S(i) (to which we will refer to as slots) to the machines i ∈ M and an associated weight function wS : S → [0 , 1] satisfying that P 
+
+> s∈S(i)
+
+w(s) ≥ x(i) for all i ∈ M .The graph induced by the slot-decomposition is a bipartite graph H = ( J ∪ S, E H ) between jobs J
+
+and slots S = ∪i∈M S(i). There exists an edge between slot s ∈ S(i) and job j ∈ J in EH if and only if I(S(i), w S , s ) ∩ I(NG(i), x [i], j )̸ = ∅, where NG(i) is ordered non-increasingly with respect to w.Define the cost c(s) of a slot s ∈ S(i) of a slot-decomposition to be W if it is the first slot of S(i)
+
+and otherwise to be the weight of its largest-weight neighbor in J (with respect to w) in the induced graph H. We call the slot-decomposition ϵ-approximate if the following conditions hold: 
+
+• wS (s) ≤ 1 − 2ϵ for all slots s ∈ S,
+
+• P 
+
+> s∈S(i)
+
+c(s) ≤ (1 + 5 ϵ)wx(i) + W for all i ∈ M .
+
+The following observation shows that a left-perfect matching of the graph induced by an ϵ-approximate slot-decomposition induces an integral assignment with low maximum load in the corre-sponding load balancing instance. 
+
+Observation 7.3. Let x be an ϵ-fractional assignment to a load balancing instance (G = ( J ∪M, E ), w )
+
+with maximum load Γ and maximum job weight W . Assume H is the graph induced by an ϵ-approximate slot-decomposition of x. Let μ∗ 
+
+> H
+
+be a job-perfect matching of H. Then the assignment that assigns each job in J to the machine associated with its matched slot in H has load at most 
+
+Γ(1 + 5 ϵ) + W .
+
+27 Proof. Consider the load on any machine i ∈ M under such an assignment. For machine i ∈ M let 
+
+S(i, l ) stand for the l-th slot of S(i) according to the ordering of S(i). Slots S(i, l ) for l > 1 may be matched in μ∗ 
+
+> H
+
+only to jobs with weight at most c(S(i, l )). Slot S(i, 1) may be matched to a job with weight at most W . Hence, the load of i is at most (1 + 5 ϵ)wx(i) + W ≤ (1 + 5 ϵ)Γ + W .For a dynamic fractional assignment x, let ∆( x, l 1) stand for the total change of x in terms of l1
+
+distance throughout a series of updates. The following lemma states that there exists a near-optimal algorithm for maintaining an ϵ-approximate slot decomposition of a fractional assignment of a dynamic load-balancing instance. Its proof is deferred to Section 7.1. 
+
+Lemma 7.4. Let x be a fractional solution to a dynamic load balancing instance (G = ( L ∪ R, E ), w )
+
+undergoing edge and vertex updates. There exists a deterministic dynamic algorithm for maintaining an ϵ-approximate dynamic slot-decomposition (S, w S ) of x with ˜O(1 /ϵ 2) amortized update time per edge update to x. The graph H induced by the decomposition satisfies the following properties: 
+
+• |NH (j) ∩ S(i)| = O(1) for any pair j ∈ J, i ∈ M ,
+
+• An update to edge (j, i ) in x may only change edges of H incident to j, or edges incident to slots whose weights change or which are inserted into or deleted from the decomposition due to the update. The algorithm allows for queries of the form (j, i ) returning the set NH (j) ∩ S(i) and 
+
+|I(NH (j), x [i], j ) ∩ I(S(i), w H , s )|
+
+(i.e. the lengths of the corresponding intersections) for every slot s ∈ NH (j) ∩ S(i) in ˜O(1) 
+
+time. The total number of slots undergoing insertions and deletions in the underlying decomposition is ˜O(∆( x, l 1)) throughout the update sequence. 
+
+The following lemma allows us to use the data structure described in Lemma 7.4 to maintain a left-perfect matching of the induced job-slot graph H efficiently. Its proof is deferred to Section 7.2. 
+
+Lemma 7.5. Let G = ( L∪R, E ) be a bipartite graph undergoing m edge updates and n vertex updates, where each update is either an insertion or a deletion. Let x be a dynamic fractional matching such that, at all times, x(l) ≥ 1 − ϵ for all l ∈ L and x(r) ≤ 1 − 2ϵ for all r ∈ R.There exists a randomized algorithm which, given access to an oracle O that, on query l ∈ L,returns a neighbor r ∈ NE (l) with probability x(l, r )/x (l), maintains an L-perfect matching in G in 
+
+˜O(m/ϵ ) total update time and ˜O(( D + n)/ϵ ) queries to O with high probability, where D denotes the total number of deletions of edges from the maintained matching. The algorithm functions against an adaptive adversary. 
+
+We are now ready to prove Theorem 4.2. By Lemma 7.4, we can maintain an ϵ-approximate slot-decomposition of a dynamic fractional assignment in ˜O(( Q + U )/ϵ 2) total update time. We will use Lemma 7.5 to maintain a job-perfect matching M ∗ 
+
+> H
+
+in the bipartite graph H induced by this decomposition. At time t, Observation 7.3, applied with the current maximum job weight Wt, shows that this matching corresponds to an integral assignment of load at most (1 + 5 ϵ)Γ t + Wt.In order to do this, we first argue that Lemma 7.4 offers the query access required by Lemma 7.5 to maintain a job-perfect matching of H. Consider the fractional matching y : EH → [0 , 1] defined as follows for any pair j ∈ J and s ∈ S(i), where i ∈ M :
+
+y(j, s ) = |I(NH (j), x [i], j ) ∩ I(S(i), w H , s )|
+
+By the properties of Lemma 7.4, we have that y(j) ≥ 1 − ϵ for any j ∈ J and y(s) ≤ 1 − 2ϵ for any slot s ∈ S. For a given job j ∈ J, we can sample neighboring slots in two steps. First, we sample a 28 machine i ∈ NG(j) such that any such machine is sampled with probability x(j, i )/x (j). To do this in ˜O(1) time, we can maintain dynamic samplers over the set NG(j) with weights x(j, ·) in ˜O(1) update time using folklore data structures. Once machine i ∈ NG(j) is sampled, we use the data structure of Lemma 7.4 to find the set 
+
+NH (j)∩S(i) as well as the weight y(j, s ) for each s ∈ NH (j)∩S(i). We then sample slot s ∈ NH (j)∩S(i)with probability y(j, s )/x (j, i ). Note that, as |NH (j) ∩ S(i)| = O(1), this takes O(1) time. The probability that we have sampled a specific slot works out to be: 
+
+ x(j, i )
+
+x(j)
+
+
+
+·
+
+ y(j, s )
+
+x(j, i )
+
+
+
+= y(j, s )
+
+x(j) = y(j, s )
+
+y(j)as required. Due to an update to x, at most ˜O(1 /ϵ 2) slots change in H by Lemma 7.4. The same lemma guarantees that only jobs adjacent to changed slots can have their neighborhoods in H modified. Thus, one update to x can unmatch at most ˜O(1 /ϵ 2) jobs in M ∗ 
+
+> H
+
+. By Lemma 7.5, the total update time is ˜O(( Q + U )/ϵ 3) with high probability. 
+
+Observation 7.6. For our specific application, we know that ∆( x, l 1) = ˜O(n). This implies that only 
+
+˜O(n) jobs get unmatched in M ∗ 
+
+> H
+
+due to updates to S, w H . However, as any edge deletion may unmatch an additional single job in M ∗ 
+
+> H
+
+, this speedup gets absorbed in the notation. This would not be the case if the underlying dynamic load balancing problem were incremental. 
+
+7.1 Proof of Lemma 7.4 
+
+Fix a machine i ∈ M . We describe how the algorithm maintains the relevant information about H
+
+in the neighborhood of S(i) and the slots and weights of S(i). The algorithm is identical from the perspective of all machines. 
+
+Definition 7.7. An interval-segment tree is a dynamic data structure that maintains two ordered sets 
+
+A = {a1, . . . , a k} and B = {b1, . . . , b l} with weights wA : A → R≥0 and wB : B → R≥0. It supports updates in which elements may be inserted into or deleted from A and B.Given a query element b ∈ B, it returns the elements of A whose intervals in A with respect to wA
+
+intersect the interval of b in B with respect to wB , together with the lengths of these intersections. 
+
+An interval-segment tree for sets with at most n elements can be implemented with O(log n) update time and O(log n + k) query time, where k corresponds to the number of elements returned by the query, using a folklore interval-tree data structure. For each machine i ∈ M , the algorithm maintains an interval-segment tree between the two sets S(i) and NG(j) with weight functions wS and x[i]. Here 
+
+NG(i) is ordered non-increasingly with respect to x[i]. The algorithm makes sure that x(i) = P 
+
+> s∈S(i)
+
+wS (s) once an update has been processed. The algorithm partitions the slots of S(i) into consecutive sets B1, . . . , Bk, which we call buckets . With a slight overload of notation, we use wS to define the weights of these buckets. The algorithm ensures that wS (B) = P 
+
+> s∈B
+
+wS (s) for any bucket B ⊆ S(i) once an update has been processed. If x(i) ≤ 1/ϵ then S(i) consists of a single bucket of slots. Otherwise, the algorithm ensures that every bucket of S(i) has weight in [1 /ϵ, 4/ϵ ]. Each bucket will consist of O(1 /ϵ ) slots. In the ordering of S(i) all but the last slot of each bucket will have weight in [1 − 4ϵ, 1 − 2ϵ]. The last slot of the bucket can have weight in [0 , 1 − 2ϵ]. 
+
+Resetting a Bucket. Throughout the maintenance of the slots of S(i), whenever a bucket’s structure changes by a certain amount, the algorithm resets the bucket. When bucket B is reset, its slots are replaced by ⌊wS (Bi)/(1 − 3ϵ)⌋ slots of weight 1 − 3ϵ and a single slot of weight wS (β) −
+
+(1 − 3ϵ) ⌊w(B)/(1 − 3ϵ)⌋ (the last unique slot is inserted only if it would have weight greater than 0). Observe that, during a call to Algorithm 5, the weight of the bucket does not change. 29 Algorithm 5: Reset-Bucket (i, B) 
+
+> 1
+
+for s ∈ B do  
+
+> 2
+
+Delete s from S(i) and B 
+
+> 3
+
+for i ∈ [⌊wS (B)/(1 − 3ϵ)⌋] do  
+
+> 4
+
+Insert a slot with weight 1 − 3ϵ into B 
+
+> 5
+
+if (1 − 3ϵ) ⌊wS (B)/(1 − 3ϵ)⌋̸ = wS (B) then  
+
+> 6
+
+Insert a slot of weight wS (B) − (1 − 3ϵ) ⌊wS (B)/(1 − 3ϵ)⌋ as the last slot of B
+
+Increase of x(j, i ). Assume an edge ( j, i ) ∈ E increases in weight under x by some amount ∆. If its weight was previously 0 (or the edge was not present in the graph), the algorithm first inserts j
+
+into the interval-segment tree of m with weight 0. By querying the segment-tree data structure, the algorithm finds the left-most slot s neighboring j. The algorithm then increases the weight of j in the interval-segment tree while increasing the weight of s by the same amount until both have been increased by ∆. Throughout this increment, the following two events may occur (possibly multiple times). Firstly, s can reach weight 1 − 2ϵ. In this case, the algorithm resets the bucket containing s.Second, the bucket containing s can reach weight 4 /ϵ . In this case, the algorithm splits this bucket into two, each of weight 2 /ϵ , then resets these buckets. 
+
+Algorithm 6: Increase-Weight (j, i, ∆)  
+
+> 1
+
+if x(j, i ) was 0 before the update then  
+
+> 2
+
+Add j into the interval segment-tree of i with weight 0  
+
+> 3
+
+while ∆ > 0 do  
+
+> 4
+
+s ← leftmost slot in S(i) ∩ NH (j) 
+
+> 5
+
+B ← bucket of s in S(i) 
+
+> 6
+
+δ = min {∆, 1 − 2ϵ − wS (s), 4/ϵ − wS (B)} 
+
+> 7
+
+∆ ← ∆ − δ 
+
+> 8
+
+wS (s) ← wS (s) + δ 
+
+> 9
+
+wS (B) ← wS (B) + δ 
+
+> 10
+
+Increase the weight of j by δ in the interval segment-tree of i 
+
+> 11
+
+if wS (s) = 1 − 2ϵ then  
+
+> 12
+
+Reset-Bucket (i, B) 
+
+> 13
+
+if wS (B) = 4 /ϵ then  
+
+> 14
+
+Replace B with buckets B′,B′′ such that wS (B′) = wS (B′′ ) = 2 /ϵ  
+
+> 15
+
+Reset-Bucket (i, B′), Reset-Bucket (i, B′′ )
+
+Decrease of x(j, i ). In the opposite case, assume an edge ( j, i ) decreases in weight under x by some ∆. The algorithm first queries the slots neighboring j in H using the interval-segment tree. Let s be the leftmost slot neighboring j in NG(j) ∩ S(i). The algorithm reduces the weight of j in the interval-segment tree and the weight of s in wS at the same rate until a reduction of ∆ has been applied. The following cases may occur. If s is the last slot of its corresponding bucket, it could shrink to weight 0. In this case, the algorithm deletes it (from S(i), the containing bucket, and the interval-segment tree of i) and continues with the left neighbor of s. Otherwise, if the weight of slot s reduces to 1 − 4ϵ, the algorithm resets the bucket of s.It could also happen that the bucket of s reduces to weight 1 /ϵ . If it is the only bucket of i, the algorithm does not act on this. Otherwise, it merges this bucket with one of its neighboring buckets. If the resulting bucket has weight greater than 3 /ϵ , it splits the bucket into two equal-weight buckets (of weights in [1 .5/ϵ, 2.5/ϵ ]), which are then reset. Finally, if x(j, i ) = 0 after the update, the algorithm deletes j from the interval-segment tree. 30 Algorithm 7: Decrease-Weight (j, i, ∆)  
+
+> 1
+
+while ∆ > 0 do  
+
+> 2
+
+s ← leftmost slot in S(i) ∩ NH (j) 
+
+> 3
+
+B ← bucket of s in S(i) 
+
+> 4
+
+if s is the last slot of B then  
+
+> 5
+
+δ = min {∆, w S (s), w S (B) − 1/ϵ } 
+
+> 6
+
+else  
+
+> 7
+
+δ = min {∆, w S (s) − (1 − 4ϵ), w S (B) − 1/ϵ } 
+
+> 8
+
+wS (s) ← wS (S) − δ 
+
+> 9
+
+∆ ← ∆ − δ 
+
+> 10
+
+wS (B) ← wS (B) − δ 
+
+> 11
+
+Decrease the weight of j by δ in the interval segment-tree of i 
+
+> 12
+
+if wS (s) = 1 − 4ϵ and s is the last slot of B then  
+
+> 13
+
+Reset-Bucket (i, B) 
+
+> 14
+
+else if wS (s) = 0 then  
+
+> 15
+
+Delete s from S(i) 
+
+> 16
+
+if wS (B) ≤ 1/ϵ and B is not the only bucket of S(i) then  
+
+> 17
+
+B′ ← arbitrary neighboring bucket of B in S(i) 
+
+> 18
+
+if wS (B) + wS (B′) ≥ 3/ϵ then  
+
+> 19
+
+wS (B), w S (B) ← (wS (B) + wS (B′)) /2 
+
+> 20
+
+Reset-Bucket (i, B), Reset-Bucket (i, B′) 
+
+> 21
+
+else  
+
+> 22
+
+wS (B) ← wS (B) + wS (B′) 
+
+> 23
+
+Reset-Bucket (i, B) 
+
+> 24
+
+Delete B′ and all its slots from S(i) 
+
+> 25
+
+if x(j, i ) is 0 after the update then  
+
+> 26
+
+Delete j from the interval segment-tree of i
+
+Correctness of the Algorithm. We will prove the correctness of the algorithm through the following series of claims. 
+
+Claim 7.8. Once an update has been processed, P 
+
+> s∈S(i)
+
+wS (s) = x(i), and for any bucket B of S(i),we have wS (B) = P 
+
+> s∈B
+
+wS (s).Proof. Let Bi stand for the set of buckets of i. Define a sub-update to be one iteration of the while loop in either Algorithm 7 or Algorithm 6, and suppose that after such a sub-update the weight of 
+
+x(j, i ) is x(j, i ) − ∆ or x(j, i ) + ∆ for weight increases and decreases, respectively. We will argue that the claim holds after each sub-update. Unless the affected bucket is split or merged with other buckets, its weight changes at the same rate as ∆. If it is split or merged with other buckets, the total weight of all buckets remains unchanged during the split and merge operations. After any split or merge operation, every affected bucket is reset, guaranteeing that its weight equals the sum of the weights of its slots. If, during a sub-update, a bucket is not split or merged into other buckets, then one of its contained slots changes weight at the same rate as ∆. Therefore, the claim holds after every sub-update. Note that, by definition, the algorithm may query NH (j) ∩ S(i) in ˜O(|NH (j) ∩ S(i)|) time using the interval segment-tree data structure. At the same time, it can find |I(NG(i), x [i], j ) ∩ I(S(i), w H , s )|
+
+for every returned slot. 31 Claim 7.9. The slot decomposition maintained by the algorithm is ϵ-approximate. Furthermore, 
+
+|NH (j) ∩ S(i)| = O(1) for any j ∈ J, i ∈ M .Proof. Consider all the slots that are not the first ones in their buckets. For such a slot s, the slot to its left, s−, is of weight at least 1 − 4ϵ, and all jobs assigned to it are of cost at least c(s). Hence, the edges in H incident to s− contribute at least (1 − 4ϵ)c(s) to wx(i). For the left-most slot, c(s) = W . Any other left-most slot s of a bucket satisfies that the bucket to the left of it is of weight at least 1 /ϵ and that all jobs neighboring its slots in H have cost at least c(s). Hence, the edges incident on the bucket to its left contribute c(s)/ϵ to wx(i). This means P 
+
+> s∈S(r)
+
+c(s) ≤ wx(i)(1 /(1 − 4ϵ) + ϵ) ≤ wx(i)(1 + 5 ϵ) for ϵ < 1/4. As at most one bucket may have weight smaller than 1 /ϵ , a job neighbors O(1) buckets. Since every bucket can have one slot with weight smaller than 1 − 4ϵ, this implies that jobs neighbor O(1) slots. 
+
+Claim 7.10. Due to an edge update to x, any job whose neighborhood changes in H is either incident to the affected edge in G or adjacent to a slot in H that underwent an update (a weight change in wS ,an insertion, or a deletion). Proof. Consider how the intervals of a job j in NG(i) with respect to x[i] and of a slot s ∈ S(i) with respect to wS evolve as the weight of another job-slot pair is adjusted. As the job weights in the interval segment-tree and the slot weights in wS are updated at the same rate, these two intervals shift by the same amount and do not change in length. Therefore, any potential intersection of these two intervals remains unchanged. Whenever a bucket is reset, split, or merged, the resulting bucket or buckets have the same total weight under wS . In addition, before and after such a reset, the weights of the slots of the affected buckets add up to the weights of the affected buckets. Therefore, slot s’s interval in S(i) under wS
+
+does not change when a bucket not containing it is reset. This means that the neighborhood of slot s
+
+in H does not change due to a bucket not containing it being reset. 
+
+Claim 7.11. Assume that, throughout the update sequence, x undergoes U edge updates. Then the update time of the algorithm is ˜O(U/ϵ 2). In addition, at most ∆( x, l 1) slots undergo updates (either in terms of weight in wS , deletion, or insertion). Proof. A bucket may contain O(1 /ϵ ) slots at any time. Therefore, resetting or merging buckets results in O(1 /ϵ ) slots undergoing insertions or deletions. This can be implemented in ˜O(1 /ϵ ) time. We will argue that a change of ∆ in the fractional weight of an edge under x results in at most amortized 
+
+O(∆ /ϵ 2) slot insertions and deletions and O(∆ ϵ) bucket merges, deletions, and resets. This implies that the number of slots undergoing updates throughout the update sequence is at most O(∆( x, l 1)/ϵ 2). Since the weight of an edge might change by at most 1 under any update, the update time of the data structure amortizes to ˜O(1 /ϵ 2). Whenever a bucket is created, it is either due to a previous bucket splitting in half or due to the merge of two neighboring buckets. Either way, when a bucket is created, it has weight in [1 .5/ϵ, 3/ϵ ]. Its slots need to undergo Ω(1 /ϵ ) shrinking or stretching in order for the bucket size constraints to be violated. Therefore, there will be at most O(ϵ∆( x, l 1)) bucket mergers or splits throughout the updates. After each bucket is reset, the algorithm might create one slot with weight at most 1 − 4ϵ. This slot might be deleted due to a very small weight change in x. The deletion of the rightmost slot of any bucket might result in only one slot deletion per reset of a bucket. After a reset, all other slots of the bucket are of weight 1 − 3ϵ. Therefore, before it may be reset again due to one of its slots violating weight constraints, its slots must undergo at least an ϵ change in weight. Hence, the total number of 32 bucket resets prompted by slots violating weight constraints is O(∆( x, l 1)/ϵ ), each resulting in O(1 /ϵ )slot updates. 
+
+7.2 Proof of Lemma 7.5 
+
+Let M be a matching of G not matching all nodes of L, and let x be a fractional matching satisfying the properties of the lemma. For a set of nodes U ⊆ L ∪ R, let U [M ] stand for its subset incident to edges of M . Let LF = L \ L[M ] and RF = R \ R[M ]. Consider a random walk that starts from an arbitrary node of LF and, in each step, does the following: 1) if it reaches a node of RF , it terminates; 2) if it reaches a node of R[M ], it continues toward its neighbor in M ; and 3) if it reaches a node l ∈ L[M ], it samples a neighbor r, each with probability x(l, r )/x (l), and continues toward r. We will first argue that such a walk terminates in 
+
+O(log n/ϵ ) steps in expectation. For a node l ∈ L[M ], let pt(l) stand for the probability that l is the t + 1-th node of L visited by the walk, and let qt(l) = pt(l)/x (l). Denote Qt = max l∈L[M ] qt(l). Then, for all l ∈ L with neighbor r
+
+in M :
+
+qt+1 (l) = pt+1 (l)
+
+x(l) =
+
+P 
+
+> l′∈L[M]
+> pt(l′)x(l′,r )
+> x(l′)
+
+x(l) ≤ Qt
+
+x(l)
+
+X 
+
+> l′∈L[M]
+
+x(l′, r ) = Qtx(r)
+
+x(l)As x(l) ≥ 1 − ϵ and x(r) ≤ 1 − 2ϵ, we get that Qt+1 ≤ (1 − ϵ)Qt. By union-bounding across all 
+
+l ∈ L[M ], we know that the probability of the walk not finishing by t steps is at most nQ t. From the geometric decay of Qt, we can conclude that the walk finishes in O(log n/ϵ ) steps with probability 1 − 1/ poly( n). Armed with this claim, it is straightforward to prove the lemma. The algorithm can match any unmatched node of L along the augmenting path described by such a random walk. This means that the algorithm may match an unmatched node of L in O(log n/ϵ ) time and queries to O. The algorithm needs to do this at most n times under insertions to L, and then once whenever a node of L becomes unmatched either through a direct edge deletion or through the deletion of its neighbor in M .
+
+# Acknowledgements 
+
+ChatGPT 5.5 provided significant assistance for two of the proof ideas in the paper. 
+
+• Our analysis of random-augmenting-walk lengths in Lemma 7.5 is based on an idea from Chat-GPT. An earlier analysis was already known, but the idea from ChatGPT led us to a simpler proof with a better dependence on 1 /ϵ .
+
+• The main idea for the conditional lower bound in Appendix B came from ChatGPT. ChatGPT also provided technical assistance in pinning down the details of the conditional lower bound in Appendix A. Sayan Bhattacharya is funded by the European Union (ERC grant, DYNALP, 101170133). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council Executive Agency. Neither the European Union nor the granting authority can be held responsible for them. 33 References 
+
+[AAF +97] James Aspnes, Yossi Azar, Amos Fiat, Serge A. Plotkin, and Orli Waarts. On-line routing of virtual circuits with applications to load balancing and machine scheduling. 
+
+J. ACM , 44(3):486–504, 1997. [ABD22] Sepehr Assadi, Aaron Bernstein, and Aditi Dudeja. Decremental matching in general graphs. In Mikolaj Bojanczyk, Emanuela Merelli, and David P. Woodruff, editors, 49th International Colloquium on Automata, Languages, and Programming, ICALP 2022, Paris, France, July 4-8, 2022 , LIPIcs, pages 11:1–11:19. Schloss Dagstuhl - Leibniz-Zentrum f¨ ur Informatik, 2022. [ABL20] Sepehr Assadi, Aaron Bernstein, and Zachary Langley. Improved bounds for distributed load balancing. In 34th International Symposium on Distributed Computing (DISC 2020) , volume 179 of LIPIcs , pages 1:1–1:15. Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, 2020. [ABL23] Sepehr Assadi, Aaron Bernstein, and Zachary Langley. All-norm load balancing in graph streams via the multiplicative weights update method. In 14th Innovations in Theoretical Computer Science Conference, ITCS 2023 , LIPIcs, pages 7:1–7:24. Schloss Dagstuhl -Leibniz-Zentrum f¨ ur Informatik, 2023. [ABL +25] Sepehr Assadi, Aaron Bernstein, Zachary Langley, Lap Chi Lau, and Robert Wang. Streaming and communication complexity of load-balancing via matching contractors. In 
+
+Proceedings of the 2025 Annual ACM-SIAM Symposium on Discrete Algorithms, SODA 2025 , pages 3423–3449. SIAM, 2025. [ALPZ21] Sara Ahmadian, Allen Liu, Binghui Peng, and Morteza Zadimoghaddam. Distributed load balancing: A new framework and improved guarantees. In 12th Innovations in Theoretical Computer Science Conference (ITCS 2021) , volume 185 of Leibniz Interna-tional Proceedings in Informatics (LIPIcs) , pages 79:1–79:22. Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, 2021. [ANR95] Yossi Azar, Joseph Naor, and Raphael Rom. The competitiveness of on-line assignments. 
+
+J. Algorithms , 18(2):221–237, 1995. [BEM22] Sebastian Berndt, Franziska Eberle, and Nicole Megow. Online load balancing with general reassignment cost. Oper. Res. Lett. , 50(3):322–328, 2022. [BG24] Soheil Behnezhad and Alma Ghafari. Fully dynamic matching and ordered ruzsa-szemer´ edi graphs. In 65th IEEE Annual Symposium on Foundations of Computer Sci-ence, FOCS 2024, Chicago, IL, USA, October 27-30, 2024 , pages 314–327. IEEE, 2024. [BGS11] Surender Baswana, Manoj Gupta, and Sandeep Sen. Fully dynamic maximal matching in O (log n) update time. In Rafail Ostrovsky, editor, IEEE 52nd Annual Symposium on Foundations of Computer Science, FOCS 2011, Palm Springs, CA, USA, October 22-25, 2011 , pages 383–392. IEEE Computer Society, 2011. [BGS20] Aaron Bernstein, Maximilian Probst Gutenberg, and Thatchaphol Saranurak. Deter-ministic decremental reachability, scc, and shortest paths via directed expanders and congestion balancing. In Sandy Irani, editor, 61st IEEE Annual Symposium on Foun-dations of Computer Science, FOCS 2020, Durham, NC, USA, November 16-19, 2020 ,pages 1123–1134. IEEE, 2020. 34 [BK23] Joakim Blikstad and Peter Kiss. Incremental (1-ϵ)-approximate dynamic matching in o(poly(1/ ϵ)) update time. In Inge Li Gørtz, Martin Farach-Colton, Simon J. Puglisi, and Grzegorz Herman, editors, 31st Annual European Symposium on Algorithms, ESA 2023, Amsterdam, The Netherlands, September 4-6, 2023 , volume 274 of LIPIcs , pages 22:1–22:19. Schloss Dagstuhl - Leibniz-Zentrum f¨ ur Informatik, 2023. [BKS23a] Sayan Bhattacharya, Peter Kiss, and Thatchaphol Saranurak. Dynamic (1+ ϵ)-approximate matching size in truly sublinear update time. In 64th IEEE Annual Sympo-sium on Foundations of Computer Science, FOCS 2023, Santa Cruz, CA, USA, Novem-ber 6-9, 2023 , pages 1563–1588. IEEE, 2023. [BKS23b] Sayan Bhattacharya, Peter Kiss, and Thatchaphol Saranurak. Dynamic algorithms for packing-covering lps via multiplicative weight updates. In Proceedings of the 2023 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA 2023) , pages 1–47. SIAM, 2023. [CKL +24] Li Chen, Rasmus Kyng, Yang P. Liu, Simon Meierhans, and Maximilian Probst Guten-berg. Almost-linear time algorithms for incremental graphs: Cycle detection, sccs, s-t shortest path, and minimum-cost flow. In Bojan Mohar, Igor Shinkar, and Ryan O’Donnell, editors, Proceedings of the 56th Annual ACM Symposium on Theory of Com-puting, STOC 2024, Vancouver, BC, Canada, June 24-28, 2024 , pages 1165–1173. ACM, 2024. [CST25] Jiale Chen, Aaron Sidford, and Ta-Wei Tu. Entropy regularization and faster decre-mental matching in general graphs. In Yossi Azar and Debmalya Panigrahi, editors, 
+
+Proceedings of the 2025 Annual ACM-SIAM Symposium on Discrete Algorithms, SODA 2025, New Orleans, LA, USA, January 12-15, 2025 , pages 3069–3115. SIAM, 2025. [Dud24] Aditi Dudeja. Decremental matching in general weighted graphs. In Karl Bringmann, Martin Grohe, Gabriele Puppis, and Ola Svensson, editors, 51st International Collo-quium on Automata, Languages, and Programming, ICALP 2024, Tallinn, Estonia, July 8-12, 2024 , volume 297 of LIPIcs , pages 59:1–59:20. Schloss Dagstuhl - Leibniz-Zentrum f¨ ur Informatik, 2024. [FGK24] Ayoub Foussoul, Vineet Goyal, and Amit Kumar. Fully-dynamic load balancing. In 
+
+Integer Programming and Combinatorial Optimization - 25th International Conference, IPCO 2024, Wroclaw, Poland, July 3-5, 2024, Proceedings , volume 14679 of Lecture Notes in Computer Science , pages 182–195. Springer, 2024. [GKS14] Anupam Gupta, Amit Kumar, and Cliff Stein. Maintaining assignments online: Match-ing, scheduling, and flows. In Proceedings of the Twenty-Fifth Annual ACM-SIAM Sym-posium on Discrete Algorithms, SODA 2014, Portland, Oregon, USA, January 5-7, 2014 , pages 468–479. SIAM, 2014. [GLS +19] Fabrizio Grandoni, Stefano Leonardi, Piotr Sankowski, Chris Schwiegelshohn, and Shay Solomon. (1 + ϵ)-approximate incremental matching in constant deterministic amortized time. In Timothy M. Chan, editor, Proceedings of the Thirtieth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA 2019, San Diego, California, USA, January 6-9, 2019 , pages 1886–1898. SIAM, 2019. [Gup14] Manoj Gupta. Maintaining approximate maximum matching in an incremental bipartite graph in polylogarithmic update time. In Venkatesh Raman and S. P. Suresh, editors, 
+
+34th International Conference on Foundation of Software Technology and Theoretical Computer Science, FSTTCS 2014, New Delhi, India, December 15-17, 2014 , volume 29 of LIPIcs , pages 227–239. Schloss Dagstuhl - Leibniz-Zentrum f¨ ur Informatik, 2014. 35 [HKNS15] Monika Henzinger, Sebastian Krinninger, Danupon Nanongkai, and Thatchaphol Sara-nurak. Unifying and strengthening hardness for dynamic problems via the online matrix-vector multiplication conjecture. In Proceedings of the forty-seventh annual ACM sym-posium on Theory of computing , pages 21–30, 2015. [HKPSR18] Magn´ us M. Halld´ orsson, Sven K¨ ohler, Boaz Patt-Shamir, and Dror Rawitz. Distributed backup placement in networks. Distributed Comput. , 31(2):83–98, 2018. [JJST22] Arun Jambulapati, Yujia Jin, Aaron Sidford, and Kevin Tian. Regularized box-simplex games and dynamic decremental bipartite matching. In Mikolaj Bojanczyk, Emanuela Merelli, and David P. Woodruff, editors, 49th International Colloquium on Automata, Languages, and Programming, ICALP 2022, Paris, France, July 4-8, 2022 , volume 229 of LIPIcs , pages 77:1–77:20. Schloss Dagstuhl - Leibniz-Zentrum f¨ ur Informatik, 2022. [JR20] Klaus Jansen and Lars Rohwedder. A quasi-polynomial approximation for the restricted assignment problem. SIAM J. Comput. , 49(6):1083–1108, 2020. [Kis23] Peter Kiss. Deterministic dynamic matching in worst-case update time. Algorithmica ,85(12):3741–3765, 2023. [KLS23] Ravishankar Krishnaswamy, Shi Li, and Varun Suriyanarayana. Online unrelated-machine load balancing and generalized flow with recourse. In Barna Saha and Rocco A. Servedio, editors, Proceedings of the 55th Annual ACM Symposium on Theory of Com-puting, STOC 2023, Orlando, FL, USA, June 20-23, 2023 , pages 775–788. ACM, 2023. [KR16] Christian Konrad and Adi Ros´ en. Approximating semi-matchings in streaming and in two-party communication. ACM Trans. Algorithms , 12(3):32:1–32:21, 2016. [Li23] Shi Li. Nearly-linear time LP solvers and rounding algorithms for scheduling prob-lems. In 50th International Colloquium on Automata, Languages, and Programming (ICALP 2023) , Leibniz International Proceedings in Informatics (LIPIcs), pages 86:1– 86:20. Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, 2023. arXiv:2111.04897. [Liu24] Yang P. Liu. On approximate fully-dynamic matching and online matrix-vector multipli-cation. In 65th IEEE Annual Symposium on Foundations of Computer Science, FOCS 2024, Chicago, IL, USA, October 27-30, 2024 , pages 228–243. IEEE, 2024. [LST90] Jan Karel Lenstra, David B. Shmoys, and ´Eva Tardos. Approximation algorithms for scheduling unrelated parallel machines. Mathematical Programming , 46:259–271, 1990. [McG05] Andrew McGregor. Finding graph matchings in data streams. In Chandra Chekuri, Klaus Jansen, Jos´ e D. P. Rolim, and Luca Trevisan, editors, Approximation, Random-ization and Combinatorial Optimization, Algorithms and Techniques, 8th International Workshop on Approximation Algorithms for Combinatorial Optimization Problems, AP-PROX 2005 and 9th InternationalWorkshop on Randomization and Computation, RAN-DOM 2005, Berkeley, CA, USA, August 22-24, 2005, Proceedings , volume 3624 of Lec-ture Notes in Computer Science , pages 170–181. Springer, 2005. [MRWZ16] Michael W. Mahoney, Satish Rao, Di Wang, and Peng Zhang. Approximating the solution to mixed packing and covering LPs in parallel eO(ε−3) time. In Proceedings of the 43rd International Colloquium on Automata, Languages, and Programming (ICALP) ,pages 52:1–52:14. Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, 2016. [Sol16] Shay Solomon. Fully dynamic maximal matching in constant update time. In Irit Dinur, editor, IEEE 57th Annual Symposium on Foundations of Computer Science, FOCS 2016, 
+
+36 Hyatt Regency, New Brunswick, New Jersey, USA, October 9-11, 2016 , pages 325–334. IEEE Computer Society, 2016. [ST93] David B. Shmoys and ´Eva Tardos. An approximation algorithm for the generalized assignment problem. Math. Program. , 62:461–474, 1993. [Sve11] Ola Svensson. Santa claus schedules jobs on unrelated machines. In Lance Fortnow and Salil P. Vadhan, editors, Proceedings of the 43rd ACM Symposium on Theory of Computing, STOC 2011, San Jose, CA, USA, 6-8 June 2011 , pages 617–626. ACM, 2011. [vdBCK +24] Jan van den Brand, Li Chen, Rasmus Kyng, Yang P. Liu, Simon Meierhans, Maxi-milian Probst Gutenberg, and Sushant Sachdeva. Almost-linear time algorithms for decremental graphs: Min-cost flow and more via duality. In 65th IEEE Annual Sym-posium on Foundations of Computer Science, FOCS 2024, Chicago, IL, USA, October 27-30, 2024 , pages 2010–2032. IEEE, 2024. [You01] Neal E. Young. Sequential and parallel algorithms for mixed packing and covering. In Proceedings of the 42nd Annual Symposium on Foundations of Computer Science (FOCS) , pages 538–546. IEEE Computer Society, 2001. 
+
+# A Dynamic Matching via Dynamic Load Balancing 
+
+This section is devoted to showing that the existence of an efficient fractional algorithm for fully dy-namic load balancing with near-optimal maximum load would imply the existence of an ϵ-approximate fully dynamic bipartite matching algorithm. For a bipartite graph G = ( L ∪ R, E ), a matching M ⊆ E is a set of vertex-disjoint edges. Let 
+
+μ(G) denote the size of a maximum-size matching of G. A matching M is said to be ϵ-approximate if 
+
+|M | ≥ (1 − ϵ)μ(G). In order to prove the reduction, we will rely on some well-known properties of dynamic matching. First, if we allow randomization, it is known that we may assume that μ(G) ≥ ϵn .
+
+Proposition A.1 ([Kis23]) . Assume there exists a dynamic algorithm that maintains an ϵ-approximate matching of a graph G on n vertices undergoing edge insertions and deletions such that, at all times, 
+
+μ(G) ≥ ϵn , with amortized update time T . Then there exists a dynamic algorithm maintaining an 
+
+ϵ-approximate matching of a graph undergoing edge insertions and deletions with high probability in 
+
+˜O(T ) amortized update time. 
+
+The following proposition follows from [McG05, BKS23a]. Note that the statement is also true for general graphs. We refer to the formulation stated by [BG24]. 
+
+Proposition A.2 ([BG24]) . Let G = ( V, E ) be a graph on n vertices. Assume there exists an algorithm 
+
+A that, when queried with a vertex set U ⊆ L ∪ R and a parameter δ ∈ (0 , 1) such that μ(G[U ]) ≥ δ · n,returns a matching of G[U ] of size poly( δ)·μ(G[U ]) . Then, for any ϵ ∈ (0 , 1) , there exists an algorithm that, in ˜O(n) time and with t = Oϵ(1) adaptive calls, 
+
+A(G, U 1, δ 1), . . . , A(G, U t, δ t)
+
+returns a matching of G of size at least μ(G) − ϵn . Here each δi is a function of ϵ and is at most 
+
+ϵ/ 2.
+
+Lemma A.3. Assume there exists a dynamic algorithm with amortized update time T that maintains an ϵ-fractional assignment x of an unweighted dynamic load balancing instance undergoing edge in-sertions and deletions such that, whenever the instance has optimum load Γ, the assignment x has maximum load at most (1 + ϵ)Γ .
+
+37 Then, for ϵ ∈ (0 , 1) , there exists a dynamic algorithm that maintains an ϵ-approximate matching of a bipartite graph undergoing edge insertions and deletions in ˜O(T ) amortized update time with high probability against an oblivious adversary. Proof. By proposition A.1, it suffices to handle the case in which μ(G) ≥ ρn at all times, where 
+
+ρ = ρ(ϵ) > 0 is a sufficiently small constant. We run the algorithm in phases of length Θ( ϵρn )updates. At the beginning of a phase, we compute a matching of size at least μ(G) − (ϵρ/ 10) n. During the phase, we output this matching after accounting for edge deletions. Since at most Θ( ϵρn ) updates occur during the phase and μ(G) ≥ ρn throughout, choosing the hidden constant in the phase length sufficiently small ensures that the maintained matching remains (1 − ϵ)-approximate throughout the entire phase. It remains to describe how to compute, at the beginning of a phase, a matching of size at least 
+
+μ(G) − (ϵρ/ 10) n. For this, we use proposition A.2. Thus, it is enough to implement the following primitive. Given U ⊆ L ∪ R and δ ∈ (0 , 1) such that μ(G[U ]) ≥ δn , where δ is a constant depending only on ϵ, we must return a matching of size poly( δ) · μ(G[U ]) in G[U ]. Fix such a query ( U, δ ). Let 
+
+LU := L ∩ U, RU := R ∩ U. 
+
+Define constants 
+
+α := δ/ 4 and ϵ′ ≤ δ/ 1000 .
+
+Here, let δ stand for the smallest constant proposition A.2 would ever require to function. Recall that this value is a function of ϵ.
+
+Initialization. At initialization, we construct an auxiliary load-balancing instance 
+
+G′ = ( L ∪ L1 ∪ R ∪ R1 ∪ R2 ∪ R3, E ∪ E′),
+
+based on G = ( L ∪ R, E ), where L1, R 1, R 2, R 3 are fresh vertex sets, each of size n. Initially, E′
+
+consists of an arbitrary perfect matching between L1 and R1. L ∪ L1 constitutes the set of jobs and 
+
+R ∪ R1 ∪ R2 ∪ R3 constitutes the set of machines. We maintain, using the assumed dynamic load-balancing algorithm, an ϵ′-fractional assignment x
+
+for G′. In addition, we maintain a sampled subgraph H of G′. Independently for every edge e ∈ E ∪E′,the edge e is included in H with probability 
+
+pe := min {1, Cx e log n},
+
+where C = C(δ) is a sufficiently large constant. Whenever the value xe changes, we delete e from H
+
+and resample it using the new value xe. All random choices are made independently. 
+
+Executing a query A(G, U, δ ). We temporarily modify G′ as follows. First, choose a subset L′ 
+
+> 1
+
+⊆ L1
+
+of size |R \ U |. Delete from E′ all edges incident to vertices of L′
+
+> 1
+
+, and insert an arbitrary perfect matching between L′ 
+
+> 1
+
+and R \ U . Second, insert an arbitrary perfect matching between L \ U and a set R′ 
+
+> 2
+
+⊆ R2 of size |L \ U |.Third, choose a set R′ 
+
+> 3
+
+⊆ R3 of size |R′
+
+> 3
+
+| = |LU | − αn . If this number is negative, then μ(G[U ]) ≤|LU | < αn < δn , contradicting the promise μ(G[U ]) ≥ δn . Hence R′ 
+
+> 3
+
+is well-defined. For every pair (u, v ) ∈ LU × R′
+
+> 3
+
+, insert the edge ( u, v ) independently with probability 
+
+q := Cδ −1 log nn ,
+
+where C is a sufficiently large absolute constant. After these temporary updates have been processed by the load-balancing algorithm, we inspect the sampled graph H and compute a maximal matching in H[U ]. Let this matching be MU . We output MU as the answer to the query, and then reverse all temporary updates made above. We now prove that MU has the required size with high probability. 38 Claim A.4. After the temporary updates for the query (U, δ ), the optimum load of G′ is 1 with high probability. Proof. It is enough to exhibit an integral assignment of every left vertex to a distinct right vertex. The vertices of L′ 
+
+> 1
+
+are assigned to R \ U along the inserted perfect matching. The vertices of L1 \ L′
+
+> 1
+
+are assigned to R1 along their original matching edges. The vertices of L \ U are assigned to R′ 
+
+> 2
+
+along the inserted perfect matching. It remains to assign the vertices of LU . Let M ∗ 
+
+> U
+
+be a maximum matching of G[U ]. By assumption, 
+
+|M ∗ 
+
+> U
+
+| = μ(G[U ]) ≥ δn. 
+
+Let L∗ ⊆ LU be the vertices of LU matched by M ∗ 
+
+> U
+
+. We assign the vertices of L∗ to RU along the matching M ∗ 
+
+> U
+
+. It remains to assign A := LU \ L∗ to R′
+
+> 3
+
+. Since |L∗| ≥ δn , we have 
+
+|A| = |LU | − | L∗| ≤ | LU | − δn. 
+
+On the other hand, 
+
+|R′
+
+> 3
+
+| = |LU | − δn/ 4.
+
+Thus 
+
+|R′
+
+> 3
+
+| − | A| ≥ 3δn/ 4.
+
+We use the following standard fact. Let A, B be two vertex sets with |B| − | A| ≥ ηn , where 
+
+η > 0 is a constant, and expose a random bipartite graph between A and B by including every edge independently with probability at least Cη −1 log n/n . For sufficiently large C, this random bipartite graph contains a matching saturating A with probability at least 1 − n−10 .Applying this fact with B = R′ 
+
+> 3
+
+and η = 3 δ/ 4, the random graph between A and R′ 
+
+> 3
+
+contains a matching saturating A with high probability. Assigning the vertices of A along this matching completes an integral assignment of load 1. Therefore the optimum load of the temporary instance is 1 with high probability. By claim A.4, during the query the assignment x has maximum load at most 1 + ϵ′, and every left vertex has total assigned mass at least 1 − ϵ′.
+
+Claim A.5. The restriction of x to edges of G[U ] has total weight at least δn/ 8.Proof. Let m := |LU | and r := |R \ U |. The only neighbors of the vertices in L′ 
+
+> 1
+
+are the vertices of 
+
+R \ U , matched one-to-one by the temporary perfect matching. Since every left vertex is assigned mass at least 1 − ϵ′, the vertices of L′ 
+
+> 1
+
+send total mass at least (1 − ϵ′)r to R \ U .The total capacity, under the assignment x, of the vertices in ( R\U )∪R′ 
+
+> 3
+
+is at most ( r+|R′
+
+> 3
+
+|)(1+ ϵ′). Therefore the total mass that vertices of LU can send to ( R \ U ) ∪ R′ 
+
+> 3
+
+is at most (r + |R′
+
+> 3
+
+|)(1 + ϵ′) − (1 − ϵ′)r = |R′
+
+> 3
+
+|(1 + ϵ′) + 2 ϵ′r. 
+
+Using |R′
+
+> 3
+
+| = m − δn/ 4 and r ≤ n, this is at most 
+
+m − δn/ 4 + ϵ′m + 2 ϵ′n ≤ m − δn/ 4 + 3 ϵ′n. 
+
+Since every vertex of LU is assigned mass at least 1 − ϵ′, the total mass sent out of LU is at least (1 − ϵ′)m. 
+
+Hence the mass that LU sends to RU along edges of G[U ] is at least (1 − ϵ′)m −  m − δn/ 4 + 3 ϵ′n = δn/ 4 − ϵ′m − 3ϵ′n. 
+
+Because m ≤ n and ϵ′ ≤ δ/ 1000, this quantity is at least 
+
+δn/ 4 − 4ϵ′n ≥ δn/ 8.
+
+Thus x restricted to the original edges of G[U ] has total weight at least δn/ 8. 39 Since the maximum load of x is at most 1 + ϵ′, the vector 
+
+y := x
+
+1 + ϵ′
+
+is a feasible fractional matching: every left and right vertex is incident to total y-mass at most 1. By claim A.5, the total y-mass on edges of G[U ] is at least 
+
+δn 
+
+8(1 + ϵ′) ≥ δn/ 16 .
+
+Denote this quantity by W . Thus G[U ] contains a fractional matching of value W ≥ δn/ 16 supported on the edges whose sampled probabilities are proportional to their x-values. 
+
+Claim A.6. With high probability, throughout the updates the sampled graph H has ˜O(n) edges. Proof. At any time, the total x-mass over all edges is at most the number of left vertices times the maximum assigned mass per left vertex. There are |L| + |L1| ≤ 2n left vertices, and each sends total mass at most 1 + ϵ′ after truncating any excess mass if necessary. Hence 
+
+X
+
+> e
+
+xe ≤ 2(1 + ϵ′)n. 
+
+Therefore 
+
+E[|E(H)|] = X
+
+> e
+
+min {1, Cx e log n} ≤ C log n X
+
+> e
+
+xe = O(n log n).
+
+By a Chernoff bound, |E(H)| = ˜O(n) with probability at least 1 − n−10 at every fixed time. Taking a union bound over the polynomially many times at which the maintained fractional assignment changes throughout the updates gives the claim. 
+
+Claim A.7. With high probability, H[U ] contains a matching of size at least Ω( δn ). Consequently, the maximal matching MU computed in H[U ] has size at least Ω( δn ).Proof. Let F be the set of original edges of G[U ], and let y be the fractional matching from above supported on F with total value W = P 
+
+> e∈F
+
+ye ≥ δn/ 16. For every e ∈ F , xe = (1 + ϵ′)ye, and therefore pe = min {1, Cx e log n} ≥ min {1, Cy e log n}.Let FH := F ∩ E(H). First, we lower bound |FH |. We have 
+
+E[|FH |] = X
+
+> e∈F
+
+pe ≥ X
+
+> e∈F
+
+min {1, Cy e log n}.
+
+Since 0 ≤ ye ≤ 1, this expectation is at least Ω( CW log n).
+
+Choosing C sufficiently large and applying a Chernoff bound, we get 
+
+|FH | ≥ c1W log n
+
+with probability at least 1 − n−10 , for an absolute constant c1 > 0. Second, we upper bound the maximum degree of H[U ]. Since y is a fractional matching, for every vertex v, X
+
+> e∋v
+
+ye ≤ 1.
+
+Thus the expected degree of v in FH is at most C(1 + ϵ′) log n. Again by Chernoff and a union bound over all vertices, ∆( FH ) ≤ c2C log n
+
+40 with probability at least 1 − n−10 , for an absolute constant c2 > 0. On the intersection of these two high-probability events, a greedy maximal matching in FH has size at least |FH |
+
+2∆( FH ) ≥ c1W log n
+
+2c2C log n = Ω( W ) = Ω( δn ).
+
+Since μ(G[U ]) ≤ n, this is also at least poly( δ) · μ(G[U ]). More explicitly, by increasing the constants above if necessary, we may guarantee 
+
+|MU | ≥ cδ · μ(G[U ]) for some absolute constant c > 0. This proves the claim. By claim A.7, each call required by proposition A.2 can be answered with a matching of size poly( δ)μ(G[U ]). The number of calls is Oϵ(1), and each call performs ˜O(n) temporary edge updates to the auxiliary load-balancing instance and then computes a maximal matching in a graph of size ˜O(n) by claim A.6. Since phases have length Θ ϵ(n), the amortized overhead per original update is ˜O(T ). 
+
+# B 2 − ϵ-Approximation Hardness for Full Dynamic Load Balancing 
+
+In this section, we show that the existence of a better-than-2-approximate algorithm with o(n) update time for the unweighted fully dynamic load balancing problem would violate the OMv conjecture [HKNS15]. 
+
+The hardness assumption. We use the following standard consequence of the OMv conjecture. In the OuMv problem, after preprocessing a Boolean matrix A ∈ { 0, 1}n×n, an algorithm receives n
+
+online pairs of Boolean vectors ( ut, v t) ∈ { 0, 1}n × { 0, 1}n, and after receiving ( ut, v t) must output (ut)⊤Av t = _
+
+> i,j ∈[n]
+
+(uti ∧ Aij ∧ vtj )before seeing the next pair. Under the OMv conjecture, for every constant γ > 0, OuMv cannot be solved with polynomial preprocessing and total online time O(n3−γ ). 
+
+Theorem B.1. Assume the OMv conjecture. For every pair of constants ε, δ > 0, there is no fully dynamic (2 − ε)-approximation algorithm for bipartite load balancing with polynomial preprocessing, amortized update time O(N 1−δ), and query time O(N 2−δ), where N = |J| + |M |. In particular, if the maintained assignment value is explicitly available after every update, then there is no such algorithm with amortized update time O(N 1−δ).Proof. Suppose, toward contradiction, that such a dynamic algorithm D exists. We show how to solve OuMv in truly subcubic time. Let A ∈ { 0, 1}n×n be the OuMv matrix. From A, construct a bipartite graph G = ( J ∪ M, E ). The job side is 
+
+J = {x, y } ∪ { ai : i ∈ [n]} ∪ { bj : j ∈ [n]},
+
+and the machine side is 
+
+M = {p} ∪ { ri : i ∈ [n]} ∪ { cj : j ∈ [n]} ∪ { fj : j ∈ [n]}.
+
+Thus N = |J| + |M | = 5 n + 3 = Θ( n). The static edges are (y, p ), (x, p ), (ai, r i) ∀i ∈ [n], (bj , c j ) ∀j ∈ [n], (ai, c j ) iff Aij = 1 .
+
+41 For the current online pair ( u, v ), the dynamic edges are (x, r i) iff ui = 1 , and (bj , f j ) iff vj = 1 .
+
+When the online pair changes from ( u, v ) to ( u′, v ′), we update exactly the edges ( x, r i) for which 
+
+ui̸ = u′ 
+
+> i
+
+and the edges ( bj , f j ) for which vj̸ = v′ 
+
+> j
+
+. Hence each OuMv round requires at most 2 n edge updates. Fix a pair ( u, v ). First suppose u⊤Av = 1. Then there exist i, j ∈ [n] such that ui = 1, Aij = 1, and vj = 1. Consider the following assignment: 
+
+y 7 → p, x 7 → ri, ai 7 → cj , bj 7 → fj , ai′ 7 → ri′ ∀i′̸ = i, bj′ 7 → cj′ ∀j′̸ = j. 
+
+Every used edge exists: ( x, r i) exists because ui = 1, ( ai, c j ) exists because Aij = 1, and ( bj , f j ) exists because vj = 1. No machine receives more than one job. Therefore OPT( G) ≤ 1, and since every job has unit demand, OPT( G) = 1. Now suppose u⊤Av = 0. We claim that no load-1 assignment exists. A load-1 assignment is a matching that saturates all jobs. Since y is adjacent only to p, such an assignment must assign y to p.Therefore x cannot be assigned to p, so x must be assigned to some ri. The edge ( x, r i) exists only if 
+
+ui = 1. Since ri is occupied by x, job ai cannot be assigned to ri, so ai must be assigned to some cj .The edge ( ai, c j ) exists only if Aij = 1. Since cj is occupied by ai, job bj cannot be assigned to cj , so 
+
+bj must be assigned to fj . The edge ( bj , f j ) exists only if vj = 1. Hence ui = 1, Aij = 1, and vj = 1, contradicting u⊤Av = 0. Thus no load-1 assignment exists. On the other hand, a load-2 assignment always exists: 
+
+x 7 → p, y 7 → p, ai 7 → ri ∀i ∈ [n], bj 7 → cj ∀j ∈ [n].
+
+Therefore, when u⊤Av = 0, we have OPT( G) = 2. Altogether, 
+
+u⊤Av = 1 ⇒ OPT( G) = 1 , u⊤Av = 0 ⇒ OPT( G) = 2 .
+
+Now run D on this dynamic graph. After the updates for the current pair ( u, v ), query the value of the maintained assignment. If u⊤Av = 1, then OPT( G) = 1, so a (2 − ε)-approximation must have load at most 2 − ε < 2. Since loads are integral, the maintained load is exactly 1. If u⊤Av = 0, then OPT( G) = 2, so every feasible assignment has load at least 2. Therefore the maintained load is 1 if and only if u⊤Av = 1. This solves the current OuMv query. It remains to bound the running time. The graph has N = Θ( n) vertices. Over all n online pairs, there are at most 2 n2 edge updates and n queries. Therefore the total online time of the resulting OuMv algorithm is 
+
+O(n2 · N 1−δ + n · N 2−δ) = O(n2 · n1−δ + n · n2−δ) = O(n3−δ).
+
+The preprocessing of D is polynomial in the initial graph size and hence polynomial in n, so it is allowed by the polynomial-preprocessing version of OuMv hardness. We have obtained an O(n3−δ)-time online algorithm for OuMv after polynomial preprocessing, contradicting the OMv conjecture. This proves the theorem. 
+
+Remark. The reduction is tight for the argument used above: it creates a 1 versus 2 optimum gap. Hence it rules out every (2 − ε)-approximation, but it does not by itself rule out 2-approximations or larger constant-factor approximations. 42
