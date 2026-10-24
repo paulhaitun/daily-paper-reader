@@ -1,0 +1,1565 @@
+Title: Mobile Embodied Agent Network (MEAN): Integrated Framework, Enabling Technologies, and Task-Driven Deployment
+
+URL Source: https://arxiv.org/pdf/2610.26297v1
+
+Published Time: Tue, 20 Oct 2026 03:16:52 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+> 1
+
+# Mobile Embodied Agent Network (MEAN): Integrated Framework, Enabling Technologies, and Task-Driven Deployment 
+
+Zhaoyang Zhang, Lingxiao Sun, Weijie Zhou, Chunhui Feng, Zhaohui Yang, Xuan Cheng, Tianyi Qin, Zhixian Kong, Baoping Cheng, Zijian Wu, and Jingze Che 
+
+Abstract —Mobile networks are evolving from human-centered, data-oriented communication infrastructures toward machine-and/or agent-dominant, task-oriented platforms that are to serve the rapidly increasing networked machines and embodied agents. In order to fulfill the newly arose complex task objectives, the framework of future mobile network is to be innovated to reflect and facilitate the intrinsic interplay and integration of the under-lying processes of perception, communication, computation, deci-sion, action, and feedback, etc. This survey establishes the mobile embodied agent network (MEAN) as a task-oriented networking paradigm in which networking and distributed intelligence are jointly organized around closed-loop embodied task execution. We first establish a unified MEAN framework that explains how network resources and intelligent functions jointly support embodied task execution, and extend its performance indicators from conventional communication metrics to embodied task outcomes and cross-layer system effects. With this framework, we analyze three complementary enabling mechanisms that form a cognition-interaction-adaption loop. Large artificial intelligence (AI) models provide high-level cognition, token communication connects this cognition with distributed agents through shared semantic representations, and reinforcement learning closes the loop by adapting system operation to network, task, and physical feedback. We further investigate the bidirectional interplay between MEAN and emerging technologies, showing how they mutually extend system capabilities and reshape task-oriented network design. Finally, we discuss open challenges and future research directions toward the practical realization of MEAN over real joint communication and computation platform. 
+
+Index Terms —Mobile embodied agent network, token communi-cation, wireless large AI model, multi-agent collaboration, edge intelligence, closed-loop control. 
+
+This work has been submitted to the IEEE for possible publication. Copyright may be transferred without notice, after which this version may no longer be accessible. This work was supported in part by National Natural Science Foundation of China under Grants 62631025 and 62394292, and the Fundamental Research Funds for the Central Universities under Grant 226-2024-00069. ( Corresponding author: Zhaoyang Zhang )Z. Zhang, L. Sun, W. Zhou, C. Feng, Z. Yang, X. Cheng, T. Qin, and Z. Kong are with the College of Information Science and Electronic Engineering, Zhejiang University, Hangzhou 310027, China, and also with the Zhejiang Provincial Laboratory of Multi-Modal Communication Networks and Intelligent Information Processing, Hangzhou 310027, China. Z. Zhang is also with the Institute of Fundamental and Transdisciplinary Research, Zhe-jiang University, Hangzhou 310058, China. (e-mail: ning ming@zju.edu.cn; lingxiao sun@zju.edu.cn; wj zhou@zju.edu.cn; chunhuifeng@zju.edu.cn; yang zhaohui@zju.edu.cn; xuan cheng@zju.edu.cn; tianyiqin@zju.edu.cn; zhixian kong@zju.edu.cn) B. Cheng, Z. Wu, and J. Che are with China Mobile (Hangzhou) Informa-tion Technology Co., Ltd., Hangzhou 311100, China. (e-mail: chengbaop-ing@cmhi.chinamobile.com; wuzijian@cmhi.chinamobile.com; chejingze@ cmhi.chinamobile.com). 
+
+I. I NTRODUCTION 
+
+The evolution of wireless networks has long been driven by demands for higher data rates, broader connectivity, and more reliable low-latency services. Fifth-generation (5G) and 5G-A systems have advanced these capabilities to support enhanced mobile broadband, massive machine-type communications, and ultra-reliable low-latency communications [1]. However, the emerging vision of sixth-generation (6G) networks indi-cates a more fundamental shift: they are expected to move beyond connecting people, devices, and data flows toward supporting connected intelligence in dynamic physical envi-ronments [2]–[4]. In such a vision, wireless networks will not merely deliver information from one endpoint to another, but will increasingly support integrated sensing, computation, and intelligence to enable closed-loop perception, decision, coordi-nation, and action in applications such as autonomous vehicles, uncrewed aerial vehicle (UAV) swarms, smart manufacturing, and human-robot collaboration [5]–[8]. Unlike passive termi-nals, the autonomous and mobile agents in these applications continuously interact with the physical environment, making their task execution directly dependent on timely and reliable information exchange, intelligent decision, and environmental feedback. Embodied artificial intelligence serves as the key driving force in this transition. Unlike conventional AI systems that mainly operate in digital spaces with static datasets or one-shot inference pipelines, embodied agents perceive the physical world through sensors, reason over environmental states and task objectives, and execute actions through physical bodies or actuators [9]–[12]. Recent advances in embodied multimodal models, vision-language-action models, and robotic founda-tion models have further enhanced their capabilities for se-mantic understanding, task planning, and adaptive physical in-teraction [13]–[15]. Nevertheless, future embodied intelligence cannot rely solely on isolated single-agent systems. In many practical scenarios, embodied agents are spatially distributed, resource-constrained, and required to cooperate under chang-ing network and physical conditions. Their task performance is therefore determined not only by the intelligence of individual agents, but also by the quality of networked collaboration among agents, embodied platforms, edge infrastructures, and cloud intelligence. This trend motivates a shift from embodied AI as an individual capability to networked embodied intel-ligence as a system-level capability, where the network must arXiv:2610.26297v1 [cs.NI] 19 Oct 2026 2Perception  Communication  Decision  Action  Feedback 
+
+Wireless 
+
+Networking 
+
+Capability 
+
+Evolution  
+
+> Enhanced Connectivity
+> and Service Support
+> 5G / 5G -A
+> Integrated Communication,
+> Sensing, Computing, and AI
+> 6G / IMT -2030 Vision
+> Connected and
+> Distributed Intelligence
+> Future Task -Oriented Networks
+> Smart manufacturing Autonomous vehicles UAV swarms Human –robot collaboration
+
+Representative Scenarios 
+
+Convergence toward the Mobile Embodied Agent Network (MEAN) 
+
+Embodied 
+
+Intelligence 
+
+Capability 
+
+Evolution     
+
+> Multi -Agent Embodied AI Foundation -Model -Enabled
+> Embodied AI
+> Single -Agent Embodied AI
+> Perception and Action Understanding and Planning Collaboration and Coordinated
+> Wireless Infrastructure Edge/Cloud Intelligence
+> Aerial Agents Vehicles Mobile Robots
+
+MEAN 
+
+MEAN 
+
+Task -oriented networking for 
+
+networked embodied intelligence 
+
+Fig. 1: Convergence of wireless networking and embodied intelligence toward the mobile embodied agent network (MEAN). 
+
+coordinate not only data flows and resources, but also models, contexts, actions, and feedback across distributed agents. As illustrated in Fig. 1, the evolution of embodied intelligence and wireless networking is converging toward a unified system paradigm for networked embodied intelligence. Advances in integrated wireless networking and edge intelli-gence provide connectivity and distributed computing support for embodied agents. Embodied AI complements these capa-bilities with physical perception and task reasoning. However, these capabilities still need to be integrated within a uni-fied, task-oriented networking framework. Mobile embodied agents continuously use observations and execution feedback to guide subsequent actions. Supporting this closed loop requires wireless communication and distributed intelligence to be coordinated around task progress and interactions among agents. To address this need, we introduce the concept of mobile embodied agent network (MEAN), which provides a unified networking framework for connecting and coordinating mobile embodied agents, wireless infrastructures, distributed intelligence, and physical environments to support closed-loop task execution. The specific research gaps and positioning of MEAN are discussed in the following subsection. 
+
+A. Motivation 
+
+Existing wireless-AI research provides complementary foundations for intelligent mobile systems. Integrated sensing and communication (ISAC) coordinates environmental sens-ing with information transmission, while integrated sensing, communication, and computation (ISCC) extends this joint design to information processing [16], [17]. Mobile edge computing and edge intelligence bring computing resources and AI inference closer to mobile agents [18]–[20]. At the network level, AI-radio access network (AI-RAN) introduces AI-driven optimization, while open-radio access network (O-RAN) provides programmable interfaces for network control [21]. Together, these capabilities allow agents to draw on networked resources for perception and reasoning beyond what individual devices can support. However, these capabilities alone do not ensure coherent support for closed-loop embodied tasks. Network decisions determine whether agents receive the information and com-puting support needed to act in time, while their actions change the physical environment and subsequent network demands. Supporting embodied intelligence therefore requires network operation and physical task execution to adapt to each other through continuous feedback. As summarized in Fig. 2, three gaps separate existing wireless-AI designs from this re-quirement, concerning the organizing paradigm, optimization objectives, and cross-layer integration. 
+
+Paradigm gap. Existing wireless systems are largely or-ganized around delivering communication and computing ser-vices, with service completion often treated as the endpoint of network operation. For embodied agents, however, delivering data or an inference result is only an intermediate step toward completing a physical task. Its value depends on whether it enables the agent to take an appropriate action at the required time. Delayed information, for example, may describe a state that has already changed and lead to an unsuitable action. The resulting physical outcome must therefore inform subsequent network decisions. This coupling calls for a task-driven, feedback-aware networking paradigm that supports the full course of embodied task execution. 3② Crticial  gaps  ③ Positioning of MEAN 
+
+Research Foundations, Critical Gaps, and Positioning of MEAN 
+
+Paradigm Gap 
+
+> Service -oriented functions
+> Task -driven closed loop
+
+Objective Gap 
+
+> Local system metrics
+> Task -level objectives
+> Unified Cross -Layer Architecture
+
+Integration Gap 
+
+> Fragmented system functions
+
+① Existing Research Foundations          
+
+> Edge Intelligence/MEC
+> AI -RAN/O -RAN
+> ISAC/ISCC
+> •Distributed computing
+> •Edge AI inference
+> •Computation offloading
+> •Joint sensing and
+> communication;
+> •Integrated computation
+> •Environment perception
+> •Network programmability
+> •AI -native RAN
+> •Flexible resource management
+> Task -Oriented
+> Evaluation
+> Framework
+> Task -Driven,
+> Feedback -Aware
+> Networking
+> Task -State -Aware
+> Cross -Layer
+> Coordination
+
+Mobile Embodied Agent Network (MEAN) 
+
+> Cognition → Interaction → Adaptation Loop
+> Cognition
+> TLarge AI Models
+> Reasoning & Planning
+> Interaction
+> Token Communication
+> Shared Semantic Representations
+> Adaptation
+> RL / MARL
+> Feedback -Driven Task
+> Orchestration
+
+Fig. 2: Research foundations, critical gaps, and positioning of MEAN for networked embodied intelligence. 
+
+Objective gap. Conventional evaluation emphasizes subsystem-level metrics such as communication latency, inference accuracy, and energy consumption, whereas embodied task success depends on how these factors jointly affect physical execution. Optimizing these metrics independently may overlook their interactions, so improvements in individual metrics do not necessarily lead to more timely, reliable, or successful task completion. For example, a more accurate model may require additional processing time, making its output less useful for an action that must be taken promptly. MEAN therefore requires an evaluation framework that relates basic system performance to embodied task outcomes and captures cross-layer intelligence and resource tradeoffs. Representative measures include task success rate, mission completion time, and safe success rate for task outcomes, together with planning validity and taskresource efficiency for cross-layer evaluation [22]–[24]. 
+
+Integration gap. The technical foundations required by MEAN remain fragmented across system layers. Communica-tion, sensing, computation, intelligence, and control are often designed with different interfaces, timescales, and optimiza-tion objectives, although decisions in one layer can directly affect the operating conditions of others. Agent mobility and environmental changes alter communication and sensing conditions, while resource allocation and computation place-ment affect inference latency, coordination, and subsequent physical actions. Addressing these dependencies requires a shared representation of task state and cross-layer coordination mechanisms that align resource decisions with the needs of physical execution. Addressing these gaps requires complementary capabilities for cognition, interaction, and adaptation. Large AI models provide the cognitive foundation by interpreting multimodal observations and task instructions to support reasoning and planning [25], [26]. Realizing these capabilities across dis-tributed agents requires task-relevant information to be ex-changed and aligned. Token communication supports this interaction through shared semantic representations, enabling agents to exchange context and coordinate their contributions to a common task [27]–[29]. The resulting plans must also adapt to changing physical environments. RL and multi-agent reinforcement learning (MARL) support this adaptation by using network states and execution feedback to adjust task orchestration [30]–[34]. Together, these technologies form a cognition-interaction-adaptation loop. Model-based reasoning guides what agents need to communicate and accomplish, token exchanges pro-vide shared context for collaborative execution, and feedback-driven adaptation adjusts how network resources support reasoning and communication. These adjustments shape the information and resources available for subsequent reasoning and interaction. MEAN provides a unified networking frame-work for integrating this loop into distributed embodied task execution. The following subsection formalizes MEAN and clarifies its core capabilities and positioning. 
+
+B. Definition of MEAN 
+
+In this survey, MEAN refers to a task-oriented wireless net-working paradigm in which mobile embodied agents, wireless infrastructures, cloud-edge-device intelligence, and physical environments are jointly organized to support networked em-bodied task execution. Unlike conventional wireless systems centered on data delivery or isolated intelligent services, MEAN coordinates networking and distributed intelligence according to task requirements and physical-world feedback. MEAN is characterized by four key features:  
+
+> •
+
+Physical closed-loop operation. Network operation is coupled with perception, decision, action, and physical feedback during task execution.  
+
+> •
+
+Semantic interaction. Agents exchange task-relevant in-formation, contextual states, and coordination information rather than relying solely on raw data transmission. 4                                
+
+> TABLE I: Positioning of MEAN Relative to Related Research Directions
+> Direction Primary Focus Physical Closed-Loop Operation Semantic Interaction Task-Driven Deployment Multi-Agent Coordination
+> ISAC [16] Joint sensing and communication Partial Limited Limited Limited ISCC [17] Joint sensing, communication, and computation Partial Limited Partial Partial Edge Intelligence [18], [20] Distributed computation, AI inference, and edge intelligence Partial Partial Partial Partial AI-RAN [35] AI/ML-enabled RAN optimization and resource management Partial Limited Partial Partial Semantic Communication [27], [28] Task-relevant and meaning-oriented information transmission Partial Strong Limited Partial Embodied AI [9], [13], [14] Perception, reasoning, planning, and action of embodied agents Strong Partial Limited Partial
+> MEAN Networked embodied task execution Strong Strong Strong Strong
+> “Strong,” “Partial,” and “Limited” indicate the typical research emphasis identified from representative literature rather than the absence of the corresponding capability.
+> •
+
+Task-driven deployment. Models, computing functions, and network resources are deployed and adapted across cloud, edge, and devices according to task requirements and system conditions.  
+
+> •
+
+Multi-agent coordination. Distributed embodied agents and network infrastructures coordinate information, re-sources, and actions toward common or interdependent task objectives. To further clarify the scope and positioning of MEAN, Table I compares MEAN with several representative research directions that provide important foundations for networked embodied intelligence, including ISAC/ISCC [16], [17], edge intelligence and AI-RAN [18]–[21], semantic communication [27]–[29], and embodied AI [9]–[12]. The comparison focuses on their primary research objectives and their typical emphasis on physical closed-loop operation, semantic interaction, task-driven deployment, and multi-agent coordination. As shown in Table I, these research directions provide complementary foundations for MEAN while emphasizing different aspects of networked intelligence. ISAC and ISCC primarily integrate communication with sensing and compu-tation, whereas edge intelligence and AI-RAN provide dis-tributed computing, intelligence, and programmable network control. Semantic communication emphasizes task-relevant in-formation exchange, while embodied AI focuses primarily on perception, reasoning, planning, and physical interaction at the agent level. MEAN builds on these foundations from a system-level perspective by jointly considering physical closed-loop operation, semantic interaction, task-driven deployment, and multi-agent coordination for networked embodied task execu-tion. Accordingly, this survey focuses on the intersection of wireless networking, embodied intelligence, semantic interac-tion, distributed intelligence, and physical world task execu-tion. We organize the survey around the system architecture of MEAN, its enabling technologies, and task-driven deployment, and further discuss the associated design challenges and open research directions. 
+
+C. Contributions 
+
+The main contributions of this survey are summarized as follows.  
+
+> •
+
+We develop a system architecture and evaluation frame-work for MEAN. The architecture organizes mobile em-bodied agents, wireless networks, edge–cloud resources, closed-loop functional capabilities, and cross-layer intel-ligence within a common system view. The evaluation framework further categorizes performance measures into basic system, embodied task, and cross-layer intelligence and tradeoff indicators.  
+
+> •
+
+We provide a systematic review of three enabling tech-nologies for MEAN, including reinforcement learning for feedback-driven adaptation, token communication for distributed semantic interaction, and large AI models for cognition and task-driven deployment. We examine how their complementary roles form a cognition-interaction-adaptation loop that connects reasoning, information ex-change, and adaptive orchestration with embodied task execution.  
+
+> •
+
+We synthesize the interplay between MEAN and emerg-ing technologies, including non-terrestrial networks, world models, digital twins, integrated sensing and com-munication, and edge intelligence. We examine how these technologies extend MEAN capabilities and how embodied task requirements, agent states, and execution feedback reshape their system design.  
+
+> •
+
+We identify open research challenges and future direc-tions for MEAN, covering cross-layer co-design, reliable and efficient token-mediated interaction, scalable multi-agent coordination, real-time deployment of large AI 5Ⅰ-Ⅱ. 
+
+Background and 
+
+Foundations 
+
+I. Introduction 
+
+> A. Motivation
+> B. Definition of MEAN
+> C. Contributions
+> D. Organization
+
+Ⅱ. Fundamentals of MEAN 
+
+> A. Framework of MEAN
+> B. Key Performance Indicators
+> C. Key Design Challenges
+
+III –V. 
+
+Core Enabling 
+
+Technologies 
+
+Ⅲ. 
+
+RL -Enabled Adaptation 
+
+and Orchestration in MEAN 
+
+> A. Motivation and RL Formulation
+> B. RL for Task Orchestration
+> C. RL for Information Exchange
+> D. RL for Wireless Resource
+> Management
+> E. Advanced RL for Dynamic and
+> Distributed MEAN
+
+IV. 
+
+Task -Oriented MEAN 
+
+Based on Token Communication 
+
+> A. From Bit Streams to Token
+> Communication
+> B. Intent Grounding and Task Decomposition
+> C. Collaborative Reasoning and Context
+> Sharing
+> D. Token -Network Optimization and
+> Performance Metrics
+
+Ⅴ. Deployment of 
+
+MEAN over Large AI Model 
+
+> A. Cloud -Edge -Device and Multi -Agent
+> Deployment
+> B. Cross -Node Communication for Distributed
+> Inference
+> C. Real -Time and Resource -Constrained Inference
+> D. Adaptive Coordination and Continuous
+> Evolution
+
+VI. Interplay Between 
+
+Emerging Technologies and MEAN 
+
+VI –VII. 
+
+Technology 
+
+Interplay and 
+
+Research 
+
+Outlook 
+
+> A. NTN -Enabled MEAN
+> B. World Model Empowered MEAN
+> C. Digital Twin Supported MEAN
+> D. ISAC Enabled MEAN
+> E. MEAN for Edge Intelligence
+
+VII. Open Problems and Future Directions 
+
+VIII. 
+
+Conclusions  VIII. Conclusions 
+
+> A. Theory and Cross -Layer Design
+> B. Token -Mediated Multi -Agent Coordination
+> C. Real -Time Large -Model Deployment
+> D. Safety, Benchmarking and Interoperability
+
+Fig. 3: Structure of this survey. 
+
+models, safety and trustworthiness, and benchmarking and evaluation. 
+
+D. Organization 
+
+The remainder of this survey is organized as follows, as il-lustrated in Fig. 3. Section II introduces MEAN fundamentals, including its framework, performance indicators, and design challenges. Section III reviews RL-enabled task orchestration, information exchange, and resource management. Section IV examines token-based semantic representation, task planning, collaborative reasoning, and network optimization. Section V discusses large AI model deployment and adaptive inference under resource and network constraints. Section VI explores connections with non-terrestrial networks, world models, dig-ital twins, integrated sensing and communication, and edge intelligence. Section VII outlines open problems and future research directions. Finally, Section VIII concludes the survey. II. F UNDAMENTALS OF MEAN This section presents the fundamental architecture of MEAN, including its layered framework, evaluation indicators, and system-level advantages and challenges. 
+
+A. Framework of MEAN 
+
+As shown in Fig. 4, MEAN can be organized into three tightly coupled layers: the mobile embodied agent and wire-less network foundation, the closed-loop functional capabil-ity pipeline, and the high-level cross-layer intelligence and coordination layer. These layers are connected through atoken-oriented semantic interface and an RL-based adaptive loop, enabling task-oriented closed-loop intelligence across agents, wireless networks, computing resources, and intelligent coordination modules. The mobile embodied agent and wireless network foun-dation provides the physical and infrastructural substrate of MEAN. It consists of mobile embodied agents, mobile wire-less networks, and edge–cloud computing resources. Mobile agents, such as UAVs, robot dogs, autonomous vehicles, and mobile robots, integrate sensors, actuators, on-device comput-ing, and mobility to perceive and interact with the physical environment [9], [11], [12], [36]. Meanwhile, 5G/6G wireless networks connect mobile agents with BSs, RSUs, APs, and edge–cloud infrastructure, while facing mobility, handover, time-varying channels, interference, spectrum constraints, and latency and reliability requirements. Edge servers and cloud data centers further provide heterogeneous computation and storage resources [18], [19], [37], [38]. This layer therefore jointly supports physical interaction, wireless connectivity, and distributed computation. The closed-loop functional pipeline transforms task intel-ligence into concrete embodied behavior through five core capabilities: perception, decision, coordination, control, and deployment and validation. Perception extracts task-relevant states from multimodal observations; decision performs task reasoning and policy generation; coordination supports multi-agent cooperation and resource coordination; control decom-6Perception     
+
+> •Multi-modal sensing
+> •State estimation
+> Decision
+> •Task reasoning
+> •Policy generation
+
+2
+
+MEAN 
+
+Functional Capabilities 
+
+(Closed-loop Pipeline)         
+
+> Five core capabilities with closed-loop adaptation.
+> Unified
+> Modeling
+> •World-agent-task model
+> •Cross-domain semantics
+> Task-Aware
+> Scheduling
+> •Task decomposition
+> •Resource & path scheduling
+> Cross-Layer
+> Adaptation
+> •Cross-layer negotiation
+> •Adaptive parameter tuning
+> Token-Based
+> Interaction
+> •Tokenized representation
+> •Semantic alignment
+> Foundation-Model Intelligence (Large AI Models)
+
+3
+
+Cross-layer Intelligence & Coordination (High-Level)    
+
+> Global semantics,
+> task reasoning and planning for intelligent coordination.
+> UAV Robot Dog Autonomous Vehicle
+> Mobile Embodied Agents Mobile Wireless Network (5G/6G)
+
+1
+
+Mobile Embodied Agents & Wireless Network Foundation 
+
+(Physical Layer) 
+
+> Mobile agents operate in dynamic wireless networks with edge-cloud support.
+> Knowledge & Memory
+> Provides global semantics, task reasoning, and high-level planning for intelligent coordination.
+> Token-Oriented Semantic Interface (Cross-layer Coordination)
+> RL-based Adaptive Loop
+
+Framework of MEAN                         
+
+> •Multi-agent coordination
+> •Resource coordination
+> Coordination
+> Tokens connect tasks, agents, and resources with shared semantics. Task Token Agent Token Resource Token State Token …
+> Mobile Robot
+> Embodied Components
+> Sensors Actuators On-device Compute Mobility
+> BS / RSU / AP
+> •Dynamic Topology
+> •Mobility & Handover
+> •Time-varying Channel
+> •Interference
+> •Spectrum & Bandwidth
+> •Latency & Reliability
+> Edge –Cloud Computing & Resources
+> Edge Servers
+> (GPU / TPU)
+> Cloud
+> Data Centers
+> •Control decomposition
+> •Real-time adjustment
+> Control
+> •Model deployment
+> •Runtime validation
+> Deployment & Validation
+> Task Reward Environment Feedback Network QoS (Latency, Reliability) Energy Consumption
+> •Long-term memory
+> •Experience reuse
+
+Fig. 4: The integrated framework of MEAN. MEAN integrates mobile embodied agents, wireless networking, and edgecloud resources with a closed-loop pipeline of perception, decision, coordination, control, and deployment and validation. 
+
+poses high-level decisions into executable commands with real-time adjustment; and deployment and validation maps models and policies onto actual systems and evaluates their runtime performance [9], [12], [39], [40]. These capabilities form a closed loop in which execution outcomes continuously influence subsequent perception, decision, coordination, and control. The high-level cross-layer intelligence and coordination layer provides system-level orchestration for MEAN. It sup-ports unified modeling, task-aware scheduling, cross-layer adaptation, token-based interaction, and knowledge and mem-ory. Unified modeling captures world–agent–task relationships and cross-domain semantics; task-aware scheduling performs task decomposition and resource/path scheduling; cross-layer adaptation dynamically adjusts system parameters across lay-ers; token-based interaction provides semantic representations for aligning tasks, agents, resources, and states [41]–[44]; and knowledge and memory enable long-term context preservation and experience reuse. Foundation-model intelligence further provides global semantics, task reasoning, and high-level plan-ning for intelligent coordination [40], [45], [46]. Crucially, two cross-layer mechanisms tightly couple the three layers. First, the token-oriented semantic interface es-tablishes a unified representation of task, agent, resource, and state tokens, enabling semantic information exchange and coordinated interaction across heterogeneous agents, network infrastructure, and intelligence modules. By abstracting hetero-geneous information into task-relevant tokens, this interface bridges physical observations, network resources, and high-level reasoning. Second, the RL-based adaptive loop enables task-driven cross-layer optimization by incorporating task rewards, envi-ronmental feedback, energy consumption, and network QoS, including latency and reliability. Through continuous interac-tion with the environment, RL dynamically adjusts commu-nication, computation, coordination, and control policies ac-cording to task requirements and network conditions, thereby connecting system-level resource adaptation with embodied task execution. 
+
+B. Key Indicators 
+
+Evaluating MEAN is inherently more complicated than evaluating a conventional communication system or an isolated AI model. Since MEAN supports embodied task execution over dynamic wireless networks, its performance should be assessed not only by communication and computation effi-ciency, but also by whether the overall closed loop can sus-tain perception, decision, coordination, control, and physical interaction. Therefore, as summarized in Table II, the key indicators of MEAN can be organized into three levels: basic system indicators, embodied task indicators, and cross-layer intelligence and tradeoff indicators [12], [18], [38], [41]. 
+
+Basic system indicators: The first level evaluates the communication and computation capabilities required to sup-7          
+
+> TABLE II: Three-Level Indicator System for MEAN Evaluation
+> Level Category Representative Metrics Basic System Communication Latency, Reliability, Throughput, Jitter, Packet Delivery Ratio (PDR), Age of Information (AoI) [18], [38], [41] Computation Inference Latency, Time to First Token (TTFT), Time per Output Token (TPOT), Token Throughput, Energy Consumption, Offloading Overhead [47], [48]
+> Embodied Task Task Effectiveness Task Success Rate, Goal-Condition Success, Task Progress, Mission Completion Time [11], [12], [49] Embodiment & Safety Motion Smoothness, Control Stability, Collision Rate, Safe Success Rate, Constraint Violation Rate [39], [50]
+> Cross-Layer Intelligence & Tradeoff
+> System Scalability Scalability, Interoperability, Topology Resilience, Coordination Robustness, Multi-Agent Efficiency [41]–[43] Tradeoff Efficiency Task–Resource Efficiency, Latency–Energy–Accuracy Tradeoff, Coordination Overhead, Communication–Computation–Control Balance [38], [44] Foundation-Model Intelligence Instruction-Following Accuracy, Reasoning Accuracy, Planning Validity, Semantic Grounding Accuracy, Hallucination Rate, Token Efficiency [40], [45], [46]
+
+port embodied intelligence. Communication metrics include latency, reliability, throughput, jitter, packet delivery ratio (PDR), and age of information (AoI). The end-to-end latency can be written as Te2e = Ttx + Tqueue + Tproc + Tprop , where the four terms represent transmission, queuing, processing, and propagation delays, respectively. These metrics directly affect control responsiveness, semantic consistency, and multi-agent coordination [41], [42]. Computation indicators include inference latency, TTFT, TPOT, token throughput, energy consumption, and offload-ing overhead, reflecting whether distributed and large-model-supported intelligence can operate under real-time and re-source constraints [18], [47], [48]. In particular, TTFT and TPOT characterize the response and generation latency of large models, while token throughput reflects their serving efficiency. 
+
+Embodied task indicators: The second level evaluates whether the embodied mission can be completed effectively and safely. General task-level metrics include task success rate, goal-condition success, task progress, and mission completion time. Goal-condition success can be expressed as GCS = 
+
+> 1
+> N
+
+PNi=1   
+
+> |G done
+> i||G i|
+
+, where Gi denotes the required goal conditions and Gdone  
+
+> i
+
+denotes the completed subset. This metric captures partial task accomplishment even when the overall mission is not fully completed [11], [12]. Safety and embodiment indicators include motion smooth-ness, control stability, collision rate, safe success rate, and constraint violation rate. A representative metric is the safe success rate, SSR = 1
+
+> N
+
+PNi=1 I(Si = 1) I(Vi = 0) , where 
+
+Si = 1 indicates successful task completion and Vi = 0
+
+indicates that no safety or constraint violation occurs. These indicators capture whether MEAN can accomplish embodied tasks without sacrificing physical safety and execution relia-bility [39], [50]. 
+
+Cross-layer intelligence and tradeoff indicators: The third level evaluates how effectively MEAN coordinates com-munication, computation, control, task execution, and large-model intelligence. Scalability, interoperability, topology re-silience, coordination robustness, and multi-agent support ef-ficiency characterize the system’s ability to operate as the number of agents and the complexity of interactions increase. Cross-layer efficiency further measures task performance under limited communication and computation resources. A representative task–resource efficiency metric can be defined as TRE = TaskScore       
+
+> α¯T+β¯E+γ¯B+δ¯C
+
+, where ¯T , ¯E, ¯B, and ¯C de-note normalized latency, energy consumption, communication overhead, and computational cost, respectively. This metric reflects the fundamental tradeoff between task performance and resource consumption. For foundation-model-enhanced intelligence, relevant indi-cators include instruction-following accuracy, reasoning ac-curacy, planning validity, semantic grounding accuracy, hal-lucination rate, and token efficiency. These metrics char-acterize whether large models improve semantic reasoning and coordination without introducing excessive computation, communication, or token overhead. 
+
+C. Key Design Challenges 
+
+Realizing MEAN requires addressing three fundamental system-level challenges arising from dynamic environments, constrained wireless communication, and limited computa-tional resources. 
+
+1) Task and Resource Coordination in Dynamic Environ-ments: Mobile agents, wireless conditions, and computing resources evolve dynamically, making it challenging to co-ordinate task execution and resource allocation across het-erogeneous components. MEAN requires adaptive cross-layer mechanisms to jointly optimize task decisions, communica-tion, computation, and control while maintaining closed-loop stability. Section III explores RL-based adaptation to address this challenge [51], [52]. 
+
+2) Information Effectiveness and Consistency under Con-strained Communication: Limited bandwidth, variable latency, and unreliable wireless links constrain information exchange among agents and distributed intelligence modules. MEAN must preserve task-relevant information and semantic consis-tency while minimizing communication overhead, particularly 8
+
+under compression and transmission errors. Section IV inves-tigates token-oriented communication to support efficient and reliable semantic interaction [41], [42]. 
+
+3) Real-Time and Reliable Intelligence under Resource Con-straints: Deploying advanced AI models on mobile and edge platforms is constrained by limited computation, memory, and energy resources. MEAN must balance reasoning and planning capabilities with inference latency, resource efficiency, and execution reliability, while mitigating uncertain or unsafe model outputs. Section V examines efficient and trustworthy deployment of large AI models for embodied intelligence [40], [45], [46]. III. RL-E NABLED ADAPTATION AND ORCHESTRATION IN 
+
+MEAN 
+
+A. Motivation and RL Formulation 
+
+MEAN integrates mobile embodied agents, wireless net-works, and distributed computing infrastructures to support closed-loop perception, reasoning, communication, and phys-ical interaction. Unlike conventional mobile networks that primarily transport data between endpoints, MEAN directly supports task execution in dynamic physical environments. Mobile robots, UAVs, autonomous vehicles, and other embod-ied agents continuously perceive their surroundings, exchange task-relevant information, invoke local or edge intelligence, coordinate with other agents, and adjust their physical actions according to environmental feedback. Consequently, the ef-fectiveness of MEAN depends not only on communication efficiency, but also on how communication, computing, intel-ligence, and agent capabilities are dynamically orchestrated according to evolving task requirements. Such orchestration is particularly challenging because the operating conditions of MEAN vary across both the physical and cyber domains. Agent mobility changes network topology and channel quality; sensing uncertainty alters the value of newly collected observations; task phases introduce different latency, reliability, and computation requirements; and lim-ited spectrum, energy, and computing resources constrain the set of feasible decisions. Moreover, these factors are tightly coupled. For example, transmitting high-resolution sensory information may improve perception quality but consume substantial wireless resources, whereas feature compression can reduce communication overhead at the cost of information loss. Offloading an inference task to an edge server may improve computation capability but introduce transmission and queueing delays. Similarly, prioritizing one safety-critical agent may temporarily reduce the resources available to other agents while improving overall mission reliability. Therefore, MEAN requires an adaptive mechanism that can continuously balance task utility against communication, computation, en-ergy, and safety costs. This problem is inherently sequential. A decision made at the current time may affect not only instantaneous network performance but also future task progress and system states [53], [54]. Allocating additional bandwidth to a perception stream may improve subsequent localization and planning; postponing a non-critical model update may save resources in the current stage but reduce model freshness later; selecting edge-assisted inference may improve decision quality while changing future communication load; and modifying the co-operation pattern among agents may reshape both informa-tion availability and resource competition. These delayed and coupled effects make static rules and one-shot optimization insufficient for highly dynamic MEAN deployments. Reinforcement learning (RL) provides a natural framework for addressing such task-driven adaptation and orchestration. By continuously interacting with the environment, an RL policy can learn how current decisions influence long-term task outcomes under uncertain and time-varying conditions. Rather than optimizing a single instantaneous metric, such as throughput, latency, or inference accuracy, RL can jointly ac-count for task completion, information value, communication efficiency, computation cost, energy consumption, reliability, and physical safety [30], [31]. More importantly, RL allows orchestration policies to adapt according to task phase, agent state, mobility, network conditions, and accumulated execution feedback, making it well suited for the closed-loop operation of MEAN. To provide a unified view, Fig. 5 illustrates an RL-enabled adaptation and orchestration framework for MEAN. At each decision epoch, the MEAN environment produces a multidi-mensional system state reflecting ongoing embodied tasks and available system resources. The task and embodied-agent state may include task progress, task priority, agent role, mobility, sensing quality, inference confidence, model freshness, and safety relevance. The network state characterizes channel qual-ity, bandwidth availability, interference, queue status, latency, reliability, and network topology. The computing and resource state further captures processor utilization, edge-server avail-ability, memory, energy budget, and other resource constraints. By jointly observing these states, the RL decision engine learns an orchestration policy that dynamically maps system conditions to task- and resource-level actions. The resulting RL actions span several tightly coupled control dimensions. First, task orchestration determines how embodied tasks are decomposed, prioritized, assigned, and executed locally, at edge or cloud nodes, or collaboratively across multiple agents. Second, task-aware information ex-change determines what information should be transmitted, when communication should occur, and at what represen-tation or compression level. Third, network resource man-agement adapts spectrum, bandwidth, power, access oppor-tunities, scheduling priorities, routing, and reliability levels according to task requirements rather than link-level metrics alone. Finally, multi-agent adaptation and coordination enables distributed embodied agents to coordinate their task roles, communication behaviors, and resource usage under heteroge-neous and time-varying conditions. These control dimensions are coupled through the common objective of maximizing task-level utility under limited system resources. Formally, at each decision epoch t, the system observes a state st that captures task progress, agent conditions, network states, computing availability, and resource budgets. Based on st, the policy π selects an action at ∈ A(st), which may involve task scheduling, information exchange, resource 9RL  Decision  Engine                          
+
+> Task State Network State
+> UAV Robot Vehicle Mobile Device
+> Perception Inference Planning Action Feedback
+> 1
+> 2
+> 3
+> 4
+> MEAN Task
+> Layer
+> State
+> Space
+> RL Decision
+> Layer
+> Control
+> Actions
+> Task
+> priority
+> Task
+> progress
+> MDP / POMDP / CMDP / HRL / MARL / Meta -RL
+> Policy 𝜋 𝑎 𝑡 |𝑠 𝑡
+> Task
+> Orchestration
+> Information
+> Exchange
+> Wireless Resource
+> Management
+> Multi -agent
+> adaptation and
+> coordination
+> State Observation 𝑠 𝑡
+> Reward = learning gain + task success − latency/energy/overhead + reliability/safety/fairness
+> Reward Signal 𝑟 𝑡
+> Task State 𝑠 𝑡 𝑡𝑎𝑠𝑘
+> Reward feedback for policy refinement
+> Agent State Computing State Resource State
+> CSI/
+> SINR
+> Available
+> Bandwidth
+> Inference
+> Confidence Latency Agent
+> Role
+> Processor
+> Utilization Memory Energy
+> Budget
+> Edge -server
+> Availability
+
+Fig. 5: RL-enabled adaptation and orchestration framework for MEAN. Mobile embodied agents interact with physical and network environments and generate task, agent, network, computing, and resource states. The RL decision engine maps these multidimensional states to task orchestration, task-aware information exchange, network resource management, and multi-agent adaptation and coordination. Task execution and network operation provide feedback on task utility, latency, reliability, communication and energy costs, safety, and fairness for policy adaptation. 
+
+allocation, or multi-agent coordination. The immediate reward 
+
+r(st, a t) evaluates the resulting task utility while accounting for communication, computation, energy, latency, and other operational costs. Since practical MEAN deployments are further subject to hard requirements on reliability, safety, latency, and resource availability, the orchestration problem can be formulated as a Constrained Markov Decision Process (CMDP) [55]: 
+
+max  
+
+> π
+
+Eπ,s 0∼ρ
+
+" ∞X
+
+> t=0
+
+γtr(st, a t)
+
+#
+
+s.t. Eπ,s 0∼ρ
+
+" ∞X
+
+> t=0
+
+γtgi(st, a t)
+
+#
+
+≤ Gi, ∀i ∈ I ,at ∈ A (st), st+1 ∼ P (· | st, a t),
+
+(1) where π denotes the orchestration policy, γ ∈ (0 , 1) is the discount factor, P (·| st, a t) characterizes the dynamic evolution of the MEAN environment, and gi(st, a t) represents the i-th constraint cost and Gi denotes its admissible cumulative bound, e.g., for latency, energy consumption, interference, or safety risk. The above formulation can be instantiated according to different levels of observability and control granularity. When a centralized controller has access to sufficient global state information, MEAN orchestration can be modeled as a stan-dard Markov decision process. When individual agents ob-serve only local sensing, communication, and task informa-tion, a partially observable MDP (POMDP) provides a more realistic formulation. Hierarchical RL can further separate high-level task orchestration from lower-level communication and resource control, thereby accommodating the different timescales of mission planning and network adaptation. For distributed MEAN deployments involving multiple cooperative or competing embodied agents, multi-agent reinforcement learning (MARL) provides a natural mechanism for decen-tralized decision-making and coordination [34]. From this perspective, RL acts as a general adaptation and orchestration engine rather than an isolated wireless opti-mization tool. It links high-level embodied-task requirements with information exchange, network resources, computing capabilities, and multi-agent interactions, allowing MEAN to dynamically adjust its operation according to task progress and environmental feedback. Following this unified frame-work, the remainder of this section discusses three primary orchestration dimensions: RL-based task orchestration, task-aware information exchange, and task-aware network resource management. Advanced RL mechanisms are then introduced to support distributed coordination, rapid adaptation, safety-aware operation, and semantic-aware decision-making in dy-namic MEAN deployments. 
+
+B. RL for Task Orchestration 
+
+Embodied AI tasks in MEAN are typically composed of multiple interdependent subtasks, such as perception, local-ization, mapping, inference, planning, control, and inter-agent collaboration. Because these stages impose different execution and resource requirements, task orchestration must determine how they are scheduled and where they should be executed 10 Task Understanding  Task Decomposition 
+
+RL Orchestrator 
+
+> Task Intent
+> Environment
+> Context
+> Agent
+> Capability
+> Task
+> Representation
+> Data -intensive
+> Subtasks
+
+Task Execution State Observation 
+
+Feedback & Reward       
+
+> Local Execution
+> (On -device)
+> Edge Offloading
+> (Edge Server)
+> Cloud Execution
+> (Cloud Server)
+> Multi -Agent
+> Collaboration
+> Deferred
+> Execution
+> Latency -critical
+> Subtasks
+> Computation -intensive
+> Subtasks
+> Coordination -intensive
+> Subtasks
+> RL Policy
+> DRL / Hierarchical RL
+> / MARL / CMDP
+> Orchestration Decision
+> Subtask Scheduling
+> Priority Adjustment
+> Execution Mode Selection
+> Perception
+> Mapping
+> Environment
+> Reconstruction
+> Control
+> Collision
+> Avoidance
+> Safety
+> Monitoring
+> Model
+> Adaptation
+> Planning
+> Inference
+> Consensus
+> Decision -Making
+> Role Assignment
+> Collaborative
+> Perception
+> Task
+> State
+> Agent
+> State
+> Network
+> State
+> Computing
+> State
+> Resourc e
+> State
+> Execution Result
+> •Subtask outcomes
+> •Task completion
+> •Mission progress
+> Performance Evaluation
+> •Learning improvement
+> •Task success rate
+> •Latency & cost
+> Reward
+> Weighted Sum
+> Policy Update
+> Experience Replay
+
+Fig. 6: RL-enabled task orchestration framework for MEAN. Task understanding transforms task intent, environmental context, and agent capability into a structured representation, which is decomposed into heterogeneous subtasks. The RL orchestrator then maps observed task, agent, network, computing, and resource states to scheduling, priority, and execution-mode decisions, while execution feedback drives closed-loop policy refinement. 
+
+across available agents and computing nodes [20], [56]. In addition, many subtasks depend on intermediate outputs from earlier stages, making their logical dependencies an important part of the orchestration process. RL provides a flexible mechanism for learning such orches-tration policies from system states and execution feedback. As illustrated in Fig. 6, the orchestrator combines task structure with the current system state to determine how each subtask should be scheduled and executed. For example, latency-sensitive control may favor local execution, computation-intensive inference may be offloaded to an edge server, while collaborative perception may involve multiple agents. The policy can therefore adapt task execution to the current task and system conditions rather than relying on a fixed workflow. Several RL formulations are applicable to task orchestration in MEAN:  
+
+> •
+
+Hierarchical RL : separates high-level task decomposi-tion and execution planning from lower-level actions such as offloading, transmission scheduling, model selection, and sensing control [57].  
+
+> •
+
+Constrained MDP : incorporates explicit latency, energy, bandwidth, reliability, computation, or safety constraints into orchestration decisions [58].  
+
+> •
+
+POMDP : addresses incomplete or delayed observations of task, network, or agent states [59].  
+
+> •
+
+MARL : supports distributed orchestration when multiple embodied agents make decisions based on local observa-tions while jointly executing a global task [60]. In this setting, the RL state captures task progress together with the resources relevant to execution, while the action space specifies how subtasks are scheduled, prioritized, and assigned. The reward evaluates task progress against the resulting execu-tion and resource costs. This allows the policy to coordinate both execution placement and task progression, particularly when later subtasks depend on timely outputs from earlier stages. One representative direction is knowledge-graph-assisted RL for task decomposition. A knowledge graph can explicitly represent the structure and constraints of an embodied task, while RL uses this representation together with the system state to determine its decomposition [61]. The resulting de-pendency graph provides a structured basis for subsequent scheduling and resource allocation. By making these depen-dencies explicit, the policy can reason over the task structure rather than treating subtasks as independent scheduling units. Such graph-based representations are particularly useful for embodied tasks with semantic or temporal dependencies that are difficult to capture using flat action spaces [62]. Beyond task decomposition, the same orchestration frame-work can support execution-mode and priority decisions across heterogeneous agents and computing nodes. For example, computation-intensive subtasks may be assigned to local, edge, cloud, or collaborative execution according to available resources [63], while MARL can coordinate role assignment 11 Task -aware 
+
+Information Exchange 
+
+> Robot Agent
+> UAV Agent
+> Vehicle Agent
+
+Distributed Embodied 
+
+Agents 
+
+Adaptive Information 
+
+Exchange Decisions       
+
+> Raw sensory
+> data
+> Intermediate
+> features
+> Model
+> updates
+> Task states /
+> Feedback
+> Information
+> Streams
+> Information
+> Value
+> Evaluation
+> RL
+> Policy
+> Memory
+> History &
+> Experiences
+> What to exchange?
+> When to exchange?
+> How to exchange?
+> Raw data, Features,
+> Model Updates,
+> Feedback
+> Immediate
+> Delayed
+> Skip
+> Compression level
+> Aggregation
+> Encoding method
+> Exchange Outcome
+> Policy Update
+> Reward
+> Task Utility Communication Cost
+> Accuracy Task success Freshness Bandwidth Energy Latency
+
+Fig. 7: RL-enabled task-aware information exchange framework for MEAN. The RL policy evaluates information value, task state, and communication conditions to determine what information to exchange, when to transmit it, and how it should be represented. Exchange outcomes provide feedback for subsequent policy adaptation. 
+
+and distributed execution among multiple agents [64]. Overall, RL-based task orchestration provides a mecha-nism for translating structured embodied tasks into adaptive scheduling, priority, and execution decisions, forming the task-level control layer of the broader RL-enabled MEAN framework. 
+
+C. RL for Information Exchange 
+
+Information exchange connects distributed embodied task execution with wireless communication in MEAN. Embodied agents may share raw observations, learned features, model updates, inference results, and coordination-related informa-tion. However, the usefulness of these transmissions is highly context-dependent: information that is valuable at one stage of a task may become outdated at another. Its value may also depend on what the receiving agent already knows and what information is needed for its current decision. Since different information types vary in freshness, task relevance, and communication cost, transmitting all available information is often inefficient. RL-based information exchange therefore focuses on deciding what information to exchange, when to transmit it, and how it should be represented or compressed according to task and system states [65]. Unlike conventional traffic scheduling, the value of a trans-mission in MEAN depends on its contribution to task execu-tion rather than data volume alone. For example, a compact but urgent control message may be more valuable than a large sensory stream, while intermediate features may replace raw observations when comparable inference performance can be maintained with lower communication cost [66], [67]. This makes information selection closely related to the downstream use of the transmitted content, rather than only to its size or channel requirement. Two representative information-exchange patterns are par-ticularly relevant. In model-distribution architectures, includ-ing split learning, collaborative inference, and model parti-tioning, the policy can adapt where computation is divided and what intermediate information is exchanged according to communication and computing conditions [68]–[70]. In distributed learning, such as federated and edge learning, RL can select participating agents and useful local updates based on their expected contribution and the resources required for communication [71], [72]. This is especially relevant in MEAN, where observations collected by embodied agents are often heterogeneous and non-IID. As a result, communication decisions should account not only for whether information is available, but also for whether it provides new or complemen-tary knowledge to the receiver. As illustrated in Fig. 7, the RL policy can jointly observe the progress of the task or learning process and the current com-munication and resource conditions. Based on the observed state, the policy decides whether communication is necessary and, if so, how it should be carried out, such as by adjusting update timing, compression, participation, peer selection, or model placement. The reward reflects the resulting task utility relative to the communication and execution cost. Feedback from downstream learning or inference can further indicate whether the transmitted information was useful, providing a basis for subsequent exchange decisions. Different RL formulations can be adopted according to the information-exchange setting. Constrained RL can enforce communication, latency, energy, or reliability requirements; 12 Robots UAVs Sensors Vehicles Edge/Cloud Sensors 
+
+MEAN Environment Wireless Resource Management  
+
+> Network State Control Actions State Perception
+> Radio State Learning State
+> Wireless Control gNB Spectrum Allocation Power Control Beam Selection Scheduling MCS Adaptation
+> Reward
+> Learning & Task Performance
+> RL
+> Communication Performance
+> Feedback
+> Fig. 8: RL-enabled task-aware network resource management framework for MEAN. The RL controller observes network and task-related states and adapts radio resource allocation according to task and communication feedback.
+
+POMDP formulations can address incomplete observations of data and network states; MARL can coordinate distributed exchange among multiple agents; and actor–critic methods are suitable for continuous control variables such as compression ratio, transmission power, or update frequency. Adaptive update scheduling is a useful application of RL in distributed learning. Rather than transmitting model updates at fixed intervals, the policy can evaluate their current usefulness and decide whether communication is necessary or should be deferred [73]. This helps reduce unnecessary synchronization while preserving valuable learning information. RL can also support feature and feedback selection in col-laborative inference. Depending on inference uncertainty, task relevance, and available bandwidth, agents may selectively transmit raw observations, intermediate features, semantic summaries, or confidence information [74]. Similarly, urgent feedback can be prioritized while redundant or low-value messages are suppressed or compressed. Overall, RL-based information exchange enables MEAN to allocate communication resources according to the value of information to task execution and distributed intelligence, providing a task-aware interface between embodied agents and the underlying communication system. 
+
+D. RL for Wireless Resource Management 
+
+Wireless resource management in MEAN extends conven-tional radio optimization by incorporating task-level infor-mation into resource-control decisions. Rather than relying only on channel and traffic conditions, the controller also considers how communication affects task progress and the timeliness of learning or inference. The same amount of wireless resource may therefore have very different task value depending on which information is being served and when it is needed. Radio resources can thus be adapted according to their contribution to task execution instead of link-level performance alone. This distinction becomes especially important when multi-ple embodied agents compete for limited wireless resources. A scheduler may need to balance the communication needs of agents that differ not only in channel quality, but also in their current role in the task. Consequently, resource allocation is no longer a simple matter of serving the user with the best instantaneous link condition. The controller must instead determine how limited radio resources should be shared so that communication supports the overall task process without unnecessarily degrading network efficiency. As illustrated in Fig. 8, the RL controller jointly observes the current radio environment and task-related learning state. Based on these observations, it determines how communi-cation resources should be allocated and configured across users and links. Such decisions affect not only transmission performance but also whether task-relevant information can reach the required agent or computing node in time. The reward therefore reflects the resulting task benefit together with communication efficiency and operational cost, while practical requirements on reliability, latency, interference, and resource availability can be incorporated as constraints. A key issue is how to relate radio-level outcomes to task-level performance. The effect of a resource decision may not be immediately vis-ible at the communication layer, but may appear later through improved inference, fresher task information, or more timely control feedback. Designing suitable intermediate feedback is therefore important for allowing the RL controller to identify which radio decisions actually contribute to task progress. In practice, these decisions may involve several radio-control variables that interact with one another. For example, changing the scheduling priority of a task flow may alter the bandwidth available to other users, while power or MCS adjustment can affect both transmission reliability and interfer-ence. RL is therefore useful for learning coordinated control policies over such coupled decisions instead of tuning each parameter independently. The control timescale can also vary: fast radio adaptation may respond to channel fluctuations, 13 
+
+whereas task-aware priorities may change more slowly as the embodied task progresses. Different RL methods can be selected according to the control space. Value-based methods such as DQN and DDQN are suitable for discrete decisions including scheduling, access, channel, or MCS selection [75], [76], whereas actor–critic methods such as DDPG and SAC are more appropriate for continuous variables such as power and bandwidth alloca-tion [77]. Constrained or safe RL can be used when strict latency, reliability, or safety requirements must be satisfied, while MARL supports distributed resource allocation among multiple embodied agents [78]. In practice, the choice of RL method depends not only on whether the control variable is discrete or continuous, but also on whether resource decisions must be coordinated across multiple users and task flows. The deployment architecture also influences how resource-control policies are implemented. A centralized controller can exploit broader network and task information, while distributed policies may be more suitable when embodied agents must react locally or when global state exchange is costly. This trade-off makes MARL particularly relevant to large-scale MEAN deployments. MARL-based joint adaptive modulation and coding (AMC) and resource allocation pro-vides a useful example of how distributed learning can support wireless control, where users learn resource-allocation policies from local observations and system feedback [79]. While the original formulation mainly targets throughput and fairness, its objective can be extended in MEAN to account for the contribution of radio-resource decisions to task execution. In this case, users carrying more time-sensitive or task-critical information can be treated differently even under similar radio conditions, providing a natural transition from link-centric to task-aware control. Overall, RL-based wireless resource management provides the network-level control layer of MEAN, allowing conven-tional radio resources to be dynamically allocated according to both communication conditions and task requirements. 
+
+E. Advanced RL for Dynamic and Distributed MEAN 
+
+Beyond task orchestration, information exchange, and wire-less resource management, practical MEAN systems must also cope with distributed decision-making, changing operating conditions, and safety-critical execution. These challenges motivate more advanced RL mechanisms that extend the basic orchestration framework. A first challenge arises from the distributed nature of MEAN. Multiple embodied agents often make decisions based on local observations while sharing communication and com-puting resources. MARL is therefore particularly relevant for coordinating their task execution, information exchange, and resource use [80]. Centralized training with decentralized exe-cution (CTDE) offers a practical implementation paradigm, al-though communication overhead, non-stationarity, and credit-assignment issues may still limit scalability. Distributed coordination alone is insufficient when the op-erating environment changes over time. Variations in tasks, mobility, channel conditions, or resource availability can re-duce the effectiveness of policies trained under fixed settings. Meta-RL can improve adaptation to new conditions with limited interaction data [81], while digital twins provide virtual environments for policy training, evaluation, and refinement before or during deployment [82]. Together, they can reduce the cost and risk associated with online adaptation. As policies adapt to changing conditions, safety becomes another critical requirement. Safe and constrained RL is im-portant when decisions must satisfy strict requirements on reliability, latency, energy, or physical safety. It helps the policy avoid unsafe actions and keep system operation within acceptable limits. This is especially important when RL is used for physical control or other safety-critical tasks. Beyond coordination, adaptation, and safety, MEAN must also determine which information is worth communicating. Semantic-aware RL introduces task relevance and informa-tion value into communication decisions, allowing agents to adapt what information is exchanged and at what level of representation. This provides a natural bridge from RL-based communication control to the token-oriented communication framework introduced in the next section. Together, these advanced RL mechanisms extend the basic MEAN orchestration framework from single-policy adaptation toward distributed, adaptive, safe, and semantically informed operation. IV. T ASK -O RIENTED MEAN B ASED ON TOKEN 
+
+COMMUNICATION 
+
+Section III examined how RL enables adaptive task or-chestration, information exchange, and resource allocation in MEAN. Complementing this decision-making perspective, this section focuses on how task-relevant information is repre-sented, aligned, and exchanged through tokens to support collaborative reasoning and coordinated task execution. Task-oriented token communication shifts the emphasis from bit-level reconstruction to the effective exchange of information needed for task completion. By encoding mul-timodal observations, task intent, and execution feedback into compact semantic representations, tokens support intent understanding, task decomposition, and collaboration among distributed embodied agents. As illustrated in Fig. 9, this ar-chitecture connects perception, reasoning, and action through token exchange, supporting coordinated task execution under communication and computing constraints. 
+
+A. From Bit-Stream to Token Communication: A Paradigm Shift 
+
+Reliable bit delivery remains essential, but MEAN also requires efficient information exchange under high-volume multi-modal sensing, limited edge bandwidth, and stringent action deadlines. Transmitting complete observations or rely-ing on centralized processing may delay distributed decisions, while heterogeneous agents need interoperable representations. Token communication addresses these constraints by selecting information according to its relevance to downstream reason-ing and physical execution, rather than treating all source details as equally important. 14 Tokenization and Semantic Representation                 
+
+> Multimodal Compression
+> Unified Latent Space
+> Token Generation Map
+> Output
+> Token Types
+> Feedback Token Tool Token
+> Content Token
+> Intent Grounding and Task Organization
+> Multimodal Intent Grounding
+> Language Instruction Visual / Environmental Context
+> Target Object Spatial Location Semantic Anchor
+> Task Decomposition & Planning
+> Subtasks Execution Order / Role Assignment Task Goal
+> Collaborative Reasoning via Shared Context
+> Multi-Agent Shared Token Context Joint Reasoning & Decision
+> Agent2 Agent1 Agent3 Agent4
+> MCP KV Cache RAG
+> Execution Layer & Actions
+> Closed-Loop Feedback
+> Token-Network Optimization and Adaptive Coordination
+> Performance Monitoring / Metric-Driven
+> TSR Hallucination Rate Logical Consistency
+> Communication and Semantic Optimization
+> Compression Alignment & Error Correction Routing
+> Model and Topology Adaptation
+> GNN / VGAE PEFT / LoRA AWQ
+> Feedback Tokens / Environmental Feedback Physical World / User Intent / Multimodal Inputs
+> User Task Instruction Vision Speech Action
+> State
+> Compression / Quantization Decomposition / Planning Sharing / Routing
+> Unified Token Interface Task-Level / Planning Tokens
+
+Fig. 9: Task-oriented token communication in MEAN. Multimodal observations, task intent, and feedback are encoded as semantic tokens for intent grounding, decomposition, and planning. Agents exchange shared token contexts for collaborative reasoning and coordinated action, supported by MCP-based interaction, KV-cache reuse, and RAG. Task outcomes feed back into token-network optimization, which adapts semantic exchange, routing, and model deployment. 
+
+1) Definition and Connotation of Tokens: Within the MEAN framework, a token is no longer merely a basic text unit processed by large language models (LLMs), but a semantic abstraction of the physical world perceived by embodied agents as shwon in Fig. 10. This redefinition enables tokens to transcend simple symbolic attributes, becoming a core nexus connecting the physical perception space with the cognitive planning space. Essentially, a token serves as a universal cognitive carrier for embodied agents within the perception-reasoning-action loop. It encompasses compressed representations of multi-modal features mapped through a unified latent space, while carrying specific intent instructions and task constraints. Through the transition from primitive bitstream transmissions to structured semantic tokenization, the representation and flow of information within embodied networks are fundamentally reshaped, imbuing the communi-cation process with a high cognitive dimension. This supports a transition in end-to-end collaborative logic from physical-layer signal replication to application-layer intent alignment. 
+
+2) Multi-modal Feature Compression: Multi-modal feature compression is essential for exchanging task-relevant infor-mation under limited bandwidth. Rather than transmitting full sensory streams, MEAN maps high-dimensional observations into compact representations in a shared latent space. Three mechanisms support this task-oriented compression: 
+
+• Semantic Bottleneck Constraints : Heavily inspired by the Information Bottleneck (IB) theory, the core logic of this mechanism lies in trading off irrelevant raw details for high compression ratios and generalization capabilities. Unlike traditional source coding governed by the Mean Squared Error (MSE) criterion, the tok-enization process in MEAN follows a task-driven in-formational utility objective. The Perception Module acts as a non-linear encoder, mapping high-dimensional data —such as LiDAR point clouds, visual imagery, and RF signals —onto a low-dimensional task-optimal mani-fold. Under these constraints, the agent extracts only the specific semantic features essential for decision-making, such as object categories, relative poses, and dynamic trajectories, while suppressing task-irrelevant background artifacts and stochastic environmental noise. This reduces bandwidth requirements by orders of magnitude and enhances system robustness, ensuring the precise delivery of primary intents under extreme resource constraints [83], [84]. 
+
+• Cross-modal Alignment and Representation : To fa-cilitate inter-agent semantic coherence among agents equipped with heterogeneous sensors, MEAN utilizes multi-modal large language models (VLMs) as the un-derlying architecture to construct a Unified Latent Space. This mechanism employs techniques such as contrastive learning to encode information from diverse modalities, including vision, haptics, and array signals, into a consis-tent token representation system. This aligned representa-tion achieves latent-space semantic invariance: regardless of whether the input originates from optical sensors or radar depth maps, the generated tokens maintain topo-logical proximity within the shared latent manifold. Such high semantic faithfulness is critical for handling Partially Observable Markov Decision Processes (POMDP). In ex-treme environments with sensory occlusion, cross-modal alignment enables the system to utilize tokens from al-ternative modalities, such as radio frequency (RF) signals or light detection and ranging (LiDAR), to autonomously 15 1 Task-Related Data        
+
+> Scene observation
+> Task instruction
+> Go to the table and
+> pick up the red cup.
+> State / spatial cue
+> 2Tokenization
+> Unified latent space
+> Token sequence
+> t₁t₂t₃…tₙ
+> ◆
+> Compact semantic
+> representation
+> Abstraction of the physical world
+> 3Intent Alignment &
+> Action Guidance
+> Task intent
+> Token Semantics Context
+> Application-layer
+> semantic alignment
+> Decision /
+> planning
+> Action
+> guidance
+
+Fig. 10: Token definition and utilization in embodied intelligence. Task-related observations are encoded into compact semantic tokens, which are aligned with task intent and environmental context to support planning and action. 
+
+perform semantic context completion, maintaining per-ceptual continuity and ensuring task execution success in complex dynamic scenarios [85], [86].  
+
+> •
+
+Adaptive Quantization and Pruning : To adapt to resource-constrained edge hardware, MEAN employs activation-aware weight quantization (AWQ) [87] and structural pruning techniques. By observing activation distributions during inference, the system identifies performance-critical weight subsets —those that occupy a minimal fraction of the total parameters yet exert a dominant influence on inference accuracy. High-precision feature tokens are then compressed into low-bitwidth representations, such as INT4, optimizing transmission efficiency while maintaining functional fidelity with min-imal accuracy degradation. 
+
+3) Driving Force of Reasoning and Decision Making: In the hierarchical logical architecture of MEAN, tokens serve as core computational primitives that span perceptual boundaries and action spaces. Acting as a hub connecting physical reality with cognitive logic, tokens trigger the dynamic evolution of the embodied ”Perception-Reasoning-Action” loop through the semantic instantiation of multi-modal inputs. This token-based logic drive enables agents to transform fragmented environmental perceptions into a continuous stream of task planning, thereby maintaining decision consistency in dynamic environments.  
+
+> •
+
+Task-Token Driven Planning : Upon receiving an intent token, the cognitive core utilizes chain-of-thought (CoT) reasoning to decompose it into a sequence of task sub-goal tokens. Each task token carries specific logical instructions, driving the agent to perform long-horizon path planning and tool invocation.  
+
+> •
+
+Closed-loop Feedback and Adaptive Strategies : The decision stream formed by tokens can seamlessly inte-grate feedback tokens from the environment. For instance, the physical state of the execution end, including param-eters such as gripping torque or movement position, is transformed in real-time into feedback tokens and sent back to the cognitive layer. Through a self-refinement cycle, the reasoning direction is dynamically corrected.  
+
+> •
+
+Tool Invocation and External API Triggering : When local cognitive capabilities are insufficient for specialized tasks, MEAN introduces an automated tool invocation mechanism. The Toolformer mechanism, through self-supervised learning, enables the model to autonomously insert specific API call tokens into the generated token stream, triggering on-demand calls to external utilities such as calculators, search engines, or specialized sen-sors [88]. Furthermore, when integrated with the Gorilla framework, MEAN nodes can autonomously retrieve and invoke an extensive array of external RESTful APIs, effectively mitigating the inherent constraints of LLMs regarding domain-specific knowledge and numerical pre-cision [89]. This augmented reasoning paradigm en-ables embodied agents to leverage the Reasoning and Acting (ReAct) framework to facilitate iterative action-observation cycles and real-time decision refinement based on the functional tokens retrieved from external computational interfaces [90]. 
+
+4) Transformation of Communication Paradigms: The core logic of the MEAN communication protocol is undergoing a fundamental transformation from transmitting how to execute (bits) to what to execute (intent/tokens). This shift marks a paradigm leap from the traditional internet of things (IoT), where devices are merely responsible for perception and transmission, to the internet of agents (IoA), where edge nodes possess capabilities for perception, reasoning, planning, and independent action [91].  
+
+> •
+
+Intent-driven Interaction : In contrast to the bit-oriented paradigm focused on precise replication of waveforms or bit sequences, MEAN prioritizes intent understanding. Embodied agents exchange high-level semantic tokens, allowing the receiver to autonomously infer subsequent actions based on local semantic cues. This significantly reduces the dependency on continuous, high-intensity raw data exchange, thereby drastically decreasing communi-cation overhead [84], [92].  
+
+> •
+
+Cognitive Consistency under Resource Constraints :In 6G edge environments, achieving full physical-layer synchronization and global state visibility is difficult due to channel jitter, limited bandwidth, and dynamic network topologies. To address this, MEAN introduces the model context protocol (MCP) [93]. Distributed em-bodied agents share key task tokens and context rep-resentations via MCP to ensure consistent contextual understanding across different nodes. This ensures that group collaboration, such as coordinated coverage by UAV swarms or dynamic scheduling in vehicular net-works, maintains high goal-driven coherence and task ex-ecution robustness under low-bandwidth, non-stationary conditions [94], [95]. 
+
+B. Intent Grounding and High-Level Task Decomposition 
+
+Intent grounding connects language-level task goals with physical entities, spatial context, and agent capabilities. In MEAN, this requires aligning instructions with multi-modal observations and execution constraints so that the resulting 16 
+
+task tokens can support feasible decomposition and planning in dynamic, partially observable environments. 
+
+1) Multi-modal Intent Grounding: Within the MEAN inter-action ecosystem, intent grounding transcends unimodal lin-guistic extraction; instead, it manifests as a deep tensor fusion and feature alignment between multi-modal perceptual streams and the cognitive core. The system synchronizes captured visual scenes, acoustic commands, and RF perceptual data in the spatio-temporal domain for integration into the embodied cognitive core. This fusion mechanism endows the system with context-aware situational comprehension, enabling the disambiguation of underspecified commands based on the real-time physical environment.  
+
+> •
+
+Context-aware Intent Instantiation : The Perception Module provides the requisite physical references for semantic instructions through the cross-verification of real-time visual features, acoustic signals, and RF fin-gerprints. For instance, upon receiving an abstract com-mand regarding the traversal of a designated region, the system utilizes spatial tokens to anchor the intent to a specific local coordinate frame and its associated physical parameters. Global correlation between linguistic query vectors and visual feature maps is executed via cross-attention mechanisms. By constructing a multi-modal alignment score matrix, the system identifies the physical properties and spatial poses of specific objects refer-enced in the command within the current local coordi-nate system. This process typically leverages frameworks such as Grounded Language-Image Pre-training (GLIP) or Grounding DINO, unifying visual object detection and semantic comprehension under a singular objective function to facilitate the real-time anchoring of intent within the physical domain [96], [97].  
+
+> •
+
+Task Tokenization : The cognitive core maps environment-augmented instructions into a sequence of structured task tokens. Each token represents a logical atom and implicitly includes the boundary conditions and physical constraints of the action. MEAN transforms intent into executable code blocks or policy tokens, allowing agents to leverage the reasoning power of pre-trained models to generate logically rigorous low-level instructions. 
+
+2) Task Decomposition and Chain-of-Thought Planning: 
+
+Faced with long-horizon tasks characterized by high non-stationarity and complex physical constraints, MEAN must possess the ability to deconstruct macro-intents into micro-action primitives. This process primarily relies on hierarchical task topology construction and a token-sequence-based CoT reasoning mechanism.  
+
+> •
+
+Hierarchical Task Topology Construction : MEAN uti-lizes large-scale models as centralized decision-making engines to recursively decompose high-level abstract goals into a series of sub-goal tokens characterized by rigorous causal dependencies. Diverging from unimodal linguistic planning, MEAN incorporates a physical af-fordance assessment mechanism during the decomposi-tion phase. When generating individual task tokens, the cognitive core evaluates not only the semantic coherence of the plan but also the operational feasibility of the action within the current physical state, integrating en-vironmental tokens facilitated by the perception module [98]. Consequently, the system constructs a dynamic task topology, ensuring that complex long-horizon planning is consistently grounded within the feasible operational envelope. This approach effectively mitigates cognitive hallucinations and semantic-physical inconsistencies that are prevalent when traditional large-scale models are deployed in embodied scenarios.  
+
+> •
+
+Dual-constrained CoT Reasoning : To facilitate the seamless mapping from discrete symbolic logic to con-tinuous actuation, MEAN employs an enhanced CoT reasoning protocol. By integrating formal logical pred-icates and spatio-temporal constraint parameters into the token stream, the architecture implements an internalized self-reflective reasoning process for task execution [99]. Prior to the dispatch of each task token to the actuation layer, the cognitive core performs closed-loop verification to ensure the task sequence preserves causal coherence within the temporal domain and adheres to kinematic and collision-avoidance constraints in the spatial dimen-sion. This modular planning mechanism enables agents to adapt to stochastic environmental perturbations by selectively updating affected token nodes rather than ne-cessitating global plan re-computation, thereby enhancing computational efficiency and operational robustness.  
+
+> •
+
+Multi-agent Token Chaining : In scenarios requiring multi-agent swarm intelligence, such as coordinated re-connaissance by UAV swarms, MEAN facilitates orches-trated task distribution and cross-node synchronization. The leader node defines the operational constraints and boundary conditions for the motion primitives of collab-orative nodes through the generation of structured path-planning token clusters. By leveraging the end-to-end mapping capabilities of Robotic Transformer 2 (RT-2), these high-level semantic tokens are translated into low-level actuation tokens. This architecture enables hetero-geneous agents to function as an integrated decentralized execution system, completing complex spatio-temporal collaborative tasks via a deterministic and sequential propagation of token-mediated control signals [84], [100]. 
+
+C. Collaborative Reasoning via Token-based Context Sharing 
+
+Distributed embodied agents must maintain compatible task contexts despite partial observations, intermittent links, and changing network topologies. Exchanging selected context and state tokens can reduce repeated synchronization of raw histories while supporting shared interpretation of task goals and constraints. This motivates token-based context sharing for collaborative reasoning and coordinated execution. 
+
+1) Model Context Protocol (MCP): To maintain distributed cognitive consistency in edge scenarios with limited commu-nication resources, MEAN introduces MCP. Acting as a stan-dardized interaction framework for semantic alignment among distributed agents, the protocol achieves low-loss synchroniza-17 Token Alignment in Task-Oriented MEAN 
+
+Cross-Modal Alignment 
+
+> Different modalities are mapped into a shared semantic token space.
+
+Cross-Agent Semantic Consistency 
+
+> Different agents maintain a consistent understanding of the same task and environment.
+
+Intent-Token Matching                                
+
+> Token semantics are matched with the current task intent and context to guide decisions and actions.
+> Camera image /
+> scene observation LiDAR / point cloud
+> Text instruction
+> Go to the table
+> and pick up
+> the red cup.
+> Spatial map / state cue
+> ab
+> cdShared
+> token
+> context
+> Consensus
+> token anchors
+> UAV
+> Mobile robot
+> Autonomous vehicle Robot dog / robotic arm
+> Task intent Token semantics
+> Current state Obstacles Constraints
+> Decision /
+> planning
+> Action
+> guidance
+> t₁t₂ …tₙ t₁t₂ …tₙ
+> t₁t₂ …tₙ t₁t₂ …tₙ
+> t₁t₂ t₃ …
+> Shared semantic token space
+> t₁t₂ t₃ …tₙ
+> “Pick up the red cup”
+> Environment / context
+> Application-layer
+> Semantic alignment
+> t₁t₂ t₃ …
+
+Fig. 11: Three aspects of token alignment in task-oriented MEAN, including cross-modal alignment in a shared token space, cross-agent semantic consistency, and intent-token matching for decision-making and action guidance. 
+
+tion of cognitive states through the structural decoupling of reasoning contexts.  
+
+> •
+
+Incremental Update of Cognitive States : Instead of retransmitting entire reasoning histories, agents may ex-change updated task intents and context tokens. Prompt caching and compatible cross-node KV-cache reuse can further reduce redundant processing and communication when agents share suitable model and representation interfaces [93]. The resulting savings depend on cache compatibility, update size, and synchronization require-ments.  
+
+> •
+
+Semantic Consistency Verification : To address cog-nitive bias between heterogeneous embodied platforms, such as robots with different perceptual modalities or computational gradients, the MCP protocol establishes a unified semantic space baseline. By introducing Con-sensus Token Anchors, the system can formally verify key task predicates, including spatial constraints and action boundaries. This mechanism ensures that even with varying model parameter scales, nodes can reach a logical consensus on the same task intent, fundamentally reduc-ing the probability of conflict in physical collaboration [92]. 
+
+2) Distributed Token Retrieval (RAG): To address long-term dependencies and non-stationary topology challenges in embodied tasks, MEAN integrates a distributed retrieval-augmented generation (RAG) mechanism, constructing a dis-tributed memory network with spatio-temporal correlation.  
+
+> •
+
+Context Token Encoding : Embodied agents do not need to maintain redundant global trajectories; instead, they encode historical observations and decision logic into Context Tokens with semantic features. Using GraphRAG technology, these tokens are organized into knowledge graphs with topological correlations. During complex long-horizon tasks, agents achieve precise retrieval of rel-evant historical experiences and environmental common sense through similarity comparisons in high-dimensional vector spaces, significantly enhancing the generaliza-tion ability of the decision module when facing low-probability edge cases [85].  
+
+> •
+
+Topology Adaptation and Robust Reasoning : In the context of frequent 6G edge topology reconfiguration, MEAN adopts an asynchronous context synthesis strat-egy. When a node re-enters the network after intermittent communication disruption, the system utilizes semantic reconstruction techniques to recall critical task state to-kens from the vector caches of neighboring nodes. By introducing a self-reflective retrieval mechanism (Self-RAG), agents can perform faithfulness verification on re-trieved tokens, ensuring the collaborative loop maintains logical rigor and operational stability under conditions of incomplete information observation [84]. 
+
+D. Optimization and Performance Metrics for Token Networks 
+
+Token-network optimization must balance semantic fidelity, task performance, communication overhead, and heteroge-neous edge-computing resources. This section considers com-pact model support for token processing and task-aware met-rics for evaluating communication efficiency and semantic reliability. 
+
+1) Compact Model Support and Edge Deployment: Given the power consumption and memory bandwidth limitations of mobile embodied devices, deploying large-scale models with full parameters is often impractical. Therefore, utilizing compaction techniques to build small language models (SLMs) or compact embodied models is a critical technical path for ensuring that edge nodes can generate high-quality reasoning tokens in real-time.  
+
+> •
+
+Multi-dimensional Model Compression : MEAN adopts a combined strategy of quantization and structural prun-ing. By introducing techniques such as AWQ, models 18 
+
+can run at low bit-width precision, significantly reduc-ing memory footprint while maintaining the faithfulness of semantic reasoning [87]. Additionally, by removing redundant attention heads or neuron layers, pruning techniques further reduce the Floating Point Operations (FLOPs) per token inference, ensuring that embodied nodes maintain millisecond-level intent response speeds even with low computational power [101].  
+
+> •
+
+Parameter-Efficient Fine-Tuning (PEFT) and LoRA Adaptation : To enable compact models to handle specific embodied tasks, such as navigation in specific terrains or industrial gripping, MEAN extensively applies parameter-efficient fine-tuning (PEFT) and low-rank adaptation (LoRA) technology. By training only a tiny fraction of low-rank decomposition matrices, LoRA allows nodes to quickly adapt to new physical constraints and task intents without altering the pre-trained model backbone. This approach reduces training energy consumption and allows agents to achieve rapid knowledge transfer by exchanging small adapter weights [102]. 
+
+2) Key Performance Metrics: Conventional throughput and packet-loss metrics do not capture whether exchanged tokens preserve task-relevant meaning. We therefore consider three complementary measures: task success rate (TSR), commu-nication reduction ratio (CRR), and hallucination rate (HR), together reflecting task effectiveness, transmission efficiency, and semantic reliability.  
+
+> •
+
+Task Success Rate (TSR) : As the primary metric for measuring MEAN communication efficiency, TSR is de-fined as the probability that an embodied agent eventually achieves its preset physical goal driven by a specific token sequence 
+
+TSR = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+I(Ti = success) , (2) where N denotes the total number of task trials, Ti
+
+represents the outcome of the i-th embodied task, and 
+
+I(·) is the indicator function, which equals 1 if the task is successfully completed and 0 otherwise. Unlike bit accuracy, TSR focuses on the correctness of logical outcomes. As long as the key intent tokens are correctly received and trigger a compliant action sequence, the system maintains a high TSR even if there are losses of non-critical characters during transmission.  
+
+> •
+
+Communication Reduction Ratio (CRR) : CRR is used to quantify the spectrum resources saved by semantic token transmission compared to original multi-modal data, such as video streams or point clouds. In embodied collaborative scenarios, tokens are high-level abstractions of the environment, and their transmission data volume is typically several orders of magnitude lower than raw signals. A high CRR indicates that MEAN can maintain complex swarm collaborative decision-making even in environments with extremely poor channel conditions or narrow bandwidths [84].  
+
+> •
+
+Hallucination Rate (HR) and Logical Consistency :This metric evaluates the frequency of logical errors, physical constraint violations, or false intents generated during token transmission and reasoning. Since large models may produce hallucinations under constrained computation, real-time monitoring of the hallucination rate in the token stream is crucial for ensuring the safety of embodied tasks 
+
+HR = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+I (ˆ yi̸ |= Ki ∪ C i) , (3) where N denotes the total number of evaluated outputs, 
+
+ˆyi is the output generated in the i-th task, Ki denotes the available factual or environmental knowledge, and Ci
+
+represents the task and physical constraints. The indicator function I(·) equals 1 when the generated output is unsupported by the available knowledge or violates the specified constraints, and 0 otherwise. By combining Self-RAG with physical simulation feedback, MEAN can quantify the alignment between the reasoning chain and physical laws, triggering necessary fault-tolerance or retransmission mechanisms at the execution end [92], [103]. V. T ASK -DRIVEN DEPLOYMENT OF MEAN BASED ON 
+
+LARGE AI M ODEL 
+
+The fundamental motivation for deploying Large AI Model (LAM) on MEAN stems from the dual requirements of em-bodied intelligence tasks: real-time closed-loop control and high-dimensional semantic understanding. In traditional cloud-based inference paradigms, raw sensory data must traverse a complete uplink transmission path to be processed in the cloud, after which control commands are sent back down to the device. This process incurs end-to-end latency typically ranging from hundreds of milliseconds to several seconds, a delay that fails to meet the stringent real-time demands of mobile embodied agents performing tasks such as obstacle avoidance or grasping control. Concurrently, complex em-bodied manipulation scenarios require LAM to perform joint reasoning over multi-modal data (visual, linguistic, tactile, etc.), imposing computational loads that frequently exceed the capacity of a single chip on a mobile terminal. Consequently, MEAN must seek a novel deployment paradigm that balances model capability against device constraints, which avoids sacrificing real-time performance by placing LAM entirely in the cloud, while also circumventing the computational and power limitations of deploying them wholly on the edge [104], [105]. However, deploying LAM in MEAN scenarios requires careful consideration of the following issues: the design of the deployment architecture, token-based communication mecha-nisms between nodes, the capability for real-time inference execution, and continuous deployment optimization in dy-namic environments. Specifically, the deployment architecture determines the specific LAM deployment pattern in the cloud-edge-device system. Token-based communication mechanisms enable efficient information flow of tokens as the fundamental unit between different nodes to meet the requirements of real-time tasks. Real-time inference execution ensures that LAM 19 Cloud          
+
+> Edge
+> Device
+> Environmental Data Collection Action Execution
+> Sensing
+> Control
+> System State /
+> Sensing Token Control Token Communication
+> Communication Global Policy Token
+> Task Status Token
+> Cloud LAM
+> Local Policy Network
+> Environmental Information Coarse Action
+> Control Token
+> Lightweight Model
+> System State /
+> Sensing Token
+> Complex Task
+> Global Coordination
+> Task Status Token Global Policy Token
+> Tasks •Multi-target Real-time Tracking
+> •Environmental Detection and Mapping
+> •High-precision control
+> Physical Environment
+> Deep Layer
+> Shallow Layer
+> Intermediate Feature
+> Deep Semantic Understanding
+> Computing
+> Computing
+> Computing
+> Intermediate Action
+
+Fig. 12: Cloud-edge-device deployment architectures for tokenized LAM. 
+
+execution satisfies the time budgets of real-world multi-agent task execution. Continuous deployment optimization allows the system to adaptively adjust as environments and resource states evolve. 
+
+A. Cloud-Edge-Device and Multi-Agent Deployment Architec-tures 
+
+Deploying LAM in MEAN scenarios requires careful con-sideration of the deployment architecture. Currently, there are two mainstream cloud-edge-device collaborative deployment architectures. The first is the large-small model collaboration architecture, which deploys lightweight small models on the edge device to handle routine tasks, while the cloud-based large model serves as an enhanced processor for complex samples. The second is the model partitioning collaboration architecture, which partitions LAM hierarchically, deploying shallow layers on the edge/device and deep layers on the cloud, transmitting intermediate activations rather than raw data between nodes. As shown in Fig. 12. However, the above architectures are primarily designed for general edge computing scenarios and face new challenges when directly migrated to MEAN. The core characteristics of MEAN lie in the continuous movement of agents leading to dynamic network topology changes, rigid constraints on infer-ence latency imposed by physical closed-loop control, and the deep integration of communication, perception, computation, and control. These characteristics require specially designed deployment architectures for LAM in MEAN. 
+
+1) Large-Small Model Collaboration Architecture: Cloud-based large models are mainly responsible for complex reasoning, planning, and knowledge-intensive tasks, where broad generalization, deep semantic understanding, and cross-domain knowledge are essential. Edge-based small models, by contrast, handle rapid processing of routine requests, precise computation, and pre-processing near the data source, offering low-latency responses, personalization, and local data process-ing. This complementary division of labor is the foundation of large-small model collaboration: rather than forcing a single model to satisfy all requirements, the system assigns each part of the workload to the tier best suited for it. Through collaborative inference and training, the two tiers achieve dynamic task allocation, task partitioning, and result fusion under the premise of preserving data locality. A typical allocation mechanism uses the small model as the primary processor for routine requests and triggers a cloud-based large model call when the small model’s output confidence falls be-low a preset threshold. For task partitioning, a single task can be decomposed into subtasks, with the small model handling precise computation or pre-processing and the large model handling complex reasoning and planning. Hybrid mechanisms further integrate task-level and token-level collaboration —for example, speculative decoding in which the small model rapidly generates drafts and the large model verifies them in parallel, optionally combined with retrieval-augmented gener-ation to enhance the small model’s domain knowledge cover-age. These mechanisms enable efficient, scalable, and reliable intelligent services in heterogeneous, resource-constrained en-vironments while preserving data locality [106], [107]. 
+
+2) Model Partitioning and Distributed Inference: The core idea of the model partitioning collaboration architecture is to partition LAM hierarchically or by components, deploying shallow layers on the edge or device tier and deep layers on the cloud tier, transmitting intermediate activations rather than raw data between nodes. Its design motivation lies in the fact that the parameter count of a complete LAM far exceeds the capacity of a single device, yet its computational 20 
+
+graph contains natural partition points —shallow layers are responsible for general feature extraction, while deep layers handle semantic understanding and action generation. Under this architecture, the most critical problem to be solved in the deployment architecture is the selection of the partition point. The partition point determines the trade off between computational load on edge nodes and the volume of data to be transmitted, which can be dynamically adjusted by sensing wireless channel conditions in real time by offloading more computation to the cloud when channel quality is good, and migrating computation to the edge when channel quality deteriorates [108]. Furthermore, the partition granularity can be refined from the layer level to the attention head level or even the token level to accommodate the heterogeneous computational requirements of different tasks [109]. 
+
+3) MEAN-specific Deployment Requirements: The MEAN scenario possesses unique characteristics that distinguish it from general edge computing, imposing additional constraints and design considerations on deployment architectures. In MEAN, agents continuously move within physical space, causing the connectivity topology between agents and edge nodes to change dynamically over time. An agent may move from the coverage area of one edge node to another, or even enter regions with poor network coverage. This re-quires the deployment architecture to possess service instance following migration capability. When an agent’s attachment node changes, its ongoing LAM inference tasks need to be smoothly migrated to the new node. Unlike traditional session migration, the state of LAM inference tasks is more complex and information such as the historical tokens cached in the KV cache profoundly affects inference continuity. How to achieve low-overhead following migration while ensuring inference continuity is a core problem that MEAN deployment architectures must address. Meanwhile, the inference results of LAM directly drive physical actuators, and the control latency requirements are typically rigid and non-violable. In general edge comput-ing, latency exceeding expectations merely affects quality of service; in MEAN, however, latency violations may lead to missing control commands, thereby causing physical safety incidents such as collisions. Therefore, the deployment archi-tecture must guarantee worst-case time predictability, rather than merely pursuing minimization of average latency. This means that the selection of partition points and resource allocation strategies must be optimized based on latency upper bounds rather than average values. 
+
+B. Cross-Node Communication Mechanisms for Distributed LAM Inference 
+
+In MEAN, the deployment of LAM does not place the entire model on a single node, but rather distributes its computational and inference tasks across cloud, edge, and device tiers for collaborative execution. This distributed deployment paradigm makes communication an inherent part of the inference process itself, where the data flow between nodes directly determines the efficiency and quality of LAM inference, which demand efficient and reliable communication mechanisms. The deployment environment of MEAN endows its com-munication process with several distinctive characteristics: communication resources exhibit significant heterogeneity and dynamic variation across different nodes [110], the inference-control closed loop imposes rigid constraints on communi-cation latency, and meanwhile, transmitted content naturally contains differences in importance and semantic redundancy, enabling selective transmission [111]. These characteristics collectively shape the design principles of cross-node com-munication for distributed inference. The left half of Fig. 13 illustrates selected communication mechanisms for LAM de-ployment in MEAN. 
+
+1) Node-aware Adaptive Transmission: Nodes in MEAN that ranging from lightweight mobile terminals to high-performance edge servers —exhibit significant differences in communication capabilities, and the mobility of agents further exacerbates the dynamic fluctuations of wireless link quality. When distributed inference tasks need to be collaboratively completed across such heterogeneous and dynamic networks, fixed communication protocols cannot adapt. Addressing this problem requires establishing a node-aware adaptive transmission protocol. When the deployment architec-ture supports both independent and collaborative execution of computational tasks, the system can continuously monitor real-time channel quality, available bandwidth, and other statuses between nodes, and dynamically adjust cross-node commu-nication strategies accordingly. When channel conditions are favorable, the system can offload more computation to the cloud to reduce the load on local computing resources [112]. When channel quality degrades, agents can adjust their com-putation nodes in real time, migrating computational tasks that would otherwise require transmission over low-quality links to closer nodes, or switch to local computation to execute tasks independently and reduce reliance on remote communication. 
+
+2) Deployment-Mode-Oriented Data Flows and Communi-cation Requirements: In mobile network environments, the deterioration of wireless link quality is hardly avoidable, while bandwidth fluctuation, packet loss, and delay jitter directly cause increased inference latency or loss of critical data. More importantly, the data flows generated under different deployment modes differ significantly in type and role, and treating them uniformly would waste scarce bandwidth and potentially undermine real-time performance. Therefore, these data flows must first be explicitly distinguished. In large-small model collaboration, nodes mainly exchange task requests, context, and inference results, while in model partition deploy-ment, intermediate activations at the partition point must be transmitted across nodes, and in service migration scenarios, model parameters, KV caches, and request execution states may need to be transferred. These data flows differ fundamentally in their commu-nication requirements: task requests and context determine whether inference can be correctly initiated, inference results and intermediate activations affect inference continuity and the stability of the control loop, while model parameters and execution states place greater emphasis on consistency and integrity during migration. Consequently, the MEAN deployment architecture needs to design transmission and 21 Communication Mechanism  Real-Time Inference 
+
+> Sensing Token
+> Control Token
+> State Token
+
+# …    
+
+> Importance Eval
+> Token Pruning
+> High P riority
+> Low P riority
+> •Channel Status
+> •Bandwidth
+> •Task Priority
+> …
+> Transmission Strategy
+
+Other 
+
+Nodes   
+
+> •Dynamic Token Pruning
+> •Adaptive Precision Scaling
+> Latency Constraint
+> Token Optimization
+
+## ... 
+
+LAM Control Tokens  
+
+> General Data Tokens In-Time Timeout
+> Fallback
+> Action
+> Pending Action
+> Output
+> Action
+
+Fig. 13: Communication and inference mechanisms for LAM deployment in MEAN. 
+
+scheduling schemes tailored to different types of data flows. For example, prioritizing critical requests and results, com-pressing or selectively transmitting intermediate activations as needed, and ensuring consistency and recovery ability for migration states. The goal is to maintain stable operation of the inference-control closed loop with minimal semantic loss under constrained network conditions, while preserving reliable task execution even when bandwidth fluctuates. 
+
+3) Cross-Node Transfer of Model and Inference States: 
+
+During distributed inference, the intermediate states that LAM relies upon across its layers and attention mechanisms, such as KV cache tensors and session contexts, often need to dynami-cally flow across different nodes as inference progresses. When a node becomes overloaded or link quality changes abruptly, the inference states originally handled by one node may need to be transferred to another node for continued processing. The core objective of model and inference state migration is to ensure consistent transfer of parameters and states between old and new nodes while guaranteeing service continuity. This includes the migration of model parameters, the migration of inference states, and the assurance of service continuity. It requires the inference process to record critical intermediate states and adopt appropriate compression strategies for both model and state parameters to reduce migration overhead. Meanwhile, during migration execution, predictions of node resource fluctuations can be leveraged to proactively migrate model inference tasks and necessary state data to the target node, thereby minimizing switching latency and ensuring service continuity [113], providing critical support for the long-term stable deployment of large action models. 
+
+C. Real-Time Inference and Resource-Constrained Execution of LAM 
+
+After deploying LAM across the cloud-edge-device nodes of MEAN, the execution efficiency during the inference phase directly determines whether the system can meet the real-time constraints of the physical world. More critically, LAM infer-ence is not an isolated computational process but is embedded within a physical closed loop, which means that the action output by inference must reach the actuator within a strict time budget, otherwise the agent’s state will have already changed, rendering the inference result invalid. Therefore, real-time inference mechanisms for deployment scenarios need to maxi-mize the role of key information and reduce redundancy during reasoning, while fully considering the computing constraints of edge devices and adopting timeout handling strategies to sustain system operation when latency requirements cannot be met. The right half of Fig. 13 presents selected inference mechanisms for LAM deployment in MEAN. 
+
+1) Early Exit Mechanisms and Adaptive Depth Pruning: 
+
+Early exit mechanisms place lightweight classifiers between LAM layers, each producing an action prediction and a confi-dence level from the current hidden state. When the confidence at an intermediate layer exceeds a preset threshold, inference terminates early at that layer and outputs the action directly, avoiding full forward propagation for every input. This mechanism is suitable when the required inference depth varies with input complexity: simple commands in open environments may need only the first few layers, whereas precise navigation through dense obstacles still requires full forward propagation. Adaptive thresholds can further adjust exit aggressiveness according to task criticality and available time budget, lowering confidence requirements under high load or tight real-time constraints in exchange for faster response. The key risk arises from the joint design of thresholds and inter-layer classifiers: if the threshold is set too low or confi-dence estimates are unreliable, complex or critical inputs may exit early before sufficient information is available, leading to incorrect actions. The resulting speedup must therefore be balanced against inference correctness. 
+
+2) Dynamic Token Pruning and Adaptive Precision Scaling: 
+
+Different MEAN nodes —ranging from lightweight mobile robots to high-performance edge servers —exhibit orders of magnitude differences in computational capability. Deploying the same LAM across heterogeneous nodes requires a trade-off between inference accuracy and execution efficiency. The 22 
+
+strategy of deploying multiple model variants of different sizes directly lacks flexibility and cannot adapt to dynamic changes in runtime resource states. The core approach is to introduce runtime dynamic adjust-ment mechanisms that enable LAM to adapt to the capability constraints of different nodes and the demand of different tasks. And during inference, tokens that contribute little to the final output are dynamically discarded based on their attention scores or information entropy. Discarded tokens no longer participate in the computation of subsequent layers, thereby reducing sequence length and computational load [114], [115]. The pruning ratio can be dynamically adjusted according to the current load state of the node —the higher the load, the more aggressive the pruning. Complementing this reduction in token count, adaptive precision scaling assigns different numerical precision lev-els to different layers or tokens. Critical tokens or shallow embeddings maintain high precision (e.g., FP16), while non-critical tokens or deep features can be downgraded to low precision (e.g., INT4). The precision assignment scheme can be dynamically generated by a lightweight runtime analysis module that monitors the activation value distribution and numerical sensitivity of each layer, recommending the optimal precision configuration for each layer [116]. 
+
+3) Inference Timeout Handling: The uncertainty of LAM inference, including varying sequence length and fluctuating network conditions leads to significant jitter in inference latency for each execution. However, the physical control loop typically requires stability in the output action frequency, which can be disrupted by latency fluctuations. More critically, when a particular inference instance severely exceeds its time budget, the agent may completely lose control input [117], directly threatening operational safety. Therefore, a timeout handling mechanism must be established: when LAM inference cannot complete within the current control cycle, the system should not wait but should immediately switch to an alternative action source, ensuring that the actuator always receives valid control signals. The core of the timeout handling mechanism lies in fully utilizing local computational resources and available data to achieve effective control relaying, rather than simply stopping actions or pausing the task. The fallback strategy for timeout handling can adopt dif-ferent sources depending on the underlying deployment ar-chitecture. Under model partitioning or full deployment ar-chitectures, the intermediate layers of LAM already contain coarse-grained action predictions, when remaining time is insufficient, the best available intermediate layer output can be extracted as an emergency action, offering the advantages of strong semantic consistency and no need for additional backup model maintenance. Under the large-small model collaboration architecture, where the intermediate layer states of the cloud-based LAM are unreachable, a lightweight policy network pre-deployed on the agent’s local device is required, which gener-ates emergency actions with extremely low inference latency. The two strategies can be flexibly combined or independently selected based on the actual deployment architecture. 
+
+D. Adaptive Coordination and Continuous Evolution of LAM 
+
+After the initial deployment of LAM in MEAN, the system does not enter a static and unchanging operational state. The environment in which mobile embodied agents operate evolves continuously —surrounding objects keep changing, task objectives are constantly updated —while the system’s own resource status also fluctuates dynamically, including variations in wireless channel quality and fluctuations in edge node loads. A static deployment scheme and fixed-parameter LAM model cannot adapt to such dynamic changes. Therefore, an adaptive and continuous evolution mechanism must be established, enabling deployment strategies, model parameters, and interaction semantics to co-evolve with changes in both the environment and system state [118]. 
+
+1) Dynamic Optimization of Deployment Strategy and Ar-chitecture: The initial deployment scheme is configured based on the system state at task startup, but this state changes continuously over long-term operation. Individual edge nodes may become gradually overloaded due to an increasing number of agents being served, or an agent may enter an area with poor network coverage, degrading the connection quality to its edge node. If the deployment scheme remains unchanged, the originally optimal node allocation will evolve into aperformance bottleneck. The core approach to addressing this problem lies in estab-lishing an online reconfiguration mechanism for deployment strategies [119], [120]. This mechanism continuously monitors the resource status of each node, including computational load, available memory, network round-trip latency, and battery level —along with task-level performance metrics such as end-to-end inference latency and token throughput. According to the intensity of environmental changes, when performance deviates from expectations, the system initiates dynamic ad-justments of the deployment scheme, such as reallocating execution nodes for certain LAM layers or redistributing token transmission paths based on current network conditions. This ensures that the adjustment process can track the dynamic changes of both the environment and system state in real time without excessively impacting overall performance. 
+
+2) Online Self-Adaptation of Deployed Models: Beyond deployment strategies, pre-trained model parameters struggle to adapt to continuously changing environments and require dynamic evolution with environmental variations. Mobile em-bodied agents continuously accumulate new experiential data containing critical information about the current environment during task execution. The core of online adaptation for deployed models lies in balancing adaptability and stability: the model must learn from new experiences to improve environmental adaptability while retaining its ability to handle original scenarios, preventing service interruptions or performance fluctuations caused by frequent updates. Mechanisms such as continuous learning [121], [122] or reinforcement learning [32] can achieve rapid environmental adaptation and long-term stable operation of deployed models through lightweight parameter updates and low-latency inference scheduling, thereby ensuring real-time responsiveness while providing sustained performance assur-ance for the real-world deployment of LAM. 23 c
+
+Adaptive Agent Collaboration  Context -aware Memory  Task -driven 
+
+Cross -layer Intelligence 
+
+Global Embodied Perception 
+
+Challenges 
+
+• Dynamic topology 
+
+• Intermittent links 
+
+• Heterogeneous link quality 
+
+• Agent Mobility 
+
+Context -aware 
+
+Collaboration Decision 
+
+Perceive 
+
+Decision 
+
+Coordination 
+
+Evaluation  3) Memory Reasoning 
+
+Physical 
+
+Context Memory 
+
+Network 
+
+Context Memory 
+
+• Scene Semantics 
+
+• Locations 
+
+• Trajectories 
+
+• 3D map 
+
+• Channel state 
+
+• Visibility window 
+
+• Routing 
+
+• Beam & resource 
+
+allocation 
+
+Historical context 
+
+& Current context 
+
+Predict Future 
+
+States 
+
+Task and agent Intent 
+
+(Task semantics, goals, constraints) 
+
+Cross -layer Joint Optimization 
+
+PHY  MAC  Network 
+
+Coordinated Resource Adaption 
+
+Jointly optimize: spectrum, power, 
+
+routing, computation 
+
+Wide -area Observation  Regional Observation  Local Observation  Hierarchical Fusion  Outcome 
+
+> Global Awareness
+> Multi -scale perception
+> World Model
+
+Current Global Context  Task Outcome 
+
+Fig. 14: A unified NTN-enabled MEAN framework 
+
+VI. I NTERPLAY BETWEEN EMERGING TECHNOLOGIES AND MEAN 
+
+A. NTN-Enabled MEAN 
+
+Embodied intelligence applications requiring collaboration beyond terrestrial coverage can benefit from non-terrestrial networks (NTNs), which provide wide-area connectivity and multi-scale observations. However, dynamic topology and intermittent connectivity complicate timely information ex-change and coordinated task execution. Addressing these challenges requires NTN resource management to account for agent states, task requirements, and execution feedback. The NTN-enabled MEAN framework in Fig. 14 addresses the difficulty of supporting timely embodied task execution un-der intermittent connectivity and delayed observations. Global embodied perception must account for variations in spatial resolution and information freshness, as intermittent links and transmission delays can render remote observations outdated before they inform local actions. Context-aware memory sup-ports prediction of environmental changes and future contact opportunities while accounting for uncertainty in stored infor-mation. These predictions guide adaptive agent collaboration by identifying agents whose capabilities meet task require-ments and whose communication opportunities permit the necessary exchanges within task deadlines. Task-driven cross-layer intelligence jointly optimizes agent selection, routing, and computing allocation to improve task performance under communication delay and interruption constraints. Execution feedback guides subsequent adjustments based on observed task outcomes. 
+
+B. World Model Empowered MEAN 
+
+World models enable embodied agents to represent dynamic environments, predict future states, and evaluate candidate actions before execution. In MEAN, these capabilities help mitigate the limitations of partial observability and support coordination under changing wireless conditions. Fig. 15 il-lustrates a four-layer framework in which distributed observa-c          
+
+> Distributed Embodied Obaservation Layer
+> Embodied Agents Multimodal Wireless Data
+> Robots / Vehicles / UAVs / Sensors Vision
+> Connectivity
+> 5G/6G,Wi -Fi,
+> V2X, IoT,...
+> MEAN Networking
+> Network -Aware World Model Layer
+> Embodied Decision
+> Compute & Storage
+> Edge Server, Cloud,
+> Distributed
+> Storage,...
+> Spatiotemporal
+> Alignment
+> Observation fusion,
+> State alignment
+> World -Model
+> Synchronization
+> Shared latent states,
+> model updates
+> Latent World
+> Representation Future -State Prediction Trajectory Evaluation Collaborative Planning
+> Multi -Agent Coordination Action Control Communication &
+> Resource Control
+> Feedback & Model
+> Update
+> ... ...
+> Multimodal observation
+> Aligned observations,
+> network states
+> Decisions
+> Actions to agents
+> Communication,
+> computing demands
+> Execution
+> Feedback
+> Sensors Location Trajectory
+
+Fig. 15: A unified world model empowered MEAN architecture. 24 c
+
+Physical World 
+
+Embodied Agents & Environment     
+
+> UAVs Robots Vehicles Sensors Base
+> Stations
+
+Environment 
+
+Reward Collection 
+
+Action Layer 
+
+Intelligence Layer 
+
+Digital Twin Layer 
+
+> Buildings Roads Pedestrains
+> Traffic
+> Flow
+> Whether
+
+Feedback 
+
+> From
+> Digital Twin
+
+Actuators  Execution in 
+
+Physical World 
+
+Learning Module 
+
+> Reinforcement Learning
+
+Prediction Module 
+
+> World Model & Simulation
+
+Optimization Module 
+
+> Generative AI /
+> Diffusion Model
+
+Decision Making / Policy Generation 
+
+Embodied Agent Twin  Virtual Environment  State Estimation 
+
+> What -if Simulation
+> Outcome Evaluation
+> Decision Validation
+> State Estimation
+> What -if Simulation
+> Outcome Evaluation
+> Decision Validation
+
+Cross -layer Mechanisms  Resource Allocation  
+
+> Perception Twin
+> Planning Twin
+> Control Twin
+> Resource Scheduling & Incentive Alignment
+> Agent Edge Servers
+
+Real -time Synchronization  
+
+> Physical State Digital Twin State
+> High -fidelity / Low -latency Sync
+
+Real -time Synchronization  
+
+> Physical State Digital Twin State
+> High -fidelity / Low -latency Sync
+
+Twin Migration 
+
+> EAT Migration across RSUs
+
+Twin Migration 
+
+> EAT Migration across RSUs
+
+Multimodal 
+
+Data 
+
+Optimal Policy / 
+
+Action 
+
+Real -time 
+
+Sychronization 
+
+Feedback 
+
+Loop 
+
+Onservation 
+
+Reward 
+
+Decision 
+
+> From
+> Physical World
+
+Fig. 16: Digital twin enabled MEAN architecture. 
+
+tions and networked computing resources support world-model construction and updating, while model predictions guide task planning and resource coordination in MEAN. The MEAN networking layer supports distributed world-model construction by sharing observations and coordinating edgecloud processing. Spatiotemporal alignment make ob-servations from different agents comparable, while selective exchange of latent states and model updates helps maintain consistent context with limited communication overhead. The world-model layer learns how the environment and agents evolve in response to actions, with network condi-tions incorporated into its state representation. By simulating candidate action sequences, it estimates their effects on task progress and resource demand. Planning can then account for predicted outcomes and uncertainty before actions are executed. The decision layer translates model predictions into co-ordinated agent actions and resource allocations. Execution feedback enables agents to adjust subsequent decisions, while discrepancies between predicted and observed outcomes guide state correction and model updating. The update frequency and planning horizon must account for communication costs and prediction errors. At the observation layer, embodied agents and sensors collect multimodal information about the environment, tasks, and agent states. 
+
+C. Digital Twin Supported MEAN 
+
+Digital twins maintain virtual representations of embodied systems that are updated to reflect physical changes, support-ing policy testing before real-world execution. Their effective-ness depends on timely updates, which can impose substantial communication and computing costs. Fig. 16 illustrates how MEAN supports these updates and connects virtual policy evaluation with physical execution through the digital twin, intelligence, and action layers. In the physical world, embodied agents and their surround-ings generate multimodal observations that provide the basis for constructing and updating digital twins. The digital twin layer maintains a virtual representation of the embodied system and updates it as the environment and agent behaviors change. Real-time synchronization helps pre-serve consistency between physical and virtual states, but its frequency must balance model fidelity against communication overhead. Twin migration and resource allocation support this process as agents move and computing demands change. The intelligence layer uses the synchronized twins to de-velop and evaluate policies for embodied tasks. Learning and optimization are informed by simulated outcomes and feedback from physical execution. The action layer applies the resulting policies to embodied agents. Execution feedback updates the twins and refines sub-25 Joint ISAC Processing  Multi -Agent Context Fusion  Context -aware 
+
+Environment Representation 
+
+ISAC Resource Co -design   
+
+> Spectrum
+> Allocation Beamforming Waveform Design
+
+Joint Sensing and Communication        
+
+> Environment
+> Sensing
+> Data
+> Communication
+> •Detection
+> •Localization
+> •Tracking
+> •Mapping
+> •Uplink/Downlink
+> •Reliable/Low -
+> latency
+> •Multicast
+> Joint
+> ISAC
+> Space
+
+Learning -driven Optimization 
+
+> RL / GNN / Transformer
+
+Collaborative Information Exchange    
+
+> •Air -ground
+> exchange
+> •Agent -agent
+> exchange
+> •Edge -cloud
+> exchange
+
+Multi -modal Feature Fusion 
+
+Spatiotemporal Alignment 
+
+Unified Representation 
+
+Representation Form 
+
+• BEV / Voxel / Point Cloud 
+
+• Graph / Tensor / Token Sequence 
+
+> Fusion (Attention / Aggregation)
+
+Fig. 17: ISAC-enabled MEAN architecture. 
+
+sequent decisions, closing the loop between virtual evaluation and physical operation. 
+
+D. ISAC Enabled MEAN 
+
+Unlike conventional communication systems, where sensing and communication are designed independently, Integrated sensing and communication (ISAC) allows embodied agents to simultaneously acquire environmental information and ex-change task-related data through shared wireless resources. This capability is particularly important for MEAN, where perception continuously interacts with communication, reason-ing, and control during closed-loop task execution. However, realizing ISAC in MEAN remains challenging due to dynamic environments, heterogeneous sensing modalities, limited wire-less resources, and the need for real-time coordination among distributed embodied agents. Therefore, ISAC should be inte-grated with task-oriented perception, semantic interaction, and adaptive decision-making within a unified MEAN architecture. Fig. 17 illustrates the unified framework of multi-agent context fusion in ISAC-enabled MEAN. Rather than treating sensing observations from different agents independently, the proposed framework enables distributed embodied agents to collaboratively construct a unified contextual understanding of dynamic environments through collaborative information exchange, multi-modal feature fusion, and spatiotemporal alignment. First, distributed embodied agents continuously exchange task-relevant information through heterogeneous communica-tion links, including airground, agentagent, and edgecloud interactions. Instead of transmitting all raw sensing data, only task-oriented observations and contextual information are shared among collaborative agents, significantly reducing communication overhead while extending the perception range beyond individual sensing capabilities. Second, heterogeneous observations collected from multi-ple sensing modalities are integrated through a lightweight multi-modal feature fusion module. Features extracted from different modalities are projected into a common latent space and aggregated through attention-based fusion mechanisms, allowing complementary information from visual, radio, and onboard sensing to be effectively combined into a unified feature representation. Finally, since observations originate from distributed mo-bile agents operating under different viewpoints and sam-pling times, spatiotemporal alignment is performed before they are used for environment understanding. Through the interaction of these three components, the proposed context fusion framework enables MEAN to transform observations into a consistent context-aware environment representation, supporting coordinated decisions. 
+
+E. MEAN for Edge Intelligence 
+
+Resource decisions in conventional edge intelligence pri-marily rely on network conditions and computing workloads, with limited consideration of physical environments and their implications for task execution. Edge intelligence provides MEAN with nearby computing resources and regional coor-dination, while MEAN incorporates embodied observations, task intentions, and execution feedback into edge decisions, c
+
+MEAN -Enabled Embodied Edge Intelligence     
+
+> Embodied Context &
+> Task Grounding
+> Physical
+> Observations
+> Agent States
+> Interactions
+> Task Intent Network States
+> Collaborative
+> Edge Intelligence Joint Orchestration
+> Multi -Agent State Fusion
+> Regional Task Coordination
+> Local
+> Reflex
+> Edge
+> Coordination
+> Cloud
+> Intelligent
+> Task
+> Placement
+> Agent -Edge
+> Association
+> Resource
+> Coordination
+> Service
+> Deployment
+> Physical Execution & Closed -Loop Feedback
+> Agent Actions Task Outcomes Physical -state
+> Changes
+> Network &
+> Workload Feedback
+
+Fig. 18: MEAN-enabled embodied edge intelligence architecture. 26 
+
+enabling computing services and resource allocation to adapt to environmental changes and task objectives. As illustrated in Fig. 18, this interaction is realized through a deviceedgecloud architecture. Embodied agents provide local observations and task states, edge nodes fuse information from multiple agents into a shared representation of the regional en-vironment and tasks, and the cloud supports global knowledge and long-term optimization. Edge-side fusion turns partial observations into a shared understanding of task progress and collaboration requirements, supporting multi-agent coordina-tion. Observations and execution feedback flow upward, while task objectives and coordination policies flow downward, con-necting perception and decision-making across the hierarchy. Based on this shared context, edge nodes jointly adapt task placement, agentedge association, and communication and computing resource allocation according to task dependencies, agent states, and environmental changes. For example, when one agent’s processing result is required for others to proceed, resource allocation must account for its impact on overall task progress. Edge orchestration thus extends its objectives from computing and communication efficiency to embodied task performance. Task outcomes and environmental changes are fed back to edge nodes to update the shared context and refine subsequent orchestration, closing the loop between environmental perception, resource decisions, and physical execution. VII. O PEN PROBLEMS AND FUTURE DIRECTION 
+
+Despite recent advances, existing technologies still lack a unified design and systematic validation framework for end-to-end embodied task execution in MEAN. This section discusses the key open problems and future research directions toward scalable, reliable, and task-oriented closed-loop embodied intelligence.  
+
+> •
+
+Unified theoretical foundations for MEAN: Existing studies often analyze communication, computation, learn-ing, and control separately, lacking a unified theoretical framework for task-oriented embodied intelligence [38], [41], [123]. The key challenge is to establish explicit relationships among network dynamics, semantic infor-mation, physical interaction, and task outcomes, since improvements in individual components do not necessar-ily translate into better closed-loop performance. Future research should develop unified mathematical models and analytical methods that jointly characterize task suc-cess, resource efficiency, stability, and reliability. Such foundations could clarify fundamental performance limits and provide theoretical guidance for cross-layer system optimization.  
+
+> •
+
+Cross-layer co-design under dynamic environments: 
+
+Existing resource management methods often optimize communication, computation, and control independently, making them difficult to adapt to dynamic embodied envi-ronments [18], [38], [124], [125]. The key challenge lies in coordinating heterogeneous resources and task require-ments that evolve across different time scales, where local optimization may compromise overall task performance. Future research should investigate task-aware cross-layer orchestration and adaptive optimization mechanisms that jointly adjust communication, computation, perception, and control policies. Particular attention should be given to maintaining closed-loop responsiveness and stability under mobility, resource fluctuations, and environmental uncertainty.  
+
+> •
+
+Reliable and efficient token-mediated interaction: 
+
+Existing token communication methods lack systematic mechanisms for preserving task-relevant semantics across heterogeneous embodied agents and dynamic wireless links [41]–[43], [46]. The fundamental tradeoff is be-tween communication efficiency and semantic fidelity, since aggressive token compression may discard infor-mation essential for coordination and reliable action ex-ecution. Future research should explore task-aware token generation, adaptive compression, semantic alignment, and context synchronization under bandwidth and reli-ability constraints. Developing interoperable token rep-resentations and error-resilient exchange mechanisms is also essential for maintaining consistent task understand-ing across agents with different sensing modalities and intelligence models.  
+
+> •
+
+Scalable multi-agent coordination and cooperation: 
+
+Existing multi-agent coordination approaches face scal-ability limitations as agent populations, task dependen-cies, and network interactions increase [9], [49], [51], [52]. The central challenge is balancing coordination effectiveness against growing communication overhead, synchronization requirements, and distributed decision-making complexity, particularly under partial observ-ability and dynamic network topology. Future research should investigate hierarchical coordination, distributed task allocation, and communication-efficient collaborative learning to support large-scale embodied systems. Robust mechanisms for role reassignment, local autonomy, and failure recovery are also needed to maintain cooperative task execution when connectivity or agent availability changes.  
+
+> •
+
+Real-time deployment of large AI models in MEAN: 
+
+Existing large-model deployment approaches remain con-strained by substantial computational, memory, and en-ergy requirements, limiting their applicability to real-time embodied systems [40], [45], [46]. The key challenge is balancing reasoning capability against inference latency, communication overhead, and control reliability, since delayed or incorrect model outputs may directly affect physical execution. Future research should investigate lightweight architectures, adaptive inference, device–edge collaboration, and uncertainty-aware execution mecha-nisms to achieve efficient and reliable closed-loop intel-ligence. These approaches must jointly consider model accuracy, resource consumption, and physical task re-quirements rather than optimizing inference performance alone. Fig. 19 illustrates an Agentic AI-RAN prototype in which a UAV interprets a natural-language instruction, detects a target chair, and approaches it through wireless con-27 Step 1: Mission Prompt 
+
+chair 
+
+drone 
+
+> Step 4: Goal Reached
+
+drone 
+
+chair 
+
+> Drone reaches the chair,
+> task complete.
+> Step 2: Target Detection
+
+chair 
+
+drone 
+
+> Drone adjusts orientation, detects the target chair.
+> Step 3: Approach Planning
+
+chair 
+
+drone    
+
+> Drone starts approaching
+> the target.
+> Prompt : Find a chair, and approach it once you detect it.
+
+Fig. 19: Representative prototype example of closed-loop embodied task execution in an Agentic AI-RAN system [126]. 
+
+trol. This example highlights the tight coupling among semantic reasoning, wireless communication, real-time inference, and physical action.  
+
+> •
+
+Safety, robustness, and trustworthiness: Existing ap-proaches provide limited system-level safety guarantees when learning-based decisions, wireless communication, and physical control are tightly coupled [39], [42], [50]. The main challenge is that errors in perception, reason-ing, or communication can propagate through the closed loop, potentially causing unsafe actions or task fail-ures. Moreover, adaptive policies and large-model outputs may introduce additional uncertainty and unpredictable behavior. Future research should develop uncertainty-aware decision-making, runtime safety monitoring, fault-tolerant control, and fallback mechanisms. Integrating formal safety constraints with adaptive intelligence is es-sential for reliable operation under dynamic and uncertain conditions.  
+
+> •
+
+Benchmarking and evaluation methodology: Ex-isting benchmarks primarily evaluate communication, robotics, or AI capabilities separately, lacking standard-ized methodologies for assessing complete MEAN sys-tems [9], [11], [12], [36], [49]. The key challenge is establishing reproducible evaluations that capture inter-actions among network conditions, computational re-sources, intelligent decisions, and physical task outcomes. Improvements in isolated metrics may not reflect actual gains in closed-loop execution. Future research should develop integrated benchmarks and experimental testbeds incorporating realistic wireless dynamics, heterogeneous agents, and multi-agent tasks. Unified evaluation proto-cols should jointly measure task success, latency, resource efficiency, reliability, and safety to enable meaningful system-level comparisons.  
+
+> •
+
+Interoperability and system standardization: Exist-ing embodied intelligence systems employ heteroge-neous hardware, sensing modalities, control interfaces, and communication protocols, limiting interoperability and system integration [37], [38], [82], [127]. The key challenge is enabling consistent task coordination and information exchange across diverse agents, intelligence models, and edge–cloud infrastructures without sacrific-ing platform-specific capabilities. Future research should establish common abstractions for agent capabilities, task descriptions, resource states, and semantic tokens, to-gether with standardized interfaces for cross-layer inter-action. Modular architectures and interoperable protocols will be essential for transforming isolated MEAN proto-types into scalable, reusable, and extensible systems. VIII. C ONCLUSIONS 
+
+This survey shows that supporting mobile embodied agents requires more than adding isolated AI functions to wireless networks. The central challenge is to coordinate communica-tion, intelligence, and physical action around evolving task objectives and execution feedback. Accordingly, RL, token communication, and large AI models should not be viewed as independent technical modules, but as complementary mechanisms that jointly enable adaptive, semantically aligned, and cognitively capable operation. The future development of MEAN therefore calls for system design and evaluation to move beyond individual network or model metrics and focus on the effectiveness of the entire embodied task loop. This task-centered perspective provides a basis for integrat-ing emerging technologies into practical networked embodied intelligence. REFERENCES [1] ITU-R, “IMT Vision – Framework and overall objectives of the future development of IMT for 2020 and beyond,” International Telecommunication Union, Recommendation ITU-R M.2083-0, Sep. 2015. [Online]. Available: https://www.itu.int/rec/R-REC-M.2083-0-201509-I/en [2] ——, “Framework and Overall Objectives of the Future Development of IMT for 2030 and Beyond,” International Telecommunication Union, Geneva, Switzerland, Recommendation ITU-R M.2160-0, Nov. 2023. [Online]. Available: https://www.itu.int/rec/R-REC-M.2160-0-202311-I/en [3] W. Saad, M. Bennis, and M. Chen, “A vision of 6g wireless systems: Applications, trends, technologies, and open research problems,” IEEE network , vol. 34, no. 3, pp. 134–142, 2019. [4] H. Tataria, M. Shafi, A. F. Molisch, M. Dohler, H. Sj¨ oland, and F. Tufvesson, “6g wireless systems: Vision, requirements, challenges, insights, and opportunities,” Proceedings of the IEEE , vol. 109, no. 7, pp. 1166–1199, 2021. [5] M. Giordani, M. Polese, M. Mezzavilla, S. Rangan, and M. Zorzi, “To-ward 6g networks: Use cases and technologies,” IEEE communications magazine , vol. 58, no. 3, pp. 55–61, 2020. [6] S. Dang, O. Amin, B. Shihada, and M.-S. Alouini, “What should 6g be?” Nature Electronics , vol. 3, no. 1, pp. 20–29, 2020. 28 
+
+[7] M. Mozaffari, W. Saad, M. Bennis, Y.-H. Nam, and M. Debbah, “A tutorial on uavs for wireless networks: Applications, challenges, and open problems,” IEEE communications surveys & tutorials , vol. 21, no. 3, pp. 2334–2360, 2019. [8] L. Cai, J. Wang, R. Zhang, Y. Zhang, T. Jiang, D. Niyato, X. Wang, A. Jamalipour, and X. Shen, “Secure physical layer communications for low-altitude economy networking: A survey,” IEEE Communications Surveys & Tutorials , 2025. [9] M. Savva, A. Kadian, O. Maksymets, Y. Zhao, E. Wijmans, B. Jain, J. Straub, J. Liu, V. Koltun, J. Malik et al. , “Habitat: A platform for embodied ai research,” in Proceedings of the IEEE/CVF international conference on computer vision , 2019, pp. 9339–9347. [10] E. Kolve, R. Mottaghi, W. Han, E. VanderBilt, L. Weihs, A. Herrasti, M. Deitke, K. Ehsani, D. Gordon, Y. Zhu et al. , “Ai2-thor: An inter-active 3d environment for visual ai,” arXiv preprint arXiv:1712.05474 ,2017. [11] M. Shridhar, X. Yuan, M.-A. Cˆ ot´ e, Y. Bisk, A. Trischler, and M. Hausknecht, “Alfworld: Aligning text and embodied environments for interactive learning,” arXiv preprint arXiv:2010.03768 , 2020. [12] S. Srivastava, C. Li, M. Lingelbach, R. Mart´ ın-Mart´ ın, F. Xia, K. E. Vainio, Z. Lian, C. Gokmen, S. Buch, K. Liu et al. , “Behavior: Benchmark for everyday household activities in virtual, interactive, and ecological environments,” in Conference on robot learning . PMLR, 2022, pp. 477–490. [13] D. Driess, F. Xia, M. S. Sajjadi, C. Lynch, A. Chowdhery, B. Ichter, A. Wahid, J. Tompson, Q. Vuong, T. Yu et al. , “Palm-e: An embodied multimodal language model,” arXiv preprint arXiv:2303.03378 , 2023. [14] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid et al. , “Rt-2: Vision-language-action models transfer web knowledge to robotic control,” in Conference on Robot Learning . PMLR, 2023, pp. 2165–2183. [15] A. O ’Neill, A. Rehman, A. Maddukuri, A. Gupta, A. Padalkar, A. Lee, A. Pooley, A. Gupta, A. Mandlekar, A. Jain et al. , “Open x-embodiment: Robotic learning datasets and rt-x models: Open x-embodiment collaboration 0,” in 2024 IEEE International Conference on Robotics and Automation (ICRA) . IEEE, 2024, pp. 6892–6903. [16] A. Liu, Z. Huang, M. Li, Y. Wan, W. Li, T. X. Han, C. Liu, R. Du, D. K. P. Tan, J. Lu et al. , “A survey on fundamental limits of integrated sensing and communication,” IEEE Communications Surveys & Tutorials , vol. 24, no. 2, pp. 994–1034, 2022. [17] D. Wen, Y. Zhou, X. Li, Y. Shi, K. Huang, and K. B. Letaief, “A survey on integrated sensing, communication, and computation,” IEEE Communications Surveys & Tutorials , 2024. [18] P. Mach and Z. Becvar, “Mobile edge computing: A survey on archi-tecture and computation offloading,” IEEE communications surveys & tutorials , vol. 19, no. 3, pp. 1628–1656, 2017. [19] P. Porambage, J. Okwuibe, M. Liyanage, M. Ylianttila, and T. Taleb, “Survey on multi-access edge computing for internet of things realiza-tion,” IEEE Communications Surveys & Tutorials , vol. 20, no. 4, pp. 2961–2991, 2018. [20] J. Park, S. Samarakoon, M. Bennis, and M. Debbah, “Wireless network intelligence at the edge.” Proc. Ieee , vol. 107, no. 11, pp. 2204–2239, 2019. [21] M. Polese, L. Bonati, S. D’oro, S. Basagni, and T. Melodia, “Understanding o-ran: Architecture, interfaces, algorithms, security, and research challenges,” IEEE Communications Surveys & Tutorials ,vol. 25, no. 2, pp. 1376–1411, 2023. [22] D. G¨ und¨ uz, Z. Qin, I. E. Aguerri, H. S. Dhillon, Z. Yang, A. Yener, K. K. Wong, and C.-B. Chae, “Beyond transmitting bits: Context, se-mantics, and task-oriented communications,” IEEE Journal on Selected Areas in Communications , vol. 41, no. 1, pp. 5–41, 2022. [23] J. Garcıa and F. Fern´ andez, “A comprehensive survey on safe rein-forcement learning,” Journal of Machine Learning Research , vol. 16, no. 1, pp. 1437–1480, 2015. [24] W. Xu, Z. Yang, D. W. K. Ng, M. Levorato, Y. C. Eldar, and M. Debbah, “Edge learning for b5g networks with distributed signal processing: Semantic communication, edge computing, and wireless sensing,” IEEE journal of selected topics in signal processing , vol. 17, no. 1, pp. 9–39, 2023. [25] S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan, and Y. Cao, “React: Synergizing reasoning and acting in language models,” arXiv preprint arXiv:2210.03629 , 2022. [26] T. Schick, J. Dwivedi-Yu, R. Dess` ı, R. Raileanu, M. Lomeli, E. Ham-bro, L. Zettlemoyer, N. Cancedda, and T. Scialom, “Toolformer: Language models can teach themselves to use tools,” Advances in neural information processing systems , vol. 36, pp. 68 539–68 551, 2023. [27] W. Yang, H. Du, Z. Q. Liew, W. Y. B. Lim, Z. Xiong, D. Niyato, X. Chi, X. Shen, and C. Miao, “Semantic communications for future internet: Fundamentals, applications, and challenges,” IEEE Communications Surveys & Tutorials , vol. 25, no. 1, pp. 213–250, 2022. [28] Z. Lu, R. Li, K. Lu, X. Chen, E. Hossain, Z. Zhao, and H. Zhang, “Semantics-empowered communications: A tutorial-cum-survey,” IEEE Communications Surveys & Tutorials , vol. 26, no. 1, pp. 41–79, 2023. [29] Y. Liu, X. Wang, Z. Ning, M. Zhou, L. Guo, and B. Jedari, “A survey on semantic communications: Technologies, solutions, applications and challenges,” Digital Communications and Networks , vol. 10, no. 3, pp. 528–545, 2024. [30] R. S. Sutton, A. G. Barto et al. , Reinforcement learning: An introduc-tion . MIT press Cambridge, 1998, vol. 1, no. 1. [31] V. Mnih, K. Kavukcuoglu, D. Silver, A. A. Rusu, J. Veness, M. G. Bellemare, A. Graves, M. Riedmiller, A. K. Fidjeland, G. Ostrovski 
+
+et al. , “Human-level control through deep reinforcement learning,” 
+
+nature , vol. 518, no. 7540, pp. 529–533, 2015. [32] N. C. Luong, D. T. Hoang, S. Gong, D. Niyato, P. Wang, Y.-C. Liang, and D. I. Kim, “Applications of deep reinforcement learning in communications and networking: A survey,” IEEE communications surveys & tutorials , vol. 21, no. 4, pp. 3133–3174, 2019. [33] A. Feriani and E. Hossain, “Single and multi-agent deep reinforcement learning for ai-enabled wireless networks: A tutorial,” IEEE Commu-nications Surveys & Tutorials , vol. 23, no. 2, pp. 1226–1252, 2021. [34] P. Hernandez-Leal, B. Kartal, and M. E. Taylor, “A survey and critique of multiagent deep reinforcement learning,” Autonomous Agents and Multi-Agent Systems , vol. 33, no. 6, pp. 750–797, 2019. [35] N. A. K. Khani and S. Schmid, “AI-RAN in 6g networks: State-of-the-art and challenges,” IEEE Open Journal of the Communications Society , vol. 5, pp. 294–311, 2024. [36] E. Kolve, R. Mottaghi, W. Han, E. VanderBilt, L. Weihs, A. Herrasti, M. Deitke, K. Ehsani, D. Gordon, Y. Zhu et al. , “Ai2-thor: An inter-active 3d environment for visual ai,” arXiv preprint arXiv:1712.05474 ,2017. [37] F. Liu, G. Tang, Y. Li, Z. Cai, X. Zhang, and T. Zhou, “A survey on edge computing systems and tools,” Proceedings of the IEEE , vol. 107, no. 8, pp. 1537–1562, 2019. [38] D. Wen, Y. Zhou, X. Li, Y. Shi, K. Huang, and K. B. Letaief, “A survey on integrated sensing, communication, and computation,” 2024. [39] M. Ahn, A. Brohan, N. Brown et al. , “Do as i can, not as i say: Grounding language in robotic affordances,” in Proceedings of the 6th Conference on Robot Learning , ser. Proceedings of Machine Learning Research, vol. 205. PMLR, 2023, pp. 287–318. [40] D. Driess, F. Xia, M. S. M. Sajjadi et al. , “PaLM-E: An embodied multimodal language model,” in Proceedings of the 40th International Conference on Machine Learning , ser. Proceedings of Machine Learn-ing Research, vol. 202. PMLR, 2023, pp. 8469–8488. [41] W. Yang, H. Du, Z. Q. Liew, W. Y. B. Lim, Z. Xiong, D. Niyato, X. Chi, X. Shen, and C. Miao, “Semantic communications for future internet: Fundamentals, applications, and challenges,” IEEE Communications Surveys & Tutorials , vol. 25, no. 1, pp. 213–250, 2023. [42] Z. Lu, R. Li, K. Lu, X. Chen, E. Hossain, Z. Zhao, and H. Zhang, “Semantics-empowered communications: A tutorial-cum-survey,” IEEE Communications Surveys & Tutorials , vol. 26, no. 1, pp. 41–79, 2024. [43] Y. Liu, X. Wang, Z. Ning, M. C. Zhou, L. Guo, and B. Jedari, “A survey on semantic communications: Technologies, solutions, applications and challenges,” Digital Communications and Networks , vol. 10, no. 3, pp. 528–545, 2024. [44] S. E. Trevlakis, N. Pappas, and A.-A. A. Boulogeorgos, “Toward natively intelligent semantic communications and networking,” IEEE Open Journal of the Communications Society , vol. 5, pp. 1486–1503, 2024. [45] Y. Kim, D. Kim, J. Choi, J. Park, N. Oh, and D. Park, “A survey on integration of large language models with intelligent robots,” Intelligent Service Robotics , 2024. [46] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid, Q. Vuong, V. Vanhoucke, H. Tran, R. Soricut, A. Singh, J. Singh, P. Sermanet et al. , “RT-2: Vision-language-action models transfer web knowledge to robotic control,” in Proceedings of the 7th Conference on Robot Learning , ser. Proceedings of Machine Learning Research, vol. 229. PMLR, 2023, pp. 2165–2183. [47] W. Kwon, Z. Li, S. Zhuang, Y. Sheng, L. Zheng, C. H. Yu, J. E. Gonzalez, H. Zhang, and I. Stoica, “Efficient memory management for large language model serving with pagedattention,” arXiv preprint arXiv:2309.06180 , 2023. 29 
+
+[48] Y. Zhong, S. Liu, J. Chen, J. Hu, Y. Zhu, X. Liu, X. Jin, and H. Zhang, “Distserve: Disaggregating prefill and decoding for goodput-optimized large language model serving,” in 18th USENIX Symposium on Operating Systems Design and Implementation (OSDI) , 2024. [49] R. Yang, H. Chen, J. Zhang, M. Zhao, C. Qian, K. Wang, Q. Wang, T. V. Koripella, M. Movahedi, M. Li et al. , “Embodiedbench: Compre-hensive benchmarking multi-modal large language models for vision-driven embodied agents,” arXiv preprint arXiv:2502.09560 , 2025. [50] J. Garcıa and F. Fern´ andez, “A comprehensive survey on safe rein-forcement learning,” Journal of Machine Learning Research , vol. 16, no. 1, pp. 1437–1480, 2015. [51] L. Busoniu, R. Babuska, and B. De Schutter, “A comprehensive survey of multiagent reinforcement learning,” IEEE Transactions on Systems, Man, and Cybernetics, Part C (Applications and Reviews) , vol. 38, no. 2, pp. 156–172, 2008. [52] Z. Ning and L. Xie, “A survey on multi-agent reinforcement learning and its application,” Journal of Automation and Intelligence , vol. 3, no. 2, pp. 73–91, 2024. [53] Y. Bai, H. Zhao, X. Zhang, Z. Chang, R. J¨ antti, and K. Yang, “Toward autonomous multi-uav wireless network: A survey of reinforcement learning-based approaches,” IEEE Communications Surveys & Tutori-als , vol. 25, no. 4, pp. 3038–3067, 2023. [54] M. Zangooei, N. Saha, M. Golkarifard, and R. Boutaba, “Reinforce-ment learning for radio resource management in ran slicing: A survey,” 
+
+IEEE Communications Magazine , vol. 61, no. 2, pp. 118–124, 2023. [55] E. Altman, Constrained Markov decision processes . Routledge, 2021. [56] M. Tang and V. W. Wong, “Deep reinforcement learning for task offloading in mobile edge computing systems,” IEEE transactions on mobile computing , vol. 21, no. 6, pp. 1985–1997, 2020. [57] P. Dayan and G. E. Hinton, “Feudal reinforcement learning,” Advances in neural information processing systems , vol. 5, 1992. [58] W. Zhao, T. He, R. Chen, T. Wei, and C. Liu, “State-wise safe reinforcement learning: A survey,” arXiv preprint arXiv:2302.03122 ,2023. [59] L. P. Kaelbling, M. L. Littman, and A. R. Cassandra, “Planning and act-ing in partially observable stochastic domains,” Artificial intelligence ,vol. 101, no. 1-2, pp. 99–134, 1998. [60] A. Oroojlooy and D. Hajinezhad, “A review of cooperative multi-agent deep reinforcement learning,” Applied Intelligence , vol. 53, no. 11, pp. 13 677–13 722, 2023. [61] D. Zheng, J. Yan, T. Xue, and Y. Liu, “A knowledge-based task planning approach for robot multi-task manipulation,” Complex & Intelligent Systems , vol. 10, no. 1, pp. 193–206, 2024. [62] M. Tenorth and M. Beetz, “Knowrob: A knowledge processing infras-tructure for cognition-enabled robots,” The International Journal of Robotics Research , vol. 32, no. 5, pp. 566–590, 2013. [63] W. Fan, “Hybrid deep reinforcement learning-based task offloading for d2d-assisted cloud-edge-device collaborative networks,” IEEE Transac-tions on Mobile Computing , vol. 23, no. 12, pp. 13 455–13 471, 2024. [64] C. Zhu, M. Dastani, and S. Wang, “A survey of multi-agent deep reinforcement learning with communication,” Autonomous Agents and Multi-Agent Systems , vol. 38, no. 1, p. 4, 2024. [65] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning of deep networks from decentral-ized data,” in Artificial intelligence and statistics . Pmlr, 2017, pp. 1273–1282. [66] Y.-C. Liu, J. Tian, N. Glaser, and Z. Kira, “When2com: Multi-agent perception via communication graph grouping,” in Proceedings of the IEEE/CVF Conference on computer vision and pattern recognition ,2020, pp. 4106–4115. [67] Y. Kang, J. Hauswald, C. Gao, A. Rovinski, T. Mudge, J. Mars, and L. Tang, “Neurosurgeon: Collaborative intelligence between the cloud and mobile edge,” ACM SIGARCH Computer Architecture News ,vol. 45, no. 1, pp. 615–629, 2017. [68] E. Samikwa, A. Di Maio, and T. Braun, “Ares: Adaptive resource-aware split learning for internet of things,” Computer Networks , vol. 218, p. 109380, 2022. [69] Z. Lin, G. Zhu, Y. Deng, X. Chen, Y. Gao, K. Huang, and Y. Fang, “Efficient parallel split learning over resource-constrained wireless edge networks,” IEEE Transactions on Mobile Computing , vol. 23, no. 10, pp. 9224–9239, 2024. [70] Z. Li, W. Wu, S. Wu, and W. Wang, “Adaptive split learning over energy-constrained wireless edge networks,” in IEEE INFOCOM 2024-IEEE Conference on Computer Communications Workshops (INFO-COM WKSHPS) . IEEE, 2024, pp. 1–6. [71] T. Nishio and R. Yonetani, “Client selection for federated learning with heterogeneous resources in mobile edge,” in ICC 2019-2019 IEEE international conference on communications (ICC) . IEEE, 2019, pp. 1–7. [72] S. Q. Zhang, J. Lin, and Q. Zhang, “A multi-agent reinforcement learning approach for efficient client selection in federated learning,” in 
+
+Proceedings of the AAAI conference on artificial intelligence , vol. 36, no. 8, 2022, pp. 9091–9099. [73] T. Zhang, K.-Y. Lam, J. Zhao, and J. Feng, “Joint device scheduling and bandwidth allocation for federated learning over wireless networks,” 
+
+IEEE Transactions on Wireless Communications , vol. 24, no. 1, pp. 3–18, 2023. [74] D. Chen, Q. Dong, Q. He, and Y. Lin, “Deep reinforcement learning for collaborative inference in local-edge computing,” in Proceedings of the 2024 International Academic Conference on Edge Computing, Parallel and Distributed Computing , 2024, pp. 138–142. [75] H. Ye, G. Y. Li, and B.-H. F. Juang, “Deep reinforcement learning based resource allocation for v2v communications,” IEEE Transactions on Vehicular Technology , vol. 68, no. 4, pp. 3163–3173, 2019. [76] H. Van Hasselt, A. Guez, and D. Silver, “Deep reinforcement learning with double q-learning,” in Proceedings of the AAAI conference on artificial intelligence , vol. 30, no. 1, 2016. [77] T. Haarnoja, A. Zhou, P. Abbeel, and S. Levine, “Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor,” in International conference on machine learning . Pmlr, 2018, pp. 1861–1870. [78] N. Naderializadeh, J. J. Sydir, M. Simsek, and H. Nikopour, “Resource management in wireless networks via multi-agent deep reinforcement learning,” IEEE Transactions on Wireless Communications , vol. 20, no. 6, pp. 3507–3523, 2021. [79] Y. S. Nasir and D. Guo, “Multi-agent deep reinforcement learning for dynamic power allocation in wireless networks,” IEEE Journal on selected areas in communications , vol. 37, no. 10, pp. 2239–2250, 2019. [80] R. Lowe, Y. I. Wu, A. Tamar, J. Harb, O. Pieter Abbeel, and I. Mor-datch, “Multi-agent actor-critic for mixed cooperative-competitive envi-ronments,” Advances in neural information processing systems , vol. 30, 2017. [81] C. Finn, P. Abbeel, and S. Levine, “Model-agnostic meta-learning for fast adaptation of deep networks,” in International conference on machine learning . PMLR, 2017, pp. 1126–1135. [82] L. U. Khan, Z. Han, W. Saad, E. Hossain, M. Guizani, and C. S. Hong, “Digital twin of wireless systems: Overview, taxonomy, challenges, and opportunities,” IEEE Communications Surveys & Tutorials , vol. 24, no. 4, pp. 2230–2254, 2022. [83] N. Tishby, F. C. Pereira, and W. Bialek, “The information bottleneck method,” arXiv preprint physics/0004057 , 2000. [84] R. Zhang, S. Tang, Y. Liu, D. Niyato, Z. Xiong, S. Sun, S. Mao, and Z. Han, “Toward agentic ai: Generative information retrieval inspired intelligent communications and networking,” arXiv preprint arXiv:2502.16866 , 2025. [85] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark et al. , “Learning transferable visual models from natural language supervision,” in International conference on machine learning . PmLR, 2021, pp. 8748–8763. [86] A. Hurst, A. Lerer, A. P. Goucher, A. Perelman, A. Ramesh, A. Clark, A. Ostrow, A. Welihinda, A. Hayes, A. Radford et al. , “Gpt-4o system card,” arXiv preprint arXiv:2410.21276 , 2024. [87] J. Lin, J. Tang, H. Tang, S. Yang, W.-M. Chen, W.-C. Wang, G. Xiao, X. Dang, C. Gan, and S. Han, “Awq: Activation-aware weight quan-tization for on-device llm compression and acceleration,” Proceedings of machine learning and systems , vol. 6, pp. 87–100, 2024. [88] T. Schick, J. Dwivedi-Yu, R. Dess` ı, R. Raileanu, M. Lomeli, E. Ham-bro, L. Zettlemoyer, N. Cancedda, and T. Scialom, “Toolformer: Language models can teach themselves to use tools,” Advances in neural information processing systems , vol. 36, pp. 68 539–68 551, 2023. [89] S. G. Patil, T. Zhang, X. Wang, and J. E. Gonzalez, “Gorilla: Large language model connected with massive apis,” Advances in Neural Information Processing Systems , vol. 37, pp. 126 544–126 565, 2024. [90] S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan, and Y. Cao, “React: Synergizing reasoning and acting in language models,” arXiv preprint arXiv:2210.03629 , 2022. [91] Y. Wang, S. Guo, Y. Pan, Z. Su, F. Chen, T. H. Luan, P. Li, J. Kang, and D. Niyato, “Internet of agents: Fundamentals, applications, and challenges,” IEEE Transactions on Cognitive Communications and Networking , 2025. 30 
+
+[92] Y. Liu, G. Liu, J. Wang, R. Zhang, D. Niyato, G. Sun, Z. Xiong, and Z. Han, “Lameta: Intent-aware agentic network optimization via a large ai model-empowered two-stage approach,” IEEE Journal on Selected Areas in Communications , 2025. [93] N. Krishnan, “Advancing multi-agent systems through model con-text protocol: Architecture, implementation, and applications,” arXiv preprint arXiv:2504.21030 , 2025. [94] B. Li, T. Liu, W. Wang, C. Zhao, and S. Wang, “Agent-as-a-service: An ai-native edge computing framework for 6g networks,” IEEE Network ,vol. 39, no. 2, pp. 44–51, 2024. [95] J. Tong, W. Guo, J. Shao, Q. Wu, Z. Li, Z. Lin, and J. Zhang, “Wirelessagent: Large language model agents for intelligent wireless networks,” arXiv preprint arXiv:2505.01074 , 2025. [96] L. H. Li, P. Zhang, H. Zhang, J. Yang, C. Li, Y. Zhong, L. Wang, L. Yuan, L. Zhang, J.-N. Hwang et al. , “Grounded language-image pre-training,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2022, pp. 10 965–10 975. [97] S. Liu, Z. Zeng, T. Ren, F. Li, H. Zhang, J. Yang, Q. Jiang, C. Li, J. Yang, H. Su et al. , “Grounding dino: Marrying dino with grounded pre-training for open-set object detection,” in European conference on computer vision . Springer, 2024, pp. 38–55. [98] M. Ahn, A. Brohan, N. Brown, Y. Chebotar, O. Cortes, B. David, C. Finn, C. Fu, K. Gopalakrishnan, K. Hausman et al. , “Do as i can, not as i say: Grounding language in robotic affordances,” arXiv preprint arXiv:2204.01691 , 2022. [99] W. Huang, F. Xia, T. Xiao, H. Chan, J. Liang, P. Florence, A. Zeng, J. Tompson, I. Mordatch, Y. Chebotar et al. , “Inner monologue: Embodied reasoning through planning with language models,” arXiv preprint arXiv:2207.05608 , 2022. [100] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid et al. , “Rt-2: Vision-language-action models transfer web knowledge to robotic control,” in Conference on Robot Learning . PMLR, 2023, pp. 2165–2183. [101] X. Ma, G. Fang, and X. Wang, “Llm-pruner: On the structural pruning of large language models,” Advances in neural information processing systems , vol. 36, pp. 21 702–21 720, 2023. [102] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, W. Chen et al. , “Lora: Low-rank adaptation of large language models.” 
+
+Iclr , vol. 1, no. 2, p. 3, 2022. [103] A. Asai, Z. Wu, Y. Wang, A. Sil, and H. Hajishirzi, “Self-rag: Learning to retrieve, generate, and critique through self-reflection,” in The Twelfth International Conference on Learning Representations , 2023. [104] Z. Zheng, H. Cao, J. Chen, S. Tian, C. Li, M. Li, X. Sun, G. Luo, and X. Chen, “Roboecc: Multi-factor-aware edge-cloud collaborative deployment for vla models,” arXiv preprint arXiv:2603.20711 , 2026. [105] Y. Han, Y. Gao, B. Hu, M. B. Mashhadi, Y. Duan, P. Xiao, and Y. Zhang, “Pipesd: An efficient cloud-edge collaborative pipeline inference framework with speculative decoding,” arXiv preprint arXiv:2605.13319 , 2026. [106] S. Li, H. Wang, W. Xu, R. Zhang, S. Guo, J. Yuan, X. Zhong, T. Zhang, and R. Li, “Collaborative inference and learning between edge slms and cloud llms: A survey of algorithms, execution, and open challenges,” 
+
+arXiv preprint arXiv:2507.16731 , 2025. [107] Y. Chen, J. Zhao, and H. Han, “A survey on collaborative mech-anisms between large and small language models,” arXiv preprint arXiv:2505.07460 , 2025. [108] Y. Chen, R. Li, X. Yu, Z. Zhao, and H. Zhang, “Adaptive layer splitting for wireless large language model inference in edge computing: a model-based reinforcement learning approach,” Frontiers of Informa-tion Technology & Electronic Engineering , vol. 26, no. 2, pp. 278–292, 2025. [109] A. Younesi, A. Shabrang Maryan, E. Oustad, Z. Najafabadi Samani, M. Ansari, and T. Fahringer, “Splitwise: Collaborative edge–cloud inference for llms via lyapunov-assisted drl,” in Proceedings of the 18th IEEE/ACM International Conference on Utility and Cloud Computing ,2025, pp. 1–11. [110] Z. Wang, Y. Shi, and K. B. Letaief, “Edge large ai models: Col-laborative deployment and iot applications,” IEEE Internet of Things Magazine , 2025. [111] O. Erak, O. Alhussein, H. Abou-Zeid, M. Bennis, and S. Muhaidat, “Adaptive token merging for efficient transformer semantic communi-cation at the edge,” IEEE Open Journal of the Communications Society ,2026. [112] M. L. Foko Sindjoung, M. Velempini, and V. Kengne Tchendji, “Arpmec: an adaptive mobile edge computing-based routing protocol for iot networks,” Cluster Computing , vol. 27, no. 7, pp. 9435–9450, 2024. [113] Z. Liu, M. Tian, M. Dong, X. Wang, C. Qiu, and C. Zhang, “Moei: Mobility-aware edge inference based on model partition and service migration,” IEEE Transactions on Mobile Computing , vol. 23, no. 10, pp. 9437–9450, 2024. [114] J. Tong, W. Jin, P. Qin, A. Li, Y. Zou, Y. Li, Y. Li, and R. Li, “Flowcut: Rethinking redundancy via information flow for efficient vision-language models,” Advances in Neural Information Processing Systems , vol. 38, pp. 94 946–94 973, 2026. [115] S. Anagnostidis, D. Pavllo, L. Biggio, L. Noci, A. Lucchi, and T. Hofmann, “Dynamic context pruning for efficient and interpretable autoregressive transformers,” Advances in Neural Information Process-ing Systems , vol. 36, pp. 65 202–65 223, 2023. [116] S. Kwon, S. H. Seo, J. W. Lee, and Y. Park, “Dp-llm: Runtime model adaptation with dynamic layer-wise precision assignment,” Advances in Neural Information Processing Systems , vol. 38, pp. 144 921–144 945, 2026. [117] K. Sendai, M. Alvarez, T. Matsushima, Y. Matsuo, and Y. Iwasawa, “Leave no observation behind: Real-time correction for vla action chunks,” arXiv preprint arXiv:2509.23224 , 2025. [118] M. Lisondra, B. Benhabib, and G. Nejat, “Embodied ai with foundation models for mobile service robots: A systematic review,” Robotics ,vol. 15, no. 3, p. 55, 2026. [119] Y. Zhang, R. Wang, Q. Wu, J. Hao, and Z. Xiong, “Mobility-aware service function chain deployment with migration in nfv-based edge-cloud,” in 2023 21st International Symposium on Modeling and Opti-mization in Mobile, Ad Hoc, and Wireless Networks (WiOpt) . IEEE, 2023, pp. 87–94. [120] S. H. Ahmadpanah, M. Mirabi, S. Sobhanloo, P. Afsharfarnia, D. Fal-lah, and M. Bayati, “Collaborative deployment of large ai models on the edge: A microservice approach to heterogeneous training and quantized inference,” Ad Hoc Networks , p. 104080, 2025. [121] J. Wang, R. Chandra, and S. Zhang, “Experience replay addresses loss of plasticity in continual learning,” arXiv preprint arXiv:2503.20018 ,2025. [122] X. Liu and X. Chang, “Elastic weight consolidation done right for continual learning,” arXiv preprint arXiv:2603.18596 , 2026. [123] R. Zhang, G. Liu, Y. Liu, C. Zhao, J. Wang, Y. Xu, D. Niyato, J. Kang, Y. Li, S. Mao et al. , “Toward edge general intelligence with agentic ai and agentification: Concepts, technologies, and future directions,” 
+
+IEEE Communications Surveys & Tutorials , vol. 28, pp. 4285–4318, 2026. [124] X. Chen, H. Zhang, C. Wu, S. Mao, Y. Ji, and M. Bennis, “Optimized computation offloading performance in virtual edge computing systems via deep reinforcement learning,” IEEE Internet of Things Journal ,vol. 6, no. 3, pp. 4005–4018, 2018. [125] N. C. Luong, D. T. Hoang, S. Gong, D. Niyato, P. Wang, Y.-C. Liang, and D. I. Kim, “Applications of deep reinforcement learning in communications and networking: A survey,” IEEE communications surveys & tutorials , vol. 21, no. 4, pp. 3133–3174, 2019. [126] L. Sun, Z. Zhang, Z. Lin, Z. Chen, W. Zhou, Z. Yang, and T. Q. Quek, “Agentic ai-ran empowering synergetic sensing, communication, computing, and control,” arXiv preprint arXiv:2601.16565 , 2026. [127] A. Kaushik, R. Singh, S. Dayarathna, R. Senanayake, M. Di Renzo, M. Dajer, H. Ji, Y. Kim, V. Sciancalepore, A. Zappone, and W. Shin, “Towards integrated sensing and communications for 6g: A standard-ization perspective,” 2023.

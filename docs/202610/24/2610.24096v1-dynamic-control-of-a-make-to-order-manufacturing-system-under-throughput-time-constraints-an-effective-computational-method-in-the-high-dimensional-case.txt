@@ -1,0 +1,3016 @@
+Title: Dynamic Control of a Make-to-Order Manufacturing System under Throughput Time Constraints: An Effective Computational Method in the High-Dimensional Case
+
+URL Source: https://arxiv.org/pdf/2610.24096v1
+
+Published Time: Tue, 20 Oct 2026 00:10:14 GMT
+
+Number of Pages: 76
+
+Markdown Content:
+# Dynamic Control of a Make-to-Order Manufacturing System under Throughput Time Constraints: An Effective Computational Method in the High-Dimensional Case 
+
+Baris Ata ∗ and Chun Li †
+
+Booth School of Business, University of Chicago 
+
+Abstract 
+
+We consider dynamic control of a make-to-order production system that serves price- and delay-sensitive customers. The production system is modeled as a multiclass queueing network where the customers’ delay sensitivity is modeled via throughput-time constraints. To maximize her profit while meeting these throughput time constraints, the system manager uses three dif-ferent types of control: i) dynamic pricing decisions; ii) dynamic order-of-service (scheduling) decisions; and iii) outsourcing decisions upon arrival of new orders. We approximate this problem by a multi-dimensional Brownian control problem in heavy traffic, and develop a neural network-based computational method tailored for high-dimensional problems. By interpreting the solution in the context of the original model, we propose an integrated dynamic pricing, outsourcing, and scheduling policy. The effectiveness of this policy is demonstrated through a simulation study of two test problems drawn from the literature. 
+
+Keywords: Dynamic pricing; Throughput time constraints; Outsourcing; High-dimensional stochastic control; Neural networks; Make-to-order manufacturing systems; Queueing networks; Heavy-traffic analysis 
+
+# 1 Introduction 
+
+This paper studies dynamic control of a multiclass queueing network with throughput-time con-straints that is motivated by make-to-order manufacturing systems, serving price- and delay-sensitive customers. The system manager adjusts prices and allocates the service effort among different classes dynamically over time. She can also outsource the orders upon their arrival if the backlog of work 
+
+> ∗
+
+baris.ata@chicagobooth.edu 
+
+> †
+
+cli11@chicagobooth.edu 
+
+Our code is available at https://github.com/chunli0574/RBM-TPT-code .
+
+1arXiv:2610.24096v1 [math.OC] 16 Oct 2026 is judged excessive. Her objective is to maximize her profit while satisfying the throughput-time constraints. Two important features of our formulation are the following: First, the customer or-ders of different types follow deterministic routes in the system. Second, there are no holding costs. Instead, congestion concerns are captured through the aforementioned throughput time constraints. Arguably, such constraints are more realistic and easier to estimate for the purpose of model cali-bration than the more commonly used formulation with holding costs that is analytically convenient (Harrison 2024). Because the dynamic control problem is intractable in its original form, we resort to an ap-proximation. We follow the heavy-traffic approach pioneered by Harrison (1988) and derive the approximating Brownian control problem. An important simplification that occurs in the heavy traffic limit is that one can replace the throughput time constraints by upper bounds on the sum of certain (scaled) queue lengths, as observed by Plambeck et al. (2001). The approximating Brownian control problem is equivalent to a lower-dimensional workload problem. In our setting, the equivalent workload problem is a multi-dimensional control problem with two salient features: First, it includes both drift and singular controls, inheriting them from the pricing, outsourcing and scheduling controls in the original queueing system. Second, its state space is a bounded convex polyhedron. Although it is simpler than the original control problem, the workload problem remains multi-dimensional and does not admit a closed-form solution. Thus, we develop a neural network-based method to solve this control problem numerically and obtain an effective control policy. The resulting control policy has two distinct features: First, the pushing controls (i.e., singular controls) are active only on the boundary of the state space and they partition it with respect to different active pushing controls. The pushing controls correspond to either idling the servers or outsourcing activities. Second, in the interior of the state space, the control is a state-dependent drift rate control that corresponds to the system manager’s dynamic pricing policy. We interpret the solution of the workload problem in the context of the original queueing network by proposing a policy for it. We illustrate our solution approach and test its effectiveness in two examples: The Rybko-Stolyar network (Rybko and Stolyar 1992, Maglaras 2000) and the extended criss-cross network. The latter builds on the criss-cross network and provides us with a set of high-dimensional test problems (Harrison and Wein 1989, Martins et al. 1996, Budhiraja and Ross 2008, Budhiraja et al. 2017, Kumar and Muthuraman 2004). To solve the multi-dimensional dynamic control problem, we develop a computational method that relies heavily on deep neural network technology. Two important antecedents of our work are Ata et al. (2025a, 2024a). Ata et al. (2025a) builds on the seminal work of Han et al. (2018) to develop neural network-based method for solving drift control problems for reflected Brownian motion. Ata et al. (2024a) extends it to solve singular control problems, by approximating singular controls using drift controls, and shows its effectiveness in queueing applications. Our computational method builds 2on Ata et al. (2025a, 2024a), and extends them to the setting with bounded convex polyhedral state space, which is not covered by the positive orthant considered in Ata et al. (2025a, 2024a). 
+
+# 2 Literature Review 
+
+Our work relates to several streams of literature. The first one uses the heavy traffic approximations to study dynamic control of stochastic networks. Pioneered by Harrison (1988, 2000, 2003), the dynamic control problems are approximated by control problems involving Brownian motions to obtain more tractable solutions in this literature. An important group of papers in this literature study the criss-cross network in the heavy traffic asymptotic regime. Harrison and Wein (1989) study the criss-cross network for a set of cost parameters under which the problem admits a pathwise solution. Martins et al. (1996) revisits the problem and identifies a total of five cases in terms of possible cost parameters of the problem. The authors label them as Case I and Cases IIA–IID. Case I is studied by Chen et al. (1994). Martins et al. (1996) prove the asymptotic optimality of the solution proposed by Harrison and Wein (1989) for Case IIA, and they provide conjectures for the other cases. Two of these cases (Cases IIB and IIC) were rigorously justified in later papers by Budhiraja and Ross (2008) and Budhiraja et al. (2017). The criss-cross network constitutes the basis for our second test problem, whereas our first test problem is based on the Rybko-Stolyar network; see Rybko and Stolyar (1992). Among papers studying dynamic control of queueing networks in the heavy traffic regime, ours is closely related to those involving throughput time constraints. Plambeck et al. (2001) incorporates such throughput-time constraints and replaces them with upper bounds on queue lengths; also see Maglaras and Van Mieghem (2005), Ata (2006), C ¸ elik and Maglaras (2008) and Rubino and Ata (2009). Other related papers include those studying dynamic pricing and outsourcing controls. Many researchers have studied models concerning pricing, outsourcing or admission control for queueing systems; see for example, Low (1974), Stidham (1985, 2004), Lewis et al. (1999), Carr and Duenyas (2000), Yoon and Lewis (2004), Ziya et al. (2006), Maoui et al. (2009), Zhang and Ayhan (2012). The closest work to ours is Ata and Barjesteh (2023) that studies dynamic pricing and outsourcing in a multiclass, single-server make-to-stock manufacturing system. Similar to our paper, their pricing (resp. outsourcing) control becomes drift control within state space (resp. singular control on reflecting barriers) in limiting formulation. Our proposed pricing policy is similar to the one in Ata and Barjesteh (2023), whose limiting formulation is one-dimensional, whereas our multiclass queueing network setting leads to a multi-dimensional formulation. Another related stream of literature develops computational methods for dynamic control of queueing networks. The most closely related papers to ours are Ata et al. (2025a, 2024a). The authors develop neural network-based computational methods for solving high-dimensional drift-rate 3and singular control problems. To be specific, Ata et al. (2025a) develops a neural network-based method for solving drift control problems for reflected Brownian motion, and Ata et al. (2024a) extends it to solve singular control problems, by approximating singular controls using drift controls, and shows its effectiveness in queueing applications. We build on Ata et al. (2025a, 2024a) by extending their work to allow a bounded convex polyhedron as the state space. Other closely related papers also develop neural network-based computational method to solve control problems. Motivated by call center applications, Ata and Ka¸ sıkaralar (2026a) focuses on limiting control problems in Halfin-Whitt heavy traffic regime, and develops a computational method for finite-horizon formulation with non-stationary data; also see Ata and Ka¸ sıkaralar (2026b). Ata and Zhou (2025) solves a sequential vehicle routing problem motivated by an eviction enforcement application following a similar approach. Similarly, Ata et al. (2025b) proposes a computational method for solving the stochastic joint replenishment problem in high dimensions by exploiting a connection among multi-dimensional impulse control problems, backward stochastic differential equations and the stochastic target problem. Those researchers build on the literature started by the seminal paper Han et al. (2018), that focuses on solving (semilinear) partial differential equations using neural networks, relying on a connection between (semilinear) partial differential equations and backward stochastic differential equations; see E et al. (2021), Beck et al. (2023), Chessari et al. (2023) and Han et al. (2025) for surveys of that literature. Prior to neural network-based methods for solving Hamilton-Jacobi-Bellman (HJB) equations, solution to multi-dimensional stochastic control problems was usually restricted to low-dimensional case. Two numerical methods for solving singular control problems are proposed in Kushner and Martins (1991) and Kumar and Muthuraman (2004). Kushner and Martins (1991) approximates the singular control problems by control problems of discrete-time Markov chain that is readily solvable, which is an extension of Markov chain approximation method in Kushner (1990) for stochastic control problems. Kumar and Muthuraman (2004) combines a finite element method with policy iteration to solve their HJB equation that is based on Taksar (1997). Drift and singular control problems arise in various manufacturing applications; see for ex-ample Ata (2006), C ¸ elik and Maglaras (2008), Ata and Olsen (2009), Rubino and Ata (2009), Ormeci Matoglu and Vande Vate (2011) and Ormeci Matoglu et al. (2015) for related models of make-to-order manufacturing system, and Wein (1992), Veatch and Wein (1996), Caldentey and Wein (2006), Ata and Barjesteh (2023) for related models of make-to-stock systems. Also see Dai and Yao (2013) for a summary of other applications. Other applications of drift and singular control problems include power control in wireless communication (Ata et al. 2005), ride hailing (Ata et al. 2020, Alwan et al. 2024), volunteer capacity management for nonprofits (Ata et al. 2019, 2024b), flexible staffing in call center (Sun and Liu 2025), and drone delivery systems (Liu and Sun 2022). 43 Model 
+
+We consider a make-to-order manufacturing system selling K different products to price-sensitive customers. We model this system as a multiclass queueing network, serving K customer types. In our model, type k customer orders follow a pre-determined route through a sequence of buffers, denoted by ( k, 1) , . . . , (k, n k), denoting their manufacturing process ( k = 1 , . . . , K ). In other words, they go through nk production stages. During stage l (l = 1 , . . . , n k), they are held in buffer ( k, l ) that is dedicated to holding them. Thus, a total of m = PKk=1 nk buffers hold jobs of various types that are in different stages of production. In what follows, we use the terms buffer and class interchangeably. To repeat, the class of a job corresponds to the combination of the product type and the stage of production it is in currently. We assume jobs of various classes are served by a total of p servers. We let s(k, l ) denote the server that serves class ( k, l ) jobs, whose processing time has a general distribution with mean mk,l 
+
+and squared coefficient-of-variation v2 
+
+> k,l
+
+for k = 1 , . . . , K and l = 1 , . . . , n k; we let μk,l = 1 /m k,l 
+
+denote the corresponding service rate. Also, we let Sk,l (t) denote the total number of class ( k, l ) jobs served if server s(k, l ) works on class ( k, l ) jobs continuously during [0 , t ]. There is a many-to-one assignment of job classes to servers. To be specific, we let Ci denote the set of classes or buffers served by server i (i = 1 , . . . , p ). That is, Ci = {(k, l ) : s(k, l ) = i} for i = 1 , . . . , p .It is worth mentioning that the model described so far is a special class of multiclass queueing networks as defined in Harrison (1988). The special structure we impose is that the probability routing matrix of Harrison (1988), denoted by P there, consists solely of zeros and ones. That is, we assume deterministic routing. However, a distinguishing feature of our model is the throughput time constraints: Associated with each product type is a throughput time or a delay constraint, which allows us to model congestion concerns in the system. More will be said about the model feature later in this section. The system manager dynamically chooses price vectors p(t) = ( pk(t)) ∈ P for t ≥ 0, where pk(t)is the price of type k products at time t (k = 1 , . . . , K ) and P ⊂ RK 
+
+> +
+
+is the set of feasible price vectors. The price sensitivity of customers is modeled by a nonnegative demand function Λ that maps the price vector p to an instantaneous demand rate vector λ, i.e., λ(t) = Λ( p(t)), where Λ : P → L ⊂ RK
+
+> +
+
+and L = {Λ( p) : p ∈ P} is the set of feasible demand-rate vectors. Given the system manager’s dynamic pricing policy {p(t) : t ≥ 0} and the resulting demand-rate process λ = {λ(t) : t ≥ 0}, we model the cumulative demand process as a nonhomogenous Poisson process. More specifically, demand for product k arrives according to a nonhomogenous Poisson process with instantaneous rate λk(t) for t ≥ 0 and k = 1 , . . . , K . That is, the cumulative demand for product k up to time t is 
+
+Nk
+
+Z t
+
+> 0
+
+λk(s)ds 
+
+
+
+, t ≥ 0,
+
+5where Nk is a unit rate Poisson process ( k = 1 , . . . , K ). Following C ¸ elik and Maglaras (2008) and Ata and Barjesteh (2023), we assume the following regularity conditions on the demand function Λ. 
+
+Assumption 1. The following hold: i) Λ is bounded, continuously differentiable, and bijective; its inverse is denoted by Λ−1 : L → P ;ii) ∂Λk(p)/∂p k < 0 for p ∈ P , k = 1 , . . . , K ;iii) L is convex. 
+
+For mathematical convenience, we view the instantaneous demand rate process λ = {λ(t) : t ≥ 0}
+
+as the system manager’s pricing control, from which the price process p = {p(t) : t ≥ 0} can be computed via p(t) = Λ −1(λ(t)) for t ≥ 0. As a preliminary to expressing the system manager’s objective function, we denote the variable cost of manufacturing for product k by δk (k = 1 , . . . , K )and let δ = ( δk) denote the associated cost rate vector. Then we define the profit rate function Π as a function of demand rate vector as follows: Π( x) = x · (Λ −1(x) − δ), x ∈ L . (1) We also make the following regularity assumption on the profit rate function, which implies Π( ·) is strictly concave. 
+
+Assumption 2. The profit rate function Π is twice continuously differentiable and its Hessian is negative definite. 
+
+To facilitate the analysis that follows, we consider the following static planning problem that ignores the randomness in the system: Find the demand rate vector λ so as to maximize Π( λ) subject to λ ∈ L . (2) 
+
+Assumption 3. The static planning problem (2) has a unique optimal solution λ∗ that is in the interior of the set L of the feasible demand rate vectors. 
+
+Recall that the system manager strives to impose an upper bound, say dk, on the throughput time, or total delay, experienced by orders of product type k (k = 1 , . . . , K ). Of course, this formulation is not really meaningful in a conventional queueing model, because the throughput times are random variables. However, the formulation becomes meaningful in an asymptotic sense. To be specific, one can show how the law of large numbers implies an equivalence between (scaled) bounds on the number of jobs in the system and (scaled) bounds on throughput times as one approaches the heavy traffic limit; see for example Plambeck et al. (2001). Namely, throughput time constraints can be 6met with probability one asymptotically because the delay bounds correspond to upper bounds on buffer contents in the heavy traffic limit. Thus, we replace the throughput time bounds for type 
+
+k products by a bound qk on the total number of type k orders waiting or being worked on in the system, where we set qk = λ∗
+
+> k
+
+dk for k = 1 , . . . , K , and λ∗ 
+
+> k
+
+is the nominal arrival rate of type k
+
+products; see Assumption 3. To meet the throughput time constraints, in addition to dynamic pricing and scheduling decisions, the system manager can also outsource product orders upon arrival. We let Ok(t) denote the number of type k orders outsourced until time t (k = 1 , . . . , K ). She incurs a cost of νk (in excess of the marginal cost δk of production) per order of product type k that is outsourced. We denote excess outsourcing cost vector by ν = ( νk). We let O(t) = ( Ok(t)) so that O = {O(t) : t ≥ 0} denotes the system manager’s outsourcing policy. The system manager’s dynamic scheduling decisions are modeled through an m-dimensional cumulative allocation process, denoted by T (t) = ( Tk,l (t)), where Tk,l (t) denotes the cumulative amount of time server s(k, l ) devotes to serving buffer ( k, l ) during [0 , t ]. The system manager’s control is then denoted by ( O, T, λ ), where the process O describes the outsourcing decisions, the allocation process T describes the scheduling decisions and the demand rate process λ captures the dynamic pricing decisions. We let Qk,l (t) denote the number of jobs in buffer ( k, l ) at time t (k = 1 , . . . , K and l = 1 , . . . , n k). Then Q(t) = ( Qk,l (t)) denotes the m-dimensional queue length vector at time t and the queue length process is denoted by Q = {Q(t) : t ≥ 0}. Its dynamics under a control ( O, T, λ ) is given as follows: For t ≥ 0 and k = 1 , . . . , K ,
+
+Qk, 1(t) = Qk, 1(0) + Nk
+
+Z t
+
+> 0
+
+λk(s)ds 
+
+
+
+− Sk, 1(Tk, 1(t)) − Ok(t), (3) 
+
+Qk,l (t) = Qk,l (0) + Sk,l −1(Tk,l −1(t)) − Sk,l (Tk,l (t)) , l = 2 , . . . , n k. (4) A control ( O, T, λ ) is admissible if it is nonanticipating and the following hold: 
+
+O(·), T (·) are nondecreasing with O(0) = T (0) = 0 , (5) 
+
+X
+
+> (k,l )∈C i
+
+(Tk,l (t) − Tk,l (s)) ≤ t − s, 0 ≤ s < t < ∞, i = 1 , . . . , p, (6) 
+
+λ(t) ∈ L for t ≥ 0, (7) 
+
+Q(t) ≥ 0,
+
+> nk
+
+X
+
+> l=1
+
+Qk,l (t) ≤ qk, k = 1 , . . . , K, t ≥ 0. (8) Given an admissible control ( O, T, λ ), we define the cumulative idleness process for each server as follows: 
+
+Ii(t) = t − X
+
+> (k,l )∈C i
+
+Tk,l (t), t ≥ 0, i = 1 , . . . , p, (9) 7and I(t) = ( Ii(t)) is the p-dimensional cumulative idleness vector at time t; and the idleness process is denoted by I = {I(t) : t ≥ 0}. Note that it follows from (5)–(6) and (9) that I(·) is continuous and nondecreasing with I(0) = 0. Recall that outsourcing a type k product order incurs cost νk in excess of its marginal production cost δk; so the total outsourcing cost is δk + νk (k = 1 , . . . , K ). Under an admissible policy ( O, T, λ ), we model the system manager’s cumulative profit, denoted by R(t), as follows: 
+
+R(t) = 
+
+Z t
+
+> 0
+
+Π( λ(s)) ds − ν · O(t). (10) The first term on the right hand side of (10) characterizes the profit obtained by selling different products, and the second term represents the outsourcing cost. The system manager aims to choose the optimal policy ( O, T, λ ) to maximize E
+
+Z ∞
+
+> 0
+
+e−rt dR (t)
+
+
+
+subject to (3)–(10), (11) where r is the interest rate for discounting. This formulation is not tractable. Therefore, we derive an approximation, the Brownian control problem, in the next section. 
+
+# 4 Approximating Brownian Control Problem 
+
+To derive the approximating Brownian control problem, we consider a sequence of systems indexed by the system parameter n and study it as n gets large. We attach superscript n to various quantities of interest in the nth system. Our approximation relies on the following heavy traffic assumption. 
+
+Assumption 4 (Heavy-traffic Assumption) . For n ≥ 1, the following hold: 
+
+Λn(x) = nΛ( x) for x ∈ P , μn = nμ + √nη. (12) 
+
+Moreover, the unique optimal solution λ∗ in Assumption 3 satisfies 
+
+X
+
+> (k,l )∈C i
+
+λ∗
+
+> k
+
+μk,l 
+
+= 1 , i = 1 , . . . , p. 
+
+The heavy traffic assumption implies that the traffic intensity for each server is near one for large 
+
+n; and it tends to one as n → ∞ . Also, it follows from Equations (1) and (12) that Πn(nx ) = nΠ( x). (13) If there were no randomness, i.e., in the fluid model, it would be optimal to set the demand rate as nλ ∗ at all times in the nth system. However, due to randomness, the system manager makes 8adjustments that are of order √n, as observed in Ata and Barjesteh (2023). Thus, we assume the following form for the instantaneous demand rate vector λn(·) for the nth system: 
+
+λn(t) = nλ ∗ + √nζ (t), t ≥ 0, (14) where ζ(·) process corresponds to the second-order corrections. In essence, it can be viewed as the system manager’s pricing control in the diffusion scale. In the nth system, the demand and system capacity are of order n. Thus, we expect the queue length and the outsourcing process to be of order √n. As such, we scale them accordingly and introduce the following diffusion-scaled processes: 
+
+Zn(t) = Qn(t)
+
+√n and U n(t) = On(t)
+
+√n , t ≥ 0. (15) We let x∗ 
+
+> k,l
+
+= λ∗
+
+> k
+
+/μ k,l denote the long-run average fraction of time server s(k, l ) should allocate to serving buffer ( k, l ). Also let x∗ = ( x∗
+
+> k,l
+
+) denote the corresponding vector of allocation rates. As argued in Harrison (1988), the policies that are worthy of consideration must satisfy T n(t) ≈ x∗t.To be more specific, we assume 
+
+T n(t) = x∗t − 1
+
+√n Y n(t), t ≥ 0. (16) Or equivalently, we write 
+
+Y n(t) = √n(x∗t − T n(t)) , t ≥ 0, (17) where Y n(·) is the centered and scaled allocation process. Similarly, we define the scaled idleness process by 
+
+Ln(t) = √nI n(t), t ≥ 0. (18) For large n, as mentioned earlier, we expect queue lengths to be of order √n and delays to be of order 1 /√n. Thus, we scale the upper bounds dnk and qnk on throughput times and queue lengths of type k customers, respectively, as follows: 
+
+dnk = ℓk
+
+√n and qnk = √nβ k, (19) where βk = λ∗
+
+> k
+
+ℓk for k = 1 , . . . , K . Also, we assume that the outsourcing cost νn varies with n as follows: νn = α/ √n, where α = ( αk) denotes (scaled) outsourcing cost vector. Next, we center the cumulative profit process Rn(t) and focus on its deviation from the idealized upper bound nΠ( λ∗)t in the Brownian control problem. That is, we define the cumulative cost process 
+
+Cn(t) = nΠ( λ∗)t − Rn(t), t ≥ 0. (20) Lastly, we assume the interest rate rn for discounting in the nth system satisfies rn = ˜ r. Appendix B.1 derives the approximating Brownian control problem by passing to the limit formally as n → ∞ 
+
+9in the heavy traffic asymptotic regime. In the heavy-traffic limit, the processes Cn, Zn, Y n, Ln, and 
+
+U n are replaced with their limits C, Z, Y , L, and U , which jointly satisfy the following: 
+
+C(t) = 
+
+Z t
+
+> 0
+
+ζ(s)′Hζ (s)ds + α · U (t), (21) 
+
+Zk, 1(t) = Zk, 1(0) + Xk, 1(t) + 
+
+Z t
+
+> 0
+
+ζk(s)ds + μk, 1Yk, 1(t) − Uk(t), k = 1 , . . . , K, (22) 
+
+Zk,l (t) = Zk,l (0) + Xk,l (t) − μk,l −1Yk,l −1(t) + μk,l Yk,l (t), l = 2 , . . . , n k, k = 1 , . . . , K, (23) 
+
+Li(t) = X
+
+> (k,l )∈C i
+
+Yk,l (t), i = 1 , . . . , p. (24) Here, the matrix H is determined by the Hessian of the profit rate function Π as follows: 
+
+H = − 12 ∇2Π( λ∗). (25) In addition, Xk = ( Xk,l ) is an nk-dimensional Brownian motion with drift vector φk and covariance matrix Σ k. Equations (A.1)–(A.3) in Appendix A express φk and Σ k in terms of the problem primitives. The processes X1, . . . , X K are mutually independent. The cumulative cost process C(t) of the Brownian control problem involves two terms: The integral term on the right-hand side of Equation (21) represents the (scaled) lost profit whereas the term α · U (t) is the (scaled) cost of outsourcing. Equations (22)–(23) describe how the (scaled) queue length processes evolve, whereas Equation (24) expresses the cumulative idleness process in terms of the centered and scaled allocation control Y (t). Furthermore, it follows from Equation (8) that 
+
+Z(t) ≥ 0,
+
+> nk
+
+X
+
+> l=1
+
+Zk,l (t) ≤ βk, k = 1 , . . . , K, t ≥ 0. (26) The idleness process L and the outsourcing process U satisfy the following: 
+
+L(·), U (·) are continuous and non-decreasing with L(0) = U (0) = 0 . (27) Then the approximating Brownian control problem can be stated as follows: Choose a non-anticipating control ( U, Y, ζ ) to minimize E
+
+Z ∞
+
+> 0
+
+e−˜rt dC (t)
+
+
+
+subject to (21)–(27). (28) In the next section, we derive an equivalent yet lower-dimensional formulation, i.e., the workload problem. In the analysis that follows we solve the workload problem and interpret that solution in the context of the original queueing network model. 10 5 Workload Problem 
+
+To state the workload problem, we first define the p-dimensional workload process W = {W (t) : t ≥
+
+0} as follows: 
+
+Wi(t) = X
+
+> (k,l )∈C i
+
+mk,l lX
+
+> j=1
+
+Zk,j (t), t ≥ 0, i = 1 , . . . , p. (29) Here, Wi(t) represents the expected total work for server i that is embodied in all jobs that are currently in the system at time t ≥ 0. Note that the inner summation on the right-hand side of (29) corresponds to the total number of type k jobs that are either with server i or with the upstream servers currently and will visit server i later. Combining Equation (29) with Equations (22)–(24), it is straightforward to derive the evolution of the workload process given control ( U, Y, ζ ): 
+
+Wi(t) = Wi(0) + ξi(t) + 
+
+Z t
+
+> 0
+
+θi(s)ds + Li(t) − X
+
+> (k,l )∈C i
+
+mk,l Uk(t), t ≥ 0, i = 1 , . . . , p. (30) The process ξi = {ξi(t) : t ≥ 0} is a Brownian motion that is defined as follows: 
+
+ξi(t) = X
+
+> (k,l )∈C i
+
+mk,l lX
+
+> j=1
+
+Xk,j (t), t ≥ 0, i = 1 , . . . , p. (31) Then ξ = ( ξi) is a p-dimensional Brownian motion with drift vector γ and covariance matrix Γ; see Equation (A.5) in Appendix A for formulae of γ and Γ. The pricing control ζ translates to a 
+
+p-dimensional drift-rate control process θ = {θ(t) : t ≥ 0} defined as follows: 
+
+θi(t) = X
+
+> (k,l )∈C i
+
+mk,l ζk(t), t ≥ 0, i = 1 , . . . , p. (32) We define the set of admissible drift rates for the workload problem, denoted by Θ, as follows: Θ = {θ ∈ Rp : ∃ζ ∈ RK such that θi = X
+
+> (k,l )∈C i
+
+mk,l ζk for i = 1 , . . . , p }. (33) Then we require that θ(t) ∈ Θ for t ≥ 0. Using Equation (26), one can define the state space Z of the (scaled) queue length process as follows: 
+
+Z =
+
+(
+
+z ∈ Rm 
+
+> +
+
+:
+
+> nk
+
+X
+
+> l=1
+
+zk,l ≤ βk, k = 1 , . . . , K 
+
+)
+
+, (34) which facilitates the definition of the state space W of the workload process W as follows: 
+
+W =
+
+w ∈ Rp 
+
+> +
+
+: ∃z ∈ Z such that wi = X
+
+> (k,l )∈C i
+
+mk,l lX
+
+> j=1
+
+zk,j , i = 1 , . . . , p 
+
+ . (35) 11 We write the state space constraint as 
+
+W (t) ∈ W for t ≥ 0. (36) Lastly, we define the cost function c(x) associated with the chosen drift rate θ(t) = x as follows: 
+
+c(x) = min 
+
+> ζ
+
+ζ′Hζ : X
+
+> (k,l )∈C i
+
+mk,l ζk = xi, i = 1 , . . . , p 
+
+ , x ∈ Θ. (37) The next lemma provides closed-form expressions for the cost function c(·) and the minimizer ζ∗
+
+in its definition (37). To facilitate its statement, we define the p × K dimensional workload matrix ˜M = ( ˜Mik ) as follows: ˜Mik = X
+
+> l:( k,l )∈C i
+
+mk,l for i = 1 , . . . , p and k = 1 , . . . , K, (38) where ˜Mik denotes the work content for server i embodied in a type k job arriving to the system. For a proof of Lemma 1, see Appendix B.2. 
+
+Lemma 1. For x ∈ Θ, we have that c(x) = x′( ˜M H −1 ˜M ′)†x and ζ∗(x) = H−1 ˜M ′( ˜M H −1 ˜M ′)†x,where the superscript † denotes pseudo-inverse. 
+
+Remark 1. The pseudo-inverse ( ˜M H −1 ˜M ′)† is needed because the positive semidefinite matrix ˜M H −1 ˜M ′ need not be of full rank in general, e.g., when p > K . When it is of full rank, one can replace the pseudo-inverse with the inverse. The workload problem is then stated as follows: Given initial state W (0) = w ∈ W , choose an adapted control ( L, U, θ ) so as to minimize J(w; L, U, θ ) = E
+
+Z ∞
+
+> 0
+
+e−˜rt (c(θ(t)) dt + α · dU (t)) 
+
+
+
+(39) subject to (27), (30) and (36). We then define its value function, denoted by V , as follows: 
+
+V (w) = inf  
+
+> L,U,θ
+
+J(w; L, U, θ ), w ∈ W . (40) Proposition 1 establishes an equivalence between the Brownian control problem (28) and the workload problem (39); see Appendix B.3 for its proof. 
+
+Proposition 1. The workload problem (39) is equivalent to the Brownian control problem (28) in the following sense: 
+
+12 i) Suppose that (U, Y, ζ ) is an admissible control for Brownian control problem (28) with Brownian motion X and state process Z. Then (L, U, θ ) defined by (24) and (32) is an admissible control for the workload problem (39) with Brownian motion ξ given by (31) and state process W given by (29). Moreover, the cost of control (L, U, θ ) for workload problem (39) is less than or equal to the cost of control (U, Y, ζ ) for the Brownian control problem (28). ii) Suppose that (L, U, θ ) is an admissible control for the workload problem (39) with Brownian motion ξ and state process W . Then, there exists a Brownian motion X that satisfies (31). Furthermore, there exists (U, Y, ζ ) that is an admissible control for the Brownian control problem (28) with Brownian motion X and state process Z satisfying (26) and (29). These two policies have the same cost. 
+
+Although it is simpler than the Brownian control problem (28), the workload problem (39) remains multi-dimensional and does not admit a closed-form solution. In the next section, we develop a computational method to solve it that relies on the neural network technology. 
+
+# 6 Computational Method 
+
+This section develops the computational method to solve the workload problem (39). To solve the workload problem, that is a singular control problem, we approximate it by a drift control problem, following Ata et al. (2024a). As a preliminary to that analysis, we introduce some auxiliary notation in the next subsection. Sections 6.2–6.5 describe the computational method. Then we propose a policy for the workload problem in Section 6.6. 
+
+6.1 Auxiliary Definitions 
+
+For the workload problem (39), we define the ( p + K)-dimensional process U as follows: 
+
+U = LU
+
+!
+
+(41) that combines the p-dimensional idleness process L and the K-dimensional outsourcing process U .The pushing directions associated with the singular control U are given by the columns of the 
+
+p × (p + K) matrix ˜G given next ˜G =
+
+
+
+Ip − ˜M
+
+
+
+, (42) where Ip is the p-dimensional identity matrix and is associated with the idleness process L(·), and ˜M
+
+is defined in Equation (38) and associated with the outsourcing process U (·). The ( p+K)-dimensional cost rate vector associated with the singular control U, denoted by ˜ α, is defined as follows: ˜α = 0p
+
+α
+
+!
+
+, (43) 13 where 0 p is the p-dimensional vector of zeros. Using this notation, we rewrite Equation (30), which describes the evolution of the workload process, as follows: 
+
+W (t) = W (0) + ξ(t) + 
+
+Z t
+
+> 0
+
+θ(s)ds + ˜G U(t), t ≥ 0. (44) In addition, the singular control process U satisfies the following: 
+
+U(·) is continuous and non-decreasing with U(0) = 0 . (45) We can then re-express the workload problem (39) as follows: Given initial state W (0) = w ∈ W ,choose a non-anticipating control ( U, θ ) so as to minimize J(w; U, θ ) = E
+
+Z ∞
+
+> 0
+
+e−˜rt (c(θ(t)) dt + ˜ α · d U(t)) 
+
+
+
+, (46) subject to (36), (44) and (45). Then the value function V , defined in (40), can be expressed equivalently as follows: 
+
+V (w) = inf  
+
+> U,θ
+
+J(w; U, θ ), w ∈ W . (47) To facilitate the analysis to follow, we represent the bounded convex polyhedral state space W
+
+as the intersection of half spaces as done in Dai and Williams (1996). To this end, let J denote the number of associated hyperplanes. Also let J = {1, . . . , J } and {σj , j ∈ J } denote the set of unit vectors that are normal to the faces of the state space W, pointing towards the interior of the state space. Thus, we write 
+
+W = {w ∈ Rp : σj · w ≥ hj for all j ∈ J } , (48) where hj is the constant defining the hyperplane associated with the unit normal vector σj for j ∈ J .In addition, we define the ( p − 1)-dimensional faces of W as 
+
+Fj = {w ∈ W : σj · w = hj }, j ∈ J . (49) 
+
+6.2 Approximation of the Workload Problem by a Drift Control Problem 
+
+The primary objective of our computational method is to solve the workload problem (46), a multi-dimensional singular control problem. Ata et al. (2024a) proposes a computational method for solving high-dimensional singular control problems that approximates them by a drift control problem. We build on their approach and replace the singular control U with a drift control Ub, where 
+
+Ub(t) = 
+
+Z t
+
+> 0
+
+ψ(s)ds, t ≥ 0. (50) 14 Here, ψ(·) is a ( p + K)-dimensional drift rate process that satisfies the following: 
+
+ψi(t) ∈ [0 , b ] for t ≥ 0 and i = 1 , . . . , p + K, (51) where b is a given constant that can be viewed as a tuning parameter. In addition, we introduce a J-dimensional backup control Υ( ·) where Υ j is the backup control assigned to face Fj and its pushing direction is denoted by ˆ gj . We further require that the backup control satisfies the following: Υ is adapted to ξ, continuous and non-decreasing with Υ(0) = 0 , (52) Υj (·) only increases at times t ≥ 0 when W (t) ∈ Fj , j = 1 , . . . , J. (53) Letting ˆG = (ˆ g1, . . . , ˆgJ ), the approximation corresponds to replacing the singular control term ˜G U(t)by ˜G Ub(t) + ˆGΥ( t). This approximation gives rise to the following system dynamics equation for the approximating drift control problem: 
+
+W (t) = W (0) + ξ(t) + 
+
+Z t
+
+> 0
+
+θ(s)ds +
+
+Z t
+
+> 0
+
+˜Gψ (s)ds + ˆGΥ( t), t ≥ 0. (54) For j = 1 , . . . , J , we assume there exist aj ∈ Rp+K 
+
+> +
+
+such that ˆ gj = ˜Ga j . That is, ˆ gj belongs to the convex cone of the pushing directions ˜ g1, . . . , ˜gp+K , the columns of matrix ˜G. Then we set ˆαj = aj · ˜α for j = 1 , . . . , J, 
+
+which corresponds to the cost rate associated with the backup singular control Υ j . And we let ˆα = (ˆ αj ) denote the corresponding J-dimensional cost rate vector. 
+
+Remark 2. As noted in Ata et al. (2024a), one might make the backup control slightly more expensive than approximating drift control. For our backup controls, we increase their cost slightly to discourage their use and to encourage the use of drift controls that approximate the singular controls. Of course, we require that W (t) ∈ W for t ≥ 0. More will be said about this requirement in Appendix C.1. Assuming for now that one can choose the backup control Υ( ·) to ensure this, we next state the approximating drift-control problem: Choose non-anticipating drift controls θ(·) and 
+
+ψ(·) to minimize ˜J(w; θ, ψ ) = E
+
+Z ∞
+
+> 0
+
+e−˜rt  c(θ(t)) + ˜ α · ψ(t)dt + ˆ α · dΥ( t)
+
+
+
+, (55) subject to (36), (51)–(54). And the corresponding value function, denoted by ˜V , is given as follows: ˜V (w) = inf 
+
+> θ,ψ
+
+˜J(w; θ, ψ ), w ∈ W . (56) In order to solve the approximating drift-rate control problem, we consider the associated Hamilton-Jacobi-Bellman (HJB) equation in the next section. 15 6.3 HJB Equation 
+
+As a preliminary to introducing the HJB equation, given a function f : Rp → R that is twice continuously differentiable, we let ∇f define its gradient and let L be the second-order differential operator defined as 
+
+Lf = γ · ∇ f + 12
+
+> p
+
+X
+
+> i=1
+> p
+
+X
+
+> j=1
+
+Γij 
+
+∂2f∂w i∂w j
+
+,
+
+where γ and Γ are drift and variance parameters of Brownian motion ξ. We also define a first-order differential operator Df = ˆG⊤∇f , which corresponds to the directional derivatives at the boundary of the state space along the specified pushing direction for each face. Following Ata et al. (2025a), it is straightforward to derive the HJB equation, to be solved for the value function ˜V , as follows: 
+
+L ˜V (w) + min  
+
+> θ∈Θ
+
+{∇ ˜V (w) · θ + c(θ)} + min  
+
+> ψ∈[0 ,b ]p+K
+
+{( ˜G⊤∇ ˜V (w) + ˜ α) · ψ} = ˜ r ˜V (w), w ∈ W , (57) with boundary conditions 
+
+Dj ˜V (w) = −ˆαj for w ∈ Fj , j = 1 , . . . , J. (58) Moreover, the policy 
+
+θ∗(w) = argmin 
+
+> θ∈Θ
+
+{∇ ˜V (w) · θ + c(θ)} and ψ∗(w) = argmin 
+
+> ψ∈[0 ,b ]p+K
+
+{( ˜G⊤∇ ˜V (w) + ˜ α) · ψ}, w ∈ W (59) is optimal for the approximating drift rate control problem. Since c(θ) according to Lemma 1 is a quadratic function of θ, the optimal drift control θ∗(w) in (59) is given as follows: 
+
+θ∗(w) = − 12 ˜M H −1 ˜M ′∇ ˜V (w), w ∈ W . (60) One can verify that θ∗(w) ∈ Θ. Also, note that it is linear with respect to the gradient ∇ ˜V (w). The optimal (approximating) drift control ψ∗(w) in (59) is given as follows: for i = 1 , . . . , p + K,
+
+ψ∗ 
+
+> i
+
+(w) = 
+
+( b if ˜ gi · ∇ ˜V (w) + ˜ αi ≤ 0,
+
+0 otherwise, (61) where ˜ gi is the ith column of ˜G.
+
+6.4 Reference Process 
+
+A key element of the computational method is the reference policy that we choose as one involving constant drift controls, i.e., θ(t) = ˜θ and ψ(t) = ˜ψ for t ≥ 0. Also letting B(t) = ξ(t) − γt for t ≥ 0so that B is a driftless Brownian motion with covariance matrix Γ, the evolution of the controlled workload process ˜W under the reference policy can then be expressed as follows: ˜W (t) = ˜W (0) + γt + B(t) + ˜θt + ˜G ˜ψt + ˆG ˜Υ( t), (62) 16 where ˜Υ is the backup singular process that uses the pushing direction ˆ gj on face Fj of the state space W for j = 1 , . . . , J . We refer to the process ˜W (·) as the reference process. Intuitively, one seeks to choose a reference policy ( ˜θ, ˜ψ) so that the resulting sample paths of the reference process tend to occupy parts of the state space that the optimal policy is expected to visit frequently. This has been observed in prior literature, e.g., Ata et al. (2025a) and Ata and Ka¸ sıkaralar (2026a). In our context, the reference process should also generate sufficiently many samples near the boundary, especially the upper faces where the costly controls may be used. Thus, learning the gradient is essential for making sound control decisions. Appendix C.1 argues that one can choose the pushing directions of the backup singular control ˜Υ so that the reference process ˜W (·) is well defined for our problem. 
+
+6.5 An Equivalent SDE and the Solution Method 
+
+To solve the multi-dimensional HJB equation (57)–(58), we build on Ata et al. (2025a) and develop a neural network-based computational method tailored for problems with a bounded convex polyhedral state space. The key idea is to derive a stochastic differential equation (SDE) that is equivalent to the HJB equation (57)–(58). Utilizing the reference process introduced in Section 6.4, Proposition 2 derives that SDE, where the value function ˜V and its gradient ∇ ˜V are the unknown functions of interest. In what follows, we compute them using the identity given in Equation (63); see Appendix B.4 for the proof of Proposition 2. 
+
+Proposition 2. If ˜V is a C2 function with polynomial growth that satisfies the HJB equation (57)– (58), then it satisfies the following SDE almost surely for any T > 0:
+
+e−˜rT ˜V ( ˜W (T )) − ˜V ( ˜W (0)) = 
+
+Z T
+
+> 0
+
+e−˜rt ∇ ˜V ( ˜W (t)) · dB (t)
+
+−
+
+Z T
+
+> 0
+
+e−˜rt F (∇ ˜V ( ˜W (t))) dt −
+
+Z T
+
+> 0
+
+e−˜rt ˆα · d ˜Υ( t), (63) 
+
+where function F : Rp → R is defined as 
+
+F (x) = −x · ˜θ + min  
+
+> θ∈Θ
+
+{x · θ + c(θ)} − ( ˜G⊤x) · ˜ψ + min  
+
+> ψ∈[0 ,b ]p+K
+
+{( ˜G⊤x + ˜ α) · ψ}. (64) To compute the value function ˜V and its gradient ∇ ˜V using identity (63), we proceed in four steps (see Algorithm 1 for details). First, we simulate workload process ˜W under reference policy (˜θ, ˜ψ), which will be used as the neural network training data. To be specific, with a chosen time horizon T , we simulate ¯B independent time-discretized paths of workload process under reference policy using discretization step h (assuming N := T /h is an integer), and store the following time-discretized workload paths, backup singular control increments, and Brownian increments as data: 
+
+{( ˜W (i)(t), ∆ ˜Υ(i)(t), ∆B(i)(t)) , t = 0 , h, . . . , T }, i = 1 , . . . , ¯B, where the superscript ( i) represents ith 17 simulated path and ¯B denotes the batch size. Algorithm 2 in Appendix C.2 provides a detailed description of the first step. Second, we parameterize functions ˜V (·) and its gradient ∇ ˜V (·) in identity (63) by two different neural networks Vw1 (·) and Gw2 (·), where w1 and w2 denote the parameters in two neural networks, respectively. The consistency requirement of parameterizing value function ˜V (·) and gradient func-tion ∇ ˜V (·) by different neural networks is justified in Proposition 3 of Ata et al. (2025a) for their setting. Namely, their results suggest the following conjecture: If functions ˜V (·) and G(·) solve 
+
+e−˜rT ˜V ( ˜W (T )) − ˜V ( ˜W (0)) = 
+
+Z T
+
+> 0
+
+e−˜rt G( ˜W (t)) · dB (t)
+
+−
+
+Z T
+
+> 0
+
+e−˜rt F (G( ˜W (t))) dt −
+
+Z T
+
+> 0
+
+e−˜rt ˆα · d ˜Υ( t), (65) then G(·) = ∇ ˜V (·) and ˜V (·) solves HJB equation (57)–(58). For brevity, we do not pursue the proof of this conjecture. Third, we construct the loss function as the expected squared error that arises in the identity (63) when the neural network approximations Vw1 (·) and Gw2 (·) are substituted for the value function ˜V
+
+and its gradient ∇ ˜V :
+
+ℓ(w1, w 2) = E
+
+ 
+
+e−˜rT Vw1 ( ˜W (T )) − Vw1 ( ˜W (0)) −
+
+Z T
+
+> 0
+
+e−˜rt Gw2 ( ˜W (t)) · dB (t)+
+
+Z T
+
+> 0
+
+e−˜rt F (Gw2 ( ˜W (t))) dt +
+
+Z T
+
+> 0
+
+e−˜rt ˆα · d ˜Υ( t)
+
+2
+
+, (66) and derive its time-discretized version—the integrals are replaced by the approximating sums. More specifically, we define empirical loss as follows. ˆℓ(w1, w 2) = 1¯B
+
+> ¯B
+
+X
+
+> i=1
+
+
+
+e−˜rT Vw1 ( ˜W (i)(T )) − Vw1 ( ˜W (i)(0)) − 
+
+> N−1
+
+X
+
+> j=0
+
+e−˜rhj Gw2 ( ˜W (i)(hj )) · ∆B(i)(hj )+ 
+
+> N−1
+
+X
+
+> j=0
+
+e−˜rhj F (Gw2 ( ˜W (i)(hj ))) h + 
+
+> N−1
+
+X
+
+> j=0
+
+e−˜rhj ˆα · ∆ ˜Υ(i)(hj )
+
+2
+
+. (67) Lastly, we learn the weight vectors ( w1, w 2) of neural networks Vw1 (·) and Gw2 (·) by minimizing empirical loss (67) using a standard optimizer; see Algorithm 1. 
+
+6.6 Proposed Policy for the Workload Problem 
+
+Having solved value function Vw1 (·) and gradient function Gw2 (·), we propose the drift and singular controls as follows. First, the proposed drift control is 
+
+θ∗(w) = − 12 ˜M H −1 ˜M ′Gw2 (w), w ∈ W . (68) 18 Algorithm 1: Computational method for solving equivalent SDE (63). 
+
+Input: Number of iteration steps ¯M , batch size ¯B, time horizon T , discretization step size h with 
+
+N := T /h ∈ N, starting point w, and an optimization solver (SGD, ADAM, RMSProp, etc.). 
+
+Output: Neural network approximations of the value function Vw1 (·) and gradient function Gw2 (·). Initialize the neural networks Vw1 (·) and Gw2 (·); set w(i)1 = w for i = 1 , 2, . . . , ¯B;
+
+for k ← 1 to ¯M do 
+
+Simulate ¯B discretized workload paths, backup singular control increments, and Brownian increments { ˜W (i), ∆ ˜Υ(i), ∆B(i)} starting from ˜W (i)(0) = w(i) 
+
+> k
+
+by invoking Discretize (T , h,
+
+w(i) 
+
+> k
+
+) for i = 1 , . . . , ¯B;Compute the empirical loss ˆℓ(w1, w 2) based on Equation (67); Compute the gradients ∂ ˆℓ/∂w 1 and ∂ ˆℓ/∂w 2, and update w1, w 2 using the chosen optimization solver; Update w(i) 
+
+> k+1
+
+← ˜W (i)(T ); 
+
+return Vw1 (·) and Gw2 (·); 
+
+Second, the proposed singular control is active only at the boundary ∂W of the state space W. For any interior point w of face Fj (j ∈ J ), the index of proposed singular control is 
+
+i∗(w) ∈ argmin  
+
+> i: ˜ gi·σj>0
+
+˜gi · Gw2 (w) + ˜ αi
+
+˜gi · σj
+
+, (69) where ˜ gi (resp. ˜ αi) is the pushing direction (resp. cost rate) of singular control Ui, and σj is the unit vector normal to face Fj and pointing towards interior of state space W. The denominator ˜ gi · σj is the amount of displacement along the inward unit normal vector σj per unit of pushing along the direction ˜ gi, and acts as a normalization factor. Our proposed singular control is Ui∗(w). It seeks to choose the pushing direction with the lowest cost per unit of displacement among those pushing directions pointing to the interior of the state space. The definition in Equation (69) is restricted in two ways. First, we consider only pure singular controls, as these admit a direct implementation in the original queueing network. Second, Equation (69) specifies a pushing direction only at the interior of each face. For completeness, we define the singular control for the remaining boundary points, i.e., the points that lie at the intersection of multiple faces, by simply fixing an arbitrary pushing direction that points to the interior of the state space. One can show that the existence of such pushing directions follows from Proposition 3; see Appendix C.1. As will be seen in the next section, the proposed drift and singular controls (68)–(69) have straightforward interpretations in original queueing system. And we build on these to propose an integrated pricing, outsourcing, and scheduling policy. 19 7 Proposed Policy 
+
+In this section, we propose a policy for the original queueing system that consists of three components: outsourcing and (discretionary) idling, i.e., pushing, pricing, and scheduling. We introduce the three components of the proposed policy in Sections 7.1–7.3, respectively, and describe how to choose policy parameters in Section 7.4. The pricing, outsourcing, and discretionary idling policies proposed for the original queueing network are derived from the solution to the workload problem. Of these three components, the pricing policy follows relatively directly from the drift-rate control policy for the workload problem, subject to a few nuances discussed below. By contrast, the construction of the outsourcing and dis-cretionary idling policies is more involved. To design these policies, we carefully emulate the singular control policy for the workload problem characterized in Equation (69), introducing the necessary modifications to accommodate the original queueing network. We next describe the resulting policy in detail. As a preliminary, we fix a system parameter n and introduce the unscaled (or nominal) workload process W n = {W n(t) : t ≥ 0} in the nth system. Given n and queue length Qn in nth system, we define W n by 
+
+W ni (t) = X
+
+> (k,l )∈C i
+
+mk,l lX
+
+> j=1
+
+Qnk,j (t), t ≥ 0, i = 1 , . . . , p, (70) which can be seen as a prelimit version of (29), i.e., W ni (t) ≈ √nW i(t) for large n.Then we define the corresponding state space of W n, by first introducing a notation Qn repre-senting the state space of queue-length process Qn:
+
+Qn =
+
+(
+
+x ∈ Rm 
+
+> +
+
+:
+
+> nk
+
+X
+
+> l=1
+
+xk,l ≤ qnk , k = 1 , . . . , K 
+
+)
+
+, (71) then we write the state space of W n as 
+
+Wn =
+
+w ∈ Rp 
+
+> +
+
+: ∃x ∈ Q n such that wi = X
+
+> (k,l )∈C i
+
+mk,l lX
+
+> j=1
+
+xk,j , i = 1 , . . . , p 
+
+ . (72) One can verify that Wn = √nW, where W is the state space of (limiting) workload process W as defined in Equation (35). Although the throughput-time constraints can be satisfied asymptotically in the heavy-traffic limit, in the prelimit systems they can only be guaranteed to hold with high probability. To achieve such a guarantee, we adopt a two-pronged approach. First, we modify the intended state space 
+
+Wn, possibly shrinking it by a factor ρ, so that the maximum probability of violating a throughput-time constraint is below a prescribed tolerance ε, such as ε = 1%. Second, we introduce a band surrounding Wn that governs the control policy whenever the process exits the set Wn.20 More specifically, we first consider a family of policies parameterized by ρ > 0, under which the queue-length bounds are scaled as follows: qnk (ρ) = ρ·qnk , k = 1 , . . . , K . The parameter ρ controls the degree of conservatism of the policy and will be chosen to ensure that the prescribed probability-of-violation requirement is satisfied. Both limiting scaled and prelimit unscaled workload state spaces are parameterized by ρ:
+
+Wρ = ρW and Wnρ = ρ√nW. (73) For each value of ρ, one therefore formulates a Brownian control problem and solves it following our method in Sections 4–6 to obtain a gradient function Gw2 (·; ρ). A similar treatment on queue-lengths bounds can be found in Ata (2006) and Rubino and Ata (2009). We discuss how to choose parameter 
+
+ρ in Section 7.4. Next, we introduce the band surrounding Wnρ . While the workload process W n remains within this band, the proposed outsourcing and discretionary idling policies emulate the singular policy applied at the boundary of the state space Wρ in the workload problem. If W n moves beyond the band, we switch to an outsourcing-only safeguard policy to push the workload towards the state space. While the pricing, outsourcing, and discretionary idling policies follow from the limiting workload solution, the scheduling policy does not. Our scheduling policy builds on the maximum pressure policy (see, e.g., Dai and Lin (2005, 2008), Ata and Lin (2008)), a throughput-optimal scheduling rule for queueing networks. To account for the throughput-time constraints, we augment the standard pressure metric with a route-level congestion term. Lastly, we incorporate the notion of safety stocks (see, e.g., Harrison (1996, 1998), Maglaras (2000)) to mitigate unplanned idling. This modification is particularly important for networks such as the Rybko-Stolyar network, where the well-known mutual-blocking phenomenon can lead to severe performance degradation. 
+
+7.1 Proposed Outsourcing and Discretionary Idling Policies 
+
+As a preliminary to introducing our proposed outsourcing and discretionary idling policies, we rep-resent the prelimit state space Wnρ as the intersection of half-spaces: 
+
+Wnρ = {w ∈ Rp : σj · w ≥ hnj (ρ) for j ∈ J } , (74) where hnj (ρ) := √nρh j ; cf. Equation (48). In order to define the aforementioned band, we first introduce an enlarged state space with parameter ϵn > 0 as 
+
+Wnρ (ϵn) = w ∈ Rp 
+
+> +
+
+: σj · w ≥ hnj (ρ) − ϵn for j ∈ J . (75) Then we define the band as Bnρ (ϵn) = Wnρ (ϵn) \ W nρ . The parameter ϵn measures the width of the band Bnρ (ϵn), and we discuss how to set it in Section 7.4. In what follows we refer to the region outside enlarged state space, i.e., Rp
+
+> +
+
+\W nρ (ϵn), as the region beyond the band. 21 w1 
+
+> w2
+> F1
+> F2
+> F3
+> F4
+> F5
+> F6
+> E1
+> E2
+> E3
+> E4
+> C1C2
+> C3
+> State space Enlarged state space Face-interior band subsets Corner band subsets
+
+Figure 1: Illustration of prelimit band structure. Figure 1 illustrates these definitions for the Rybko-Stolyar example. The gray region corresponds to Wnρ , while the larger region enclosing it is Wnρ (ϵn). The difference between these two regions forms the band, which is further partitioned into the subsets E1, . . . , E 4, shown in blue, and C1, . . . , C 3,shown in pink. We refer to E1, . . . , E 4 as the face-interior band subsets . For example, E4 encloses the interior points of the face F5 of Wnρ , where the faces of Wnρ are denoted by F1, . . . , F 6. Similarly, we refer to C1, C 2, and C3 as the corner band subsets . For example, C1 surrounds the corner formed by the intersection of faces F2 and F3. For points in the corner band subsets, C1, . . . , C 3, multiple half-space constraints are violated. In contrast, for points in the face-interior band subsets, E1, . . . , E 4,only one half-space constraint is violated. To define these sets formally, we introduce the set 
+
+Kout (w) = {j ∈ J : σj · w < h nj (ρ)}, (76) which denotes the set of violated half-space constraints at workload w. Also, its cardinality |K out (w)|
+
+gives the number of such violations. For sets as in E1, . . . , E 4 we have |K out (w)| = 1 whereas for w
+
+in C1, C 2 and C3, |K out (w)| = 2. Our outsourcing and discretionary idling policies are applied only when the workload leaves the state space Wnρ . We distinguish among three cases, depending on where the workload lies: (i) the face-interior band subsets; (ii) the corner band subsets; and (iii) the region beyond the band. Before describing our proposed policy, two subtleties are worth mentioning. First, we must specify which gradient value to use for decision-making when the workload vector w / ∈ W nρ . This issue arises because the neural network Gw2 (w; ρ), which approximates the gradient vector, is trained on Wnρ and therefore it is more accurate when w ∈ W nρ . When w / ∈ W nρ , we instead evaluate the gradient using the most recently observed workload vector in Wnρ . Specifically, let τ1, τ 2, . . . denote the successive exit times of the workload process W n(t) from Wnρ . Thus, for each ℓ ≥ 1, 
+
+W n(τℓ) /∈ W nρ .
+
+Between τℓ and τℓ+1 , the process returns to Wnρ and remains there until its next exit at time τℓ+1 .22 For any time t at which W n(t) /∈ W nρ , define 
+
+ℓ∗(t) = sup {ℓ ≥ 1 : τℓ ≤ t}.
+
+Then τℓ∗(t) is the most recent exit time before t, and W n(τ −
+
+> ℓ∗(t)
+
+) is the last workload vector observed in Wnρ . Accordingly, we use the gradient estimate eG(t), defined as follows: 
+
+eG(t) = 
+
+
+
+Gw2
+
+ W n(t) 
+
+> √n
+
+; ρ
+
+
+
+, if W n(t) ∈ W nρ ,Gw2
+
+ W n(τ − 
+
+> ℓ∗(t))
+> √n
+
+; ρ
+
+
+
+, otherwise. (77) Second, as mentioned earlier, safety stocks will be used to facilitate coordination among servers. Consequently, some servers may be required to operate to maintain the safety stocks of their down-stream buffers. This requirement precludes deliberately idling these servers, even when the pushing control associated with the workload problem prescribes doing so. This issue arises under our pro-posed policy only when the workload process lies within a face-interior band subset and will be discussed further when we examine that case. More specifically, fix a safety-stock vector s = ( sk,l ). The system manager may exercise discre-tionary idleness for server i, i = 1 , . . . , p , if the downstream buffer of each of its nonempty buffers contains more jobs than its safety-stock level. Let S(t) denote the set of servers that may be idled at time t ≥ 0; that is, 
+
+S(t) = {i = 1 , . . . , p : ∀(k, l ) ∈ C i with Qk,l (t) > 0, Q k,l +1 (t) ≥ sk,l +1 }. (78) In what follows, discretionary idling at time t is permitted only for servers in S(t). We also let 
+
+A = {p + 1 , . . . , p + K} denote the set of pushing directions associated with outsourcing decisions. Next, we describe the proposed outsourcing and discretionary-idling policies for the two types of subsets of the band surrounding the state space of the unscaled workload process. 
+
+Face-interior band subsets. Recall that when the workload process lies in such a subset, exactly one half-space constraint is violated; that is, Kout (W n(t)) is a singleton. For concreteness, suppose that Kout (W n(t)) = {j}, and σj is the inward-pointing unit normal to the face Fj . We then choose the index i∗ of the proposed pushing direction as follows: 
+
+i∗ ∈ argmin  
+
+> i∈S(t)∪A : ˜ gi·σj>0
+
+˜gi · eG(t) + ˜ αi
+
+˜gi · σj
+
+. (79) If i∗ ∈ S(t), the system manager idles server i∗. If instead i∗ ∈ A , she outsources the corresponding product type. Under the indexing conventions used in the definition of A and in (41)–(44), the set of outsourced product type is i∗ − p.
+
+Corner band subsets and beyond the band. Recall that when the workload vector lies in a corner-band subset, more than one half-space constraint is violated; that is, Kout (W n(t)) > 1. For 23 simplicity, we restrict attention in this case to outsourcing controls. For each j ∈ K out (W n(t)), we choose the index i∗(j) of a pushing direction as follows: 
+
+i∗(j) ∈ argmin  
+
+> i∈A : ˜ gi·σj>0
+
+˜gi · eG(t) + ˜ αi
+
+˜gi · σj
+
+, (80) and we apply the pushing controls i∗(j) : j ∈ K out (W n(t)) simultaneously, thereby outsourcing the corresponding product types. Under the indexing convention used to define A, the set of outsourced product types is i∗(j) − p : j ∈ K out (W n(t)) . We proceed in the same manner, when the workload vector is in neither the state space nor the band, i.e., it is beyond the band. 
+
+Remark 3. The feasible index set in Equations (79)–(80) might be empty for some violated face in general. In that case, we define this outsourcing backup policy: at each arrival time t, we outsource new arrivals of type-k (k = 1 , . . . , K ) order if its total queue length is at or above bound qnk (ρ), i.e., 
+
+Pnk 
+
+> l=1
+
+Qnk,l (t) ≥ qnk (ρ). This policy remains active until the workload returns to state space Wnρ . This case does not arise in our test problems (see Section 8.1). 
+
+7.2 Proposed Pricing Policy 
+
+As a preliminary to introducing our proposed pricing policy, we first describe how prices are set dynamically under the drift-rate control policy {ζ(t) : t ≥ 0} for the Brownian control problem (28): 
+
+pn(t) = Λ −1(λ∗) + ∇Λ−1(λ∗)ζ(t)
+
+√n , t ≥ 0. (81) Here, Λ −1(λ∗) is the vector of nominal prices, and ∇Λ−1(λ∗) is its Jacobian evaluated at λ∗. See Appendix B.5 for a derivation of (81) from (12) and (14). Recall from Lemma 1 and (68) that the optimal drift-rate control policy for the Brownian control problem is given by 
+
+− H−1 ˜M ′
+
+2 Gw2 (W n(t)/√n; ρ), t ≥ 0. (82) Substituting the proposed choice (82) for ζ(t) in (81) yields the proposed pricing policy: 
+
+pn(t) = Λ −1(λ∗) − 12√n
+
+ ∇Λ−1(λ∗)H−1 ˜M ′ eG(t), t ≥ 0. (83) Here, eG(t) is defined in (77) and evaluates the gradient on most recently observed workload vector in state space Wnρ .
+
+7.3 Proposed Scheduling Policy 
+
+Since scheduling does not have a direct counterpart in the workload problem, we design it separately by building on the maximum-pressure policy (see, e.g., Dai and Lin (2005, 2008), Ata and Lin 24 (2008)). To account for the throughput-time constraints, we augment the standard maximum-pressure policy in two ways. First, we add a route-level congestion term to the pressure of the last buffer on each route, so that jobs on routes close to their throughput-time bounds receive additional priority. Second, when deciding which buffer the server should serve next, we account for safety-stock requirements in the downstream buffer. More specifically, we let ∆ k(t; ˜ τ , ˜c) represent the congestion level of route k (k = 1 , . . . , K ) at time t, where ˜ τ is used in choosing the functional form of such term, and ˜ c ≥ 0 is tuning parameter therein. We provide two specific choices: ∆k(t; abs , ˜c) = 
+
+> nk
+
+X
+
+> l′=1
+
+Qnk,l ′ (t) −  qnk (ρ) − ˜c, (84) ∆k(t; rel , ˜c) = 
+
+Pnk 
+
+> l′=1
+
+Qnk,l ′ (t)
+
+qnk (ρ) − ˜c. (85) For both choices, Pnk 
+
+> l′=1
+
+Qnk,l ′ (t) is the queue length of route k at time t and qnk (ρ) is its bound, and ˜c ≥ 0 is a tuning parameter. The form ∆ k(t; abs , ˜c) measures route-level congestion by the absolute distance of the route-k queue lengths from its bound, while the form ∆ k(t; rel , ˜c) measures congestion by the ratio of them. We consider both forms in our policy and treat the choice, i.e., ˜ τ ∈ { abs , rel },as a tuning parameter. Then, given queue length Qn(t) at time t in nth system and a tuning parameter ˜λ, we define the pressure term Pk,l (t) of buffer ( k, l ) at time t as 
+
+Pk,l (t) = 
+
+( Qnk,l (t) − Qnk,l +1 (t), if l < n k,Qnk,l (t) + ˜λ ∆k(t; ˜ τ , ˜c), if l = nk, for l = 1 , . . . , n k, k = 1 , . . . , K. (86) For each server i, the system manager makes prioritization decisions as follows. Suppose that server i does not exercise the discretionary idleness prescribed by the optimal pushing controls for the workload problem. The manager first checks whether the downstream buffer of any nonempty buffer served by server i is below its safety-stock level. If so, server i prioritizes one such buffer, where the choice among such buffers follows a fixed order. Otherwise, for each nonempty buffer ( k, l ) ∈ C i, the system manager computes the index μk,l Pk,l (t), and server i prioritizes the buffer with the highest index. The ties are broken deterministically according to the fixed order in implementation. The proposed scheduling policy is a modification of the maximum pressure policy. When ˜λ = 0 and safety stock s = 0 in our setting, the pressure comparison reduces to the standard maximum-pressure policy. The extra term ∆ k(t; ˜ τ , ˜c) for each route k is intended to help meet the associated throughput time constraint. When the system is not congested, this term is small and negative. In this case, meeting the throughput time constraints is not really a concern and the system manager prioritizes the upstream buffers to reduce unnecessary server idleness. However, when the system is congested, this term is larger and positive, reflecting the concern for the throughput time constraints. This leads to prioritizing the last buffer to help meet those constraints. 25 Tuning parameters in proposed scheduling policy include ˜ τ , ˜λ, ˜c, and s. We discuss how to set them, along with other policy parameters, in the next subsection. 
+
+7.4 Choosing Policy Parameters 
+
+Our proposed policy in Sections 7.1–7.3 includes policy parameters ρ, ϵn, s, ˜ τ , ˜λ, ˜ c. Regarding band-width ϵn, we choose it so that 
+
+ϵn = ϵ · nκ, κ ∈ (0 , 1/2) , (87) where κ is a constant and ϵ is a tuning parameter. The requirement κ ∈ (0 , 1/2) balances two considerations. First, since κ − 1/2 < 0, ϵn is small relative to √n, thus the scaled band enclosing the state space is also small. Second, because ϵn ≫ 1 as n becomes large, the probability that the workload process moves beyond the band is negligible. Now we have a family of parameters to determine: ρ, ϵ, s, ˜ τ , ˜λ, ˜ c. For simplicity, we use a common safety-stock parameter s; that is, sk,l = s for all ( k, l ). We determine the best value of these parameters via simulation-based search, where the objective is to ensure delay probabilities of all routes do not exceed ε = 1% while minimizing cost in the original system. To be specific, for each candidate value of ρ, we first solve the corresponding Brownian control problem and obtain the neural-network approximation of the gradient function Gw2 (·; ρ) (see Section 6). We then evaluate the full grid of the remaining five parameters using this gradient Gw2 (·; ρ). Repeating the above procedure for every candidate value of ρ amounts to an exhaustive search over the full six-dimensional parameter grid. Although the search is six-dimensional, the candidate sets for several parameters are small (e.g., safety stock s and scheduling form ˜ τ ∈ { abs , rel }), resulting in a total number of parameter combinations on the order of 10 4 in our test problems, making this brute-force search feasible; see search grid of each parameter in Table 9 of Appendix E.3. 
+
+# 8 Test Problems and Benchmark Policies 
+
+8.1 Test Problems 
+
+In this subsection, we introduce two test problems and describe their model primitives. The first is Rybko-Stolyar network (Rybko and Stolyar 1992) whose workload problem is two-dimensional. The second one is the extended criss-cross network, which builds on criss-cross network (Harrison and Wein 1989) and provides a set of high-dimensional problems: we consider a 3-dimensional case and a 10-dimensional case. For all test problems, we set system number as n = 400 and summarize model parameters for nth system in Table 1. 26 Table 1: Parameters in the nth system where n = 400. In the p-server extended criss-cross network, numerical values of parameters depend on p, the number of servers.                                                                    
+
+> Rybko–Stolyar network p-server extended criss-cross network Demand function Λ n(x)(316 .66 −63 .33 x1,316 .66 −63 .33 x2)(475 −95 x1, . . . , 475 −95 xp+1 )Production cost δn(1 ,1) (1 , . . . , 1) Nominal arrival rate ( λn)∗(126 .67 ,126 .67) (190 , . . . , 190) Nominal static price ( pn)∗(3 ,3) (3 , . . . , 3) Outsourcing cost νn(0 .05 ,0.125) (0 .05 , . . . , 0.05 ,0.025 p)Service rate μn(400 ,200 ,400 ,200) (400 , . . . , 400) Average utilization (0 .95 ,0.95) (0 .95 , . . . , 0.95) Throughput time bound dn(0 .33 ,0.33) (0 .15 , . . . , 0.15 ,0.225) for p= 3 (0 .15 , . . . , 0.15 ,0.6) for p= 10 Interest rate rn0.01 0.01 λ1(t)(1 ,1) (1 ,2) (2 ,2) (2 ,1) λ2(t)
+> S1S2
+
+Figure 2: Rybko-Stolyar network. 
+
+8.1.1 Rybko-Stolyar Network. 
+
+As shown in Figure 2, the Rybko-Stolyar network consists of p = 2 servers and K = 2 types of products. Demand of product 1 (resp. 2) arrives to the system according to a nonhomogeneous Poisson process with instantaneous rate λn 
+
+> 1
+
+(t) (resp. λn 
+
+> 2
+
+(t)) for t ≥ 0. Once arrived, type 1 (resp. 2) customer orders need service sequentially at servers 1 and 2 (resp. 2 and 1), and then leave the system. There are in total 4 classes of jobs and the jobs of each class reside in the corresponding buffer (represented by open-ended rectangle) both before and during the service. We assume that the service time at each queue is exponentially distributed. Second column of Table 1 summarizes all model primitives in Rybko-Stolyar network. The nominal arrival rate and service rate lead to an average utilization of 0 .95 for each server. Introduced by Rybko and Stolyar (1992), the Rybko-Stolyar network provides an example of a system which is unstable under a certain work-conserving static priority scheduling rule and certain parameter region, even when the average utilization of both servers is less than one. Our nominal arrival rate and mean service time in second column of Table 1 lie in such a region. If one regards the time unit in the nth system as three months, then the demand rate of each product is around 1 .5 per day, the average total production time for each product is around 2 /3days, the throughput time bound is about one month, and the annual interest rate is 4%. 27 λp+1 (t) (p + 1 , 1) S1 (p + 1 , 2) S2 · · · (p + 1 , p ) Sp   
+
+> (1 ,1)
+> λ1(t)(2 ,1)
+> λ2(t)(p, 1)
+> λp(t)
+
+Figure 3: Extended criss-cross network. 
+
+8.1.2 Extended Criss-cross Network. 
+
+Figure 3 shows a network with p servers and K = p + 1 routes, which builds on criss-cross network by adding more servers and routes to it, thus we refer to it as extended criss-cross network. In such a network, type i (i = 1 , . . . , p ) product needs service only at server i, whereas type p + 1 product needs service sequentially at all p servers. For convenience, we also refer to route 1 , . . . , p (resp. p+1) as a vertical (resp. the horizontal) route. As we vary p (i.e., the number of servers), we obtain a set of high-dimensional problems. We emphasize the dependence of network on parameter p by calling it p-server extended criss-cross network. Third column of Table 1 summarizes all model primitives in p-server extended criss-cross network. As can be seen from the table, our specific choice of model primitives also depends on parameter p.Regarding the throughput time bound, we choose the same throughput time bound dnv for all vertical routes, and dnh for the horizontal route. The values of dnv and dnh are set to be of moderate magnitude such that the control problem is neither “trivial” nor “infeasible”. Indeed, if the throughput time bounds are too large (resp. small), the control problem becomes less interesting (resp. infeasible), since throughput time requirement will be achieved with nearly zero control (resp. only with an excessive amount of outsourcing). In our computational results we separately consider a 3-server and a 10-server case, for which we set ( dnv , d nh) equal to (0 .15 , 0.225) and (0 .15 , 0.6) respectively. If one regards time unit in the nth system as three months, then the demand for each product is around 2 per day, the average production time for each service is around 1 /4 days, the throughput time bound is approximately 2 weeks for vertical routes and 3 (resp. 8) weeks for horizontal route in 3-server (resp. 10-server) case, and the annual interest rate is 4%. 
+
+8.2 Benchmark Policies 
+
+To assess the performance of our proposed policy, we consider 12 benchmark policies. More specifi-cally, we consider two alternatives for each of the three policy components that are briefly described in Table 2 and detailed in Appendices D.1–D.3. Regarding the scheduling component, we further include our proposed scheduling policy as an alternative, as it is independent from our neural network-28 based solution to workload problem. This allows us to distinguish the effect of the scheduling policy from those of the other policy components. Each benchmark policy contains tuning parameters in its three policy components (see Table 6 in Appendix D), and Appendix D.4 explains how these parameters are selected. Table 2: Benchmark policies in outsourcing and discretionary idling, pricing, and scheduling. 
+
+Policy Brief description 
+
+Panel A: Outsourcing and Discretionary Idling Benchmark Policies (Appendix D.1) Single pushing control per face policy Assigns a single pushing control to each face of the state space of the workload process based on instantaneous push-ing cost, otherwise mimics our proposed outsourcing and discretionary idling policies. 
+
+Threshold-based policy Outsources an arriving job of a product whenever the total number of jobs on its route exceeds a specified threshold. 
+
+Panel B: Pricing Benchmark Policies (Appendix D.2) Linear pricing policy Follows the dynamic pricing policy (81) prescribed by the Brownian control problem, and assumes a linear depen-dence of drift control ζ(t) in (81) on queue lengths in orig-inal system. 
+
+High-low pricing policy Follows the dynamic pricing policy (81) prescribed by the Brownian control problem, and sets different values for drift control ζ(t) in (81) depending on the number of jobs in each route relative to a specified threshold. 
+
+Panel C: Scheduling Benchmark Policies (Appendix D.3) Proposed scheduling policy See Section 7.3. 
+
+Least-relative-slack policy Defines an index of each buffer as the age of the oldest job relative to its throughput-time bound, prioritizes the buffer with the highest index, and further incorporates safety stocks. 
+
+Least-relative-slack policy based on queue lengths Rests on a similar idea as the least-relative-slack policy, but approximates the age using queueing lengths in current and upstream buffers (normalized by arrival rate of its route), and further incorporates safety stocks. 
+
+# 9 Computational Results 
+
+In this section, we present our computational results. We first present our proposed policy in Section 9.1, including our solution to the workload problem and the parameters of the proposed policy for the original system. Then we compare the performance of our proposed policy with the benchmark policies in Section 9.2, using Monte Carlo simulation. For all test problems, we provide details of the workload problem, the neural-network training, the Monte-Carlo simulation setup, and the computational burden in Appendix E. 29 9.1 Proposed Policy 
+
+We first present our proposed policy for the workload problem separately for two test problems, and interpret their direct implication for the outsourcing, discretionary idling, and pricing policy in the original system. Then we describe the parameters of our proposed policy, which are introduced in Section 7 and tuned as described in Section 7.4. 
+
+9.1.1 Proposed Policy for the Workload Problem for the Rybko-Stolyar Network. 
+
+As a preliminary to presenting our proposed policy for the workload problem, we illustrate the (limiting) workload state space. It is a two-dimensional polyhedron 
+
+W = w ∈ R2+ : w1, w 2 ≤ 6.67 , 2w1 − 8.89 ≤ w2 ≤ 0.5w1 + 4 .44 , (88) represented by the grey polygon in Figure 4. There are four singular controls L1, L2, U1, and U2,with pushing matrix ˜G and costs vector ˜ α given by ˜G = 1 0 −1.05 −2.10 0 1 −2.10 −1.05 
+
+!
+
+and ˜α =
+
+
+
+0 0 1 2.5
+
+⊤
+
+. (89) Here, the pushing direction of ith ( i = 1 , . . . , 4) singular control is given by ith column of matrix ˜G. Figure 4 plots the pushing directions of four singular controls as arrows with different colors. Note that all singular controls can be applied at any point of the state space, not restricted to the boundary points or the edge visually close to the plotted arrow. 0 2 4 6 8
+
+> w1
+> 02468
+> w2
+> F1
+> F2
+> F3
+> F4
+> F5
+> F6
+> W
+> L1
+> L2
+> U1
+> U2
+
+Figure 4: Workload problem of Rybko-Stolyar network. The polygon represents the state space 
+
+W. Arrows with different colors represent the pushing directions of four singular controls, including 
+
+Li (i = 1 , 2) and Uk (k = 1 , 2). It is worth mentioning that, at each face of state space multiple singular controls might be feasible (i.e., pointing towards the interior of state space), offering the flexibility in choosing singular controls at each boundary point. To facilitate the analysis, we let Fj (j = 1 , . . . , 6) denote six edges of state 30 space W in the clockwise order starting from the origin (see Figure 4), and identify the set of feasible singular controls on (interior of) each face Fj (j = 1 , . . . , 6): ({L1} { L1, U 1} { U1, U 2} { U1, U 2} { L2, U 2} { L2}) . (90) For example, both L1 and U1 can be used on face F2 (i.e., the upper-left edge) when it’s necessary to confine the workload process to the state space. Recall that our proposed singular control (69) selects one singular control among a feasible set (90) for each boundary point. Figure 5 draws the proposed active region of each singular control on the boundary of the state space. Two features stand out. First, the singular control U2 with high cost (see Equation (89)) is never used, and L1, L2, and U1 together partition the boundary. Second, a single face can host more than one singular control: on face F2 (i.e., the upper-left edge), L1 is used on the left segment and U1 on the right. Intuitively, when both discretionary idling and outsourcing controls are feasible on the same face, free discretionary idling is preferred at small workloads and costly outsourcing at large ones; we will see a similar pattern in next test problem. 
+
+Figure 5: Proposed singular control in workload problem of Rybko-Stolyar network. The red (resp. blue, green) region on the boundary of state space W represents the proposed active region of singular control L1 (resp. L2, U1), using the same color as the arrow representing its pushing direction. On face F2 (i.e., the upper-left edge), the active segment of U1 shows the long-term effect in-corporated in our proposed singular control (69), i.e., the gradient Gw2 (w). Indeed, for a policy that neglects such long-term effect (e.g., the single-pushing benchmark policy in Appendix D.1), the singular control L1 can be used on whole range of face F2.Next, we consider the implications of our proposed singular control for the original queueing network. First, we notice that a face in the workload problem represents a specific congestion scenario in the original system. Take face F2 as an example, it represents a scenario that the workload of two servers is not necessarily high but imbalanced, and route 1 is congested. In fact, on face F2 (i.e., 
+
+w2 = 0 .5w1 + 4 .44), the workload of server 2 is higher than (half of) that of server 1 by a significant 31 margin, and only route-1 jobs positively contribute to such margin. Second, given a congestion scenario, different feasible singular controls map to different ways in dealing with it. For example, on face F2, an active U1 (resp. L1) suggests that outsourcing route-1 product (resp. allocating more service capacity to route 1) is more economical in reducing congestion in route 1 when workload is high (resp. low). Now we present our proposed drift control for the workload problem. Recall that the proposed drift control (68) is a two-dimensional vector defined in the (limiting) state space W. We use the left and right panels of Figure 6 to show its first and second coordinates across the workload space (w1, w 2). Three features of proposed drift control stand out. First, each coordinate takes mostly negative values. Second, each coordinate becomes more negative as the corresponding workload component increases. Intuitively, when w lies close to the upper boundary of its state space, stronger drift control is favored because it steers the workload away from the boundary, where costly singular control would otherwise be used. Third, each coordinate is non-linear with respect to workload and is steeper for larger workloads. 
+
+Figure 6: Proposed drift control in workload problem of Rybko-Stolyar network. The left (resp. right) panel plots first (resp. second) coordinate of proposed drift control θ∗(w) across the workload space ( w1, w 2). Aforementioned three features in Figure 6 suggest the following properties of our proposed pricing control in the original system. First, the pricing control in our problem is mainly used to reduce the congestion level of the system. Second, this role is stronger as the congestion level increases. Third, the pricing control depends non-linearly on queue lengths in the original system. 
+
+9.1.2 Proposed Policy for the Workload Problem for the Extended Criss-cross Net-work. 
+
+As a preliminary to presenting our proposed policy for the workload problem, we describe the state space and singular controls. The state space is a p-dimensional bounded convex polyhedron 
+
+W = {w ∈ Rp 
+
+> +
+
+: wi ≤ wj + 10 dnv , 1 ≤ i < j ≤ p; wi ≤ 10 dnv + 10 dnh, 1 ≤ i ≤ p}, (91) 32 where dnv and dnh are throughput time bounds for vertical and horizontal routes respectively. There are in total 2 p + 1 singular controls, including p idling controls L1, . . . , L p and p + 1 outsourcing controls U1, . . . , U p+1 . The matrix ˜G of pushing directions and the associated cost rate vector ˜ α are given as follows: ˜G =
+
+
+
+1 −1.05 −1.05 . . . . . . ...1 −1.05 −1.05 
+
+ and ˜α =
+
+
+
+0 · · · 0 1 · · · 1 0.5p
+
+⊤
+
+,
+
+where ith column of matrix ˜G represents pushing direction of ith singular control ( i = 1 , . . . , 2p + 1). As seen in Equation (91), the faces of state space W can be classified into three types; see Table 3. For each type of face, one can identify the set of feasible (i.e., pointing towards the interior of state space) singular controls on (interior of) each face. For the first (resp. second and third) type of faces, there is only one (resp. two) feasible singular control. Table 3: Face classification of state space W in p-server extended criss-cross network.                                
+
+> Type Face Feasible singular controls Range iwi= 0 {Li}1≤i≤p
+> ii wi=wj+ 10 dnv{Lj, U i}1≤i < j ≤p
+> iii wi= 10 dnv+ 10 dnh{Ui, U p+1 }1≤i≤p
+
+Next, we describe our proposed policy for the workload problem in 3-server case (i.e., when p = 3). Figure 7 shows the state space and the singular controls, where the grey polyhedron represents the 3-dimensional state space W, and seven arrows with different colors represent pushing directions of singular controls Li (i = 1 , . . . , 3) and Uk (k = 1 , . . . , 4). As discussed earlier and shown in Table 3, the faces of the state space can be divided into three types. For the first type, there is only one feasible pushing direction for the faces. Thus, the singular-control decision is trivial for those faces. For the second (resp. third) type, the proposed singular control is shown in the first (resp. second) row of graphs in Figure 8. For each of the six figures, two pushing controls are used in different parts of the face. More specifically, for the first row of graphs, an idleness control is used virtually on the entire face and an outsourcing control is used only in a small part of the face. In contrast, for the graphs in the second row, each face is somewhat evenly split between two outsourcing controls. To study the performance of our proposed singular control displayed in Figure 8, we compare it with single-pushing benchmark policy (see Appendix D.1), which greedily minimizes instantaneous cost and would use idling controls L2, L 3, L 3 (resp. outsourcing controls U1, U 2, U 3) for three second-type (resp. third-type) faces. Lastly, we show our proposed drift control in 3-server problem. Figure 9 shows the three coordi-nates of it in three panels, each plotted as colored contours inside aforementioned three-dimensional polyhedral state space (see Figure 7). Similar to the Rybko-Stolyar problem (see Figure 6), the 33 Figure 7: Workload problem of 3-server extended criss-cross network. The grey polyhedron with black edges represents the state space W. Seven arrows with different colors represent pushing directions of singular controls, including Li (i = 1 , . . . , 3) and Uk (k = 1 , . . . , 4). 
+
+Figure 8: Proposed singular control in workload problem of 3-server extended criss-cross network. Each panel shows proposed active region of singular controls on each second- or third-type face of state space W (see Table 3). 34 proposed drift control in Figure 9 takes mostly negative values, has each coordinate growing in mag-nitude with corresponding workload component, and shows non-linearity with respect to workload. 
+
+Figure 9: Proposed drift control in workload problem of 3-server extended criss-cross network. The left (resp. middle, right) panel shows the first (resp. second, third) coordinate of proposed drift control θ∗(w) on three-dimensional state space W.For the workload problem in the 10-server case (i.e., when p = 10), a direct visualization of the proposed policy is not feasible due to the high dimensionality of the state space. Since both the proposed singular and drift controls are determined by the gradient of the value function (i.e., 
+
+Gw2 (·)), we instead examine two-dimensional slices of the 10-dimensional gradient. These slices exhibit qualitative patterns similar to those in the 3-server case; see Appendix F.1 for the gradient slices for both cases. 
+
+9.1.3 Tuning the Parameters of Our Proposed Policy for the Original Queueing Net-work. 
+
+Recall that our proposed policy in the original system (see Section 7) involves tuning parameters 
+
+ρ, ϵ, s, ˜τ , ˜λ, ˜c. To choose them, we conduct simulation-based grid search in the original system; see search procedure in Section 7.4 and implementation details in Appendix E.3. We set ˜ τ = abs in the Rybko-Stolyar problem (see Section 8.1.1) to avoid redundant computation, because two scheduling form choices ˜ τ ∈ { abs , rel } for that test problem are equivalent subject to a parameter transformation in ˜λ and ˜ c.Table 4 summarizes the tuning parameters for our proposed policy. Having ρ ≈ 1 in the Rybko-Stolyar problem means directly replacing throughput-time bound with queue lengths bound would lead to delay probabilities around ε = 1%. Having ρ < 1 in two extended criss-cross problems suggests that a tighter queue-length bound thus a stricter outsourcing policy is required to achieve delay-probability constraint. In our grid search we set ϵn = ϵ · n1/4, i.e., κ = 1 /4 in Equation (87), and search over ϵ. The reported value of ϵ with order 1 implies a small band width ϵn compared to (unscaled) state space Wnρ with order √n. The safety stock is s = 1 for the Rybko-Stolyar problem and s = 0 for both extended criss-cross problems. 35 Table 4: Tuning parameters for our proposed policy in the original system.                           
+
+> Test problem Bound scale ρBand width ϵSafety stock sScheduling (˜ τ, ˜λ, ˜ c)Rybko-Stolyar 1.02 11(abs ,20 ,13) 3-server extended criss-cross 0.91 10(rel ,80 ,0.87) 10-server extended criss-cross 0.93 1.50(abs ,6,6)
+
+9.2 Comparison with Benchmark Policies in Prelimit Simulation 
+
+Next, we examine the performance of our proposed policy by comparing it with the 12 benchmark policies (see brief description in Section 8.2 and details in Appendix D) using Monte Carlo simulation in the original system. For our proposed policy, the tuning parameters were given in Table 4. For benchmark policies, we conduct similar simulation-based grid search to tune their parameters in the original system; see search procedure in Appendix D.4 and implementation details in Appendix E.3. The resulting parameter values for each benchmark policy are given in Appendix F.2.1. We report the cost for each policy in Table 5, with standard errors shown in parentheses. Three panels correspond to results in three test problems. In each panel, the cost of proposed policy is given in first row with bold font, and each benchmark is represented by its outsourcing and discretionary idling, pricing, and scheduling components. We highlight the cost of the best benchmark (i.e., the benchmark with lowest cost) for each test problem by underlining it. For the delay performance of each policy included in Table 5, see Appendix F.2.2 for further details. Table 5 shows that our proposed policy significantly outperforms all 12 benchmark policies. Among the benchmark policies, the one that combines single-pushing, linear pricing, and the pro-posed scheduling policy performs the best in the Rybko-Stolyar and 3-server test problems, whereas the one that combines single-pushing, high-low pricing, and the proposed scheduling policy performs the best in the 10-server test problem. In the Rybko-Stolyar test problem (see Panel A), our proposed policy has cost 2 .93 and reduces the cost by 9 .6% in comparison with the best benchmark with cost 3.24. For the 3-server test problem (see Panel B), the best benchmark has cost of 14 .60 whereas our proposed policy has a cost of 13 .37, an 8 .4% improvement. Similarly, for the 10-server test problem (see Panel C), the best benchmark has a cost of 18 .92 whereas that for our proposed policy is 17 .37, an 8 .2% improvement. Additionally, the comparison of different benchmark policies presented in Table 5 shows that the proposed scheduling policy (inspired by the maximum pressure policy) is superior to the other two scheduling rules across three test problems. As an illustration, we present delay time distribution under different policies. Across our test problems, we find that the shape of delay time distribution mainly depends on the scheduling policy used. Therefore, we consider one representative policy for each scheduling policy. Figure 10 shows the results in the Rybko-Stolyar problem: the left panel for proposed policy with ˜ τ = abs, the middle 36 Table 5: Simulation results in the original system. Least-relative-slack (queues) denotes least-relative-slack policy based on queue lengths. Each policy uses the policy parameters given in Appendix F.2.1 that are obtained by a simulation-based search.                                                            
+
+> Panel A: Rybko-Stolyar network
+> Proposed policy 2.93 (0.03 )Single-pushing Threshold-based Benchmark policies Linear pricing High-low pricing Linear pricing High-low pricing Proposed scheduling 3.24 (0 .04) 3.25 (0 .04) 3.64 (0 .04) 3.59 (0 .04) Least-relative-slack 4.35 (0 .04) 4.42 (0 .04) 5.92 (0 .05) 6.01 (0 .05) Least-relative-slack (queues) 4.03 (0 .04) 4.15 (0 .04) 5.66 (0 .04) 5.80 (0 .05)
+> Panel B: 3-server extended criss-cross network
+> Proposed policy 13 .37 (0.14 )Single-pushing Threshold-based Benchmark policies Linear pricing High-low pricing Linear pricing High-low pricing Proposed scheduling 14 .60 (0 .15) 14 .84 (0 .16) 15 .52 (0 .15) 15 .63 (0 .15) Least-relative-slack 16 .60 (0 .16) 16 .73 (0 .16) 17 .77 (0 .15) 18 .25 (0 .15) Least-relative-slack (queues) 23 .59 (0 .17) 24 .20 (0 .17) 20 .44 (0 .16) 20 .71 (0 .17)
+> Panel C: 10 -server extended criss-cross network
+> Proposed policy 17 .37 (0.45 )Single-pushing Threshold-based Benchmark policies Linear pricing High-low pricing Linear pricing High-low pricing Proposed scheduling 18 .93 (0 .46) 18 .92 (0 .44) 23 .11 (0 .56) 25 .80 (0 .58) Least-relative-slack 28 .43 (0 .62) 28 .49 (0 .58) 36 .20 (0 .54) 37 .35 (0 .59) Least-relative-slack (queues) 43 .97 (0 .49) 46 .28 (0 .62) 45 .85 (0 .62) 48 .46 (0 .70)
+
+(resp. right) panel for the benchmark policy using single-pushing, linear pricing, and the least-relative-slack policy (resp. least-relative-slack policy based on queue lengths). Figure 11 repeats the same representative policies for 3-server problem, but separately considers two forms of proposed policy (i.e., ˜ τ ∈ { abs , rel }). The figure for 10-server problem is deferred to Appendix F.2.2, due to its similarity to the 3-server one. In each panel of Figures 10–11, the dotted line and the dashed red line mark the delay time bound and the 99-quantile of the delay time distribution respectively. The 99-quantile lying to the left of the bound indicates that the delay probability constraint ε = 1% is satisfied; a larger gap between the two lines indicates that the constraint is less binding on that route. Three observations stand out. First, the delay-probability constraints are overall more binding for routes in our proposed policy than those in two benchmark policies. Second, for jobs not violating delay-time bound, jobs of certain route (e.g., both routes in Figure 10 and first two routes in Figure 11) under our proposed policy spend on average longer time in system than those under two benchmark policies. Lastly, two forms of our proposed scheduling policy, i.e., ˜ τ ∈ { abs , rel }, have different behaviors in balancing last buffers of different routes; see routes 3 and 4 in Figure 11. 37 05
+
+Route 1 Proposed ( ˜τ = abs )
+
+> 05
+
+Benchmark A1 
+
+> 05
+
+Benchmark A2    
+
+> 0.00.20.40.6
+
+Delay time 
+
+> 05
+
+Route 2    
+
+> 0.00.20.40.6
+
+Delay time    
+
+> 050.00.20.40.6
+
+Delay time 
+
+> 05
+
+Delay bound 99-quantile Figure 10: Delay time histogram under the proposed policy and representative benchmark policies in the Rybko-Stolyar network. Benchmark A1 (resp. A2): the benchmark policy using single-pushing, linear pricing, and least-relative-slack policy (resp. least-relative-slack policy based on queue lengths). 010 Route 1 Proposed ( ˜τ = abs )
+
+> 010
+
+Proposed ( ˜τ = rel )
+
+> 020
+
+Benchmark A1 
+
+> 025
+
+Benchmark A2 
+
+> 010
+
+Route 2 
+
+> 010 010 010 025
+
+Route 3    
+
+> 010 010 010 0.00.10.20.3
+
+Delay time 
+
+> 05
+
+Route 4    
+
+> 0.00.10.20.3
+
+Delay time    
+
+> 050.00.10.20.3
+
+Delay time    
+
+> 050.00.10.20.3
+
+Delay time 
+
+> 05
+
+Delay bound 99-quantile 
+
+Figure 11: Delay time histogram under the proposed policy and representative benchmark policies in the 3-server extended criss-cross network. Benchmark A1 (resp. A2): the benchmark policy using single-pushing, linear pricing, and least-relative-slack policy (resp. least-relative-slack policy based on queue lengths). 38 10 Concluding Remarks 
+
+We study the dynamic control problem of multiclass queueing networks with throughput-time con-straints, and develop an effective policy in high-dimensional settings. Our approach approximates the original problem by a Brownian control problem, reduces it to a lower-dimensional workload problem, and solves the resulting HJB equation using neural networks. This reduction provides both computational tractability and structural interpretability. Computationally, we are able to extend existing computational methods in Ata et al. (2025a, 2024a) to the bounded convex polyhedral state spaces arising in our setting. Despite its tractability and interpretability, translating the solution of the workload problem into implementable policy in the original system requires an intricate policy design. First, we select the proposed singular control only among those pushing towards interior of the state space. Second, we introduce necessary modifications in the prelimit policy, such as bands and safety stocks, which allow the workload solution to be implemented in the original queueing network. Third, we propose a scheduling policy that builds on maximum-pressure policy and is tailored for our setting with throughput-time constraints. Overall, our policy consistently outperforms the benchmark policies by 5%–10% in our test problems. In extending the computational method in Ata et al. (2025a, 2024a) to our bounded-state-space setting, we observe an additional tradeoff in reference-policy design. Besides adequately covering regions frequently visited under the optimal policy, the reference process should also generate suffi-ciently many samples near the boundary, particularly the upper faces. Such coverage is important for two reasons. First, the boundary conditions play a major role in shaping the gradient func-tion throughout the state space. Second, costly singular controls are activated around the boundary, making accurate approximation there essential for control decisions. Our numerical results illustrates this tradeoff: moderately positive reference drifts lead to successful training, whereas the proposed drift controls are mostly negative. Intuitively, the former generates more visits to the upper faces, while the latter tends to avoid such costly visits. 
+
+# References       
+
+> Alwan AA, Ata B, Zhou Y (2024) A queueing model of dynamic pricing and dispatch control for ride-hailing systems incorporating travel times. Queueing Systems 106(1):1–66. Ata B (2006) Dynamic control of a multiclass queue with thin arrival streams. Operations Research 54(5):876– 892. Ata B, Barjesteh N (2023) An approximate analysis of dynamic pricing, outsourcing, and scheduling policies for a multiclass make-to-stock queue in the heavy traffic regime. Operations Research 71(1):341–357.
+
+39 Ata B, Barjesteh N, Kumar S (2020) Dynamic dispatch and centralized relocation of cars in ride-hailing platforms. Available at SSRN 3675888 .Ata B, Harrison J, Shepp L (2005) Drift rate control of a Brownian processing system. The Annals of Applied Probability 15(2):1145–1160. Ata B, Harrison JM, Si N (2024a) Singular control of (reflected) Brownian motion: a computational method suitable for queueing applications. Queueing Systems 108(3):215–251. Ata B, Harrison JM, Si N (2025a) Drift control of high-dimensional reflected Brownian motion: A computa-tional method based on neural networks. Stochastic Systems 15(2):111–146. Ata B, Ka¸ sıkaralar E (2026a) Dynamic scheduling of a multiclass queue in the Halfin-Whitt regime: A com-putational approach for high-dimensional problems. Management Science 72(7):6309–6333. Ata B, Ka¸ sıkaralar E (2026b) Dynamic scheduling of a parallel-server queueing system: A computational method for high-dimensional problems. arXiv preprint arXiv:2605.09799 .Ata B, Lee D, S¨ onmez E (2019) Dynamic volunteer staffing in multicrop gleaning operations. Operations Research 67(2):295–314. Ata B, Lin W (2008) Heavy traffic analysis of maximum pressure policies for stochastic processing networks with multiple bottlenecks. Queueing Systems 59(3):191–235. Ata B, Olsen TL (2009) Near-optimal dynamic lead-time quotation and scheduling under convex-concave customer delay costs. Operations Research 57(3):753–768. Ata B, Tongarlak MH, Lee D, Field J (2024b) A dynamic model for managing volunteer engagement. Opera-tions Research 72(5):1958–1975. Ata B, van Eekelen W, Zhong Y (2025b) A computational method for solving the stochastic joint replenishment problem in high dimensions. arXiv preprint arXiv:2511.11830 .Ata B, Zhou Y (2025) Analysis and improvement of eviction enforcement. arXiv preprint arXiv:2502.16346 .Beck C, Hutzenthaler M, Jentzen A, Kuckuck B (2023) An overview on deep learning-based approximation methods for partial differential equations. Discrete & Continuous Dynamical Systems-Series B 28(6). Budhiraja A, Liu X, Saha S (2017) Construction of asymptotically optimal control for crisscross network from a free boundary problem. Stochastic Systems 6(2):459–518. Budhiraja A, Ross K (2008) Optimal stopping and free boundary characterizations for some Brownian control problems. The Annals of Applied Probability 18(6):2367–2391. Caldentey R, Wein LM (2006) Revenue management of a make-to-stock queue. Operations Research 54(5):859– 875. Carr S, Duenyas I (2000) Optimal admission control and sequencing in a make-to-stock/make-to-order pro-duction system. Operations Research 48(5):709–720. C¸ elik S, Maglaras C (2008) Dynamic pricing and lead-time quotation for a multiclass make-to-order queue. 
+
+Management Science 54(6):1132–1146. Chen H, Yang P, Yao DD (1994) Control and scheduling in a two-station queueing network: Optimal policies and heuristics. Queueing Systems 18:301–332. 
+
+40 Chessari J, Kawai R, Shinozaki Y, Yamada T (2023) Numerical methods for backward stochastic differential equations: A survey. Probability Surveys 20:486–567. Dai J, Yao D (2013) Brownian inventory models with convex holding cost, part 1: Average-optimal controls. 
+
+Stochastic Systems 3(2):442–499. Dai JG, Lin W (2005) Maximum pressure policies in stochastic processing networks. Operations Research 
+
+53(2):197–218. Dai JG, Lin W (2008) Asymptotic optimality of maximum pressure policies in stochastic processing networks. 
+
+Annals of Applied Probability 18(2239–2299). Dai JG, Williams RJ (1996) Existence and uniqueness of semimartingale reflecting Brownian motions in convex polyhedrons. Theory of Probability & Its Applications 40(1):1–40. E W, Han J, Jentzen A (2021) Algorithms for solving high dimensional PDEs: from nonlinear Monte Carlo to machine learning. Nonlinearity 35(1):278. Han J, Jentzen A, E W (2018) Solving high-dimensional partial differential equations using deep learning. 
+
+Proceedings of the National Academy of Sciences 115(34):8505–8510. Han J, Jentzen A, et al. (2025) A brief review of the deep BSDE method for solving high-dimensional partial differential equations. arXiv preprint arXiv:2505.17032 .Harrison JM (1988) Brownian models of queueing networks with heterogeneous customer populations. Stochas-tic Differential Systems, Stochastic Control Theory and Applications , 147–186 (Springer). Harrison JM (1996) The BIGSTEP approach to flow management in stochastic processing networks. Stochastic Networks: Theory and Applications (57-90). Harrison JM (1998) Heavy traffic analysis of a system with parallel servers: Asymptotic optimality of discrete-review policies. The Annals of Applied Probability 8(3):822–848. Harrison JM (2000) Brownian models of open processing networks: Canonical representation of workload. The Annals of Applied Probability 10(1):75–103. Harrison JM (2003) A broader view of Brownian networks. The Annals of Applied Probability 13(3):1119–1150. Harrison JM (2024) private communication. Harrison JM, Van Mieghem JA (1997) Dynamic control of brownian networks: State space collapse and equivalent workload formulations. The Annals of Applied Probability 7(3):747–771. Harrison JM, Wein LM (1989) Scheduling networks of queues: heavy traffic analysis of a simple open network. 
+
+Queueing Systems 5:265–279. Kumar S, Muthuraman K (2004) A numerical method for solving singular stochastic control problems. Oper-ations Research 52(4):563–582. Kushner HJ (1990) Numerical methods for stochastic control problems in continuous time. SIAM Journal on Control and Optimization 28(5):999–1048. Kushner HJ, Martins LF (1991) Numerical methods for stochastic singular control problems. SIAM journal on control and optimization 29(6):1443–1475. Lewis ME, Ayhan H, Foley RD (1999) Bias optimality in a queue with admission control. Probability in the Engineering and Informational Sciences 13(3):309–327. 
+
+41 Liu W, Sun X (2022) Energy-aware and delay-sensitive management of a drone delivery system. Manufacturing & Service Operations Management 24(3):1294–1310. Low DW (1974) Optimal dynamic pricing policies for an M/M/s queue. Operations Research 22(3):545–561. Maglaras C (2000) Discrete-review policies for scheduling stochastic networks: Trajectory tracking and fluid-scale asymptotic optimality. The Annals of Applied Probability 10(3):897–929. Maglaras C, Van Mieghem JA (2005) Queueing systems with leadtime constraints: A fluid-model approach for admission and sequencing control. European journal of operational research 167(1):179–207. Maoui I, Ayhan H, Foley RD (2009) Optimal static pricing for a service facility with holding costs. European journal of operational research 197(3):912–923. Martins LF, Shreve SE, Soner HM (1996) Heavy traffic convergence of a controlled, multiclass queueing system. 
+
+SIAM journal on control and optimization 34(6):2133–2171. Ormeci Matoglu M, Vande Vate J (2011) Drift control with changeover costs. Operations Research 59(2):427– 439. Ormeci Matoglu M, Vande Vate J, Wang H (2015) Solving the drift control problem. Stochastic Systems 
+
+5(2):324–371. Plambeck E, Kumar S, Harrison JM (2001) A multiclass queue in heavy traffic with throughput time con-straints: Asymptotically optimal dynamic controls. Queueing Systems 39(1):23–54. Reiman MI, Williams RJ (1988) A boundary property of semimartingale reflecting Brownian motions. Prob-ability Theory and Related Fields 77(1):87–97. Rubino M, Ata B (2009) Dynamic control of a make-to-order, parallel-server system with cancellations. Op-erations Research 57(1):94–108. Rybko AN, Stolyar AL (1992) Ergodicity of stochastic processes describing the operation of open queueing networks. Problemy Peredachi Informatsii 28(3):3–26. Stidham S (1985) Optimal control of admission to a queueing system. IEEE Transactions on Automatic Control 
+
+30(8):705–713. Stidham S (2004) Pricing and congestion management in a network with heterogeneous users. IEEE Transac-tions on Automatic Control 49(6):976–981. Sun X, Liu W (2025) Expanding service capabilities through an on-demand workforce. Operations Research 
+
+73(1):363–384. Taksar MI (1997) Infinite-dimensional linear programming approach to singular stochastic control. SIAM journal on control and optimization 35(2):604–625. Veatch MH, Wein LM (1996) Scheduling a make-to-stock queue: Index policies and hedging points. Operations Research 44(4):634–647. Wein LM (1992) Dynamic scheduling of a multiclass make-to-stock queue. Operations Research 40(4):724–735. Yoon S, Lewis ME (2004) Optimal pricing and admission control in a queueing system with periodically varying parameters. Queueing Systems 47(3):177–199. Zhang B, Ayhan H (2012) Optimal admission control for tandem queues with loss. IEEE Transactions on Automatic Control 58(1):163–167. 
+
+42 Ziya S, Ayhan H, Foley RD (2006) Optimal prices for finite capacity queueing systems. Operations Research Letters 34(2):214–218. 
+
+43 A Notations in Brownian Control Problem and Workload Problem 
+
+A.1 Notations in Approximating Brownian Control Problem 
+
+In Equations (22)–(23) defining (scaled) queue length process Z, Xk = ( Xk,l ) is an nk-dimensional Brownian motion with drift vector φk and covariance matrix Σ k, for which φk = ( φk,l ) is a nk-dimensional vector with 
+
+φk, 1 = −ηk, 1x∗
+
+> k, 1
+
+, (A.1) 
+
+φk,l = ηk,l −1x∗ 
+
+> k,l −1
+
+− ηk,l x∗
+
+> k,l
+
+, l = 2 , . . . , n k, (A.2) and Σ k = (Σ k,l 1,l 2 ) is a nk × nk dimensional matrix with entry Σk,l 1,l 2 =
+
+
+
+λ∗
+
+> k
+
+ 1 + v2
+
+> k, 1
+
+, if l1 = l2 = 1 ,λ∗
+
+> k
+
+ v2 
+
+> k,l 1−1
+
++ v2
+
+> k,l 1
+
+, if l1 = l2 > 1,
+
+−λ∗
+
+> k
+
+v2 
+
+> k,l 2
+
+, if l2 = l1 − 1,
+
+−λ∗
+
+> k
+
+v2 
+
+> k,l 1
+
+, if l2 = l1 + 1 ,
+
+0, otherwise, for l1, l 2 = 1 , . . . , n k. (A.3) We then use φ and Σ to represent drift and variance of m-dimensional Brownian motion X = ( Xk,l ): 
+
+φ =
+
+
+
+φ1
+
+...
+
+φK
+
+ , Σ = 
+
+
+
+Σ1
+
+. . .ΣK
+
+ , (A.4) where φk and Σ k (k = 1 , . . . , K ) are defined in (A.1)–(A.3). 
+
+A.2 Notations in Workload Problem 
+
+In Equation (30) defining workload process W , ξ = ( ξi) is a p-dimensional Brownian motion with drift γ and variance Γ defined as 
+
+γ = M φ, Γ = M ΣM ⊤. (A.5) Here, φ and Σ are defined in (A.4). The matrix M = ( Mi, (k,l )) is a p×m matrix with each component defined as 
+
+Mi, (k,l ) = X
+
+> l′:( k,l ′)∈C i,l ′≥l
+
+mk,l ′ , (A.6) for i = 1 , . . . , p , k = 1 , . . . , K , and l = 1 , . . . , n k. Indeed, M is the matrix such that the definition (30) of workload process W and the definition (31) of Brownian motion ξ can be written into the matrix forms: 
+
+W (t) = M Z (t), ξ(t) = M X (t). (A.7) 44 B Derivations and Proofs 
+
+B.1 Derivations of Approximating Brownian Control Problem 
+
+In what follows, we formally derive the Brownian approximation of (scaled) queue length process and cumulative cost process in the heavy-traffic limit. 
+
+B.1.1 (Scaled) Queue Length Process. 
+
+For (scaled) queue length process Zn, we separately consider Znk, 1(t) and Znk,l (t) ( l = 2 , . . . , n k). First, regarding Znk, 1(t) defined by Equations (3) and (15), i.e., 
+
+Znk, 1(t) = Znk, 1(0) + 1
+
+√n
+
+
+
+Nk
+
+Z t
+
+> 0
+
+λnk (s)ds 
+
+
+
+− Snk, 1(T nk, 1(t)) − Onk (t)
+
+
+
+, (B.8) we decompose it into 
+
+Znk, 1(t) = Znk, 1(0) + 1
+
+√n
+
+
+
+Nk
+
+Z t
+
+> 0
+
+λnk (s)ds 
+
+
+
+−
+
+Z t
+
+> 0
+
+λnk (s)ds 
+
+
+
++ 1
+
+√n
+
+Z t
+
+> 0
+
+λnk (s)ds − μnk, 1x∗
+
+> k, 1
+
+t
+
+
+
++ 1
+
+√n
+
+ μnk, 1x∗
+
+> k, 1
+
+t − μnk, 1T nk, 1(t) − 1
+
+√n
+
+ Snk, 1(T nk, 1(t)) − μnk, 1T nk, 1(t) − 1
+
+√n Onk (t). (B.9) In what follows, we separately derive the limit of five terms (except initial value Znk, 1(0)) on right-hand side of (B.9), after which we will combine them and obtain limit of Znk, 1.1) For the first term, we have 1
+
+√n
+
+
+
+Nk
+
+Z t
+
+> 0
+
+λnk (s)ds 
+
+
+
+−
+
+Z t
+
+> 0
+
+λnk (s)ds 
+
+
+
+=
+
+q
+
+λ∗
+
+> k
+
+Bk(t) + o(1) , (B.10) where Bk is one-dimensional standard Brownian motion. It follows from the functional strong approximations 
+
+N (nt ) = nt + √nB (t) + o(√n) a.s. ,
+
+and assumption (14) on demand rate λn(t) that 
+
+λnk (t) = nλ ∗ 
+
+> k
+
++ O(√n).
+
+2) For the second term, it comes from assumptions (12) and (14) on service rate μn and demand rate λn(t), and definition x∗ 
+
+> k,l
+
+= λ∗
+
+> k
+
+/μ k,l that 1
+
+√n
+
+Z t
+
+> 0
+
+λnk (s)ds − μnk, 1x∗
+
+> k, 1
+
+t
+
+
+
+= 1
+
+√n
+
+
+
+nλ ∗
+
+> k
+
+t + √n
+
+Z t
+
+> 0
+
+ζk(s)ds − (nμ k, 1 + √nη k, 1)x∗
+
+> k, 1
+
+t
+
+
+
+=
+
+Z t
+
+> 0
+
+ζk(s)ds − ηk, 1x∗
+
+> k, 1
+
+t. (B.11) 45 3) For the third term, definition (17) of centered and scaled allocation process Y n(t) and assump-tion (12) on service rate μn give that 1
+
+√n
+
+ μnk, 1x∗
+
+> k, 1
+
+t − μnk, 1T nk, 1(t) = 1
+
+n μnk, 1Y nk, 1(t) = μk, 1Y nk, 1(t) + o(1) . (B.12) 4) For the fourth term, as x∗ 
+
+> k, 1
+
+serves as a first-order approximation to T nk, 1(t), we have 1
+
+√n
+
+ Snk, 1(T nk, 1(t)) − μnk, 1T nk, 1(t) ∼ 1
+
+√n
+
+ Snk, 1(x∗
+
+> k, 1
+
+t) − μnk, 1x∗
+
+> k, 1
+
+t ⇒ BM  0, λ ∗
+
+> k
+
+v2
+
+> k, 1
+
+ . (B.13) 5) For the fifth term, Equation (15) leads to 1
+
+√n Onk (t) = U nk (t). (B.14) Combining Equations (B.10)–(B.14) and let Y n ⇒ Y , U n ⇒ U , we have Znk, 1 ⇒ Zk, 1, where Zk, 1 is as defined in (22) with Xk, 1(t) defined by 
+
+Xk, 1(t) = 
+
+q
+
+λ∗
+
+> k
+
+Bk(t) − ηk, 1x∗
+
+> k, 1
+
+t − BM  0, λ ∗
+
+> k
+
+v2
+
+> k, 1
+
+ . (B.15) Similarly, we can decompose Znk,l (t) ( l = 2 , . . . , n k) as follows based on Equations (4) and (15): 
+
+Znk,l (t) = Znk,l (0) + 1
+
+√n
+
+ Snk,l −1(T nk,l −1(t)) − μnk,l −1T nk,l −1(t) − 1
+
+√n
+
+ Snk,l (T nk,l (t)) − μnk,l T nk,l (t)
+
+− 1
+
+√n
+
+ μnk,l −1x∗
+
+> k,l −1
+
+t − μnk,l −1T nk,l −1(t) + 1
+
+√n
+
+ μnk,l x∗
+
+> k,l
+
+t − μnk,l T nk,l (t)
+
++ 1
+
+√n
+
+ μnk,l −1x∗
+
+> k,l −1
+
+t − μnk,l x∗
+
+> k,l
+
+t , for l = 2 , . . . , n k. (B.16) Taking each term on right-hand side of Equation (B.16) to limit, we have Znk,l ⇒ Zk,l , where 
+
+Zk,l (t) = Zk,l (0) + BM  0, λ ∗
+
+> k
+
+v2
+
+> k,l −1
+
+ − BM  0, λ ∗
+
+> k
+
+v2
+
+> k,l
+
+ − μk,l −1Yk,l −1(t) + μk,l Yk,l (t)+ ( ηk,l −1x∗
+
+> k,l −1
+
+t − ηk,l x∗
+
+> k,l
+
+t). (B.17) Here, five terms on right hand side of (B.17) are limit of five terms in (B.16). Let 
+
+Xk,l (t) = BM  0, λ ∗
+
+> k
+
+v2
+
+> k,l −1
+
+ − BM  0, λ ∗
+
+> k
+
+v2
+
+> k,l
+
+ + ( ηk,l −1x∗
+
+> k,l −1
+
+t − ηk,l x∗
+
+> k,l
+
+t), (B.18) we arrive at definition (23) for Zk,l (t). Lastly, based on expressions (B.15) and (B.18) of Xk,l (t), l = 1, . . . , n k, where Bk(t) and BM  0, λ ∗
+
+> k
+
+v2
+
+> k,l
+
+, l = 1 , . . . , n k are nk + 1 mutually independent Brownian motions, we obtain drift 
+
+φk and variance Σ k of nk-dimensional Brownian motion Xk given in (A.1)–(A.3). 46 B.1.2 Cumulative Cost Process. 
+
+The cumulative cost process defined in (20) can be written as 
+
+Cn(t) = nΠ( λ∗)t −
+
+Z t
+
+> 0
+
+Πn(λn(s)) ds − νn · On(t)
+
+
+
+. (B.19) The assumption (14) on demand rate λn(t) and the property (13) of profit rate function Π n imply that Πn(λn(t)) = Π n(nλ ∗ + √nζ (t)) = nΠ
+
+
+
+λ∗ + 1
+
+√n ζ(t)
+
+
+
+.
+
+And then Assumptions 2 and 3 leads to a Taylor expansion of Π around λ∗:Πn(λn(t)) = n
+
+
+
+Π( λ∗) + 12n ζ(t)′∇2Π( λ∗)ζ(t)
+
+
+
++ o(1) . (B.20) Plugging (B.20) into (B.19), and noting that νn = α/ √n and On/√n = U n ⇒ U , we have Cn ⇒ C,where C is as defined in Equation (21). 
+
+B.2 Proof of Lemma 1 
+
+The cost function c(x) defined in (37) can be written into matrix form: 
+
+c(x) = min 
+
+n
+
+ζ′Hζ : ˜M ζ = x
+
+o
+
+, x ∈ Θ, (B.21) where ˜M is as defined in (38). Then we use Lagrangian method with multiplier ¯λ:
+
+L(ζ, ¯λ) = ζ′Hζ − 2¯λ′( ˜M ζ − x), (B.22) and have first-order conditions 
+
+∇ζ L(ζ, ¯λ) = 2 Hζ − 2 ˜M ′ ¯λ = 0 , (B.23) 
+
+∇¯λL(ζ, ¯λ) = −2( ˜M ζ − x) = 0 . (B.24) Solving (B.23), we have 
+
+ζ = H−1 ˜M ′ ¯λ, (B.25) and substituting (B.25) into (B.24) leads to the linear system ( ˜M H −1 ˜M ′)¯λ = x. (B.26) Assumption 2 and Equation (25) imply that matrix H is positive definite, thus matrix ˜M H −1 ˜M ′
+
+is positive semidefinite but not necessarily positive definite (e.g., when p > K ). Thus, we solve Equation (B.26) by ¯λ = ( ˜M H −1 ˜M ′)†x, (B.27) where † denotes pseudo-inverse. When matrix ˜M H −1 ˜M ′ is full-rank, we can replace the pseudo-inverse by an inverse. Combining (B.25) and (B.27) we have the expression of ζ∗(x) and then the expression of c(x) in Lemma 1. 47 B.3 Proof of Proposition 1 
+
+The proof follows from Proposition EC.1 of Ata and Barjesteh (2023), Proposition 3 of Rubino and Ata (2009), and Propositions 3–4 and Theorem 2 of Harrison and Van Mieghem (1997). First, suppose that ( U, Y, ζ ) is an admissible control for Brownian control problem (28) with state process Z, then we define workload process W (t) = M Z (t) for t ≥ 0, drift control process 
+
+θ(t) = ˜M ζ (t) for t ≥ 0, and idling process L by Equation (24). ( L, U, θ ) is an admissible policy for the workload problem (39) with state process W , and its cost is less than or equal to that of the policy ( U, Y, ζ ) for the Brownian control problem (28). Next, suppose that ( L, U, θ ) is an admissible control for the workload problem (39) with state process W . By the definition of the workload state space W (see Equation (35)), for each W (t) ∈ W 
+
+there exists at least one scaled queue-length vector Z(t) ∈ Z such that M Z (t) = W (t). Also let drift control ζ(t) = H−1 ˜M ′( ˜M H −1 ˜M ′)†θ(t) for t ≥ 0, and the centered and scaled allocation process Y
+
+given by Equations (22)–(23). ( U, Y, ζ ) is an admissible control for Brownian control problem (28); and two policies have the same cost. 
+
+B.4 Proof of Proposition 2 
+
+Applying Itˆ o’s formula to e−˜rt ˜V ( ˜W (t)), we have 
+
+e−˜rT ˜V ( ˜W (T )) − ˜V ( ˜W (0)) = 
+
+Z T
+
+> 0
+
+e−˜rt  (L − ˜r) ˜V ( ˜W (t)) + ∇ ˜V ( ˜W (t)) · ˜θ + ˜G⊤∇ ˜V ( ˜W (t)) · ˜ψdt 
+
++
+
+Z T
+
+> 0
+
+e−˜rt ∇ ˜V ( ˜W (t)) · dB (t) + 
+
+Z T
+
+> 0
+
+e−˜rt D ˜V ( ˜W (t)) · d ˜Υ( t). (B.28) Using boundary condition (58) and complementarity condition (53), we have 
+
+Z T
+
+> 0
+
+e−˜rt D ˜V ( ˜W (t)) · d ˜Υ( t) = 
+
+Z T
+
+> 0
+
+e−˜rt (−ˆα) · d ˜Υ( t). (B.29) Using HJB equation (57), we have 
+
+Z T
+
+> 0
+
+e−˜rt  (L − ˜r) ˜V ( ˜W (t)) + ∇ ˜V ( ˜W (t)) · ˜θ + ˜G⊤∇ ˜V ( ˜W (t)) · ˜ψdt 
+
+= −
+
+Z T
+
+> 0
+
+e−˜rt F (∇ ˜V ( ˜W (t))) dt, (B.30) where function F is defined in (64). Plugging Equations (B.29)–(B.30) into (B.28), we arrive at the identity (63). 
+
+B.5 Derivation of Dynamic Pricing Policy (81) in Brownian Control Problem 
+
+Recall the assumption (14) on arrival rate λn that 
+
+λn(t) = nλ ∗ + √nζ (t), t ≥ 0. (B.31) 48 Given heavy-traffic assumption (12), we have 
+
+pn(t) = (Λ n)−1 (λn(t)) = Λ −1
+
+
+
+λ∗ + ζ(t)
+
+√n
+
+
+
+. (B.32) Then its first-order Taylor expansion gives 
+
+pn(t) = Λ −1(λ∗) + ∇Λ−1(λ∗)ζ(t)
+
+√n + o
+
+ 1
+
+√n
+
+
+
+. (B.33) 
+
+# C Additional Details of Computational Method 
+
+C.1 Existence and Uniqueness of SRBMs in our Setting for the Reference Pro-cess 
+
+To facilitate the analysis, we introduce the auxiliary definitions as follows. For a subset K ⊂ J , we define the intersection of faces {Fj , j ∈ K} as 
+
+FK = {w : w ∈ Fj for all j ∈ K} , K ⊂ J . (C.34) A subset K ⊂ J is maximal if K̸ = ∅, FK̸ = ∅, and FK̸ = F ˜K for any ˜K ⊋ K.To verify that one can choose the pushing directions of the backup singular control so that the reference process is well defined for our problem, we utilize the theory of existence and uniqueness for semimartingale reflecting Brownian motions (SRBMs) in convex polyhedrons developed by Dai and Williams (1996); also see Reiman and Williams (1988). Assumption 1.1 of Dai and Williams (1996) provides sufficient conditions for the existence and uniqueness of SRBMs in convex polyhedrons, which subsumes our setting for the reference process. Under that assumption, Theorem 1.3 of Dai and Williams (1996) establishes the existence and uniqueness of the SRBM. We state their Assumption 1.1 below using our notation for completeness. 
+
+Assumption 5 (Assumption 1.1 in Dai and Williams (1996)) . For each maximal K ⊂ J ,(i) there is a positive linear combination ˆg = P 
+
+> j∈K
+
+uj ˆgj (uj > 0 ∀j ∈ K ) of the {ˆgj , j ∈ K} such that σj · ˆg > 0 for all j ∈ K ;(ii) there is a positive linear combination σ = P 
+
+> j∈K
+
+yj σj (yj > 0 ∀j ∈ K ) of the {σj , j ∈ K} such that σ · ˆgj > 0 for all j ∈ K .
+
+Proposition 3 below establishes that one can choose the reflection matrix ˆG for the backup singular control problem so that Assumption 5 holds. Thus, by Theorem 1.3 of Dai and Williams (1996), the reference process is well defined. As a preparation for Proposition 3, we first prove Lemma 2 and Lemma 3 as follows. 49 Lemma 2. For each maximal K ⊂ J , there exists a positive linear combination g = P 
+
+> j∈K
+
+uj σj
+
+(uj > 0, ∀j ∈ K ) of the {σj , j ∈ K} such that σj · g > 0 for all j ∈ K .Proof of Lemma 2. For each maximal K ⊂ J we denote a cone and linear space generated by unit normal vector {σj , j ∈ K} respectively as follows: 
+
+C = cone( σj , j ∈ K ) and S = span( σj , j ∈ K ).
+
+And denote the dual cone of C restricted to space S as 
+
+C∗ = {x ∈ S : x · y ≥ 0 for ∀y ∈ C}.
+
+Based on the notations above, now g ∈ int( C) implies that g can be represented as a positive linear combination g = P 
+
+> j∈K
+
+uj σj (uj > 0, ∀j ∈ K ), and g ∈ int( C∗) implies that g · σj > 0 for all j ∈ K .Then any g ∈ int( C ∩ C∗) satisfies the conditions. We then prove that the set int( C ∩ C∗) is not empty. By contradiction, if int( C ∩ C∗) is an empty set, then since C and C∗ are both convex sets, there exists a hyperplane {a⊤x = 0 } with coefficient 
+
+a ∈ S\{ 0}, such that 
+
+a⊤x ≥ 0 for ∀x ∈ C, (C.35) 
+
+a⊤x ≤ 0 for ∀x ∈ C∗. (C.36) Equation (C.35) implies that a ∈ C∗, then let x = a in Equation (C.36), we have a⊤a ≤ 0, which contradicts with non-zero property of coefficient vector a.
+
+Lemma 3. For any vector g ∈ Rp, there exists a ∈ Rp+K 
+
+> +
+
+such that g = ˜Ga .Proof of Lemma 3. Recall that ˜G = ( Ip − ˜M ). Representing columns of ˜G as ˜ g1, . . . , ˜gp+K , we have ˜gi = ei for i = 1 , . . . , p (i.e., ith entry of ˜ gi is 1 and others are zero). The proof resorts to showing that {− ei, i = 1 , . . . , p } (i.e., ith entry is −1 and others are zero) can be represented by nonnegative linear combinations of ˜ g1, . . . , ˜gp+K , after which we can use {ei, −ei, i = 1 , . . . , p } to construct any vector g ∈ Rp.To construct −ei for i = 1 , . . . , p , we proceed as follows. For any i = 1 , . . . , p , according to definition (38) of ˜M , there exists a k such that ˜Mik ̸ = 0. Then we construct a vector as ˜g−i = (˜ gp+k + X 
+
+> j:1 ≤j≤p,j ̸=i
+
+˜gj ˜Mjk )/ ˜Mik . (C.37) It’s straightforward to check that ˜ g−i = −ei.
+
+Proposition 3. There exists a reflection matrix ˆG satisfying Assumption 5 for our problem. 
+
+50 Proof of Proposition 3. We construct a reflection matrix ˆG by setting the pushing direction for each face as ˆgj = σj , j ∈ J , (C.38) where σj is the unit vector normal to face Fj of state space. That is, each pushing direction is orthogonal to its associated face. Then we prove that such choice of reflection matrix ˆG satisfies Assumption 5, and each pushing direction ˆ gj can be represented as nonnegative linear combinations of columns of pushing direction matrix ˜G (that is, the pushing direction matrix of singular control U) in our problem. The first half is proved by noting that Assumption 5 under choice (C.38) can be simplified to Lemma 2. And the second half is implied by Lemma 3. Recall from Section 6.6, the workload problem under the proposed policy has two additional features. First, its drift rate is state dependent. This model feature is not covered by the theory of Dai and Williams (1996). However, one can combine that theory with Girsanov’s theorem to handle the case of state-dependent drifts under certain conditions. The second feature is that under the proposed policy more than one pushing direction might be used on each face Fj of the state space. Such policies have been observed in other papers as the optimal singular control too, e.g., Ata et al. (2020). However, we are not aware of existing theory that handles the question of existence and uniqueness of the SRBM is this context. Thus, we take a formal, i.e., nonrigorous, approach in Sections 6.5–6.6, leaving the rigorous analysis of existence and uniqueness questions for future research. 
+
+C.2 Simulation under the Reference Process 
+
+Algorithm 2 describes the Euler discretization scheme in the first step of our computational method. The reference policy ( ˜θ, ˜ψ) specifies the drift parameters of the reference process ˜W . Additionally, when ˜W reaches the boundary ∂W of the state space, it is “pushed back” to the interior of the state space. This boundary behavior is formalized using the Skorokhod map that, in turn, can be viewed as a solution of a certain linear complementarity problem. To be specific, the function 
+
+Skorokhod (x) (see Algorithm 3) in Algorithm 2 solves the Skorokhod problem given the bounded convex polyhedron state space W, current workload x, and the reflection matrix ˆG. Its output is the updated workload vector ˜W (( k + 1) h) and the pushing process increment ∆ ˜Υ( kh ). In principle any algorithm for solving linear complementarity problem can be used in Algorithm 3, however, we need it to be efficient as it is invoked repeatedly in Algorithm 2 for simulating the reference process. Ata et al. (2025a) provides an efficient method for their setting, i.e., the state space is the positive orthant and the reflection matrix is a Minkowski matrix. Because our reflection matrix ˆG for the backup process need not be a Minkowski matrix in general, one needs to solve 51 Algorithm 2: Euler Discretization Scheme. 
+
+Input: Drift vectors ˜θ, ˜ψ; drift vector γ and covariance matrix Γ of Brownian motion ξ; reflection matrix ˆG for backup control Υ; state space W; time horizon T ; step size h with 
+
+N := T /h ∈ N; initial point ˜W (0) = w.
+
+Output: Discretized workload ˜W (t), pushing increments ∆ ˜Υ( t), and Brownian increments ∆ B(t) at 
+
+t = 0 , h, . . . , N h .
+
+function Discretize( T , h, w)
+
+Construct the time partition 0 = t0 < t 1 < · · · < t N = T with ∆ tn = tn+1 − tn = h for 
+
+n = 0 , . . . , N − 1; Generate i.i.d. Gaussian increments ∆ B(kh ) ∼ N (0 , h Γ) for k = 0 , . . . , N − 1; 
+
+for k ← 0 to N − 1 do 
+
+x ← ˜W (kh ) + γh + ∆ B(kh ) + ˜θh + ˜G ˜ψh ;˜W (( k + 1) h), ∆ ˜Υ( kh ) ← Skorokhod (x); 
+
+return { ˜W (kh )}Nk=1 , {∆ ˜Υ( kh )}N −1 
+
+> k=0
+
+, {∆B(kh )}N −1 
+
+> k=0
+
+;
+
+the linear complementarity problem from first principles. For our test problems (see Section 8.1), it is worth mentioning that using the problem-specific special structure, we derive simple yet efficient implementations of the Skorokhod map; see Appendix E.2.1. 
+
+# D Detailed Definition of Benchmark Policies 
+
+D.1 Outsourcing and Discretionary Idling Policies 
+
+In this subsection, we introduce two alternative benchmark policies for outsourcing and discretionary idling. We refer to these alternatives as the single-pushing-control-per-face policy and the threshold-based policy. The former assigns a single pushing control to each face of the state space of the workload process but otherwise mimics our proposed policy. Thus, unlike our proposed policy, it does not partition each face into subsets and assign a different pushing direction to each subset. The threshold-based policy outsources an arriving job of a product whenever the total number of jobs of that product in the system exceeds a specified threshold. 
+
+D.1.1 Single Pushing Control per Face Policy. 
+
+We start by defining the singular control policy for the workload problem in single-pushing-control-per-face policy (single-pushing policy hereafter). Recall that the limiting state space W has a set of faces Fj (j ∈ J ); see Equation (49). We assign a single singular control to each face Fj (j ∈ J ) of 52 Algorithm 3: Solve the Skorokhod Problem (Linear Complementarity Problem).                                                               
+
+> Input: The state space W={w∈Rp:σj·w≥hjfor all j∈ J } , current workload x, reflection matrix ˆG= (ˆ g1, . . . , ˆgJ).
+> Output: Updated workload vector y, pushing process increment u.
+> function Skorokhod( x)
+> if x∈ W then return x, 0 J;
+> else
+> Find {uj}Jj=1 and ysuch that y=x+PJj=1 ujˆgj,σj·y≥hj,uj≥0, uj(σj·y−hj) = 0 for all
+> j;
+> u←(u1, . . . , u J)′;
+> return y,u;
+
+the state space by index 
+
+iSP (j) ∈ argmin  
+
+> i: ˜ gi·σj>0
+
+˜αi
+
+˜gi · σj
+
+. (D.39) Here, ˜ gi (resp. ˜αi) is the pushing direction (resp. cost rate) of singular control Ui, and σj is the inward-pointing unit normal to the face Fj . The policy is to apply singular control UiSP (j) at any interior point w of face Fj . It greedily minimizes the instantaneous pushing cost in the workload problem by using the cheapest pushing control at the boundary. It is noteworthy that Equation (D.39) and our proposed singular control (69) both provide a singular-control solution to limiting workload problem (at interior of faces), but differ in their objec-tives for selecting singular control. To be specific, Equation (D.39) is solely based on instantaneous cost ˜ αi, whereas our proposed one (69) further include a gradient term Gw2 (w) characterizing long-term effect. In our computational results (see Section 9), we identify long-term effect in our proposed policy by comparing it with single-pushing policy. Furthermore, different objectives in selecting index lead to different structures of limiting solution in two policies. In Equation (D.39) only one singular control is assigned to one face, while in our proposed one (69) singular control is state-dependent and can vary among different states on one face. Based on Equation (D.39), we form an outsourcing and discretionary idling policy in the original system using the same approach used for our proposed one (see Section 7.1). To be specific, we apply the policy only when the workload process W n(t) leaves the state space Wnρ , and distinguish among three cases, namely, the face-interior band subsets, the corner band subsets, and the region beyond the band. We define the policy for three cases in what follows, where the notation introduced in Section 7.1 is reused. 
+
+Face-interior band subsets. In this case, exactly one half-space constraint is violated, that is, 53 Kout (W n(t)) is a singleton. We suppose that Kout (W n(t)) = {j}, and recall that σj is the inward-pointing unit normal to the face Fj . We then choose the index iSP of the pushing direction as follows: 
+
+iSP ∈ argmin  
+
+> i∈S(t)∪A : ˜ gi·σj>0
+
+˜αi
+
+˜gi · σj
+
+. (D.40) If iSP ∈ S(t), the system manager idles server iSP . If instead iSP ∈ A , she outsources the correspond-ing product type. Under the indexing conventions used in the definition of A and in (41)–(44), the set of outsourced product type is iSP − p.
+
+Corner band subsets and beyond the band. In this case, we restrict attention to outsourcing controls only. For each violated constraint j ∈ K out (W n(t)), we choose the index iSP (j) of a pushing direction as follows: 
+
+iSP (j) ∈ argmin  
+
+> i∈A : ˜ gi·σj>0
+
+˜αi
+
+˜gi · σj
+
+, (D.41) and we apply the pushing controls iSP (j) : j ∈ K out (W n(t)) simultaneously, thereby outsourc-ing the corresponding product types. Under the indexing convention used to define A, the set of outsourced product types is iSP (j) − p : j ∈ K out (W n(t)) .Compared to our proposed outsourcing and discretionary idling policies (see Section 7.1), the single-pushing policy differ only in its objective of selecting the index (see Equations (D.40)–(D.41)), which are solely based on instantaneous cost ˜ αi, and does not include gradient eG(t). Similar to our proposed policy, its tuning parameters include bound scale ρ, band width ϵ, and safety stock s.
+
+Remark 4. In general, one might regard mapping iSP (·) as a tuning parameter beyond the specific choice given in Equation (D.39). Indeed, one can use any mapping iSP (·) : J → { 1, . . . , p + K}
+
+that assigns one feasible singular control ˜ giSP (j) to each face Fj of state space, i.e., ˜ giSP (j) · σj > 0. However, the number of possible mapping iSP (·) can grow exponentially with the number of faces, making a thorough search computationally intractable. Thus in our benchmark policy, we consider only the choice given in Equation (D.39). 
+
+D.1.2 Threshold-based Policy. 
+
+Given queue length vector Qn(t) at time t, the threshold-based policy outsources new arrivals of type 
+
+k (k = 1 , . . . , K ) order if its total number in system exceeds its bound qnk (ρ), i.e., 
+
+> nk
+
+X
+
+> l=1
+
+Qnk,l (t) ≥ qnk (ρ). (D.42) Here, the queue-length bound qnk (ρ) is parameterized by a tuning parameter ρ to fit into delay-probability constraint setting. There is no discretionary idling in threshold-based policy. That is, server i (i = 1 , . . . , p ) will idle only if all of its associated buffers are empty. 54 D.2 Pricing Policies 
+
+We introduce two alternative pricing policies. Both policies follow the dynamic pricing policy (81) prescribed by the Brownian control problem (28), but specify different choices of drift-rate control policy {ζ(t), t ≥ 0} adapted from literature. Linear pricing policy adapts from a benchmark policy in Ata et al. (2025a), which assumes that drift-rate control depends linearly on the state vector. 
+
+High-low pricing policy adapts from N -price benchmark policy in Ata and Barjesteh (2023). 
+
+D.2.1 Linear Pricing Policy. 
+
+The linear pricing policy assumes a linear dependence of drift control ζ(t) in Equation (81) on queue lengths Qn(t) in original system. More specifically, its choice of ζ(t) in Equation (81) is 
+
+ζLin  
+
+> k
+
+(t) = ϕk ·
+
+> nk
+
+X
+
+> l=1
+
+Qnk,l (t)
+
+!
+
++ ϕ−k ·
+
+ X 
+
+> k′̸=knk′
+
+X
+
+> l=1
+
+Qnk′,l (t)
+
+ , k = 1 , . . . , K. (D.43) Here, ϕk (resp. ϕ−k) is the tuning parameter representing the linear dependence of kth entry of drift control ζLin (t) on total queue lengths in route k (resp. all other routes). Substituting the choice (D.43) for ζ(t) in (81) yields the following linear pricing policy: Given queue length Qn(t) at time t,choose the price vector 
+
+pn(t) = Λ −1(λ∗) + 1
+
+√n ∇Λ−1(λ∗)ζLin (t). (D.44) Tuning parameters in linear pricing policy (D.44) includes {(ϕk, ϕ −k), k = 1 , . . . , K }, denoted as (ϕ, ϕ −) for brevity. 
+
+D.2.2 High-low Pricing Policy. 
+
+The high-low pricing policy sets different values for drift control ζ(t) in Equation (81), depending on the number of jobs in each route. More specifically, its choice of ζ(t) in Equation (81) is 
+
+ζHL  
+
+> k
+
+(t) = 
+
+( −ζLk if Pnk 
+
+> l=1
+
+Qnk,l (t) < ˜Tk,
+
+−ζHk otherwise, for k = 1 , . . . , K. (D.45) Here, ˜Tk, ζHk ≥ ζLk ≥ 0 are tuning parameters. The parameter ζLk (resp. ζHk ) represents the magnitude of the pre-set kth entry of drift control vector ζHL (t) if total queue lengths of route k is below (resp. above) certain threshold ˜Tk. Substituting the choice (D.45) for ζ(t) in (81) yields the high-low pricing policy, defined as follows: Given queue length Qn(t) at time t, we choose the price vector 
+
+pn(t) = Λ −1(λ∗) + 1
+
+√n ∇Λ−1(λ∗)ζHL (t). (D.46) Tuning parameters in high-low pricing policy (D.46) includes {( ˜Tk, ζ Lk , ζ Hk ), k = 1 , . . . , K }, denoted as ( ˜T , ζ L, ζ H ) for brevity. 55 Remark 5. The linear and high-low pricing benchmark policies have 2 K and 3 K tuning parame-ters, respectively. Combined with tuning parameters in other policy components, a joint search is intractable even in our low-dimensional test problems. To make the search tractable, we impose a shared-parameter assumption across routes in our test problems; see Appendix E.3. It reduces num-ber of tuning parameters to 2 and 3 in linear and high-low pricing benchmark policies, respectively. 
+
+Remark 6. One can also consider the nominal (resp. static) pricing policy adapted from Ata and Barjesteh (2023), where the drift control rate in workload problem is assumed to be θ(t) = 0 for 
+
+t ≥ 0 (resp. θ(t) = ¯θ for t ≥ 0 with tuning parameter ¯θ ∈ Θ). Since they are subsumed by both linear pricing and high-low pricing and lead to inferior numerical performance, we do not include them for brevity. 
+
+D.3 Scheduling Policies 
+
+We introduce two alternative scheduling policies motivated by the least-relative-slack-type policies in literature (see Plambeck et al. (2001), Ata (2006), C ¸ elik and Maglaras (2008)). As mentioned earlier, we further incorporate safety stocks in the policy definition. Two policies have the same structure as our proposed scheduling policy (see Section 7.3), and only differ in the choice of their index (i.e., 
+
+μk,l Pk,l (t) in our proposed scheduling policy), which we specify next. 
+
+D.3.1 Least-relative-slack Policy. 
+
+The least-relative-slack policy lets the server prioritize the job with the largest age relative to its throughput-time bound. In other words, it prioritizes the job with the least relative slack. Thus, the index for an nonempty buffer ( k, l ) is defined as 
+
+ak,l (t)
+
+dnk
+
+, (D.47) where ak,l (t) denote the age of the oldest job in buffer ( k, l ) at time t, and dnk is the throughput-time bound for route k. The policy prioritizes the job with the highest index. 
+
+D.3.2 Least-relative-slack Policy Based on Queue Lengths. 
+
+The least-relative-slack policy based on queue lengths rests on a similar idea as the least-relative-slack policy, but it approximates the age using queue lengths. More specifically, we approximate the age ak,l (t) as follows: 
+
+ak,l (t) ≈
+
+Plj=1 Qnk,j (t)
+
+λnk
+
+, (D.48) where the numerator counts number of jobs in buffer ( k, l ) and its upstream buffers, and the denom-inator λnk is the arrival rate for route k. Plugging (D.48) into least-relative-slack index (D.47) and 56 Table 6: Policy parameters of benchmark policies in outsourcing and discretionary idling, pricing, and scheduling.                           
+
+> Policy parameters
+> Panel A: Outsourcing and Discretionary Idling Benchmark Policies (Appendix D.1)
+> Single pushing control per face policy ϵ, s, ρ ∈R
+> Threshold-based policy ρ∈R
+> Panel B: Pricing Benchmark Policies (Appendix D.2)
+> Linear pricing policy (ϕ, ϕ −)∈RK×2
+> High-low pricing policy ( ˜T , ζ L, ζ H)∈RK×3
+> Panel C: Scheduling Benchmark Policies (Appendix D.3)
+> Proposed scheduling policy (Section 7.3) ˜τ∈ { abs ,rel },˜λ, ˜c, s ∈R
+> Least-relative-slack policy s∈R
+> Least-relative-slack policy based on queue lengths s∈R
+
+noting that dnk λnk equals queue length bound qnk on route k, we obtain the queue-length based index for an nonempty buffer ( k, l ): 
+
+Plj=1 Qnk,j (t)
+
+qnk
+
+. (D.49) 
+
+D.4 Choosing Policy Parameters 
+
+The policy parameters for each of our 12 benchmark policies include policy parameters for its three components; see Table 6. We determine these parameters via simulation-based search, where we seek to minimize costs while ensuring that the probability of violating the delay constraints does not exceed ε = 1%. Let us elaborate by separately considering two groups of benchmark policies. The first group includes 8 benchmark policies using least-relative-slack policy or least-relative-slack policy based on queue lengths. In this group, the policy parameters include ρ, s, ϵ (if using single-pushing policy), and pricing parameters (see Panel B of Table 6). For these benchmark policies, we perform a joint search for all policy parameters, and select the one with the lowest cost subject to the delay probability constraint ε = 1%. The second group includes 4 benchmark policies that use the proposed scheduling policy. In this group, the policy parameters include ρ, s, ϵ (if using single-pushing policy), pricing parameters (see Panel B of Table 6), and scheduling parameters ˜ τ , ˜λ, ˜ c. Due to the large number of policy parameters, a joint search over all parameters is computationally intractable. We therefore adopt the sequential approach. More specifically, we do the parameter search in two nested loops, which inherently classifies policy parameters into three types. The outer loop enumerates parameters 
+
+πo := ( ρ, s, ϵ, ˜τ ), while the inner loop alternatively search over two sets of parameters, namely pricing πp := (pricing parameters in Panel B of Table 6) and scheduling πs := ( ˜λ, ˜c), until a stopping criterion is met. Details of parameter search in this group are provided in Algorithm 4, where the 57 Algorithm 4: Parameter Search for Benchmark Policies Using Proposed Scheduling Policy. 
+
+Input: Search grids Π o, Π p, Π s for πo, πp, and πs; delay probability constraint ε; a simulator returning the cost C(π) and the delay probabilities D(π) of any parameter triple π = ( πo, π p, π s). 
+
+Output: Selected parameter triple ( π∗ 
+
+> o
+
+, π ∗ 
+
+> p
+
+, π ∗ 
+
+> s
+
+). 
+
+function ParameterSearch( Πo, Πp, Πs, ε)
+
+F ← ∅ ;
+
+for πo ∈ Πo do 
+
+(π∗ 
+
+> p
+
+(πo), π ∗ 
+
+> s
+
+(πo)) ← InnerLoop (πo, Πp, Πs, ε ); ▷ see Algorithm 5 
+
+if (π∗ 
+
+> p
+
+(πo), π ∗ 
+
+> s
+
+(πo)) ̸ = ∅ then F ← F ∪ { (πo, π ∗ 
+
+> p
+
+(πo), π ∗ 
+
+> s
+
+(πo)) } ;
+
+return arg min (πo,π p,π s)∈F C(πo, π p, π s)
+
+Algorithm 5: Inner Loop: Alternating Pricing and Scheduling Search for a Given πo.
+
+Input: Outer-loop parameter πo; search grids Π p, Π s; delay probability target ε; initial scheduling parameter πinit  
+
+> s
+
+; maximum number of iterations ¯K.
+
+Output: Pricing and scheduling parameters ( π∗ 
+
+> p
+
+(πo), π ∗ 
+
+> s
+
+(πo)), or ∅ if no feasible choice. 
+
+function InnerLoop( πo, Πp, Πs, ε )
+
+π(0)  
+
+> s
+
+← πinit  
+
+> s
+
+; k ← 0; 
+
+repeat 
+
+k ← k + 1; 
+
+π(k) 
+
+> p
+
+← arg min πp∈Πp C(πo, π p, π (k−1)  
+
+> s
+
+); ▷ pricing search; without delay-prob constraint †
+
+S ← { πs ∈ Πs : D(πo, π (k) 
+
+> p
+
+, π s) ≤ ε}; ▷ scheduling search; with delay-prob constraint 
+
+if S̸ = ∅ then π(k) 
+
+> s
+
+← arg min πs∈S C(πo, π (k) 
+
+> p
+
+, π s); 
+
+until π(k) 
+
+> s
+
+= π(k−1)  
+
+> s
+
+or S = ∅ or k = ¯K ▷ stop if: converged / infeasible / max iter; 
+
+if S = ∅ then return ∅;
+
+return (π(k) 
+
+> p
+
+, π (k) 
+
+> s
+
+);  
+
+> †
+
+The delay probability constraint is not imposed in the pricing search, because delay probabilities are primarily controlled by the outsourcing/idling and scheduling decisions; imposing the constraint here would force πp to take unreasonably large values to compensate for limitations in those decisions. 
+
+58 inner-loop function is given in Algorithm 5. 
+
+# E Details in Test Problems 
+
+E.1 Problem Parameters in Brownian Control Problem and Workload Problem 
+
+This section starts from the model primitives in nth system (see Table 1), and provides derived Brownian control problem (28) and workload problem (39) for two test problems. Values are given in exact fractional form here, whereas round to two decimals in Section 8.1. 
+
+E.1.1 Rybko-Stolyar Network. 
+
+With system parameter n = 400, the model primitives in nth system are as follows. The demand function Λn(x) = (950 /3 − 190 x1/3, 950 /3 − 190 x2/3) ,
+
+the production cost δn = (1 , 1), the (nominal) instantaneous demand rate nλ ∗ = (380 /3, 380 /3), the outsourcing cost νn = (0 .05 , 0.125), and the service rate μn = (400 , 200 , 400 , 200). Besides, the throughput time bound is dn = (1 /3, 1/3), thus the queue-length bound is qn = ( nλ ∗)dn =(380 /9, 380 /9). And the interest rate is rn = 0 .01. 
+
+Problem Parameters in Brownian Control Problem. First, according to Assumption 4 we have 
+
+μ = (0 .95 , 0.475 , 0.95 , 0.475), η = (1 , 0.5, 1, 0.5), and in Equation (14) for λn(t) we have λ∗ = 0 .95 ·
+
+(1 /3, 1/3). Then, the long-run average fraction of service time x∗ = (1 /3, 2/3, 1/3, 2/3). In scaled queue length process (22)–(23), X is 4-dimensional Brownian motion with drift φ and variance Σ, which are defined in (A.4) and have values 
+
+φ =
+
+
+
+−1/30
+
+−1/30
+
+
+
+, Σ = 0 .95 
+
+
+
+2/3 −1/3
+
+−1/3 2/32/3 −1/3
+
+−1/3 2/3
+
+
+
+. (E.50) The (scaled) queue-length bounds vector is β = qn/√n = (19 /9, 19 /9). The outsourcing cost for each (scaled) unit of product is α = νn√n = (1 , 2.5). And the interest rate ˜ r = rn = 0 .01. 
+
+Problem Parameters in Workload Problem. First, in the definition (29) of workload process W ,we have m1,1 = m2,1 = 20 /19, m1,2 = m2,2 = 40 /19, and the drift γ and variance Γ of Brownian motion ξ are 
+
+γ = 20 19 
+
+−1
+
+−1
+
+!
+
+, Γ = 20 19 
+
+10 /3 4/34/3 10 /3
+
+!
+
+, (E.51) 59 which are calculated based on definition of γ and Γ in (A.5), numerical values of φ and Σ in (E.50), and the numerical value of M ,
+
+M = 20 19 
+
+1 0 2 22 2 1 0
+
+!
+
+.
+
+Second, the state space W for workload process W defined in (35) is 
+
+W = w ∈ R2+ : w1, w 2 ≤ 20 /3, w 2 ≥ 2w1 − 80 /9, w 1 ≥ 2w2 − 80 /9 . (E.52) Third, given the profit rate function Π( x) defined via demand function Λ( x) and production cost δ,where Λ( x) = Λ n(x)/n is given in Equation (12), the matrix H is 
+
+H = 120 /19 00 120 /19 
+
+!
+
+,
+
+the cost function c(x) for effective drift rate x ∈ R2 and the corresponding optimal drift rate ζ∗(x)defined in (37) with closed-form expression in Lemma 1 are 
+
+c(x) = x⊤ 19 /6 −38 /15 
+
+−38 /15 19 /6
+
+!
+
+x and ζ∗(x) = −19 /60 19 /30 19 /30 −19 /60 
+
+!
+
+x. (E.53) Fourth, the singular control U has pushing matrix ˜G and costs vector ˜ α given as: ˜G = 1 0 −20 /19 −40 /19 0 1 −40 /19 −20 /19 
+
+!
+
+, ˜α =
+
+
+
+0 0 1 2.5
+
+⊤
+
+. (E.54) Lastly, the interest rate is ˜ r = 0 .01. 
+
+E.1.2 Extended Criss-cross Network. 
+
+With system parameter n = 400, the model primitives in nth system are as follows. The demand function Λn(x) = (475 − 95 x1, . . . , 475 − 95 xp+1 ),
+
+the production cost δn = (1 , . . . , 1), the (nominal) instantaneous demand rate nλ ∗ = (190 , . . . , 190), the outsourcing cost νn = (0 .05 , . . . , 0.05 , 0.025 p), and the service rate μn = (400 , . . . , 400). Besides, the throughput time bound is dn = ( dnv , . . . , d nv , d nh), where we set ( dnv , d nh) equal to (0 .15 , 0.225) and (0 .15 , 0.6) for the 3-server and 10-server cases respectively; we keep general form of ( dnv , d nh) in the fol-lowing related quantities. The queue-length bounds vector is qn = ( nλ ∗)dn = (190 dnv , . . . , 190 dnv , 190 dnh). And the interest rate is rn = 0 .01. 
+
+Problem Parameters in Brownian Control Problem. First, according to Assumption 4 we have 
+
+μ = (0 .95 , . . . , 0.95), η = (1 , . . . , 1), and in Equation (14) for λn(t) we have λ∗ = 0 .95 · (1 /2, . . . , 1/2). Then, the long-run average fraction of service time x∗ = (1 /2, . . . , 1/2). In scaled queue length 60 process (22)–(23), X is 2 p-dimensional Brownian motion with drift φ and variance Σ, which are defined in (A.4) and have values 
+
+φ =
+
+
+
+−1/2...
+
+−1/2
+
+−1/20...0
+
+
+
+, Σ = 0 .95 
+
+
+
+1. . .11 −1/2
+
+−1/2 . . . . . .. . . . . . −1/2
+
+−1/2 1
+
+
+
+. (E.55) The (scaled) queue-length bounds vector is β = qn/√n = (19 dnv /2, . . . , 19 dnv /2, 19 dnh/2). The out-sourcing cost for each (scaled) unit of product is α = νn√n = (1 , . . . , 1, 0.5p). And the interest rate is ˜ r = rn = 0 .01. 
+
+Problem Parameters in Workload Problem. First, in definition (29) of workload process W , we have mk,l = 20 /19 for k = 1 , . . . , K , l = 1 , . . . , n k, and the drift γ and covariance Γ of Brownian motion ξ are 
+
+γ = 20 19 
+
+
+
+−1...
+
+−1
+
+ , Γ = 20 19 
+
+
+
+2 1/2 . . . 1/21/2 . . . . . . ...... . . . . . . 1/21/2 . . . 1/2 2
+
+
+
+, (E.56) which are calculated based on definition of γ and Γ in (A.5), numerical values of φ and Σ in (E.55), and the numerical value of p × (2 p) dimensional matrix M ,
+
+M = 20 19 
+
+
+
+1 1. . . ... . . .1 1 · · · 1
+
+ .
+
+Second, the state space W as defined in (35) for workload process W is 
+
+W = w ∈ Rp 
+
+> +
+
+: wi ≤ wj + 10 dnv , 1 ≤ i < j ≤ p; wi ≤ 10 dnv + 10 dnh, i = 1 , . . . , p . (E.57) Third, given the profit rate function Π( x) defined via demand function Λ( x) and production cost δ,where Λ( x) = Λ n(x)/n is given in Equation (12), the matrix H is 
+
+H = diag 
+
+
+
+80 /19 · · · 80 /19 
+
+
+
+.
+
+The cost function c(x) for effective drift rate x ∈ Rp and the corresponding optimal drift rate ζ∗(x)defined in (37) with closed-form expression in Lemma 1 are 
+
+c(x) = x′( ˜M H −1 ˜M ′)−1x, ζ∗(x) = H−1 ˜M ′( ˜M H −1 ˜M ′)−1x, (E.58) 61 where the p × (p + 1) dimensional matrix ˜M is ˜M = 20 19 
+
+
+
+1 1. . . ...1 1
+
+ . (E.59) Fourth, the singular control U has direction matrix ˜G and cost vector ˜ α:˜G =
+
+
+
+Ip − ˜M
+
+
+
+, ˜α =
+
+
+
+0 · · · 0 1 · · · 1 0.5p
+
+⊤
+
+.
+
+Lastly, the interest rate is ˜ r = 0 .01. 
+
+E.2 Implementation Details of Computational Method 
+
+This section provides implementation details of our computation method, including backup controls and the algorithms for solving the Skorokhod problem in Appendix E.2.1, and neural network training setup in Appendix E.2.2. 
+
+E.2.1 Backup Controls and Algorithm for Solving the Skorokhod Problem. 
+
+For each test problem, we specify the backup controls, including their pushing directions and as-sociated costs, and the algorithm used to solve the resulting Skorokhod problem. The amounts of pushing reported below are aggregated over faces sharing the same backup-control direction and cost coefficient. 
+
+Rybko-Stolyar Network. We set the backup controls for the six faces F1, . . . , F 6 (in clockwise order from the origin; see Figure 4) as ˆL1, ˆL1, ˆU1, ˆU1, ˆL2, ˆL2, where ˆL1 (resp. ˆL2, ˆU1) has the same pushing directions as L1 (resp. L2, U1), but has cost 0 .05 (resp. 0.05, 1 .2). Thus, the reflection matrix is ˆG = (˜ g1, ˜g1, ˜g3, ˜g3, ˜g2, ˜g2). Under this choice, the Skorokhod mapping admits a closed-form expression, bypassing the need for an iterative solver. Given a point w = ( w1, w 2) ∈ R2\W ,where W is given by (E.52), the projected boundary point ˜ w ∈ ∂W is obtained sequentially by 
+
+w◦ = w + ˜ g3 max 
+
+
+
+0, w1 − b1
+
+˜M11 
+
+, w2 − b1
+
+˜M21 
+
+
+
+,
+
+˜w1 = max {w◦
+
+> 1
+
+, 0, 2w◦ 
+
+> 2
+
+− b2} ,
+
+˜w2 = max {w◦
+
+> 2
+
+, 0, 2 ˜ w1 − b2} .
+
+(E.60) Here, w◦ = ( w◦
+
+> 1
+
+, w ◦
+
+> 2
+
+) is an intermediate point, b1 := 20 /3, b2 := 80 /9, ˜M is given by (38) with ˜M11 = 20 /19, ˜M21 = 40 /19. Intuitively, the three steps in Equation (E.60) sequentially apply ˆU1,ˆL1, and ˆL2. The corresponding push amount for each backup control is ˆLi : ( ˜ wi − w◦ 
+
+> i
+
+)+, i = 1 , 2, and ˆU1 : ( w1 − w◦
+
+> 1
+
+)+/ ˜M11 .
+
+62 Extended Criss-cross Network. We set the backup controls for each type of faces (see Table 3): i) wi = 0 , 1 ≤ i ≤ p; use ˆLi;ii) wi = wj + 10 dnv , 1 ≤ i < j ≤ p; use ˆLj ;iii) wi = 10 dnv + 10 dnh, 1 ≤ i ≤ p; use ˆUi.
+
+(E.61) Here, ˆLi and ˆUi (i = 1 , . . . , p ) have the same pushing directions as Li and Ui, respectively; the costs of ˆLi are 0 .05 and 0 .1 in the 3-server and 10-server problems, respectively, and the cost of ˆUi is 24 /19 in both problems. Under this choice, the Skorokhod mapping admits a closed-form expression, bypassing the need for an iterative solver. Given a point w = ( w1, . . . , w p) ∈ Rp\W , the projected boundary point ˜w ∈ ∂W is obtained sequentially by ˜w1 = w1|[0 ,b v +bh], ˜wi = wi|[max(0 ,max j≤i−1 ˜wj −bv ),b v +bh], i = 2 , . . . , p, 
+
+where bv := 10 dnv , bh := 10 dnh, and a|[b,c ] := min(max( a, b ), c ). The corresponding amount of pushing for each backup control is ˆLi : ( ˜ wi − wi)+ and ˆUi : ( wi − ˜wi)+/ ˜Mii (i = 1 , . . . , p ).
+
+Here, the value of ˜Mii is given in Equation (E.59). 
+
+E.2.2 Neural Network Training Setup. Common Parameters Across All Test Problems. Batch size ¯B = 256, time horizon T = 0 .1, discretization step size h = 0 .1/64, reference policy ˜ψ = 0. The optimizer is Adam, and the activation function is elu. 
+
+Parameters Specific to Each Test Problem. Table 7 lists the hyperparameters used for each test problem. These include the problem dimension and network architecture (#Hidden layers and #Neurons in each layer), the training schedule (#Iterations, #Epochs, and learning rate scheme), the upper bound b on the drift control ψ together with its growth rate (pace; see Equation (E.62) below), and the reference policy ˜θ.For each training run, we first simulate the reference process and discard the first 1,000 iterations as a warm-up period. We then save the remaining simulated iterations as the training data. One epoch consists of one complete pass through these retained data, and the networks are trained for #Epochs epochs. Recall that we train a separate neural network for each value of the policy parameter ρ. Within each test problem, the hyperparameters in Table 7 are shared across all ρ, except for the reference policy ˜θ, which we choose adaptively to ρ. In reporting reference policy ˜θ, we parameterize it through 63 Table 7: Parameters used in neural network training. ECC denotes extended criss-cross network. We assume the total drift γ + ˜θ ∈ Rp under the reference policy has identical entries and denote it by a scalar. 
+
+Rybko-Stolyar 3-server ECC 10-server ECC Dimension 2 3 10 #Hidden layers 3 3 4#Neurons in each layer 100 100 200 #Iterations 6000 6000 9000 #Epochs 40 50 100 Learning rate scheme   
+
+> 5e-4 (0,2.8e4), 3e-4 (2.8e4,6e4), 1e-4 (6e4,1e5), 3e-5 (1e5, ∞)5e-4 (0, 1.9e4), 3e-4 (1.9e4, 4.4e4), 1e-4 (4.4e4, 7e4), 3e-5 (7e4, 1.4e5), 1e-5 (1.4e5, ∞)5e-4 (0, 1.9e4), 3e-4 (1.9e4, 4.4e4), 1e-4 (4.4e4, 7e4), 5e-5 (7e4, 1.4e5), 3e-5 (1.4e5, 2.7e5), 1e-5 (2.7e5, ∞)
+
+Upper bound b 100 200 100 Pace 10 10 20 Total drift ρ 7 → γ + ˜θ
+
+under reference policy                                                                   
+
+> 0.95 7→ − 0.8, 0 .96 7→ − 0.8, 0.97 7→ − 0.7, 0 .98 7→ − 1.0, 0.99 7→ − 0.9, 1 .00 7→ − 0.9, 1.01 7→ − 0.8, 1 .02 7→ − 1.0, 1.03 7→ − 1.0, 1 .04 7→ − 0.9, 1.05 7→ − 1.00.85 7→ − 0.8, 0 .86 7→ − 0.8, 0.87 7→ − 0.8, 0 .88 7→ − 0.8, 0.89 7→ − 0.8, 0 .90 7→ − 0.8, 0.91 7→ − 0.8, 0 .92 7→ − 0.8, 0.93 7→ − 0.8, 0 .94 7→ − 0.8, 0.95 7→ − 0.80.85 7→ − 0.4, 0 .86 7→ − 0.4, 0.87 7→ − 0.3, 0 .88 7→ − 0.4, 0.89 7→ − 0.5, 0 .90 7→ − 0.6, 0.91 7→ − 0.4, 0 .92 7→ − 0.5, 0.93 7→ − 0.6, 0 .94 7→ − 0.4, 0.95 7→ − 0.4
+
+total drift vector γ + ˜θ under reference policy, assume identical value for all entries, and denote this common value by a scalar. For each ρ, we select this scalar from a short candidate list, discarding values that yield visually undertrained networks. The last row of Table 7 reports the selected γ + ˜θ
+
+for 11 values of ρ around the optimum. In neural network training, we also adopt the following implementation choices introduced in Ata et al. (2025a, 2024a): 
+
+1) Gradual increase of the upper bound b. For all test problems, we gradually increase upper bound b on drift control ψ during training: at each iteration, b is replaced by ˆb = min 
+
+
+
+b, 0.2b + Iteration 40 · Dim · Pace 
+
+
+
+, (E.62) where Dim is the dimension of problem, and Pace (listed in Table 7) controls the rate of increase. 
+
+2) Penalty term for the Rybko-Stolyar network. Larger workload leads to higher future out-sourcing costs, so the value function of the original singular-control problem should be monotone: 
+
+∇V (·) ≥ 0. To encourage this during training, we add the penalty term ∥Gw2 (·)−∥2 to the loss function. 
+
+3) Variance loss function. For all test problems, we use a variance loss function in training rather than mean squared error. It is introduced in Appendix E.2 of Ata et al. (2025a) to accelerate the training speed when interest rate is small. To be specific, we parameterize the value function as 
+
+Vw1 (x) = ˆVw1 (x) + ξ0. Note that ∂V w1 (x)/∂x = ∂ ˆVw1 (x)/∂x . Rewriting the loss function (66), we 64 have 
+
+ℓ(w1, w 2) = E
+
+ 
+
+e−˜rT ( ˆVw1 ( ˜W (T )) + ξ0) − ( ˆVw1 ( ˜W (0)) + ξ0) −
+
+Z T
+
+> 0
+
+e−˜rt Gw2 ( ˜W (t)) · dB (t)+
+
+Z T
+
+> 0
+
+e−˜rt F (Gw2 ( ˜W (t))) dt +
+
+Z T
+
+> 0
+
+e−˜rt ˆα · d ˜Υ( t)
+
+2
+
+, (E.63) By optimizing ξ0, we obtain the following variance loss function ˜ℓ(w1, w 2) = Var 
+
+
+
+e−˜rT ˆVw1 ( ˜W (T )) − ˆVw1 ( ˜W (0)) −
+
+Z T
+
+> 0
+
+e−˜rt Gw2 ( ˜W (t)) · dB (t)+
+
+Z T
+
+> 0
+
+e−˜rt F (Gw2 ( ˜W (t))) dt +
+
+Z T
+
+> 0
+
+e−˜rt ˆα · d ˜Υ( t)
+
+
+
+. (E.64) Note that ˆVw1 (·) obtained via loss function (E.64) determines the value function Vw1 (·) only up to an additive constant, and we only need gradient Gw2 (·) in determining our proposed policy. 
+
+E.3 Implementation Details of Prelimit Simulation 
+
+In this section, we provide implementation details of prelimit simulation, including our rationale in setting parameter search magnitude for pricing benchmark policies in Appendix E.3.1, the shared-parameter assumption in pricing benchmark policies in Appendix E.3.2, parameter-search setup in Appendix E.3.3, and simulation setup in Appendix E.3.4. 
+
+E.3.1 Reference Parameter Magnitude for Pricing Benchmark Policies. 
+
+To provide a reasonable grid for the pricing parameters search, we note that the appropriate magni-tude of pricing control in our problem is closely related to the outsourcing control. Indeed, since the alternative outsourcing option exists, a rational decision maker would not use pricing controls whose cost is dominated by using outsourcing. We utilize such rationale to provide a reference magnitude for the pricing parameters search, as follows. Assume in the nth system arrival rate λn(t) = nλ ∗ − √n∆λ(t). The arrival-rate deduction measured by √n∆λ(t) can be achieved by either outsourcing or pricing. In approximating Brownian control problem, the outsourcing cost to achieve it is linear in ∆ λ(t) with marginal cost α, while the pricing cost rate for it is quadratic, ∆ λ(t)′H∆λ(t), with marginal cost 2 H∆λ(t) strictly increasing in |∆λ(t)|. Equating the two marginal costs identifies the upper bound beyond which pricing is dominated by outsourcing: 
+
+α = 2 H∆λ(t) ⇒ ∆λ(t) = 12 H−1α. (E.65) Equation (E.65) provides a reference magnitude for the drift control rate in Brownian control prob-lem, based on which we define the following reference magnitude for high-low pricing: ˜ζ := 12 H−1α. (E.66) 65 For linear pricing, assuming that the drift control ζk(t) equals −˜ζk in Equation (E.66) when queue lengths of route k hits its bound qnk and ϕ−k = 0 in Equation (D.43), we obtain a reference magnitude for the linear coefficient ϕk:˜ϕk = − ˜ζk
+
+qnk
+
+= − 12(H−1α)k
+
+qnk
+
+, k = 1 , . . . , K. (E.67) The numerical reference values of ˜ζ and ˜ϕ (see Equations (E.66)–(E.67)) in our test problems are summarized in Table 8. Table 8: Reference magnitudes for high-low and linear pricing parameters. Rybko-Stolyar entries are for (route 1, route 2); ECC represents extended criss-cross network, whose entries are for (vertical route, horizontal route).               
+
+> Rybko-Stolyar 3-server ECC 10-server ECC High-low: ˜ζ(0 .08 ,0.20) (0 .12 ,0.18) (0 .12 ,0.59) Linear: ˜ϕ(−0.002 ,−0.0045) (−0.004 ,−0.004) (−0.004 ,−0.005)
+
+It is worth mentioning that the derivation and resulting numerical values of ˜ζ and ˜ϕ only serves as a reference magnitude of the pricing parameters in our search grid, rather than a preset choice or a strict upper bound of parameter. In fact, while the rationale that pricing controls dominated by outsourcing would not be used holds broadly in the original system we consider, the specific numerical values derived above can depend on the modeling assumptions (e.g., the quadratic form of pricing cost). The detailed setup of the parameter search grid will be described later in this section. 
+
+E.3.2 Shared-parameter Assumption in Pricing Benchmark Policies. 
+
+As said in Remark 5, we impose a shared-parameter assumption across routes for pricing benchmark parameters. We consider two variants. The idea of first variant lies in applying a common percentage price change relative to the nominal price across routes during congestion periods. For high-low pricing, this means the congestion-period drift-control magnitude ζHk is shared across routes; we also assume the non-congestion drift-control magnitude ζLk and the threshold ratio ˜Tk/q nk are shared. For linear pricing, the analogous condition is that ϕkqnk , which equals the drift control when route k’s queue length hits its bound qnk , is shared across routes. Since Equation (D.43) also involves a cross-route coefficient ϕ−k acting on the other routes’ queue lengths (with scale qn 
+
+> −k
+
+:= P  
+
+> k′̸=k
+
+qnk′ ), we also assume ϕ−kqn 
+
+> −k
+
+to be shared. Formally, for k = 1 , . . . , K :
+
+ζHk ∝ 1, ζLk ∝ 1, ˜Tk
+
+qnk
+
+∝ 1, (high-low pricing) (E.68) 
+
+ϕkqnk ∝ 1, ϕ−kqn 
+
+> −k
+
+∝ 1. (linear pricing) (E.69) 66 Table 9: Search grid of tuning parameters in proposed policy and 12 benchmark policies. ECC denotes extended criss-cross network. 
+
+Parameter Spacing Rybko-Stolyar 3-server ECC 10-server ECC 
+
+ϕ1 uniform × ˜ϕ1 [0 , 1] #11 [0 , 1] #11 [0 , 1] #11 
+
+ϕ−1 uniform × ˜ϕ1qn 
+
+> 1
+
+/q n 
+
+> −1
+
+[−0.5, 0.5] #11 [−0.5, 0.5] #11 [−0.5, 0.5] #11 ˜T1 uniform ×qn 
+
+> 1
+
+(ρ) [0 .6, 0.9] #4 [0 .6, 0.9] #4 [0 .6, 0.9] #4 
+
+ζH 
+
+> 1
+
+, ζ L 
+
+> 1
+
+uniform ×˜ζ1 [0 , 1] #11 [0 , 1] #11 [0 , 1] #11 ˜λ ˜τ = abs ˜τ = rel uniform uniform ×√n
+
+[2 , 20] #10 –[1 , 7] #7 [2 , 14] #7 [1 , 7] #7 [2 , 14] #7 ˜c ˜τ = abs ˜τ = rel uniform ×qn 
+
+> 1
+
+(ρ)uniform [0 .1, 0.4] #11 –[0 .1, 0.4] #11 [0 .6, 0.9] #11 [0 .1, 0.4] #11 [0 .6, 0.9] #11 
+
+ρ uniform step 0 .01 #7 step 0 .01 #7 step 0 .01 #7 
+
+s integer {0, 1, 2} #3 {0, 1} #2 {0, 1} #2 
+
+ϵ uniform [0 , 2] #5 [0 , 1.5] #4 [0 , 1.5] #4                               
+
+> Note. “uniform ×˜ϕ1” (resp. “uniform ×qn
+> 1(ρ)”, etc.) denotes a uniform grid scaled by ˜ϕ1(resp. qn
+> 1(ρ)); the reference magnitudes ˜ϕ1and ˜ζ1are given in Table 8. The notation “[ a, b ] # N” indicates a grid of Nvalues on [ a, b ] generated by the corresponding spacing rule; “ {·} #N” indicates an integer set with Nelements. Under the shared-parameter assumption, only route-1 pricing parameters are searched; the rest are determined by the proportionality relations in (E.68)–(E.71). The joint search over ζH
+> 1and
+> ζL
+> 1is further restricted to ζH
+> 1≥ζL
+> 1≥0. The parameter ˜ τuses only ˜ τ= abs in Rybko-Stolyar network, indicated by “–”, and takes values in {abs ,rel }for the extended criss-cross networks. For ρ, the grid is policy-specific and centered at each policy’s approximate optimum (located via a coarse search) with 7 values of step 0 .01.
+
+The second variant builds on the first by further assuming that the pricing parameters are pro-portional to the route-specific outsourcing cost νk (k = 1 , . . . , K ), which is motivated by Equation (E.65). Formally, for k = 1 , . . . , K :
+
+ζHk ∝ νk, ζLk ∝ νk, ˜Tk
+
+qnk
+
+∝ 1, (high-low pricing) (E.70) 
+
+ϕkqnk ∝ νk, ϕ−kqn 
+
+> −k
+
+∝ νk. (linear pricing) (E.71) This variant may yield parameters closer to the optimal one under our problem structure; however, as noted earlier, it relies on our model assumptions. In our pricing benchmark parameter search, we consider both variants, rather than committing to one of them. More specifically, we pool the candidate parameters from the two variants into one single search list, so that the search procedure automatically selects the better-performing variant. 
+
+E.3.3 Parameter Search Setup. 
+
+Recall that each of our proposed policy and 12 benchmark policies consists of three components, i.e., outsourcing and discretionary idling, pricing, and scheduling. For each choice in each component, we set the same search grid for all related policies to ensure a fair comparison. The parameter search grid is summarized in Table 9 and detailed in what follows. 
+
+1) Pricing parameters. Under both variants of shared-parameter assumption (see Appendix E.3.2), only the route-1 pricing parameters are searched; the rest are automatically determined by 67 Equations (E.68)–(E.71). Therefore, the parameters to search include ( ϕ1, ϕ −1) (resp. ( ˜T1, ζ H 
+
+> 1
+
+, ζ L 
+
+> 1
+
+)) for linear (resp. high-low) pricing, whose search grid is set based on reference magnitude ˜ϕ1 (resp. ˜ζ1) given in Table 8. For linear pricing, ϕ1 is generated as a ratio of ˜ϕ1 from a uniform grid, and 
+
+ϕ−1 as a ratio of ˜ϕ1qn 
+
+> 1
+
+/q n
+
+> −1
+
+, where the factor qn 
+
+> 1
+
+/q n 
+
+> −1
+
+accounts for the scale difference between the queue-length terms multiplied by ϕ1 and ϕ−1 in Equation (D.43). For high-low pricing, the queue threshold ˜T1 is generated by a ratio grid over queue-length bound qn 
+
+> 1
+
+(ρ), and drift-control values ζH
+
+> 1
+
+and ζL 
+
+> 1
+
+are each generated by a shared ratio grid over ˜ζ1, with the restriction ζH 
+
+> 1
+
+≥ ζL 
+
+> 1
+
+≥ 0. 
+
+2) Scheduling parameters. Recall that the tuning parameter ˜ τ ∈ { abs , rel } specifies the form of congestion-level term in proposed scheduling policy. For ˜ τ = abs, we set the parameter ˜ c as a ratio of the first-route queue-lengths bound qn 
+
+> 1
+
+(ρ). For ˜ τ = rel, we set search list of ˜λ as a ratio of √n,as it balances the congestion-level term ∆ k(t; rel , ˜c) with order O(1) and the standard pressure term with order O(√n). In the Rybko-Stolyar problem, the two routes have identical bounds, making the abs and rel rules equivalent under a parameter transformation; we therefore search only ˜ τ = abs to avoid redundant computation. 
+
+3) Parameter ρ. The search grid for ρ is problem- and policy-specific. We adopt a two-stage search: a coarse grid first locates each policy’s approximate optimal ρ, which suffices because cost and delay are monotone in ρ; we then refine with 7 grid values spaced 0 .01 apart centered around this approximate optimum. A uniform grid covering all policies’ optima with step 0 .01 would be computationally infeasible, since the optima differ substantially across policies. The two-stage search concentrates simulation effort near each policy’s optimum. 
+
+4) Parameter s. We search safety-stock s over a small set of nonnegative integers, expanding the upper bound whenever the optimum is attained there. 
+
+5) Parameter ϵ. We assume ϵn = ϵ · n1/4 and search over tuning parameter ϵ. The grid range is chosen such that either the optimum lies in the interior of the grid, or the optimum lies at the upper bound but the optimized cost grouped by ϵ has plateaued (i.e., the optimized cost at the upper bound differs by less than 1% from that at the adjacent grid point). Besides the tuning parameters mentioned in Table 9, there are additional parameters for 4 bench-mark policies using proposed scheduling policy (see Appendix D.4): we set the initial scheduling parameters πinit  
+
+> s
+
+as ˜λ = 4 and ˜ c = 0 .25 qn 
+
+> 1
+
+(ρ) for ˜ τ = abs, and ˜λ = 4 √n and ˜ c = 0 .75 for ˜ τ = rel; the maximum number of pricing-scheduling iterations is set as ¯K = 5. After the search, we check whether the searched optimum lies in the interior of the grid or has plateaued at the boundary (i.e., the optimized cost at the boundary differs by less than 1% from that at the adjacent grid point). If neither holds for a certain policy along some component, we extend that policy’s grid for the component using the same spacing and rerun the parameter search for this policy, repeating until one of the two conditions is met. Other policies sharing the original grid are unaffected. 68 E.3.4 Simulation Setup. 
+
+For each test problem, policy and tuning parameter, we simulate under the following setup. 
+
+Number of paths and simulation length. We use 5 ,000 simulation paths, and each path is simulated for 100 ,000 events, where an event represents new job arrival or service completion. The discounted cost beyond the simulation horizon is approximated using a steady-state cost rate, which is estimated by the average cost rate over the last 20% of the simulation events. The number of paths and simulation length are limited by the computation burden; see Appendix E.4. 
+
+Initial state. The initial state is set to 10 jobs at the first buffer of each route and 0 jobs elsewhere. The reported discounted cost depends on this initial state. 
+
+Delay probability. In computing delay probability of each route, we discard jobs departing during the first 20% of the simulation events, and only include those departing during the remaining 80% simulation events. 
+
+Random seed. For each test problem, all policies and parameter combinations share the same random seed, ensuring that relative performance differences reflect parameter choices rather than simulation noise. 
+
+E.4 Computational Burden 
+
+The neural network training is implemented in TensorFlow and adapts the code in Ata et al. (2025a, 2024a). In neural network training, given each value of ρ and corresponding reference policy (see Table 7), the Rybko-Stolyar problem takes approximately 3 hours using 10 CPUs, the 3-server problem takes approximately 6 hours using 5 CPUs, and the 10-server problem takes approximately 1 day using 20 CPUs. The prelimit simulation is implemented in C++. We report an estimated computational burden of each test problem and policy in Table 10, including the number of parameter combinations to be simulated (given search grid of each parameter in Table 9) and a total single-core CPU time. The aliases of benchmark policies follow Table 11. Recall the different search schemes introduced in Appendix D.4. For benchmarks using proposed scheduling (C1–C2, D1–D2) and thus the alternating pricing–scheduling search in the inner loop, the reported number equals the product of outer-loop grid size |Πo|, inner-loop grid size |Πp| + |Πs|, and 2 (the approximate average number of iterations observed in our experiments). The number of parameter combinations varies across different benchmark policies, due to different number of tuning parameters involved (see Table 6) and different search schemes used (see Appendix D.4). Among 12 benchmark policies, the most computationally demanding benchmarks are C1/C2 using single-pushing policy, linear/high-low pricing, and proposed scheduling. In fact, they include 4 parameters in outer-loop Π o, 2–3 parameters in inner-loop pricing Π p, and 2 parameters in inner-loop scheduling Π s, thus the computational burden of their search is roughly equivalent to a 6–7 69 Table 10: Estimated computational burden of prelimit simulation with 5,000 paths per parameter combination. ECC denotes extended criss-cross network. 
+
+Rybko-Stolyar 3-server ECC 10-server ECC Policy #Comb. CPU ·days #Comb. CPU ·days #Comb. CPU ·days Proposed 11,550 22 8,624 23 8,624 420 
+
+A1, A2 25,410 11 13,552 6 13,552 12 A3, A4 55,440 22 29,568 12 29,568 23 B1, B2 5,082 2 3,388 1 3,388 3B3, B4 11,088 4 7,392 3 7,392 6C1 73,920 73 71,456 78 71,456 164 
+
+C2 133,980 146 135,520 156 135,520 327 
+
+D1 14,784 15 17,864 19 17,864 41 D2 26,796 29 33,880 39 33,880 82       
+
+> Note. “#Comb.” denotes the number of parameter combinations simulated, and “CPU ·days” denotes the approximate total single-core simulation time. The aliases of benchmark policies follow Table 11. For A1–B4, each entry refers to a single policy (e.g., A1 and A2 each require the reported amount). For C1–D2, which use the alternating pricing–scheduling search in the inner loop of Algorithm 5, entries assume two iterations of the inner loop for every outer-loop parameter πo, which is the average number of iterations observed in our experiments.
+
+Table 11: Composition and aliases of the 12 benchmark policies. Least-relative-slack (queues) = Least-relative-slack policy based on queue lengths. 
+
+Alias Outsourcing and Discretionary Idling Pricing Scheduling A1 Single-pushing Linear Least-relative-slack A2 Single-pushing Linear Least-relative-slack (queues) A3 Single-pushing High-low Least-relative-slack A4 Single-pushing High-low Least-relative-slack (queues) B1 Threshold-based Linear Least-relative-slack B2 Threshold-based Linear Least-relative-slack (queues) B3 Threshold-based High-low Least-relative-slack B4 Threshold-based High-low Least-relative-slack (queues) C1 Single-pushing Linear Proposed scheduling C2 Single-pushing High-low Proposed scheduling D1 Threshold-based Linear Proposed scheduling D2 Threshold-based High-low Proposed scheduling 
+
+70 dimensional joint search. In contrast, our proposed policy uses a 6 dimensional joint search (see Section 7.4). Thus benchmark policies C1/C2 have significantly more parameter combinations than our proposed policy. Despite having fewer parameter combinations, the proposed policy incur total simulation costs of the same order of magnitude as benchmarks C1/C2, as it involves evaluating neural network based gradient values per simulation step. In Rybko-Stolyar and 3-server problems, the per-simulation time is low because we cache the evaluated gradient values in a map and reuse the gradient by fast table lookup then. In the 10-server problem, such caching is infeasible due to large number of states in higher-dimensional state space, thus the neural network is evaluated during simulation and leads to large simulation time. Assuming ideal parallelization across 200 CPUs, the prelimit simulation for all policies takes approximately 9.2 days in total, of which 2.3 days are for the proposed policy and 6.9 days are for the 12 benchmark policies. Most of the computational burden comes from the proposed policy and benchmarks C1 and C2, which together take 7.0 days. By test problem, the Rybko-Stolyar problem requires 1.2 days for these three policies (0.11, 0.36, and 0.73 days for the proposed policy, C1, and C2, respectively), the 3-server problem requires 1.3 days (0.12, 0.39, and 0.78 days), and the 10-server problem requires 4.6 days (2.10, 0.82, and 1.63 days). 
+
+# F Further Results on Test Problems 
+
+F.1 Two-dimensional Slices of Gradient in 3-server and 10 -server Problems 
+
+Figure 12: Two-dimensional slices of the gradient function in 3-server extended criss-cross problem. Denote bv := 10 dnv and bh := 10 dnh. In the left two panels, we fix w1 = bv/2 and plot the second and third entries of gradient function on ( w2, w 3)-space. In the right two panels, we fix w3 = bh + bv/2and plot the first and second entries of gradient function on ( w1, w 2)-space. In Figures 12 and 13, we visualize two-dimensional slices of the 3-dimensional gradient and 10-dimensional gradient in the workload problem for the 3-server and 10-server problems, respectively. In each p-server ( p equals 3 or 10) problem, we present two types of two-dimensional slices. The first 71 Figure 13: Two-dimensional slides of the gradient function in 10-server extended criss-cross problem. Denote bv := 10 dnv and bh := 10 dnh. In the left two panels, we fix w1 = · · · = w8 = bv/2 and plot the 9th and 10th entries of gradient function on ( w9, w 10 )-space. In the right two panels, we fix 
+
+w3 = · · · = w10 = bh + bv/2 and plot the first and second entries of gradient function on ( w1, w 2)-space. type of slice fixes a workload value for first p−2 dimensions, and presents the value of last two entries of gradient Gw2 (·) along last two dimensions ( wp−1, w p). The second type of slice fixes a workload value for last p − 2 dimensions, and presents the value of first two entries of gradient Gw2 (·) along first two dimensions ( w1, w 2). 
+
+F.2 Prelimit Simulation 
+
+We provide searched tuning parameters for proposed policy and 12 benchmark policies in Appendix F.2.1, and the corresponding delay performance in Appendix F.2.2. 
+
+F.2.1 Searched Tuning Parameters in the Original System. 
+
+Table 12 reports the searched tuning parameters for proposed policy and 12 benchmark policies in the original system, for which we explain in the following paragraphs. Table 12: Searched tuning parameters for proposed policy and 12 benchmark policies.                                                                                                  
+
+> Policy Parameter πpParameter πsParameter πoCost (SE)
+> Panel A: Rybko-Stolyar network
+> Proposed-abs –20 ,0.31 1,1.02 ,1.02.93 (0.03 )A1 −0.0006 ,−0.0004; −0.0015 ,−0.001 –1,0.96 ,2.04.35 (0 .04) A2 −0.0014 ,0.0; −0.0014 ,0.0–1,0.96 ,2.04.03 (0 .04) A3 0.8,0.008 ,0.04; 0 .8,0.02 ,0.1–1,0.95 ,2.04.42 (0 .04) A4 0.7,0.016 ,0.064; 0 .7,0.016 ,0.064 –1,0.96 ,2.04.15 (0 .04) B1 −0.0016 ,−0.0004; −0.0016 ,−0.0004 –1,1.07 5.92 (0 .05) B2 −0.002 ,0.0; −0.002 ,0.0–1,1.07 5.66 (0 .04) B3 0.6,0.016 ,0.088; 0 .6,0.016 ,0.088 –1,1.07 6.01 (0 .05) B4 0.6,0.016 ,0.096; 0 .6,0.016 ,0.096 –1,1.07 5.80 (0 .05) C1-abs −0.001 ,0.0; −0.001 ,0.08,0.31 1,1.00 ,1.53.24 (0 .04)
+> Continued on next page
+
+72 Policy Parameter πp Parameter πs Parameter πo Cost (SE) C2-abs 0.7, 0.008 , 0.056; 0 .7, 0.008 , 0.056 8, 0.31 1, 1.00 , 2.0 3.25 (0 .04) D1-abs −0.001 , 0.0; −0.001 , 0.0 12 , 0.34 1, 1.11 3.64 (0 .04) D2-abs 0.7, 0.008 , 0.08; 0 .7, 0.008 , 0.08 16 , 0.31 1, 1.11 3.59 (0 .04) 
+
+Panel B: 3-server extended criss-cross network 
+
+Proposed-abs – 2, 0.13 0, 0.91 , 1.5 13 .47 (0 .14) Proposed-rel – 80 , 0.87 0, 0.91 , 1.0 13 .37 (0.14 )A1 −0.0024 , −0.00011; −0.0024 , −0.0002 – 0, 0.93 , 1.5 16 .60 (0 .16) A2 −0.0048 , 0.0; −0.0048 , 0.0 – 0, 0.83 , 1.0 23 .59 (0 .17) A3 0.7, 0.012 , 0.084; 0 .7, 0.018 , 0.126 – 0, 0.93 , 0.5 16 .73 (0 .16) A4 0.6, 0.024 , 0.108; 0 .6, 0.036 , 0.162 – 0, 0.83 , 0.5 24 .20 (0 .17) B1 −0.0028 , −0.00011; −0.0028 , −0.0002 – 0, 1.02 17 .77 (0 .15) B2 −0.0036 , 0.00034; −0.0036 , 0.0006 – 0, 0.89 20 .44 (0 .16) B3 0.6, 0.024 , 0.084; 0 .6, 0.036 , 0.126 – 0, 1.02 18 .25 (0 .15) B4 0.7, 0.012 , 0.072; 0 .7, 0.018 , 0.108 – 0, 0.91 20 .71 (0 .17) C1-abs −0.002 , −0.00011; −0.002 , −0.0002 3, 0.19 0, 0.91 , 1.0 14 .80 (0 .15) C1-rel −0.0032 , 0.00023; −0.0032 , 0.0004 80 , 0.84 0, 0.91 , 0.5 14 .60 (0 .15) C2-abs 0.7, 0.012 , 0.06; 0 .7, 0.018 , 0.09 4, 0.19 0, 0.91 , 0.5 14 .84 (0 .16) C2-rel 0.7, 0.012 , 0.072; 0 .7, 0.018 , 0.108 80 , 0.84 0, 0.89 , 0.5 15 .55 (0 .16) D1-abs −0.0028 , 0.00023; −0.0028 , 0.0004 3, 0.13 0, 0.94 15 .52 (0 .15) D1-rel −0.0024 , 0.0; −0.0024 , 0.0 80 , 0.84 0, 0.94 15 .76 (0 .15) D2-abs 0.7, 0.012 , 0.072; 0 .7, 0.018 , 0.108 3, 0.13 0, 0.94 15 .63 (0 .15) D2-rel 0.7, 0.012 , 0.072; 0 .7, 0.018 , 0.108 80 , 0.84 0, 0.94 15 .88 (0 .15) 
+
+Panel C: 10 -server extended criss-cross network 
+
+Proposed-abs – 6, 0.22 0, 0.93 , 1.5 17 .37 (0.45 )Proposed-rel – 160 , 0.81 0, 0.90 , 0.5 19 .54 (0 .44) A1 −0.0008 , −0.00006; −0.001 , −0.0004 – 0, 0.95 , 0.5 28 .43 (0 .62) A2 −0.0024 , −0.00006; −0.003 , −0.0004 – 0, 0.89 , 0.5 43 .97 (0 .49) A3 0.8, 0.012 , 0.048; 0 .8, 0.06 , 0.24 – 0, 0.95 , 1.5 28 .49 (0 .58) A4 0.8, 0.024 , 0.072; 0 .8, 0.12 , 0.36 – 0, 0.86 , 0.5 46 .28 (0 .62) B1 −0.0024 , 0.00006; −0.003 , 0.0004 – 0, 1.07 36 .20 (0 .54) B2 −0.0024 , −0.00003; −0.003 , −0.0002 – 0, 0.94 45 .85 (0 .62) B3 0.7, 0.012 , 0.072; 0 .7, 0.06 , 0.36 – 0, 1.07 37 .35 (0 .59) B4 0.8, 0.024 , 0.096; 0 .8, 0.12 , 0.48 – 0, 0.94 48 .46 (0 .70) C1-abs −0.0012 , 0.0; −0.0015 , 0.0 3, 0.22 0, 0.93 , 0.5 19 .06 (0 .44) C1-rel −0.0016 , 0.00003; −0.002 , 0.0002 120 , 0.78 0, 0.93 , 0.5 18 .93 (0 .46) C2-abs 0.8, 0.012 , 0.036; 0 .8, 0.06 , 0.18 4, 0.22 0, 0.93 , 1.5 18 .92 (0 .44) C2-rel 0.8, 0.012 , 0.036; 0 .8, 0.06 , 0.18 80 , 0.78 0, 0.92 , 1.5 19 .76 (0 .49) D1-abs −0.002 , 0.00009; −0.0025 , 0.0006 2, 0.22 0, 1.00 26 .82 (0 .60) D1-rel −0.0024 , 0.00009; −0.003 , 0.0006 80 , 0.75 0, 1.02 23 .11 (0 .56) D2-abs 0.7, 0.012 , 0.048; 0 .7, 0.06 , 0.24 3, 0.25 0, 0.99 27 .79 (0 .65) D2-rel 0.8, 0.012 , 0.072; 0 .8, 0.06 , 0.36 80 , 0.75 0, 1.01 25 .80 (0 .58) 
+
+First, we use aliases of the 12 benchmark policies, as given in Table 11. Second, for policies using proposed scheduling policy, we report results separately for ˜ τ = abs and ˜ τ = rel in two rows, distinguished by the suffix appended to the policy name. To accommodate the two-row reporting for these policies, we additionally include a column “Cost (SE)” showing the optimized cost (with standard error) for each row; the optimized cost reported in Table 5 corresponds to the smaller cost over ˜ τ ∈ { abs , rel }. Third, for all policies, we report searched tuning parameters by three columns, 73 following three-type parameter classification in Appendix D.4: 
+
+πp := (pricing parameters in Panel B of Table 6) , πs := ( ˜λ, ˜c), πo := ( ρ, s, ϵ, ˜τ ).
+
+The detailed meaning of these three columns in Table 12 is given below. 
+
+Parameter πp. The proposed policy has no tuning pricing parameters, and the corresponding cells are marked “–”. For policies using linear pricing, the column reports {(ϕk, ϕ −k), k = 1 , . . . , K } ∈ 
+
+RK×2. For policies using high-low pricing, the column reports {( ˜Tk/q nk (ρ), ζ Lk , ζ Hk ), k = 1 , . . . , K } ∈ 
+
+RK×3. In both cases, the entries are listed route by route, with semicolons separating routes. In Panels B and C, only the entries of first and last routes are shown; the intermediate routes share identical parameter values with the first route. 
+
+Parameter πs. For policies using proposed scheduling policy, recall that ˜ τ ∈ { abs , rel } is indicated by the policy-name suffix as described above, the column reports ( ˜λ, ˜c/q n 
+
+> 1
+
+(ρ)) for ˜ τ = abs and ( ˜λ, ˜c)for ˜ τ = rel. The policies using least-relative-slack policy or least-relative-slack policy based on queue lengths have no scheduling parameters and are marked “–”. 
+
+Parameter πo. For proposed policy and benchmark policies using single-pushing policy, we report (s, ρ, ϵ ). For benchmark policies using threshold-based policy, we report ( s, ρ ). 
+
+F.2.2 Delay Performance. 
+
+Table 13 reports the delay probabilities under the proposed policy and 12 benchmark policies under tuning parameters included in Table 12; the aliases of benchmark policies used hereafter refer to Table 11. For policies using proposed scheduling policy, we report results separately for ˜ τ = abs and ˜τ = rel in two rows, distinguished by the suffix appended to the policy name. The Rybko-Stolyar, 3-server, and 10-server problems have 2, 4, and 11 routes respectively, and each cell lists the per-route delay probabilities (%) in route order. All reported values satisfy the delay probability constraint 
+
+ε = 1%. Table 13: Delay probabilities (%) under proposed policy and benchmark policies. ECC denotes extended criss-cross network.                                                                                                                                                            
+
+> Policy Rybko-Stolyar 3-server ECC 10-server ECC Proposed-abs 1.00 ,1.00 0.96 ,0.80 ,0.75 ,0.99 0.83 ,0.89 ,0.89 ,0.99 ,0.94 ,0.97 ,0.93 ,0.90 ,0.74 ,0.49 ,0.93 Proposed-rel –0.99 ,0.94 ,0.89 ,0.85 0.82 ,0.85 ,0.91 ,0.95 ,0.90 ,0.92 ,0.91 ,0.89 ,0.83 ,0.94 ,0.35 A1 0.93 ,0.98 0.12 ,0.25 ,0.39 ,0.99 0.00 ,0.01 ,0.01 ,0.03 ,0.06 ,0.10 ,0.15 ,0.21 ,0.28 ,0.36 ,0.96 A2 0.99 ,1.00 0.35 ,0.71 ,0.99 ,0.25 0.01 ,0.04 ,0.10 ,0.18 ,0.29 ,0.42 ,0.56 ,0.76 ,0.89 ,1.00 ,0.23 A3 0.92 ,0.99 0.11 ,0.26 ,0.37 ,0.99 0.00 ,0.01 ,0.02 ,0.04 ,0.05 ,0.10 ,0.14 ,0.21 ,0.31 ,0.36 ,0.98 A4 1.00 ,1.00 0.36 ,0.71 ,1.00 ,0.24 0.01 ,0.04 ,0.10 ,0.18 ,0.30 ,0.43 ,0.57 ,0.71 ,0.87 ,0.98 ,0.11 B1 0.99 ,0.99 0.12 ,0.28 ,0.49 ,0.99 0.00 ,0.01 ,0.01 ,0.03 ,0.05 ,0.08 ,0.13 ,0.19 ,0.28 ,0.38 ,0.99 B2 1.00 ,1.00 0.14 ,0.41 ,0.84 ,0.79 0.00 ,0.02 ,0.07 ,0.13 ,0.22 ,0.34 ,0.50 ,0.65 ,0.84 ,0.99 ,0.39 B3 0.99 ,1.00 0.12 ,0.28 ,0.49 ,0.98 0.00 ,0.01 ,0.01 ,0.02 ,0.05 ,0.09 ,0.13 ,0.20 ,0.26 ,0.37 ,0.94
+> Continued on next page
+
+74 Policy Rybko-Stolyar 3-server ECC 10-server ECC B4 0.98 , 0.99 0.15 , 0.44 , 0.89 , 0.82 0.00 , 0.02 , 0.06 , 0.12 , 0.21 , 0.36 , 0.48 , 0.66 , 0.83 , 1.00 , 0.41 C1-abs 1.00 , 0.96 0.88 , 0.76 , 0.91 , 0.95 0.98 , 0.87 , 0.93 , 0.94 , 0.94 , 0.95 , 0.84 , 0.80 , 0.64 , 0.45 , 0.81 C1-rel – 0.99 , 0.87 , 0.98 , 0.78 0.86 , 0.85 , 0.89 , 0.87 , 0.87 , 0.86 , 0.86 , 0.83 , 0.79 , 0.94 , 0.73 C2-abs 0.99 , 0.97 0.92 , 0.81 , 0.95 , 0.99 0.89 , 0.87 , 0.85 , 0.90 , 0.88 , 0.88 , 0.86 , 0.81 , 0.64 , 0.45 , 0.85 C2-rel – 0.90 , 0.79 , 0.94 , 0.70 0.93 , 0.90 , 0.91 , 0.89 , 0.91 , 0.86 , 0.85 , 0.75 , 0.78 , 0.97 , 0.70 D1-abs 0.96 , 0.95 0.98 , 0.79 , 0.57 , 0.89 0.93 , 0.82 , 0.90 , 0.87 , 0.92 , 0.91 , 0.88 , 0.87 , 0.68 , 0.27 , 0.90 D1-rel – 0.80 , 0.69 , 0.70 , 0.90 0.94 , 0.86 , 0.96 , 0.98 , 0.98 , 0.96 , 0.96 , 0.95 , 0.97 , 0.83 , 0.98 D2-abs 0.99 , 1.00 0.96 , 0.80 , 0.57 , 0.89 0.77 , 0.73 , 0.82 , 0.82 , 0.80 , 0.81 , 0.85 , 0.76 , 0.58 , 0.21 , 0.96 D2-rel – 0.83 , 0.70 , 0.72 , 0.90 0.96 , 0.90 , 0.91 , 0.96 , 0.96 , 0.95 , 0.93 , 0.95 , 0.92 , 0.90 , 0.90 
+
+Recall that Figures 10–11 present delay time histograms across routes for the proposed policy and representative benchmark policies in Rybko-Stolyar and 3-server problems. We further provide the results for 10-server problem in Figure 14, where the observation is similar to those in 3-server case (see Section 9.2). 75 010 Route 1 Proposed ( ˜τ = abs )
+
+> 010
+
+Proposed ( ˜τ = rel )
+
+> 025
+
+Benchmark A1  
+
+> 050
+
+Benchmark A2 
+
+> 010
+
+Route 2 
+
+> 010 020 025 010
+
+Route 3 
+
+> 010 010 020 010
+
+Route 4 
+
+> 010 010 010 010
+
+Route 5 
+
+> 010 010 010 010
+
+Route 6 
+
+> 010 010 010 010
+
+Route 7 
+
+> 010 010 010 010
+
+Route 8 
+
+> 010 010 010 010
+
+Route 9   
+
+> 010 010 010 0.00.10.2050
+
+Route 10         
+
+> 0.00.10.2010 0.00.10.2010 0.00.10.2010 0.00.40.8
+
+Delay time 
+
+> 0.02.5
+
+Route 11   
+
+> 0.00.40.8
+
+Delay time   
+
+> 0.02.50.00.40.8
+
+Delay time   
+
+> 0.02.50.00.40.8
+
+Delay time 
+
+> 0.02.5
+
+Delay bound 99-quantile Figure 14: Delay time histogram under the proposed policy and representative benchmark policies in the 10-server extended criss-cross network. Benchmark A1 (resp. A2): the benchmark policy using single-pushing, linear pricing, and least-relative-slack policy (resp. least-relative-slack policy based on queue lengths). 76

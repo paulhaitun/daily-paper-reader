@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-23</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-24</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 19 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>7</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>12</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-23 21:59:30 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-24 22:09:24 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日精读7篇、速读12篇，共完成19篇论文。最值得看的是世界模型与动作建模的统一因果训练（9.0分）和世界模型泛化能力（9.0分）两个方向，另有3篇速读论文均得8.0分，涉及多机器人任务分配、数据中心碳减排调度和非先验调度。建议普通读者优先精读这两篇9.0分论文，再按需查阅速读中的调度与多机器人方向。</p>
+<p>今天精读了19篇中的7篇，重点聚焦具身智能与机器人系统。最值得看的是递归自改进的机器人协作智能体操作系统 InstAgent（9.0/10），以及面向长程机器人 VLA 模型的自演化终身记忆综述（9.0/10）。普通读者可先读这两篇高分精读，再按兴趣浏览环境生成与实时调度方向的速读论文。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -81,7 +81,7 @@
     <strong class="dpr-home-dashboard-count">7 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Can World and Action Modeling Benefit Each Other under Unified Causal Training?">Can World and Action Modeling Benefit Each Other under Unified Causal Training?</span></li><li><span class="dpr-home-dashboard-paper-title" title="AnyGoal: On World Model Generalization Beyond Expert Rollouts">AnyGoal: On World Model Generalization Beyond Expert Rollouts</span></li><li><span class="dpr-home-dashboard-paper-title" title="Large Multimodal Models for Direct Robot Control: GPT-6 as a Beginning">Large Multimodal Models for Direct Robot Control: GPT-6 as a Beginning</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="InstAgent: A Recursively Self-Improving Agent Operating System for Heterogeneous Robot Collaboration">InstAgent: A Recursively Self-Improving Agent Operating System for Heterogeneous Robot Collaboration</span></li><li><span class="dpr-home-dashboard-paper-title" title="From Sliding Windows to Self-evolving Lifelong Memory: A Dual-perspective Survey of Memory Paradigms for Long-Horizon Robotics VLA Models">From Sliding Windows to Self-evolving Lifelong Memory: A Dual-perspective Survey of Memory Paradigms for Long-Horizon Robotics VLA Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="Structured Latent Dynamics for Long-Horizon Embodied World Models">Structured Latent Dynamics for Long-Horizon Embodied World Models</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>7</strong></span></div>
 </section>
@@ -94,7 +94,7 @@
     <strong class="dpr-home-dashboard-count">12 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Communication-Free Distributed Multi-Robot Task Allocation under Partial Observations Using Labeled Multi-Bernoulli Filtering">Communication-Free Distributed Multi-Robot Task Allocation under Partial Observations Using Labeled Multi-Bernoulli Filtering</span></li><li><span class="dpr-home-dashboard-paper-title" title="Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers">Aging-Aware Online Distributed Scheduling for Lifecycle Carbon Reduction in Geo-Distributed Data Centers</span></li><li><span class="dpr-home-dashboard-paper-title" title="Robust Non-Clairvoyant Scheduling with Classification Models">Robust Non-Clairvoyant Scheduling with Classification Models</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="EnvDreamer: Large-Scale Multimodal-to-Environment Generation for Embodied AI">EnvDreamer: Large-Scale Multimodal-to-Environment Generation for Embodied AI</span></li><li><span class="dpr-home-dashboard-paper-title" title="Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice">Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice</span></li><li><span class="dpr-home-dashboard-paper-title" title="Optimal Dynamic Resource Allocation for Multicore Real-time Systems">Optimal Dynamic Resource Allocation for Multicore Real-time Systems</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>12</strong></span></div>
 </section>

@@ -1,0 +1,255 @@
+Title: Evaluating Runtime Prediction and Conservative Walltime Policies in HPC Systems
+
+URL Source: https://arxiv.org/pdf/2610.27755v1
+
+Published Time: Wed, 21 Oct 2026 00:55:37 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Evaluating Runtime Prediction and Conservative Walltime Policies in HPC Systems 
+
+Hector Romero-Ugalde 
+
+R&D Department, BULL 
+
+Echirolles, France 0000-0002-7614-6474 hector.romerougalde@bull.com 
+
+Youssef Faqir-Rhazoui 
+
+R&D Department, BULL 
+
+Madrid, Spain 0000-0001-7833-1086 youssef.el@bull.com 
+
+Marlon Funk 
+
+R&D Department, BULL 
+
+Madrid, Spain 0009-0007-8183-2667 marlon.funk@bull.com 
+
+Jesus Gorro˜ nogoitia Cruz 
+
+R&D Department, BULL 
+
+Madrid, Spain jesus.gorronogoitia@bull.com 
+
+Abstract —Efficient use of large-scale supercomputing systems depends on accurate runtime estimation and walltime selection. To avoid premature termination, users often overestimate wall-time, leading to poor resource utilization and reduced scheduling efficiency. This paper presents a predictor-agnostic framework for safe walltime recommendation in production HPC envi-ronments. Rather than proposing a new runtime prediction model, the primary contribution is the SAFE decision layer, which converts predicted runtimes into conservative bounded walltime recommendations suitable for deployment. Runtime prediction is therefore treated as a modular component within the proposed framework. We evaluate the approach using large-scale production job histories from the Fugaku and NREL Eagle supercomputers, comprising approximately 24M and 11M jobs, respectively. Runtime prediction performance is first evalu-ated using representative predictors, including linear regression, neural networks, and a neural ensemble. The proposed SAFE framework is then evaluated using the NN ensemble predictor. Experimental results indicate that similarity-aware prediction substantially improves runtime estimation for workloads similar to previous executions. When combined with the proposed con-servative walltime recommendation policies, these improvements enable walltime gap reductions of approximately 20 – 26% while maintaining job termination rates below 1% across both systems. 
+
+Index Terms —walltime, Runtime prediction, HPC job, Re-source management, Deep learning. 
+
+I. I NTRODUCTION 
+
+High-performance computing (HPC) centres allocate re-sources through schedulers that require users to specify a walltime, i.e., the maximum runtime allowed for a job. When no value is provided, a system-defined default walltime is applied, which is typically not adapted to the characteristics of the submitted job. Walltime is a critical parameter: if it is set too low, jobs are terminated before completion; if it is set too high, cluster utilization degrades through inflated reservations, resulting in reduced backfilling opportunities and longer queue times. In many production environments, users adopt conser-vative habits and systematically over-request walltime to avoid failures, which creates persistent inefficiencies at scale [1]. Accurate runtime prediction has therefore been studied extensively as a way to improve scheduling decisions and user guidance [2]. However, directly substituting a predicted runtime for walltime may not be acceptable in production due to prediction errors, workload drift, and heterogeneous user behaviors which can lead to under-allocation events that are operationally costly and weaken user trust [3]. A practical solution must therefore deliver safe recommendations, reduc-ing systematic over-allocation while keeping the probability of premature termination extremely low, and must remain robust as workloads evolve over time. This paper studies a predictor-agnostic framework for safe walltime recommendation in production HPC systems. Run-time prediction is treated as a modular component that es-timates job duration, whereas the primary contribution is the SAFE decision layer that converts these predictions into conservative bounded walltime recommendations suitable for operational deployment. The proposed framework integrates (i) runtime prediction trained on recent job histories, (ii) similarity-aware applicability constraints that distinguish be-tween previously observed and unseen workloads, and (iii) conservative adjustment rules that bound reductions of the user-requested walltime. We evaluate the approach using complete job histories from two large-scale systems, Fugaku [4] and Eagle [5], which collectively comprise more than 35 million executed jobs. To mimic realistic deployment conditions, we adopt a rolling temporal evaluation protocol in which models are trained on recent history and evaluated on future workloads. The contributions of this work are threefold. First, we introduce similarity-aware prediction regimes that distinguish between workloads previously observed during training and previously unseen workloads, enabling a more realistic anal-ysis of prediction reliability. Second, we propose the SAFE walltime adjustment rule, which converts predicted runtimes into conservative walltime recommendations through bounded reductions of the user-requested walltime. Third, we introduce a similarity-aware extension of SAFE that applies additional safety margins to previously unseen workloads. The remainder of the paper is organized as follows. Sec-tion II reviews related work on runtime prediction and wall-time selection. Section III describes the datasets, proposed methods, and experimental environment. Section IV presents experimental results on prediction accuracy and walltime ef-ficiency–safety trade-offs. Section V discusses limitations of this work. Section VI concludes and outlines directions for future work. Accepted for publication at IEEE/SBC SBAC-PAD 2026. © 2026 IEEE. Personal use of this material is permitted. arXiv:2610.27755v1 [cs.DC] 20 Oct 2026 II. C ONTEXT OVERVIEW 
+
+Runtime prediction for batch-scheduled HPC systems has been studied for a long time as a way to improve scheduling efficiency, backfilling, and overall resource utilisation. Early work already identified systematic user overestimation of walltime and demonstrated that historical execution data could be exploited to estimate job duration more accurately [1]. 
+
+A. HPCs and Available Datasets 
+
+The first aspect to consider is the data we can access and its quality. Since many HPC systems are closed environments, it is often difficult to access real user data. However, Feitelson et al. (2014) in [6] compile many of the datasets used in this field. Unfortunately, most of the datasets presented in that work suffer from either a) no longer being available or b) being outdated. Menear et al. [7] showed that many papers on job duration prediction suffer from data replication issues because the datasets used are not publicly available or the links to them are no longer accessible. In [4], Antici et al. (2024) present a comprehensive dataset from the Fugaku HPC system (ranked 7th in the TOP500 list of November 2025). The dataset spans from March 2021 to April 2024, comprising 24 million jobs. Researchers from the NREL Eagle supercomputer (ranked 284th in the TOP500 list of November 2025) have also published a large dataset in [5]. This dataset contains approxi-mately 11 million jobs collected between November 2018 and February 2023. 
+
+B. Early Workload Analysis and Similarity-Based Approaches 
+
+One of the first works focused on analysing HPC usage behaviour through clustering and workload characterisation was Zhang et al. (2012) [8]. They grouped historical jobs using clustering approaches such as K-Means, hierarchical clustering, and neural-networks, and then used cluster-level statistics, rather than learned prediction models, to estimate the runtime of newly submitted jobs. Their results showed that incorporating similarity via clustering significantly improves runtime estimation in heterogeneous HPC workloads. Related studies explored machine learning-based strategies to support scheduling decisions, such as classifying short-long jobs [9], or predicting queue waiting times instead of job duration [10]. More recently, Cui et al. (2024) [11] proposed a clustering-based runtime prediction framework for backfilling that groups jobs according to behavioral similarity before estimating run-time. Their work further demonstrates that exploiting workload similarity remains an effective strategy for improving runtime estimation in heterogeneous HPC environments. Together, these studies establish a key insight that persists across the literature: job similarity matters, and ignoring workload heterogeneity can lead to unstable predictions. 
+
+C. Runtime Regressors and Encoders 
+
+Chen et al. (2020) [12] conducted a comprehensive empir-ical evaluation of several regression and ensemble methods, including linear regression, random forests, XGBoost, and LightGBM. They reported an R2 = 0 .86 with the LightGBM model across the three datasets used. However, there are con-cerns regarding the methodology, since the datasets employed range from 1996 to 2006, and the authors do not specify how the data were split for training and testing. This detail is crucial for realistic evaluation scenarios [7]. Tanash et al. (2021) [13] proposed AMPRO-HPCC, a user-oriented machine-learning tool for predicting job runtime and memory usage from Slurm accounting logs. Evaluated on ap-proximately 17.6 million jobs from the Beocat supercomputing cluster, their Random Forest-based runtime predictor achieved 
+
+R2 = 0 .74 . However, in this case, there are also doubts about the random split of training and testing data [7]. Even though the main objective of Francesco Antici et al. (2025) [14] was not to develop the best runtime predictor, they achieved a reasonable performance of M AE ≈ 200 minutes on the Fugaku dataset, which is one of the most comprehensive datasets available. The key contribution of Antici et al. was the processing of system logs using techniques from Natural Language Processing (NLP). They concatenate all relevant system features into a single long string and then encode it using the Sentence-BERT (SBERT) encoder. The results obtained, compared with those of simpler encoders, were better. Since the Fugaku dataset is one of the inputs to our work, we adopt this approach as it has demonstrated its effectiveness. This line of research has continued to evolve in recent years. Hai et al. (2026) [15] fine-tune Sentence-BERT specifically for HPC job outcome prediction from textual job metadata, further demonstrating the effectiveness of embedding-based representations for HPC workloads. Similarly, Liu et al. (2025) [16] propose ORA, an online retrieval-augmented language model that incorporates information retrieved from job scripts in addition to metadata for runtime prediction, illustrating the continued evolution of language-model-based representations for HPC workload prediction. 
+
+D. Runtime Prediction for Scheduling and System Optimisa-tion 
+
+Prior work on runtime prediction for HPC scheduling has shown that model design must account not only for predictive accuracy but also for the asymmetric impact of prediction errors on scheduling behaviour. Gaussier et al. (2015) [2] demonstrated that classical regression approaches optimised for symmetric error metrics are ill-suited to backfilling envi-ronments, and proposed online polynomial regression models trained with custom asymmetric loss functions that penalise under- and over-prediction differently. Their approach relies on submission-time features, including user and job history and resource requests, and updates model parameters incrementally to adapt to workload evolution. The work highlights the operational importance of er-ror asymmetry in scheduler-integrated runtime prediction. While Gaussier et al. directly inject predicted runtimes into the scheduling mechanism, our work adopts a deployment-oriented perspective in which runtime prediction is decoupled from the final walltime decision. Rather than substituting predictions directly, we explicitly bind and constrain their in-fluence through similarity-aware applicability and conservative adjustment rules, addressing error asymmetry and workload drift in a user-facing, deployable manner. These approaches consistently highlight an important asymmetry: underestima-tion errors are far more costly than overestimation, potentially leading to premature job termination or missed deadlines. Nevertheless, most scheduler-centric methods assume that predictions can be used directly or that failures are acceptable, limiting applicability in conservative production environments. Wang et al. (2021) [17] introduce a deep-reinforcement-learning job scheduler that consumes dynamic remaining-runtime predictions to guide scheduling actions, including job selection and termination. Evaluated on real job logs from the USTC Supercomputing Center, the approach demonstrates improvements over static heuristics and prior learning-based schedulers. In this work, runtime predictions are injected directly into the scheduling policy. The study reinforces our design choice to treat runtime prediction as an intermediate signal, explicitly decoupled from the final bounded walltime recommendation required for safe deployment. Recent work has also incorporated uncertainty estima-tion into runtime prediction. For example, uncertainty-aware approaches combine multi-quantile regression with adaptive safety margins to estimate conservative runtime bounds while remaining compatible with existing schedulers [18]. While these studies focus on improving runtime prediction accuracy or quantifying prediction uncertainty, our work addresses the complementary problem of converting runtime predictions into safe, deployable walltime recommendations through a predictor-agnostic decision framework. 
+
+E. Temporal Validation and Concept Drift 
+
+Menear et al. (2023) [7] present a methodological frame-work for HPC runtime prediction that systematises dataset preparation, feature engineering, temporal validation, and error analysis, arguing that many published gains stem from evalu-ation leakage and non-representative splits rather than truly generalizable models. They emphasise rolling, time-aware validation, strong baselines, and transparent reporting (e.g., MAE and R2 with temporal holds), offering a reproducible rubric to compare models across workloads and institutions. This methodology was also adopted by other relevant works in the resource prediction subject [19] This perspective aligns with our deployment-oriented de-sign: we adopt rolling-window training and next-day eval-uation to study workload drift, and pair accuracy metrics with safety-aware walltime outcomes, thereby extending their methodological guidance from prediction rigour to conserva-tive decision rules for user-facing walltime recommendations. III. M ETHODS , D ATA , AND PROCEDURES 
+
+A. Data Description 
+
+We conduct our study using production accounting logs collected from the Fugaku [4] and NREL Eagle [5] super-computers. Table I depicts the overall metrics collected from both datasets. Altogether, the datasets account for more than 35 million jobs. While Fugaku has almost 3.5K users, Eagle serves nearly 1K different users. Note that, on average, each user accounts for approximately 7K jobs in Fugaku and 11 K
+
+jobs in Eagle. This high level of workload repetition motivates several aspects of this study, including the similarity-aware prediction regimes and the analysis of previously observed versus unseen workloads. Although both datasets use different workload managers (PBS vs. SLURM), most of the pre-run 1 metrics are the same. These include the user name, job ID, number of requested nodes, requested memory, and maximum requested walltime, among others. Therefore, despite the different data sources, we created an intermediate interface to support both datasets. Regarding post-run metrics, we only used the job duration to evaluate our models, and the exit status (or exit code) to filter the jobs. Only successfully completed jobs were retained. Runtime values were converted to minutes and denoted as Tobs (Time observed). To prevent temporal leakage and preserve realis-tic deployment conditions, all experiments use strictly time-ordered splits.                 
+
+> #jobs #users #features time window workload system total size Fugaku 24M 3,457 pre-run: 9 post-run: 36 Mar 2021 -Apr 2024 PBS 28GB
+> Eagle 11M 936 pre-run: 13 post-run: 5 Nov 2018 -Feb 2023 SLURM 240MB TABLE I GENERAL STATISTICS FOR THE FUGAKU AND EAGLE DATASETS .
+
+B. Methods 1) Temporal Rolling Evaluation: We adopt a sliding-window temporal validation strategy to mimic online deploy-ment. For each split: (1) Training window: 29 consecutive days, (2) Validation window: 1 day, and (3) Test window: 1 subsequent day. In other words, the runtime of each job within the testing window (one day) is predicted, and its walltime is adjusted based on the predicted runtime obtained from the previous 30 days of job history and the user-requested walltime. This rolling evaluation protocol simulates real-time predic-tion of unseen future workloads and avoids retrospective bias. 
+
+2) Feature Representation: Job metadata is represented using dense vector embeddings (emb), which encode semantic information derived from job names, user metadata, and user-requested resources (e.g., memory, nodes, GPUs, etc.).  
+
+> 1pre-run metrics refer to those available when a job is submitted but before it is launched.
+
+Following the approach in [4], we concatenate all job features into a comma-separated string such as “job-name,jobenv,...”. This string is then encoded using the SBERT model. The output is a 384-dimensional dense vector repre-sented as 64-bit floating-point values, which we use as input to the models. 
+
+3) Predictive Models: In Neural Networks (NNs), for each split, we train feed-forward multilayer perceptrons (MLPs) to predict job runtime. Input features correspond to 384-dimensional SBERT embeddings derived from job metadata. The evaluated MLP architectures consist of fully con-nected networks with three hidden layers. Hidden dimen-sions vary across candidate configurations, including struc-tures such as (80 , 160 , 80) , (100 , 200 , 100) , (120 , 240 , 120) ,
+
+(150 , 200 , 150) , and (256 , 128 , 64) . Activation functions in-clude combinations of tanh and ReLU . The output layer contains a single neuron for runtime regression. Training is performed using PyTorch with mini-batch gra-dient descent. For each temporal split, multiple candidate con-figurations are trained independently using different combina-tions of architectures, activation functions, batch sizes, training epochs, and loss functions. Candidate models are trained for 20 to 50 epochs using batch sizes of 64, 128 and 1024 and a learning rate fixed at 10 −3. Different candidate configurations are trained using either Mean Squared Error (MSE) loss or Hu-ber loss. Model selection is performed according to validation RMSE. After selecting the best-performing configurations, the models are retrained on the combined training and validation sets before final test evaluation. 
+
+Ensemble NNs: To improve robustness and reduce variance, we construct an ensemble from the top M = 5 validation-performing models. Given predictions ˆTm from each model: 
+
+ˆTens = mean ( ˆT1, · · · , ˆTM ) (1) In practice, ensemble predictions are combined using inverse-validation-RMSE weighting, giving larger influence to models with lower validation error. We report results for both the single best model and the ensemble. 
+
+Linear Regression Baseline: As a lightweight baseline, we train an ordinary least squares linear regression model on the same feature space. This provides a parametric reference to quantify the benefit of nonlinear modelling and ensembling. The objective of this comparison is not to perform an exhaustive benchmark of runtime prediction algorithms, but rather to evaluate the proposed SAFE framework using repre-sentative predictors of increasing complexity. Because SAFE is predictor independent, alternative regression models can be incorporated without modifying the proposed walltime recommendation policy. 
+
+4) Similarity-Aware Prediction Regimes: Production HPC workloads frequently contain repeated executions of the same or highly similar job scripts. As a result, job runtime prediction accuracy may differ depending on whether the job is similar to workloads previously observed during training. To capture this effect, we introduce three prediction regimes:  
+
+> •
+
+ALL : predictions evaluated over the complete test set, including both previously observed and previously unseen workloads.  
+
+> •
+
+IN : predictions restricted to jobs whose feature signatures were previously observed in the training data.  
+
+> •
+
+OUT : jobs whose feature signatures were not observed during training. By definition, the ALL regime therefore corresponds to the union of IN and OUT jobs. A job is classified as IN if its feature signature was previ-ously observed in the training set; otherwise it is considered 
+
+OUT .We expect runtime predictions to be more accurate for IN 
+
+jobs, since the model has already observed similar workload patterns during training. In our deployment scenario, models are retrained period-ically using a rolling temporal window of 30 days. When a new job arrives, its feature signature is compared against the signatures present in the training set. If the job has been previously observed, the prediction is considered confident and falls into the IN regime. Otherwise, the job is classified as 
+
+OUT , indicating that the workload has not been seen during training and therefore the prediction confidence is lower. Evaluating prediction performance separately for these regimes provides insight into how runtime prediction be-haves under realistic production conditions, where systems continuously encounter both repeated workloads and novel applications. 
+
+5) Walltime Gap Reduction: While runtime prediction can provide useful estimations of job duration, directly using predicted runtimes in scheduling decisions may lead to unsafe underestimation of execution time. HPC schedulers therefore require conservative runtime estimates to avoid premature job termination. To address this issue, we evaluate a conservative heuristic adjustment rule that converts the predicted runtime ˆT into a walltime recommendation ˆTadj :
+
+ˆTadj =
+
+(
+
+max( β · elpl, ˆT ) if ˆTelpl < α elpl otherwise (2) where elpl denotes the user-requested walltime. The param-eter α defines the threshold below which the predicted runtime is considered sufficiently smaller than the requested walltime to justify a reduction. The parameter β determines the fraction of the original walltime retained when a reduction is applied, while the max( ·) operator ensures that the recommended walltime never falls below the predicted runtime. In our experiments we set α = 0 .1 and β = 0 .5, meaning that reductions are triggered only when the predicted runtime is less than 10% of the requested walltime, and the adjusted walltime retains half of the original request. These parameters were intentionally selected conservatively in order to prioritize low job termination rates over aggressive walltime reduction. The objective of this work is not to optimize these hyper-parameters, but rather to evaluate whether simple bounded adjustment policies can provide stable operational trade-offs across large-scale production workloads. 
+
+6) Similarity-aware safety adjustment.: The previous rule treats all predictions equally. However, as discussed in Sec-tion III-B4, prediction reliability differs depending on whether a job has been previously observed during training ( IN ) or corresponds to a previously unseen workload ( OUT ). Predic-tions for OUT jobs are generally less reliable because the model must extrapolate beyond previously observed workload patterns. To account for this difference in prediction confidence, we introduce a similarity-aware adjustment rule that applies an additional safety margin to OUT jobs. Specifically, predicted runtimes for OUT jobs are first inflated by a multiplicative safety factor γ, as defined in (3), before applying the SAFE adjustment rule (2). 
+
+ˆT ∗ =
+
+( ˆT if job is IN 
+
+γ · ˆT if job is OUT (3) where γ > 1 increases the predicted runtime for previously unseen workloads. Following [20], we adopt γ = 1 .5 as a conservative operating point for previously unseen workloads. The objective of this work is not to optimize this parameter, but rather to evaluate whether a simple similarity-aware safety margin improves the robustness of walltime recommendations for previously unseen workloads. Automatic calibration of γ
+
+is left for future work. This hybrid rule combines similarity-aware prediction regimes with the SAFE walltime adjustment mechanism. In practice, the scheduler applies the standard SAFE rule for repeated workloads (IN), while applying a more conservative correction for previously unseen jobs (OUT). 
+
+7) Evaluation Metrics: The prediction accuracy is eval-uated on each test day using the Root Mean Square Error (RMSE), the Mean Absolute Error (MAE) and the coefficient of determination ( R2). The metrics are computed indepen-dently for the best NN model, the NN ensemble, and a linear model regression baseline. In addition to prediction accuracy, we evaluate the impact of runtime prediction on walltime estimation. The walltime gap is defined as 
+
+∆wall = elpl − Tobs (4) where elpl is the user-requested walltime and Tobs is the ob-served runtime. Using the adjusted prediction ˆTadj introduced in 2, we compute the predicted gap 
+
+∆pred = ˆTadj − Tobs . (5) The potential benefit of runtime prediction is measured as the reduction in overestimation: Saved time =
+
+> n
+
+X
+
+> i=1
+
+(
+
+∆wall i − ∆pred i ipred /∈ C∆wall i ipred ∈ C (6) where C is the set of jobs cut by the prediction at the testing time. Since model predictions can lead to early job termina-tion, we consider only cases where the job was not terminated. Otherwise, we accumulate the base walltime, assuming the user will re-run the same job. All temporal splits are evaluated independently and aggre-gated to obtain global statistics during the evaluation period. 
+
+C. Experimental Environment 
+
+Due to the overhead of computing SBERT embeddings on the fly, we pre-computed them for both datasets using an AMD Instinct MI210 with ROCm 6.3.3 drivers. For the SBERT implementation, we used the all-MiniLM-L6-v2 2 model from Hugging Face, as well as the AMD version of PyTorch 3
+
+Regarding the offline evaluation, we conducted the exper-iments on a cluster of six nodes equipped with Intel Xeon 6426Y processors. We split the workload into batches to utilize each compute node and accelerate the model training. The source code is publicly available on GitHub. 4
+
+IV. E XPERIMENTAL RESULTS 
+
+A. Prediction performance 
+
+Table II reports the results for the different models on both systems. The objective of this comparison is to evaluate whether prediction performance differs between the IN subset and the full workload (ALL). Reporting the metrics on both scopes allows a direct comparison of model accuracy for previously observed workloads (IN) and for the complete test workload (ALL).                                              
+
+> System Scope Model RMSE MAE R2
+> Fugaku ALL LINEAR 317.61 167.44 0.32 NN BEST 257.61 88.89 0.55
+> NN ENSEMBLE 250.65 87.64 0.57
+> IN LINEAR 234.67 107.94 0.35 NN BEST 170.16 49.0 0.66
+> NN ENSEMBLE 168.53 48.70 0.67
+> Eagle ALL LINEAR 374.11 167.30 0.11 NN BEST 349.28 99.16 0.23
+> NN ENSEMBLE 343.07 98.76 0.26
+> IN LINEAR 190.98 76.13 0.17 NN BEST 146.71 42.87 0.51
+> NN ENSEMBLE 141.33 41.84 0.55
+> TABLE II PREDICTION ACCURACY OF THE EVALUATED MODELS ON THE FUGAKU AND EAGLE HPC SYSTEMS .
+
+Across both systems, prediction performance is consistently better on the IN subset than on the full dataset (ALL). RMSE and MAE decrease substantially, while R2 increases. On Fugaku, the MAE of the NN ensemble decreases from 87.6 minutes on ALL to 48.7 minutes on IN, with R2 increasing from 0.57 to 0.67. A similar trend is observed on Eagle, where the MAE decreases from 98.8 minutes to 41.8 minutes and 
+
+R2 increases from 0.26 to 0.55. Linear regression follows the same pattern but with consistently higher errors. 
+
+> 2https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
+> 3https://pytorch.org/get-started/locally/
+> 4SAFE Walltime Recommendation – SBAC-PAD 2026
+
+These results indicate that workload familiarity is a major determinant of runtime prediction accuracy in production HPC systems. The substantial improvement observed for repeated workloads (IN) motivates the similarity-aware SAFE policy in-troduced later, where prediction confidence directly influences the conservativeness of walltime recommendations. Across both systems, NN models outperform the linear baseline. On Fugaku, the NN ensemble reduces MAE from 167.4 minutes (linear) to 87.6 minutes, while on Eagle, it reduces MAE from 167.3 minutes to 98.8 minutes. Figures 1a and 1b compare the distribution of absolute prediction errors for the NN ensemble and linear regression models on the Fugaku and Eagle systems. In both datasets, the NN ensemble exhibits substantially lower median and mean errors than the linear baseline, indicating improved prediction accuracy. Figures 1c and 1d compare prediction errors between the ALL and IN regimes for the NN ensemble model. Consistent with the metrics reported in Table II, restricting evaluation to repeated workloads (IN) substantially reduces prediction errors relative to the full workload (ALL). 
+
+B. Contributions 2 and 3: Impact of allocation efficiency 
+
+Table III reports the effect of different allocation policies on walltime gap reduction and job termination rates for the Fugaku and Eagle workloads. The table compares five approaches for reducing walltime overestimation: (i) direct allocation using predicted runtimes, (ii) a baseline strategy that scales the user-requested walltime without using runtime predictions, (iii) a safety-factor approach where predicted runtimes are multiplied by a constant factor to reduce the risk of job failures, following prior work on machine-learning based runtime prediction for HPC scheduling [20], (iv) the proposed SAFE walltime adjustment rule (Contribution 2), and (v) the similarity-aware SAFE rule (Contribution 3). Direct allocation based on predicted runtimes achieves sub-stantial reductions in the walltime gap, reaching 53–56% on Fugaku and 55–62% on Eagle depending on the model. How-ever, this strategy leads to unacceptably high job termination rates, exceeding 41–45% on Fugaku and 31–44% on Eagle. Among the evaluated predictors, the NN ensemble consistently achieves the highest gap reduction while maintaining slightly lower job cut rates than the linear and NN-best models. The walltime scaling baseline yields moderate gap reduc-tions while maintaining relatively low job termination rates. Scaling by 0.80 × elpl achieves gap reductions of 26.10% on Fugaku and 22.75% on Eagle, while 0.90 ×elpl further reduces job cuts at the cost of smaller improvements. As shown in Figure 2, these configurations correspond to moderate operating points along the baseline trade-off curve. Applying a multiplicative safety factor of κ = 1.5 to predictions [20] achieves the highest gap reductions overall, reaching 63.89% on Fugaku and 68.30% on Eagle for the NN ensemble, while reducing job cuts to around 20% compared to direct allocation. However, a 20% job termination rate remains prohibitive for production HPC environments. The proposed SAFE rule (Contribution 2) significantly reduces job cuts while maintaining moderate gap reduction. Using the NN ensemble, SAFE achieves a gap reduction of 19.19% on Fugaku and 31.63% on Eagle, while limiting job terminations to 1.10% and 1.03%, respectively. The similarity-aware SAFE rule (Contribution 3) further reduces job termination rates at a modest cost in gap reduction. On Fugaku, job cuts decrease from 1.10% to 0.91%, while the gap reduction slightly increases from 19.19% to 19.71%. On Eagle, job cuts decrease from 1.03% to 0.58%, accompanied by a reduction in gap improvement from 31.63% to 26.01%. Overall, the similarity-aware SAFE policy achieves the lowest job termination rates across both systems, reducing failures below 1% while still providing substantial walltime gap re-duction. Figure 2 illustrates the trade-off between walltime gap reduction and job termination rates. The black curve represents the baseline strategy that uniformly scales the user-requested walltime, while the blue points correspond to configurations of the proposed similarity-aware SAFE policy using the NN ensemble predictor. The figure highlights the trade-off between walltime gap reduction and job termination risk. For comparable job cut rates, the similarity-aware SAFE policy consistently achieves larger gap reductions than the walltime scaling baseline, demonstrating that prediction-informed policies can improve walltime efficiency while maintaining low failure risk. These results demonstrate that the similarity-aware SAFE policy provides the most favorable trade-off between walltime gap reduction and job termination risk across both systems. V. D ISCUSSION 
+
+The results show that directly using runtime predictions for walltime allocation leads to excessive job termination rates. This highlights the practical difficulty of deploying runtime predictors directly in production HPC environments. The SAFE policies are intentionally designed as conserva-tive bounded adjustment rules that prioritize low job termina-tion rates while still enabling meaningful walltime reduction. As part of this empirical study, some limitations remain. First, the parameters controlling the SAFE policies were man-ually selected and were not optimized automatically. Second, the evaluation focuses on walltime estimation rather than full scheduler simulation, meaning that broader system-level effects such as queue waiting times and backfilling efficiency were not explicitly measured. Third, the similarity criterion used to distinguish IN and OUT jobs is based on an exact match of feature signatures; a more graded notion of simi-larity, for example, a distance threshold in embedding space, could provide finer-grained confidence estimates for borderline cases. Finally, although the framework is validated on two large-scale production HPC systems using different workload managers (PBS and SLURM), evaluating additional systems with different workload characteristics would further assess the generality of the proposed framework. NN ensemble Linear regression 0100 200 300 400 
+
+> |Prediction  Runtime| (minutes)
+> NN: n=22747762 mean=87.64 median=12.65 std=234.83 Linear: n=22747762 mean=167.44 median=81.24 std=269.89
+
+(a) NN vs Linear (Fugaku) NN ensemble Linear regression 0100 200 300 400  
+
+> |Prediction  Runtime| (minutes)
+> NN: n=7240612 mean=98.76 median=21.88 std=328.55 Linear: n=7240612 mean=167.30 median=86.54 std=334.61
+
+(b) NN vs Linear (Eagle) ALL jobs Repeated jobs (IN) 020 40 60 80 100 120 
+
+> |Prediction  Runtime| (minutes)
+> ALL: n=22747762 mean=87.64 median=12.65 std=234.83 IN: n=12746228 mean=48.70 median=7.11 std=161.34
+
+(c) ALL vs IN prediction errors (Fugaku) ALL jobs Repeated jobs (IN) 020 40 60 80 100 120 140 160  
+
+> |Prediction  Runtime| (minutes)
+> ALL: n=7240612 mean=98.76 median=21.88 std=328.55 IN: n=306847 mean=41.84 median=6.75 std=134.99
+
+(d) ALL vs IN prediction errors (Eagle) Fig. 1. Distribution of absolute prediction errors across models and prediction regimes. (a,b) Comparison between NN ensemble and linear regression models. (c,d) Comparison between ALL jobs and repeated workloads (IN). 
+
+System Model Policy Parameters Gap Red. (%) Job Cuts (%) Baselines: Direct allocation 
+
+Fugaku Linear Direct –54.36 42.54 NN best 53.15 44.54 
+
+NN ensemble 55.55 41.13 
+
+Eagle Linear 54.92 43.97 NN best 58.02 37.06 
+
+NN ensemble 61.82 31.70 Baseline: Walltime scaling 
+
+Fugaku – Walltime scaling 
+
+0.80 × elpl 26.10 8.08 
+
+0.90 × elpl 13.68 2.96 
+
+Eagle 0.80 × elpl 22.75 2.30 
+
+0.90 × elpl 11.51 1.18 Baseline: Prediction inflation [20] 
+
+Fugaku NN ensemble κ× prediction κ = 1 .5 63.89 20.08 Eagle 68.30 20.92 
+
+Contribution 2: SAFE walltime adjustment 
+
+Fugaku NN ensemble SAFE α = 0 .1, β = 0 .5 19.19 1.10 Eagle 31.63 1.03 Contribution 3: Similarity-aware SAFE 
+
+Fugaku NN ensemble Similarity-aware SAFE α = 0 .1, β = 0 .5 19.71 0.91 Eagle 26.01 0.58 
+
+TABLE III IMPACT OF DIFFERENT ALLOCATION POLICIES ON WALLTIME GAP REDUCTION AND JOB TERMINATION RATES FOR THE FUGAKU AND EAGLE WORKLOADS .0 20 40 60 80                      
+
+> Job cuts (%)
+> 010 20 30 40 50 60
+> Gap reduction (%)
+> Walltime scaling NN policies Selected configuration 010 20 30 40 50 60 70 80
+> Job cuts (%)
+> 010 20 30 40 50 60 70
+> Gap reduction (%)
+> Walltime scaling NN policies Selected configuration Fig. 2. Pareto trade-off between walltime gap reduction and job termination rates for the Fugaku (left) and Eagle (right) workloads. The black curve corresponds to the walltime scaling baseline evaluated for scaling factors in [0 .01 ,1.00] . Blue points represent configurations of the proposed similarity-aware SAFE policy using the NN ensemble predictor, with α∈ { 0.1, . . . , 0.9}and β∈ { 0.1, . . . , 0.9}. The highlighted point indicates the selected configuration (α= 0 .1,β= 0 .5).
+
+Despite these limitations, the results demonstrate that com-bining runtime prediction with conservative bounded adjust-ment policies can provide stable trade-offs between walltime reduction and job termination risk across two large-scale production HPC systems. From an operational perspective, SAFE acts as a deploy-ment layer between runtime prediction and the scheduler. This separation enables improvements in runtime prediction models to be incorporated without modifying the walltime recom-mendation policy itself. Likewise, scheduler implementations can benefit from improved walltime recommendations without requiring changes to SAFE, making the framework suitable for incremental deployment in production HPC environments. Another practical implication of the proposed framework is that it explicitly acknowledges the asymmetric cost of prediction errors in HPC systems. While moderate overesti-mation mainly reduces scheduling efficiency, underestimation may prematurely terminate jobs and disrupt users’ workflows. SAFE therefore deliberately favors conservative bounded ad-justments that substantially reduce the operational risk of premature job termination while still improving walltime uti-lization. VI. C ONCLUSIONS 
+
+This paper presented a predictor-agnostic framework for conservative walltime recommendation in HPC environments, evaluated on large-scale production logs from the Fugaku and Eagle supercomputers comprising more than 35 million jobs. We investigated three complementary aspects of safe wall-time recommendation. First, a similarity-aware prediction regime that distinguishes repeated workloads (IN) from pre-viously unseen jobs (OUT), revealing consistently higher prediction accuracy for IN jobs across both systems and all evaluated models. Second, a conservative SAFE adjustment rule that translates predicted runtimes into bounded walltime recommendations, limiting job termination rates to approxi-mately 1% while achieving walltime gap reductions of 19.19% on Fugaku and 31.63% on Eagle. Third, a similarity-aware extension of the SAFE rule that applies an additional safety margin to OUT jobs, further reducing job termination rates below 1% on both systems for the selected configuration, with only a modest impact on gap reduction. Across both systems, the proposed policies consistently outperform walltime scaling baselines at comparable job ter-mination rates, demonstrating that prediction-informed allo-cation can improve walltime efficiency without compromising reliability. These results suggest that similarity-aware, bounded adjustment policies are a promising practical approach to walltime recommendation in production HPC environments. Because SAFE is predictor-independent, future advances in runtime prediction, including tree ensembles, gradient boost-ing, uncertainty-aware predictors, or foundation models, can be integrated directly into the framework without modifying the conservative walltime recommendation policy. Several limitations remain. The proposed adjustment poli-cies rely on manually selected safety parameters and were not optimized automatically. In addition, the evaluation focuses on walltime estimation rather than full scheduler simulation, meaning that broader system-level effects such as queue waiting times and backfilling efficiency were not explicitly measured. Future work includes automatic calibration of the SAFE parameters, uncertainty-aware runtime prediction, asymmetric learning objectives that penalize underprediction more heavily, integration of the proposed framework into scheduler simula-tors to quantify impacts on queue waiting time, backfilling efficiency, throughput, utilization, and job turnaround time, as well as duration-aware prediction approaches, such as spe-cialised models for different runtime regimes or hierarchical predictors. ACKNOWLEDGMENT 
+
+The SEANERGYS project receives funding from the Eu-ropean High-Performance Computing Joint Undertaking (JU) under grant agreement no 101177590. The JU receives support from the European Union’s Hori-zon Europe research and innovation programme and Czech Republic, France, Germany, Greece, Italy, and Spain. REFERENCES [1] V. S. Zaborovsky, L. V. Utkin, V. A. Muliukha, and A. A. Lukashin, “Improving efficiency of hybrid hpc systems using a multi-agent sched-uler and machine learning methods,” Supercomputing Frontiers and Innovations , vol. 10, no. 2, pp. 104–126, 2023. [2] E. Gaussier, D. Glesser, V. Reis, and D. Trystram, “Improving backfilling by using machine learning to predict running times,” in Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis , 2015, pp. 1–10. [3] J. Li, X. Zhang, L. Han, Z. Ji, X. Dong, and C. Hu, “Okcm: improving parallel task scheduling in high-performance computing systems using online learning: J. li et al.” The Journal of Supercomputing , vol. 77, no. 6, pp. 5960–5983, 2021. [4] F. Antici et al. , “F-data: A fugaku workload dataset for job-centric predictive modelling in hpc systems,” 2024. [Online]. Available: https://doi.org/10.5281/zenodo.11467483 [5] D. Duplyakin and K. Menear, “Nrel eagle supercomputer jobs,” Open Energy Data Initiative (OEDI), National Renewable Energy Laboratory, https://data.openei.org/submissions/5860, 2023, accessed: 2026-02-18. [Online]. Available: https://data.openei.org/submissions/5860 [6] D. G. Feitelson, D. Tsafrir, and D. Krakov, “Experience with using the parallel workloads archive,” Journal of Parallel and Distributed Computing , vol. 74, no. 10, pp. 2967–2982, 2014. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0743731514001154 [7] K. Menear, A. Nag, J. Perr-Sauer, M. Lunacek, K. Potter, and D. Du-plyakin, “Mastering hpc runtime prediction: From observing patterns to a methodological approach,” in Practice and Experience in Advanced Research Computing 2023: Computing for the Common Good , 2023, pp. 75–85. [8] H. Zhang, H. You, B. Hadri, and M. Fahey, “Hpc usage behavior analysis and performance estimation with machine learning techniques,” in 
+
+Proceedings of the International Conference on Parallel and Distributed Processing Techniques and Applications (PDPTA) . The Steering Committee of The World Congress in Computer Science, Computer . . . , 2012, p. 1. [9] S. Zrigui, “Understanding and improving hpc performance using ma-chine learning and statistical analysis,” Ph.D. dissertation, Universit´ eGrenoble Alpes [2020-....], 2021. [10] C. Vercellino, A. Scionti, G. Varavallo, P. Viviani, G. Vitali, and O. Terzo, “A machine learning approach for an hpc use case: The jobs queuing time prediction,” Future Generation Computer Systems , vol. 143, pp. 215–230, 2023. [11] H. Cui, K. Takahashi, Y. Shimomura, and H. Takizawa, “Cluster-ing based job runtime prediction for backfilling using classification,” in Workshop on Job Scheduling Strategies for Parallel Processing .Springer, 2024, pp. 40–59. [12] X. Chen, H. Zhang, H. Bai, C. Yang, X. Zhao, and B. Li, “Runtime prediction of high-performance computing jobs based on ensemble learning,” in Proceedings of the 2020 4th International Conference on High Performance Compilation, Computing and Communications , 2020, p. 56–62. [13] M. Tanash, D. Andresen, and W. Hsu, “Ampro-hpcc: A machine-learning tool for predicting resources on slurm hpc clusters,” in ADVCOMP... the... International Conference on Advanced Engineering Computing and Applications in Sciences , vol. 2021, 2021, p. 20. [14] F. Antici, A. Bartolini, J. Domke, Z. Kiziltan, and K. Yamamoto, “F-data: A fugaku workload dataset for job-centric predictive modelling in hpc systems,” Scientific Data , vol. 12, no. 1, p. 1321, 2025. [15] T. H. L. Hai, H. N. Tuan, B. T. Dang, B. V. Thuong, and N. Thoai, “Fine-tuned sentence-bert for hpc job outcome prediction via textual feature embedding,” in Proceedings of the Supercomputing Asia and International Conference on High Performance Computing in Asia Pacific Region Workshops , 2026, pp. 378–387. [16] H. Liu, Y. Ma, X. Huang, L. Zhang, T. Jia, and Y. Li, “Ora: Job runtime prediction for high-performance computing platforms using the online retrieval-augmented language model,” in Proceedings of the 39th ACM International Conference on Supercomputing , 2025, pp. 884–894. [17] Q. Wang, H. Zhang, C. Qu, Y. Shen, X. Liu, and J. Li, “Rlschert: An hpc job scheduler using deep reinforcement learning and remaining time prediction,” Applied Sciences , vol. 11, no. 20, p. 9448, 2021. [18] J. Choi and S. Oh, “Uarp: uncertainty-aware runtime prediction for preventing scheduler termination under wallclock constraints in hpc,” 
+
+The Journal of Supercomputing , vol. 82, no. 5, p. 292, 2026. [19] B. Gallo, L. Drummond, and J. Viterbo, “Mitigating concept drift in job execution time prediction models,” in Symposium on Knowledge Discovery, Mining and Learning (KDMiLe) . SBC, 2025, pp. 81–88. [20] M. S. Vallabhajosyula and R. Ramnath, “Towards practical, general-izable machine-learning training pipelines to build regression models for predicting application resource needs on hpc systems,” in Practice and Experience in Advanced Research Computing 2022: Revolutionary: Computing, Connections, You , 2022, pp. 1–5.

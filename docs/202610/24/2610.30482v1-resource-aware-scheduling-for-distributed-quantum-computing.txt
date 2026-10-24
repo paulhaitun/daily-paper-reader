@@ -1,0 +1,523 @@
+Title: Resource-Aware Scheduling for Distributed Quantum Computing
+
+URL Source: https://arxiv.org/pdf/2610.30482v1
+
+Published Time: Fri, 23 Oct 2026 00:27:40 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Resource-Aware Scheduling for Distributed Quantum Computing 
+
+Connor Howe 1, Raghav Mundada 1, Jake O’Shaughnessy 1, Ibrahim Abdullahi 1, Ali Anwar 11Department of Computer Science and Engineering, University of Minnesota-Twin Cities Email: {howe0427, munda059, oshau033, abdul765, aanwar }@umn.edu 
+
+Abstract —Distributed quantum computing (DQC) is a promis-ing near-term approach for executing circuits that exceed the capacity of a single quantum processing unit (QPU). Prior work has made significant progress on circuit partitioning and reconstruction, but practical DQC requires more than cutting a circuit into smaller pieces. A runtime system must determine whether to execute the circuit intact, cut it for sequential exe-cution on one QPU, or distribute it across multiple QPUs, while accounting for queueing, communication, reconstruction, and hardware constraints. We present a resource-aware scheduler for DQC that compares these execution alternatives at runtime using explicit models of QPU execution, communication, and host-side reconstruction, together with hardware-informed timing derived from simulated IBM QPUs. By treating communication and reconstruction as first-class scheduling costs, the scheduler selects execution plans using a more realistic view of end-to-end overhead than cutting-only approaches. Across our experiments, reconstruction accounts for over 83% of cutting overhead, distributed execution reduces P90 latency by up to 39% relative to uncut single-QPU execution, and scheduling overhead itself remains negligible, never exceeding 0.038% of end-to-end job latency. Together, these results show that DQC must be treated as a runtime scheduling problem over both quantum and classical resources, not just circuit partitioning. 
+
+I. I NTRODUCTION 
+
+The size and complexity of quantum circuits required by many near-term applications increasingly exceed the capacity of individual quantum processing units (QPUs). Although hardware continues to improve, practical devices remain lim-ited by qubit count, connectivity, and noise, making it difficult to execute larger circuits on a single processor. Distributed quantum computing (DQC) offers a promising near-term path forward by enabling a circuit to be partitioned and executed across multiple QPUs [1], [2]. However, enabling DQC in practice requires more than partitioning a circuit. A runtime system must decide whether a circuit should run intact on one QPU, be cut and executed sequentially on a single QPU, or be distributed across multiple QPUs [3]. That decision depends not only on the circuit structure, but also on system conditions such as queueing delay, QPU availability, communication overhead, host-side reconstruction cost, and hardware-specific execution behav-ior [4], [5], [6], [7]. As a result, DQC is not only a partitioning problem, but also a runtime scheduling problem over both quantum and classical resources. Prior work on circuit cutting has developed increasingly effective partitioning and reconstruction methods [8], [9], [10], [11], while related work in DQC architectures and orchestration has highlighted the need for broader execution management [12], [13], [3]. Yet the runtime question of how to choose among circuit execution plans under dynamic resource conditions remains comparatively underexplored. In particular, communication and host-side quasi-probability reconstruction are often treated as secondary overheads rather than explicit scheduling resources, even though they can materially affect both latency and plan quality. [14] In this paper, we present a resource-aware scheduler for DQC that explicitly compares three execution modes: uncut single-QPU execution (Plan A), cut single-QPU sequential execution (Plan B), and cut multi-QPU distributed execution (Plan C). The scheduler models QPU execution, communica-tion, and reconstruction as distinct constrained resources, and uses hardware-informed timing derived from simulated IBM QPUs together with execution in AerSimulator using backend-specific noise models [15], [16] to estimate execution cost under realistic device conditions. Rather than treating circuit cutting as the sole decision point, our approach evaluates candidate plans using a fuller view of end-to-end latency and output quality. This enables the scheduler to choose execution strategies based on both circuit structure and current system conditions, complementing prior compiler and partitioning focused approaches [14]. Our results show that reconstruction dominates cut-execution overhead, distributed execution can reduce tail la-tency, and scheduler overhead remains negligible. Together, these findings support runtime plan selection across both quantum and classical resources. 
+
+Contributions.  
+
+> •
+
+We formulate DQC execution as a runtime multi-plan scheduling problem, where the system must choose among intact, cut, and distributed execution under dy-namic quantum and classical resource conditions.  
+
+> •
+
+We design a resource-aware scheduler that compares candidate execution plans using explicit models of QPU execution, communication, and host-side reconstruction.  
+
+> •
+
+We incorporate hardware-informed timing based on sim-ulated IBM QPUs with AerSimulator execution using backend-specific noise models to make runtime plan com-parison more representative of realistic device behavior.  
+
+> •
+
+We present an experimental evaluation demonstrating that reconstruction dominates cutting overhead, that dis-tributed execution can improve tail latency by up to 39%, arXiv:2610.30482v1 [cs.NI] 21 Oct 2026 and that scheduler overhead remains negligible relative to end-to-end execution time. II. M OTIVATION : U SE CASES 
+
+Several near-term quantum computing settings motivate a resource-aware scheduler for distributed quantum computing. 
+
+a) Large circuits that exceed single-QPU capacity: 
+
+Application classes such as variational quantum eigensolvers (VQE) for molecular simulation [17], [18], [19] and QAOA-style optimization workloads naturally grow in qubit count with problem size. In addition, practical circuits in the emerg-ing fault-tolerant era of quantum computing will subject hard-ware to larger and more complex workloads [20]. For these workloads, circuit cutting and distributed execution may be the only feasible way to run jobs that do not fit on a single available QPU [21], [22], [23]. But feasibility alone is insuffi-cient: the system must still determine whether communication, reconstruction, and fidelity costs justify cutting over waiting or single-device execution [24], [25]. 
+
+b) Heterogeneous quantum-classical workflows: Emerg-ing HPC and hybrid workflows increasingly combine classical processing with diverse streams of quantum jobs [12], [26], [27], [28]. Some jobs fit on a single QPU, while others require cutting or multi-QPU execution under dynamic queue and resource conditions [29], [30]. The scheduler must jointly consider circuit structure, QPU availability, communication contention, and reconstruction load [31], [32], [33], consistent with prior work on quantum workflow orchestration and resource-aware scheduling. 
+
+c) Latency-sensitive quantum services: Cloud-based quantum services and shared quantum platforms often operate under latency or service-level objectives [13], [32], [5]. In these settings, end-to-end job latency depends on more than QPU execution time alone: queuing delay, inter-QPU coordi-nation, and host-side reconstruction can determine whether a cut or distributed plan is worthwhile in practice [34], [35]. A plan feasible from a partitioning perspective may still be undesirable if it misses latency targets or adds excessive overhead, making resource-aware runtime selection essential for shared, latency-sensitive quantum services [31], [33]. III. R ELATED WORK 
+
+a) Circuit Cutting and Reconstruction: Circuit partition-ing and reconstruction are central to distributed quantum com-puting. Prior work studies optimal partitioning under hardware constraints [8], analyzes theoretical costs of wire and gate cuts [10], [11], and improves reconstruction via randomized measurements [9]. These approaches focus on improving cut-ting itself. In contrast, our work addresses a different systems question: how should a runtime system choose among intact execution, single-QPU cut execution, and distributed multi-QPU execution under changing resource conditions? 
+
+b) Overhead-Aware and Adaptive Cutting: Recent efforts explicitly model cutting overheads. ShotQC reduces sampling cost via adaptive shot allocation [36], while operator backprop-agation methods reduce reconstruction overhead [37]. Adap-tive approaches such as MAESTROCUT and online cutting-point detection explore dynamic repartitioning and adaptive strategies [38], [39]. These works show overhead depends on execution choices; we complement them by treating cut execution as one option within a broader runtime scheduling problem. 
+
+c) Hardware-Aware Partitioning: Hardware-aware ap-proaches incorporate topology and noise into partitioning. FitCut combines partitioning with resource-aware schedul-ing [40], while DisMap and DQTetris optimize mapping using device characteristics and communication structure [41], [42]. Unlike these works, which focus on partition quality, we study whether partitioned execution should be selected at runtime. 
+
+d) Quantum Scheduling and Orchestration: Systems-level work considers quantum workload management. SCIM MILQ integrates cutting with scheduling [12], Qonductor explores latency–fidelity tradeoffs in cloud orchestration [13], Ravi et al. study adaptive job and resource management for the growing quantum cloud [32], and prior schedulers improve utilization through workload-level optimization [43], [44], backend prioritization [45], and adaptive orchestration [46], [33], [34]. Related work also considers multi-device schedul-ing for variational workloads and multi-programming in shared quantum environments [47], [24], [25]. These approaches highlight the importance of global orchestration. Our work focuses specifically on execution-plan selection across intact, cut, and distributed strategies. 
+
+e) Distributed Quantum Computing Architectures: Sur-veys and architectural studies define the DQC landscape [3], [4], [48]. Early and recent systems demonstrate distributed execution under communication constraints [49], [50]. Addi-tional architectural work has begun to frame scalable quantum data-center infrastructure as a systems design problem [28], [23]. These works motivate coordinated multi-QPU execution [51], [52], [53]. We build on this by formulating runtime plan selection that jointly considers computation, communication, and reconstruction costs. Overall, prior work advances cutting, partitioning, and or-chestration. Our contribution is a runtime scheduling perspec-tive that selects among execution strategies based on system state and end-to-end cost. IV. S YSTEM DESIGN 
+
+A. Architecture Overview 
+
+Figure 1 shows the overall scheduler architecture. The system sits between incoming quantum applications and a pool of available QPUs, and evaluates each job using three explicit resource classes: QPU execution resources, communication resources, and host-side reconstruction resources. Its purpose is to determine which of the three possible plans a job should run: intact on a single QPU, be cut and executed sequentially on one QPU, or be cut and distributed across multiple QPUs. It can also be deferred to wait until resources are available. The architecture consists of the following main components: Fig. 1: Host-level architecture. For each incoming circuit, the profiler combines circuit characteristics and current QPU state to identify feasible backend and cutting options. The planner forms candidate plans for single-QPU execution, sequential cut execution, distributed multi-QPU execution, or deferral, and ranks them using predicted fidelity and runtime cost. The selected plan is then passed to the executor. 
+
+a) Profiler: The profiler extracts circuit features such as width w, depth d, one- and two-qubit gate counts (n1q , n 2q ),and interaction density ρ. These features estimate cut suit-ability, rank candidate QPUs, and provide structure for plan generation and cost prediction. 
+
+b) Planner: The planner is the core decision-making component. For each job, it enumerates feasible execution alternatives among Plan A, Plan B, Plan C, and WAIT; invokes circuit cutting when required; predicts queueing, execution, communication, and reconstruction costs; and scores feasible plans using the objective in Eq. (2). If service-level objectives are present, infeasible plans are filtered before scoring. The planner then selects the minimum-score feasible plan. 
+
+c) Executor: Once a plan is selected, the executor ma-terializes it as a staged task graph spanning quantum execu-tion, inter-stage communication, and host-side reconstruction. These stages are scheduled over separate worker pools, allow-ing non-QPU costs to be modeled explicitly rather than folded into QPU occupancy. QPU reservations are spatial: multiple jobs may execute concurrently on disjoint connected qubit subsets when the hardware topology permits. 
+
+d) Cutting layer: The cutting layer provides interchange-able partitioning backends used by Plans B and C. In our im-plementation, one backend performs a scheduler-aware search over partition candidates, while another applies a fixed approx-imate partitioning strategy. Both expose a common interface to the planner, allowing the scheduling logic to remain separate from the specific cutting method used. 
+
+e) Hardware abstraction layer: Each QPU is represented through a hardware profile containing qubit count, coupling topology, timing characteristics, and error-rate information. These profiles provide the hardware-informed inputs needed for feasibility checks, timing prediction, quality estimation, and plan comparison. 
+
+B. Execution Plans 
+
+Plan A executes the circuit intact on one QPU with no cutting overhead. Plan B partitions the circuit into subcircuits fitting one QPU and runs all nexec subexperiments sequentially on that backend, then reconstructs on the host CPU. Plan C 
+
+distributes subcircuits across multiple QPUs via Algorithm 1, with quantum tasks executing in parallel; communication and reconstruction follow as post-QPU tasks. WAIT defers the job with exponential backoff. 
+
+C. Sampling Overhead 
+
+Circuit cutting introduces sampling overhead because each cut increases the number of subexperiments required to recon-struct the final result. For kw wire cuts, the quasi-probability sampling factor and total number of subexperiments are 
+
+s = 4 kw , nexec = s · nshots (1) where nshots is the target number of shots for the original circuit. Even a small number of wire cuts can therefore expand the execution workload substantially. This growth directly increases the cost of cut execution, especially communication and host-side reconstruction. It also motivates an important design choice in our scoring objec-tive. When comparing plans, we use predicted per-shot QPU blocking time rather than treating the QPU as occupied by the entire sampling-expanded workload. Sampling overhead is instead captured in communication and reconstruction models, preserving a clearer separation between quantum resource usage and downstream classical cost. 
+
+D. Scoring Objective 
+
+For each feasible candidate plan p, the scheduler computes a score that balances predicted execution delay, partitioning overhead, coordination cost, and estimated output quality: 
+
+score( p) = wT
+
+  ˆWq + ˆXq
+
++wF Fp +wC Cp +wQ
+
+ 1− ˆFp
+
+ (2) Here, ˆWq denotes predicted queue wait and ˆXq denotes predicted per-shot QPU blocking time. The first term there-fore captures the delay associated with occupying quantum execution resources. We use predicted per-shot QPU blocking time rather than scaling the QPU term by the full sampling-expanded workload. Otherwise, the time term for cut plans can dominate the score so strongly that fragmentation, coordina-tion, and quality terms have little influence on plan selection. The fragmentation penalty Fp discourages unnecessarily complex cut plans: 
+
+Fp = δF max(0 , n ℓ − 2) + δwkw (3) where nℓ is the number of labels and kw is the number of wire cuts. This term biases the scheduler away from over-partitioned plans when simpler alternatives are available. The coordination penalty Cp applies only to distributed execution: 
+
+Cp = δC max(0 , |Q p|− 1) , Cp = 0 for Plans A and B (4) where |Q p| is the number of QPUs used by plan p. This term reflects the additional coordination cost introduced by multi-QPU execution. To estimate output quality, the scheduler uses the fidelity proxy 
+
+ˆFp = exp( −ε2q n2q − ε1q n1q ) (5) where ε2q and ε1q are hardware-derived two- and one-qubit error rates. The quality term favors plans expected to execute on more reliable devices or with lower effective gate overhead. 
+
+a) Why reconstruction is excluded from the score: Host-side reconstruction contributes to end-to-end latency, but it does not occupy QPU execution resources once the quantum stage has completed. For that reason, reconstruction cost is modeled explicitly in total job makespan and resource contention, but is not folded into the QPU blocking term used for plan comparison. This separation allows the scheduler to reason about quantum resource occupancy without conflating it with downstream classical processing. 
+
+E. Plan C Makespan and SLO Filtering 
+
+While the scoring objective in Eq. (2) compares plans using predicted QPU occupancy, service-level filtering requires a fuller estimate of end-to-end completion time. For distributed execution, the scheduler therefore predicts total makespan as 
+
+ˆMC = max 
+
+> q∈Q p
+
+ ˆWq +X
+
+> ℓ∈L q
+
+ˆXℓ,q 
+
+
+
++ ˆTcomm + ˆTrecon (6) where Qp is the set of QPUs used by plan p and Lq is the set of labels assigned to QPU q. The max term captures the parallel quantum critical path, completing when the slowest QPU finishes; communication and reconstruction follow as post-execution stages. This makespan estimate filters plans by latency targets before scoring: plans exceeding deadlines are discarded even if otherwise favorable. This separation ensures Eq. (2) ranks feasible plans by occupancy, coordination, and quality, while Eq. (6) captures end-to-end latency. 
+
+F. Resource Models 
+
+The scheduler models QPU execution, communication, and host-side reconstruction as separate resource classes. This separation allows the system to represent contention and delay more realistically than if all overheads were folded into a single execution-time estimate. 
+
+a) QPU resources: Predicted queue wait ˆWq is estimated by scanning existing reservations on QPU q and identifying the earliest time at which a connected free component of size at least w becomes available. This reflects the fact that feasibility depends not only on total free qubits, but also on whether those qubits form a usable connected region under the device topology. 
+
+b) Communication resources: For cut and distributed execution, communication cost is modeled as 
+
+ˆTcomm = c0 + c1 nexec + δC (|Q p| − 1) (7) where c0 is a fixed communication overhead, c1 scales with the number of subexperiments, and the final term captures additional coordination cost as more QPUs are involved. This model reflects both workload-dependent communication and the overhead of cross-device coordination. 
+
+c) Reconstruction resources: Host-side reconstruction cost is modeled as 
+
+ˆTrecon = r0 + r1 nexec (8) where r0 is a fixed overhead and r1 captures per-subexperiment reconstruction cost. Because nexec grows expo-nentially with wire cuts (Eq. (1)), reconstruction can dominate end-to-end latency even when QPU execution is modest. 
+
+G. Hardware-Informed QPU Timing 
+
+To estimate QPU execution cost, the scheduler uses hardware-informed timing derived from simulated IBM QPUs. In the main experimental configuration, each circuit is tran-spiled to the target device and its scheduled duration is extracted from the resulting hardware-level representation. The predicted per-shot QPU blocking time is therefore 
+
+ˆXq = circuit duration × dt q (9) where dt q is the device time resolution for QPU q. This approach allows timing estimates to reflect hardware-specific connectivity, gate decomposition, and scheduling effects rather than relying only on circuit-level gate counts. For comparison and fallback, the scheduler also supports a simpler analytic timing model: 
+
+ˆXq = d · tlayer + tmeas + tov (10) where d is depth, tlayer per-layer time, tmeas measurement cost, and tov per-shot overhead. The hardware-informed model is used throughout the main experiments because it better reflects realistic device behavior. In particular, it captures the effects of transpilation, topology constraints, and hardware-level scheduling that are not repre-sented in the analytic approximation. 
+
+H. Assignment Policy and Scheduling Loop 
+
+For distributed execution, the scheduler assigns partitions to QPUs to balance parallelism and quality. Plan C uses a makespan-oriented greedy policy (Algorithm 1): labels are or-dered by decreasing cost and assigned to the QPU minimizing projected load, with quality-aware tie-breaking. This reduces the quantum critical path while accounting for device relia-bility At runtime, the scheduler operates in discrete decision steps. At each step, it releases completed QPU reservations, updates the set of pending jobs, re-ranks candidate devices for each job, and invokes the planner to choose among Plans A, B, C, and WAIT. Jobs assigned WAIT remain pending and are reconsidered after backoff, while accepted plans are passed to the executor for staged execution. Algorithm 2 summarizes the high-level scheduling loop, and Algorithm 3 shows plan enumeration and selection. First, the scheduler identifies feasible candidates, applies service-level filtering using predicted makespan, scores the remaining plans (Eq. (2)), and then dispatches the minimum-score feasible op-tion. This structure separates feasibility, deadline filtering, and plan comparison, improving interpretability and extensibility. Algorithm 1: Makespan-greedy label-to-QPU assign-ment 
+
+Input: Labels L, QPUs Q, cost c(ℓ, q ), quality ˆFq , capacity 
+
+κq
+
+Output: σ : L → Q  
+
+> 1
+
+Sort L desc. by max q c(ℓ, q );;  
+
+> 2
+
+λq ← 0; κ′ 
+
+> q
+
+← κq ∀q; 
+
+> 3
+
+foreach ℓ ∈ L do  
+
+> 4
+
+q⋆ ← arg min q:κ′ 
+
+> q>0
+
+[λq + c(ℓ, q ) − wqual ˆFq ]; 
+
+> 5
+
+σ(ℓ) ← q⋆;;  
+
+> 6
+
+λq⋆ + = c(ℓ, q ⋆);;  
+
+> 7
+
+κ′ 
+
+> q⋆
+
+− = 1 ; 
+
+> 8
+
+return σ
+
+Algorithm 2: Online scheduler step at time t
+
+Input: Time t, pending queue P, pool Q 
+
+> 1
+
+foreach q ∈ Q do  
+
+> 2
+
+Release reservations completed before t; 
+
+> 3
+
+foreach (j, prof) ∈ P (FIFO, ≤ max) do  
+
+> 4
+
+if j in backoff then skip;  
+
+> 5
+
+Re-rank Q for circuit j; 
+
+> 6
+
+p⋆ ← CHOOSE PLAN (j, prof , t ); 
+
+> 7
+
+if p⋆ = WAIT then  
+
+> 8
+
+Set backoff on j; 
+
+> 9
+
+else  
+
+> 10
+
+Executor.run (j, p ⋆, t ); remove j from P;
+
+V. I MPLEMENTATION 
+
+The scheduler is implemented in Python 3.10 with Qiskit 2.x, including planning, resource modeling, and execu-tion components to evaluate Plans A, B, C, and WAIT under simulated multi-QPU conditions. QPU behavior is modeled using simulated IBM QPUs, which provide device topologies, gate timing information, and noise characteristics used for hardware-informed timing and quality estimation. Quantum execution is simulated with AerSimulator using backend-specific noise models, allowing the scheduler to evaluate plan choices under device-dependent conditions without requiring access to live hardware. Circuit cutting and quasi-probability reconstruction use Qiskit’s Circuit Cutting Addon. The scheduler interfaces with backends via a common abstraction, enabling different parti-tioning strategies without changing scheduling logic. VI. E XPERIMENTAL SETUP 
+
+a) Hardware Configuration: The default evaluation uses a pool of three simulated IBM QPUs with heterogeneous capacities and device characteristics. Unless otherwise noted, the baseline pool comprises 7-, 9-, and 11-qubit devices with distinct connectivity, timing, and noise profiles. Additional ex-periments vary pool composition and size to analyze scheduler behavior across resource configurations. 
+
+b) Workload: Our evaluation uses synthetic workloads drawn from several representative circuit families, including GHZ, random CX, QFT, QAOA-like, and VQE-like circuits. 
+
+Algorithm 3: CHOOSE PLAN : enumerate, filter, score, select 
+
+Input: Job j, profile, time t, ranked QPUs 
+
+Output: Minimum-score feasible plan p⋆ 
+
+> 1
+
+C ← ∅ ; 
+
+> 2
+
+foreach QPU q with free connected subgraph of size w do  
+
+> 3
+
+Compute ˆWq , ˆXq (Eq. (9)), ˆFq (Eq. (5)); 
+
+C+ = PlanA( q); 
+
+> 4
+
+if j. allow cutting then  
+
+> 5
+
+part ← CutStrategy.partition( j.circuit);  
+
+> 6
+
+nexec ← 4kw · nshots (Eq. (1));  
+
+> 7
+
+foreach feasible QPU q for Plan B do  
+
+> 8
+
+C+ = PlanB( q, part) ; 
+
+> 9
+
+foreach QPU subset Q′ ⊆ top-k do  
+
+> 10
+
+σ ← ASSIGN (part .labels , Q′) (Algorithm 1); compute ˆMC (Eq. (6));  
+
+> 11
+
+C+ = PlanC( Q′, σ ); 
+
+> 12
+
+p⋆ ← WAIT ; 
+
+> 13
+
+foreach p ∈ C do  
+
+> 14
+
+if SLO set and ˆMp > j. slo s then skip;  
+
+> 15
+
+p. score ←Eq. (2);  
+
+> 16
+
+if p. score < p ⋆.score then p⋆ ← p; 
+
+> 17
+
+return p⋆
+
+Circuit widths range from 3 to 14 qubits, and all jobs use 
+
+nshots = 2000 unless otherwise noted. We distinguish between 
+
+narrow jobs, which fit intact on at least one available QPU, and heavy jobs, which require cutting or distributed execution due to capacity constraints. To study runtime behavior under different arrival patterns, we use both streaming and batch-style submissions. In stream-ing settings, job arrivals follow a Poisson process with rate λ,while in batch settings all jobs are submitted at time t = 0 .This allows us to study how scheduler decisions change under varying levels of queueing and contention. 
+
+c) Metrics: We evaluate the scheduler using end-to-end latency, predicted output quality, plan adoption rate, and scheduling overhead. For each job j, end-to-end latency is defined as 
+
+Lj = tready  
+
+> j
+
+− tsubmit  
+
+> j
+
+(11) where tsubmit  
+
+> j
+
+is the job submission time and tready  
+
+> j
+
+is the time at which execution and post-processing are complete. We report median and P90 end-to-end latency, fidelity proxy ˆF, per-component overhead breakdown, plan-selection frequency, and scheduler decision time. Together, these metrics allow us to evaluate both execution quality and systems behavior across different workload and resource conditions. 
+
+d) Experimental controls and variability: All reported results are obtained under a fixed software stack and simulator-based hardware configuration described in Sections V and VI. To reduce confounding from configuration drift, we use the same plan definitions, scoring function, workload generators, and backend pool specification across all comparisons unless a factor is being explicitly swept. Correctness of the scheduler logic is checked through plan-feasibility validation, consis-TABLE I: Experiment summary. Default configuration: 3-QPU pool (7/9/11 qubits), λ = 1 .0 jobs/s, and n = 40 jobs per run unless otherwise noted.                                   
+
+> Experiment Purpose
+> Plan comparison Compare latency, overhead, and fidelity tradeoffs among Plans A, B, and C Cutting overhead breakdown Measure how much cut-execution overhead comes from reconstruction and communication Coordination-penalty sweep Evaluate how coordination cost shifts the boundary between sequential and distributed cut execution Congestion sweep Study how plan selection and performance change as preferred devices become increasingly congested Noise sensitivity Evaluate how device quality affects predicted fidelity and scheduler behavior Backend / pool comparison Measure sensitivity to heterogeneous device pools and routing quality Circuit-width scaling Measure how scheduler overhead and plan choice change with increasing circuit size Pool-size scaling Measure how scheduler overhead changes with the number of available QPUs Batch vs. stream Compare scheduler behavior under different submis-sion patterns SLO-constrained scheduling Evaluate plan selection under latency targets and service-level constraints Stream composition sweep Study how changing the fraction of heavy jobs affects plan adoption and performance
+
+tency between predicted plan structure and executed staged task graphs, and fidelity-proxy trend validation under con-trolled error-rate sweeps. Because the evaluation is simulator-based, variability stems from workload, queueing, and backend choice rather than hardware noise. We report medians, P90 latency, plan fractions, and per-component overheads through-out. 
+
+e) Experiment Summary: Table I summarizes the main experimental analyses used in our evaluation. These analyses examine plan tradeoffs, sensitivity to workload and system parameters, adaptive behavior under changing resource condi-tions, and the practical overhead of runtime scheduling. Our evaluation is organized around these research questions: 
+
+RQ1 What are the latency, overhead, and fidelity trade-offs among intact, sequentially cut, and distributed execution? 
+
+RQ2 How much of cut-execution overhead comes from host-side reconstruction and communication rather than QPU execution alone? 
+
+RQ3 How does the scheduler respond to changing coordi-nation cost, congestion, and heterogeneous resource conditions? 
+
+RQ4 How small is scheduler overhead relative to end-to-end job latency as circuit size and pool size vary? 
+
+RQ5 How do submission strategy and latency constraints affect plan selection and observed performance? VII. E VALUATION 
+
+We organize the evaluation around three questions: what tradeoffs arise among intact, sequentially cut, and distributed execution; how the scheduler responds to changing system and workload conditions; and whether runtime decision-making remains practical. Across the results, three themes emerge consistently. First, cut execution is shaped as much by host-side reconstruction and communication as by QPU execution 
+
+(a) Median per-job latency break-down across execution plans. 
+
+(b) CDF of end-to-end latency by scheduling condition. 
+
+Fig. 2: Latency comparison across execution plans. Figure 2a shows median per-job latency by component for each selected plan kind, and Figure 2b shows end-to-end latency by schedul-ing condition. The no-cut condition has the widest spread and worst tail behavior, while cut-multi achieves the best P90 latency despite communication and reconstruction overhead. itself. Second, execution-plan choice materially changes ob-served latency and fidelity trends, especially under congestion or coordination pressure. Third, the scheduler’s own overhead remains negligible relative to end-to-end job latency. 
+
+A. Core Tradeoffs Among Plans A, B, and C 
+
+We begin by comparing the three execution modes under the default system configuration: intact single-QPU execution (Plan A), cut single-QPU sequential execution (Plan B), and cut multi-QPU distributed execution (Plan C). Figures 2a and 2b together characterize the tradeoffs among the three execution modes, though they slice the data differ-ently and should not be compared directly: Fig. 2a groups jobs by the plan kind the scheduler selected, while Fig. 2b groups jobs by the scheduling condition under which they were submitted. The two views are complementary but not equivalent, since cutting-enabled conditions can still yield Plan A selections for sufficiently small circuits. The time breakdown (Fig. 2a) shows that Plan A jobs have a median end-to-end latency of 0.99 s ( n = 88 ), dominated by queue wait and execution with no reconstruction cost. Plans B and C show substantially higher medians (1.98 s and 1.73 s respectively), driven largely by the modeled reconstruction component. The latency CDF (Fig. 2b) provides the cleaner comparison of scheduling conditions as experienced end-to-end. The no-cut condition exhibits the widest latency spread, with a P90 of approximately 1.85 s. The cut-single and cut-multi conditions converge to a similar distribution over the bulk of jobs, but cut-multi achieves the best tail behavior with a P90 of approximately 1.13 s, a 39% reduction relative to no-cut. This demonstrates that distributed execution is not simply a fallback for oversized circuits: under favorable resource conditions, it materially reduces tail latency by recovering parallelism and relieving queueing pressure on any single device. Across 20 matched seeds, cut-multi reduced P90 end-to-end latency relative to no-cut by 0.514 s on average (95% CI [0.326, 0.723]), corresponding to an average reduction of Fig. 3: Cutting-overhead breakdown for Plans B and C. Reconstruction is the dominant overhead component, while scheduler decision time is negligible. 
+
+Fig. 4: Coordination-penalty sweep. As the coordination penalty increases, the scheduler shifts from distributed cut execution (Plan C) toward sequential cut execution (Plan B), with a corresponding increase in median end-to-end latency. 28.6% (95% CI [20.0%, 37.0%]). A paired Wilcoxon signed-rank test gave p = 0 .00195 , indicating that this tail-latency improvement was consistent across seeds. These results show that execution-plan choice materially changes latency behav-ior: single-QPU execution minimizes per-job overhead, while cut multi-QPU execution can outperform it in the tail when runtime conditions favor parallelism. 
+
+B. Reconstruction Dominates Cutting Overhead 
+
+Figure 3 isolates the overhead introduced by cut execu-tion. In the representative breakdown shown, reconstruction accounts for 87% of total cutting overhead (805 ms of 925 ms), while communication contributes the remaining 13%. This pattern remains stable across repeated runs: across 20 matched seeds, reconstruction accounts for 83.1% of cutting overhead on average (95% CI [82.8%, 83.4%]). Scheduler decision time is negligible by comparison. Together, these results show that the dominant cost of cut-enabled DQC is not the scheduling decision itself, but the host-side work required to reconstruct the final result. This result directly justifies the modeling choices in Sec-tion IV-F and Section IV-D. If reconstruction were treated as a minor secondary cost, the scheduler would systematically underestimate the true burden of cut execution. Instead, our results show that reconstruction must be treated as a first-class resource when evaluating distributed quantum execution. 
+
+C. Coordination Cost Governs the Plan B–C Boundary 
+
+Figure 4 shows that the coordination penalty provides a clear and interpretable control over the boundary between sequential and distributed cut execution. At low coordination cost, Plan C 
+
+Fig. 5: Congestion sweep. Fidelity degrades gradually with increasing device congestion, while latency shows a non-monotonic response because the scheduler changes its pre-ferred execution plan. TABLE II: Congestion sweep. Full congestion on the preferred device triggers increased Plan C adoption and a recovery in latency relative to the 75% congestion case.                         
+
+> Congestion Fidelity Med. (s) P90 (s) Plan C %
+> 0% 0.928 0.921 1.235 82% 25% 0.928 0.977 1.148 98% 50% 0.794 0.968 1.808 85% 75% 0.792 21.374 36.723 80% 100% 0.786 0.956 1.557 88%
+
+dominates, accounting for 85% of jobs. As δC increases, the scheduler shifts toward Plan B, and at δC = 0 .50 s/QPU, Plan C disappears entirely. This transition is important for two reasons. First, it vali-dates that the score is responding to the intended design knob: the scheduler is neither locked into distributed execution nor arbitrarily unstable. Second, it provides a practical calibration interpretation. The relevant boundary between Plans B and C is determined by the relative cost of coordination versus the benefit of parallel execution. Forcing the scheduler fully into Plan B raises median end-to-end latency from 0.956 s to 1.041 s, showing that sequential cut execution cannot recover the performance benefit of Plan C under these conditions. 
+
+D. Adaptive Plan Selection Yields Non-Monotonic Congestion 
+
+Figure 5 and Table II reveal one of the more surprising behaviors in the evaluation. Fidelity degrades smoothly as congestion increases, but latency does not. Instead, median latency peaks sharply at 75% congestion and then recovers at 100% congestion. The reason is that congestion changes which plan the scheduler prefers. Under partial congestion, some jobs con-tinue to queue for preferred single-device execution, creating large latency spikes. Under full congestion, the scheduler shifts more aggressively toward Plan C, distributing work across the remaining available QPUs and restoring parallelism. This produces a counterintuitive but important result: under adaptive plan selection, full congestion on the preferred device can be less damaging than partial congestion if it forces the system into a better distributed execution regime. This behavior suggests that future schedulers may benefit from predictive or learning-based plan selection under congestion. Fig. 6: Comparison across backend configurations. Mixed-quality pools achieve higher fidelity than more uniform IBM hardware pools because the scheduler can preferentially route work to the best available devices. 
+
+Fig. 7: Median scheduler decision time as circuit width and QPU pool size vary. Annotations show the corresponding median end-to-end latency and the fraction of total latency attributable to scheduling. This result reinforces that DQC behavior cannot be under-stood purely from circuit structure or static partition quality. Runtime plan selection changes the observed latency landscape in ways that only appear when communication, reconstruction, and resource contention are modeled jointly. 
+
+E. Quality-Aware Routing Benefits from Heterogeneous Pools 
+
+Figure 6 shows that heterogeneous pools outperform more uniform pools of simulated IBM QPUs when the scheduler is allowed to route subcircuits to the most reliable avail-able devices. Across both 2-QPU and 4-QPU configurations, mixed-quality pools achieve higher fidelity than uniform pools, indicating that device heterogeneity can be an asset rather than a liability when placement is quality-aware. With 4 QPUs, for example, mixed-quality pools achieve fidelity 0.892 versus 0.783 for uniform-quality pools, a 10.9% improvement. These results support two claims of the paper. First, the fidelity proxy is useful for runtime comparison even though it is intentionally lightweight. Second, explicit routing over heterogeneous device pools is a potential source of quality improvement in distributed execution, rather than just a sec-ondary implementation detail or a liability. 
+
+F. Scheduler Overhead Remains Negligible 
+
+Figure 7 and Table III show that scheduler decision time remains negligible relative to end-to-end job latency across both circuit-width and pool-size sweeps. Even in the most de-manding configuration shown here, scheduler overhead never TABLE III: Scheduler overhead as a fraction of end-to-end latency. Overhead remains negligible across both circuit-width and pool-size sweeps.                                                 
+
+> Configuration Sched. (ms) e2e med. (s) Overhead Dominant plan
+> By circuit width
+> 3 Q 0.018 0.765 0.002% Plan A 5 Q 0.025 0.683 0.004% Plan A 6 Q 0.275 1.033 0.027% Plan C 8 Q 0.383 1.071 0.038% Plan C 10 Q 0.290 1.208 0.024% Plan C 12 Q 0.356 1.316 0.027% Plan C
+> By pool size
+> 2 QPU 0.709 7.710 0.009% Plan C 3 QPU 0.671 4.730 0.014% Plan C 4 QPU 0.714 3.150 0.023% Plan C 6 QPU 0.493 2.840 0.017% Plan C 8 QPU 0.523 2.270 0.023% Plan C
+
+Fig. 8: Submission-strategy comparison. Left: plan adoption by strategy. Center: fidelity remains stable across strategies. Right: P90 end-to-end latency increases substantially as sub-mission shifts from streaming to batch-oriented modes. exceeds 0.038% of median end-to-end latency. Across 20 matched seeds, the scheduler-overhead fraction remained neg-ligible, with a mean of 0.0203% of end-to-end latency (95% CI [0.0191%, 0.0214%]). The maximum per-job scheduler-overhead fraction observed across these runs was 0.1313% which happened under a large congestion burst. Two trends are worth noting. First, scheduler time rises when workloads cross from intact execution into cut-enabled execution, since the planner must enumerate and compare more complex candidate plans. This is visible in the jump between 5- and 6-qubit workloads, where Plan A gives way to cut-enabled alternatives. Second, scheduler time remains small even as the pool size increases, indicating that the runtime decision process scales comfortably over the range of QPU counts studied here. This result addresses a central practicality concern. The scheduler introduces additional reasoning and resource mod-eling, but that added logic is far too small to be a meaningful bottleneck. In other words, the system complexity introduced by runtime plan selection is justified by the much larger latency differences it enables the scheduler to exploit. 
+
+G. Submission Strategy Strongly Impacts Performance 
+
+Figure 8 and Table IV show that submission strategy has a large effect on observed system behavior even when the un-TABLE IV: Submission-strategy comparison. Streaming strategies achieve the lowest latency, while batch-style sub-mission increases both queueing and cut-plan pressure.                                                
+
+> Strategy Med. (s) P90 (s) Fid. A% B% C%
+> Stream λ=0 .50.658 0.991 0.955 50 050 Stream λ=2 .00.782 1.072 0.937 50 050 Stream λ=5 .01.005 1.361 0.936 50 248 Micro-batch w=5 0.926 1.349 0.934 50 545 Micro-batch w=20 1.453 2.325 0.934 50 545 Batch all 1.919 4.299 0.940 35 28 38
+
+Fig. 9: Stream composition sweep: wide circuits increase from 0% to 100%, shifting from Plan A to ∼90% Plan C. Fidelity drops from 0.969 to 0.908, and P90 spikes above 60% as Plan C exceeds 55% and coordination overhead grows. derlying scheduler remains unchanged. Streaming workloads achieve the lowest latency across the board, with P90 latency below 1.4 s in all streaming conditions and as low as 0.991 s at λ = 0 .5. In contrast, large batch submission drives P90 latency to 4.299 s, producing an approximately 4.3 × increase relative to the lowest-latency streaming case. The mechanism is straightforward. Streaming jobs arrive gradually and therefore encounter less immediate contention for QPU, communication, and reconstruction resources. Batch-style submission creates an initial burst that increases queueing and makes more jobs compete simultaneously for the same set of resources. As a result, the scheduler is forced into less favorable execution conditions, and both median and tail latency rise substantially. Notably, fidelity remains stable across strategies, indicating latency gains do not sacrifice quality. Plan adoption is also in-terpretable: Plan B is rare under streaming but appears more in batch settings as contention shifts the coordination–parallelism trade-off. These results show that DQC performance depends not only on scheduling logic but also on workload injection. 
+
+H. Stream Composition Sweep 
+
+The scheduler adapts plan selection continuously as work-load composition shifts (Fig. 9). At 0% heavy circuits: 100% Plan A, median 0.585 s, fidelity 0.969. At 60% heavy: 55% Plan C triggers the sharp P90 inflection. At 100% heavy: 90% Plan C, fidelity 0.908, P90 2.490 s. Across 20 matched seeds, moving from the 0% heavy stream to the 100% heavy stream increased P90 end-to-end latency by 1.270 s on average (95% CI [0.976, 1.596]), corresponding to an average increase of 139.7% (95% CI [107.1%, 175.8%]). A paired Wilcoxon signed-rank test gave p = 1 .95 × 10 −3. Over the same sweep, mean fidelity decreased by 0.0519 (95% CI [0.0468, 0.0579]). 
+
+Fig. 10: SLO-constrained scheduling. Left: plan adoption vs. SLO tightness; as latency targets tighten, cut-enabled plans are eliminated first due to added communication and reconstruc-tion overhead. At SLO = 0 .5 s , only 12 of 40 jobs complete, all under Plan A. Right: compliance CDF showing the fraction of jobs meeting SLO; the SLO = 0 .5 s curve lags, while 1.0 s 
+
+and looser settings approach full compliance near 1.5 s .The 60% inflection marks where Plan C coordination overhead begins accumulating across concurrent jobs. 
+
+I. Latency Constraints Change Which Plans Remain Viable 
+
+Figure 10 shows how service-level objectives (SLOs) change the set of execution plans the scheduler can consider. As latency targets become more restrictive, cut-enabled plans are filtered out first because their predicted end-to-end latency includes not only QPU execution, but also communication and host-side reconstruction. Under loose or absent SLO constraints, the scheduler can choose among Plans A, B, and C based on their overall score. Under tighter constraints, however, some plans are rejected before scoring because they are predicted to miss the latency target. This changes scheduler behavior in two ways. First, the number of completed jobs decreases as the SLO becomes tighter, because fewer jobs retain any feasible plan that can satisfy the deadline. At SLO = 0 .5 s , only 12 of 40 jobs complete, all under Plan A. Second, the compliance CDF shows that the 1.0 s and looser settings converge toward full compliance by approximately 1.5 s , whereas the SLO = 0 .5 s 
+
+case lags substantially behind. Tight deadlines therefore reduce not only plan diversity, but also overall throughput. This result highlights why makespan-based feasibility fil-tering must remain separate from plan scoring. A plan may appear attractive from a resource-occupancy perspective, yet still be infeasible once end-to-end latency, including commu-nication and reconstruction, is taken into account. SLO-aware scheduling therefore does not merely change which plan is preferred; it changes which plans are feasible at all. This is precisely why explicit end-to-end modeling is necessary for latency-sensitive distributed quantum computing. 
+
+J. Scaling to Large-Scale Systems 
+
+To this point, our evaluation has focused on scales repre-sentative of near-term hardware (Section VI). We additionally evaluate scheduler behavior far beyond this range — up to 128 QPUs and 2688 qubits — to understand how plan selection and latency evolve toward larger, future systems. Fleet-size scaling. Under a workload that always requires cutting by construction (8–14-qubit circuits against 7-qubit QPUs), Plan C adoption is highest at the smallest fleet sizes (60.0% at N = 2 ), passes through a transitional region at 
+
+N = 3 –8, then stabilizes into a plateau of roughly 31–43% from N = 16 through N = 128 . Scheduling overhead itself remains flat across the entire range (Figure 11, 0.36–0.46 ms), extending the negligible-overhead result of Section VII-F two orders of magnitude further in fleet size. Recovering this trend required correcting three scheduler bugs uncovered by treating an initially plausible-looking result — “small fleets favor Plan C, large fleets collapse to Plan B” — with suspicion rather than accepting it at face value: an O(N 3) candidate search that would not have completed in reasonable time at N = 128 ; a candidate-ranking criterion that could not distinguish an idle QPU from one already holding a same-batch reservation; and a queue-wait estimator that silently returned an infinite, rather than a finite fallback, wait once a QPU’s backlog exceeded a fixed probe cap, corrupting plan scoring for 32–53% of jobs at fleet sizes 2–16. Each fix was verified via isolated, congestion-free control tests and 5-seed reproductions per fleet size before being trusted. 
+
+Circuit-width scaling. Figure 12 extends circuit width to 2688 qubits (4-QPU fleet, QPU capacity and circuit width scaled together). Under batch submission (solid line, right panel), Plan C share is non-monotonic: 63.3% at 21 qubits, rising to 93.3% at 168 qubits, dipping to 63.3% at 336 qubits, recovering to 80.0% at 672 qubits, then declining sharply to 52.8% and 20.6% at the two largest tiers. This drop is a resource-contention artifact of batch submission, not a cutting or reconstruction cost : kw and kg are zero throughout this sweep (no real cutting executes in this configuration), and on an otherwise-idle fleet Plan C scores strictly better than Plan B at every width tested. The mechanism is straight-forward queueing pressure: Plan C requires multiple QPUs simultaneously free, while Plan B needs only one; under batch submission, per-job execution time grows with circuit width at a fixed job count and fixed 4-QPU fleet, so the fleet becomes progressively more congested as width grows, and the harder “ K QPUs free at once” condition for Plan C becomes increasingly unmet. Disabling 3 of 4 QPUs on an otherwise-idle fleet reproduces this directly, causing Plan C candidates to disappear entirely even at small widths. Repeating the sweep under realistic Poisson-arrival stream-ing rather than batch submission (dashed line, right panel) isolates how much of the drop is this contention artifact versus a genuine capacity limit: Plan C share is higher at every tier under streaming (e.g., 37.2% vs. 20.6% at 2688 qubits; 86.7– 98.3% across the 168–672-qubit tiers vs. 63.3–93.3% under batch), confirming that batch-induced congestion — not an intrinsic scaling limit — suppressed Plan C through most of the range. The decline at the largest widths survives even under streaming (37.2% at 2688 qubits vs. 86–98% at 168– 672 qubits), so a genuine, if far softer, capacity effect remains at the extreme end of the range studied: even with gradual arrivals, a 4-QPU fleet eventually struggles to keep multiple QPUs simultaneously free against circuits this wide. 
+
+End-to-end latency. Figure 13 plots P50 latency (P50– P90 band shaded) across both sweeps as continuous curves. Latency falls monotonically with fleet size, from 9.0 s (P50) / 10.3 s (P90) at N = 2 to 1.5 s / 2.0 s at N = 64 –128 —a smooth improvement, unlike the non-monotonic plan-mix curve over the same range. Against circuit width, P50 latency stays comparatively flat (5.1–7.4 s) from 21 through 1344 qubits, then jumps sharply to 10.6 s at 2688 qubits (P90: 23.6 s, versus 10.0 s at the next tier down) — the same contention mechanism as above: as Plan C becomes harder to obtain at the largest widths, more jobs fall back to slower sequential execution. 
+
+Cut-count scaling. Figure 14 sweeps wire-cut count kw
+
+directly (a synthetic chain-of-blocks circuit, kw = 0–10 ,run through the same find_cuts /generate_cutting_ experiments /reconstruct_expectation_values 
+
+pipeline the scheduler uses). The actual number of generated subexperiments tracks the theoretical 9k sampling-overhead bound closely at low kw, then plateaus once the Monte-Carlo importance-sampling cap is reached — real overhead is bounded in practice even though the theoretical multiplier keeps growing. We validate this against a real application circuit (QAOA MaxCut, overlaid as stars): the real circuit’s subexperiment counts and generation/reconstruction wall time match the synthetic sweep closely for kw ≤ 3. Above that, 
+
+find_cuts ’s automated search on this real graph became unstable, converging on a substantially more expensive partition rather than the intended cut count in roughly half of retried seeds — a genuine finding about automated cut-point search on real circuits, not an artifact of this sweep. VIII. R EAL -H ARDWARE VALIDATION 
+
+Section X identifies reliance on simulated rather than live quantum hardware as a limitation of this evaluation. To quan-tify the size of this gap, we conducted a real-hardware valida-tion study on two IBM Quantum backends ( ibm_kingston ,
+
+ibm_fez ), independent of the scheduler’s live fidelity proxy (Eq. 5): we compare the AerSimulator -with-backend-noise-model execution path against real device results for the same circuits. Figure 15 sweeps Bernstein–Vazirani circuit-cutting work-loads across secret Hamming weight (a direct proxy for entangled- fragment size) on both chips, isolating the entangled-fragment fidelity from spectator-qubit compounding effects. Raw AerSimulator predictions diverge from real hardware in opposite directions depending on regime: at low weight (small entangled fragment, many idle “spectator” qubits), raw prediction underestimates real fidelity, because the local noise model does not capture the dynamical-decoupling suppression real hardware applies to idle qubits by default. At high weight (large entangled fragment), raw prediction overestimates real fidelity, consistent with unmodeled crosstalk and routing effects concentrated in the fragment itself. We fit a two-component, error-space correction to this gap — modeling the fraction of predicted error that survives Fig. 11: Median scheduling overhead vs. fleet size, 2–128 QPUs. Overhead re-mains flat across the entire range. 
+
+Fig. 12: Circuit-width scaling, 21–2688 qubits (4-QPU fleet). Left: median schedul-ing overhead. Right: Plan C share under batch submission vs. Poisson-arrival streaming, separating batch-induced congestion from capacity effects. 
+
+Fig. 13: End-to-end latency across fleet size (left) and circuit width (right). Lines show P50; shaded bands span P50–P90. 
+
+Fig. 14: Wire-cut scaling. Left: subexperiment counts vs. the theoretical 9kw bound. Right: generation and reconstruction time. Stars show QAOA MaxCut results through kw = 3 .on real hardware, separately for the entangled fragment and for spectator qubits — and validated it on a structurally different, held-out circuit family the correction was never fit on, where it closely tracked real hardware on both chips (kingston: 0.45 corrected vs. 0.48 real; fez: 0.49 vs. 0.40) against a substantially larger raw-prediction gap (0.39 and 0.54 respectively) — evidence the correction generalizes rather than merely replaying its fitting data. The two chips differ characteristically in how their real behavior departs from prediction. Fitting the same correction to ibm_kingston and ibm_fez yields spectator-qubit error scales (real error / predicted error) of 0.17 and 0.36 respectively — real spectator qubits outperform prediction on both chips, consistent with unmodeled dynamical- decou-pling benefit — with entangled-fragment error scale increas-ing moderately with fragment size on both. A third chip, 
+
+ibm_marrakesh , behaves qualitatively differently: spectator error scale of 8.54 (real spectators underperform prediction, the opposite sign from the other two chips) alongside asharp, threshold-like collapse in fragment fidelity beyond a chip-specific size, rather than the moderate increase seen on kingston and fez. This is a distinct failure mode not explained by the same mechanism, and outside the scope of the correction validated above. IX. A BLATION STUDY 
+
+A. Weight Sensitivity 
+
+Figure 16 confirms that each term in Eq. (2) activates only when relevant. On the mixed workload, Plan A covers over 
+
+72% of jobs regardless of weight setting. Narrow circuits do not require cutting, so Fp and Cp are inactive. On the all-wide workload, coord-heavy shifts Plan C from 98% to 58% and Plan B from 2% to 42%, confirming full penalty acti-vation. No-penalties produces no significant change on either workload: without Fp and Cp, the fidelity term alone drives plan differences. These results show the objective is neither over-sensitive nor inert, each term responds proportionally to conditions where it is meaningful. 
+
+B. Cutting Backend Comparison 
+
+Our adopted cutting method and the Qiskit-addon back-end produce identical output across all 40 jobs: median e2e = 0.956 s, fidelity = 0.786, plan mix 85% C / 15% B. Scheduling overhead is also equivalent (FitCut: 0.343 ms, addon: 0.338 ms). This designed null result demonstrates that both backends call the same underlying approximate min-cut partitioner, which consistently returns 2-label minimum cuts regardless of search parameters. FitCut’s multi-parameter search finds no improvement because the partitioner itself is the binding constraint, not the search strategy. Fig. 15: Predicted vs. real entangled-fragment fidelity across BV secret Hamming weight, ibm kingston (left) and ibm fez (right). Dotted: raw AerSimulator prediction. Solid: real hardware. 
+
+Fig. 16: Weight sensitivity on a mixed workload. Left: plan adoption is nearly identical across all weight conditions and penalty terms are inactive on narrow circuits. Right: latency boxplots confirm the null result. 
+
+Fig. 17: Fidelity vs. error rate. Left: homogeneous pools fol-low Eq. (5) precisely (0.949 →0.464 over 0.5% →10% error). Right: heterogeneous pools with quality-aware routing recover fidelity. Mild heterogeneity (0.5/2/5%) achieves 0.942 vs. 0.844 for the matched 2% homogeneous baseline (+11.6 pp). 
+
+C. Fidelity-Proxy Validation and Quality-Term Behavior 
+
+Figures 17 and 18 validate the fidelity proxy in Eq. (5) and show that the quality term behaves as intended under heterogeneous error conditions. Homogeneous pool fidelity follows the exponential decay model precisely (0.949, 0.910, 0.844, 0.674, 0.464 at 0.5%, 1%, 2%, 5%, 10% error). In heterogeneous pools, the quality term in Eq. (2) routes jobs to the lowest-error available backend. Both mild (0.5/2/5%) and wide (0.5/2/10%) heterogeneous pools achieve identical fidelity (0.942), confirming that having even one high-quality device is sufficient when the scheduler routes correctly. This is 
+
+Fig. 18: Per-job fidelity violin plots vs. error rate. Violin widths show the distribution of fidelity across individual jobs at each error level. The homogeneous pool distributions narrow and shift sharply downward above 2% error; the heterogeneous pool distributions remain elevated and tight because quality-aware routing consistently places jobs on the lowest-error available backend, reducing variance as well as mean. 11.6% above the matched homogeneous 2% baseline (0.844). X. L IMITATIONS AND DISCUSSION 
+
+While our evaluation is designed to reflect realistic operating conditions, several factors limit generality of our findings. First, we rely on simulated rather than live quantum hardware. Although the simulated IBM QPUs and AerSimulator noise models capture hardware-informed timing, topology, and error characteristics, real systems may introduce additional effects, such as calibration drift, queue variability, additional noise overheads, and network-induced latency that are not fully represented in our setup. Second, our workloads are synthetic benchmarks rather than production traces. This enables con-trolled and interpretable comparisons across execution plans; however, different circuit families, workload compositions, or production job mixes may shift the relative balance and observed trade-offs among the plans. Third, our communication and reconstruction models are explicitly modeled through simplified cost models. The sched-uler therefore captures the existence and scheduling impact of these non-QPU resources, but the absolute magnitude of those costs could differ under other systems, host implementations, or assumptions. Fourth, output quality is represented through a fidelity proxy rather than direct hardware-validated fidelity estimation for every run. This proxy is intentionally inexpen-sive and is validated for trend behavior in Figures 17 and 18, but it should not be interpreted as a replacement for a full application-level accuracy analysis. Finally, our experiments focus on the hardware, workloads, and system sizes in Section VI. As scales, heterogeneity, or QPU counts grow, break-even points among intact, cut, and distributed execution may shift. We therefore view these results as evidence that runtime scheduling over quantum and classical resources is necessary, while exact plan boundaries depend on workload scale and deployment architecture. XI. C ONCLUSION 
+
+We present a resource-aware scheduler for distributed quan-tum computing that treats execution-plan selection as a runtime systems problem rather than a circuit-partitioning task. The scheduler compares intact, sequential cut, distributed cut, and deferral using models of QPU occupancy, communication, reconstruction, and backend quality. Our evaluation shows that plan choice strongly impacts latency and fidelity, with Plan A best on average and Plan C offering better tail performance; reconstruction dominates overhead (over 83%), making CPU-side processing a first-class concern; and the scheduler adapts to system dynamics, revealing clear break-even points, non-monotonic latency under congestion, and benefits from quality-aware routing. Decision overhead re-mains negligible ( ≤0.038%), while submission strategies and latency targets significantly influence performance. Overall, our results demonstrate that DQC must be treated as a runtime scheduling problem across quantum and classical resources, where communication and reconstruction are first-class, and plan boundaries depend on workload scale and system design. REFERENCES [1] R. Beals, S. Brierley, O. Gray, A. W. Harrow, S. Kutin, N. Linden, D. Shepherd, and M. Stather, “Efficient distributed quantum computing,” 
+
+Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences , vol. 469, no. 2153, p. 20120686, 2013. [Online]. Available: https://doi.org/10.1098/rspa.2012.0686 [2] J. C. Boschero, N. M. Neumann, W. van der Schoot, T. Sijpesteijn, and R. Wezeman, “Distributed quantum computing: Applications and challenges,” in Intelligent Computing-Proceedings of the Computing Conference . Springer, 2025, pp. 100–116. [Online]. Available: https://doi.org/10.1007/978-3-031-92602-0 6 [3] D. Barral, F. J. Cardama, G. D´ ıaz-Camacho, D. Fa´ ılde, I. F. Llovo, M. Mussa-Juane, J. V´ azquez-P´ erez, J. Villasuso, C. Pi˜ neiro, N. Costas, J. C. Pichel, T. F. Pena, and A. G´ omez, “Review of distributed quantum computing: From single qpu to high performance quantum computing,” 
+
+Computer Science Review , vol. 57, p. 100747, Aug. 2025. [Online]. Available: http://dx.doi.org/10.1016/j.cosrev.2025.100747 [4] M. Caleffi, M. Amoretti, D. Ferrari, J. Illiano, A. Manzalini, and A. S. Cacciapuoti, “Distributed quantum computing: A survey,” Computer Networks , vol. 254, p. 110672, Dec. 2024. [Online]. Available: http://dx.doi.org/10.1016/j.comnet.2024.110672 [5] G. S. Ravi, K. N. Smith, P. Gokhale, and F. T. Chong, “Quantum computing in the cloud: Analyzing job and machine characteristics,” in 2021 IEEE International Symposium on Workload Characterization (IISWC) . IEEE, 2021, pp. 39–50. [Online]. Available: https: //doi.org/10.1109/IISWC53511.2021.00015 [6] P. D. Nation and M. Treinish, “Suppressing quantum circuit errors due to system variability,” PRX Quantum , vol. 4, no. 1, p. 010327, 2023. [Online]. Available: https://doi.org/10.1103/PRXQuantum.4.010327 [7] K. N. Smith, J. Viszlai, L. M. Seifert, J. M. Baker, J. Szefer, and F. T. Chong, “Fast fingerprinting of cloud-based nisq quantum computers,” in 2023 IEEE International Symposium on Hardware Oriented Security and Trust (HOST) . IEEE, 2023, pp. 1–12. [Online]. Available: https://doi.org/10.1109/HOST55118.2023.10133778 [8] S. Brandhofer, I. Polian, and K. Krsulich, “Optimal partitioning of quantum circuits using gate cuts and wire cuts,” IEEE Transactions on Quantum Engineering , vol. 5, pp. 1–10, 2024. [Online]. Available: https://doi.org/10.1109/TQE.2023.3347106 [9] A. Lowe, M. Medvidovi´ c, A. Hayes, L. J. O’Riordan, T. R. Bromley, J. M. Arrazola, and N. Killoran, “Fast quantum circuit cutting with randomized measurements,” Quantum , vol. 7, p. 934, Mar. 2023. [Online]. Available: http://dx.doi.org/10.22331/q-2023-03-02-934 [10] L. Brenner, C. Piveteau, and D. Sutter, “Optimal wire cutting with classical communication,” IEEE Transactions on Information Theory ,vol. 71, no. 10, pp. 7742–7752, Oct. 2025. [Online]. Available: http://dx.doi.org/10.1109/TIT.2025.3601047 [11] A. W. Harrow and A. Lowe, “Optimal quantum circuit cuts with application to clustered hamiltonian simulation,” PRX Quantum ,vol. 6, no. 1, Jan. 2025. [Online]. Available: https://doi.org/10.1103/ PRXQuantum.6.010316 [12] P. Seitz, M. Geiger, C. Ufrecht, A. Plinge, C. Mutschler, D. D. Scherer, and C. B. Mendl, “Scim milq: An hpc quantum scheduler,” in 2024 IEEE International Conference on Quantum Computing and Engineering (QCE) . IEEE, Sep. 2024, pp. 292–298. [Online]. Available: http://dx.doi.org/10.1109/QCE60285.2024.10294 [13] E. Giortamis, F. Romao, N. Tornow, D. Lugovoy, and P. Bhatotia, “Qonductor: A cloud orchestrator for quantum computing,” in 
+
+Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis , ser. SC ’25. ACM, Nov. 2025, pp. 728–745. [Online]. Available: http://dx.doi.org/10.1145/ 3712285.3759785 [14] D. Ferrari, A. S. Cacciapuoti, M. Amoretti, and M. Caleffi, “Compiler design for distributed quantum computing,” IEEE Transactions on Quantum Engineering , vol. 2, pp. 1–20, 2021. [Online]. Available: https://doi.org/10.1109/TQE.2021.3053921 [15] Qiskit Aer Developers. (2026) Aersimulator. Qiskit Aer 0.17.1 documentation, accessed 2026-04-08. [Online]. Available: https: //qiskit.github.io/qiskit-aer/stubs/qiskit aer.AerSimulator.html [16] Qiskit contributors, “Qiskit 2.3.1,” 2026. [Online]. Available: https: //doi.org/10.5281/zenodo.18992040 [17] A. Peruzzo, J. McClean, P. Shadbolt, M.-H. Yung, X.-Q. Zhou, P. J. Love, A. Aspuru-Guzik, and J. L. O’Brien, “A variational eigenvalue solver on a photonic quantum processor,” Nature Communications ,vol. 5, p. 4213, 2014. [Online]. Available: https://doi.org/10.1038/ ncomms5213 [18] D. A. Fedorov, B. Peng, N. Govind, and Y. Alexeev, “Vqe method: a short survey and recent developments,” Materials Theory ,vol. 6, no. 1, p. 2, 2022. [Online]. Available: https://doi.org/10.1186/ s41313-021-00032-6 [19] A. Kandala, A. Mezzacapo, K. Temme, M. Takita, M. Brink, J. M. Chow, and J. M. Gambetta, “Hardware-efficient variational quantum eigensolver for small molecules and quantum magnets,” 
+
+Nature , vol. 549, no. 7671, pp. 242–246, 2017. [Online]. Available: https://doi.org/10.1038/nature23879 [20] N. P. de Leon, K. M. Itoh, D. Kim, K. K. Mehta, T. E. Northup, H. Paik, B. S. Palmer, N. Samarth, S. Sangtawesin, and D. W. Steuerman, “Materials challenges and opportunities for quantum computing hardware,” Science , vol. 372, no. 6539, p. eabb2823, 2021. [Online]. Available: https://doi.org/10.1126/science.abb2823 [21] W. Tang, T. Tomesh, M. Suchara, J. Larson, and M. Martonosi, “Cutqc: using small quantum computers for large quantum circuit evaluations,” in 
+
+Proceedings of the 26th ACM International Conference on Architectural Support for Programming Languages and Operating Systems . New York, NY, USA: Association for Computing Machinery, 2021, pp. 473–486. [Online]. Available: https://doi.org/10.1145/3445814.3446758 [22] S. DiAdamo, M. Ghibaudi, and J. Cruise, “Distributed quantum computing and network control for accelerated vqe,” IEEE Transactions on Quantum Engineering , 2021. [Online]. Available: https://doi.org/10. 1109/TQE.2021.3057908 [23] A. Wu, J. Li, Y. Ding, and Y. Xie, “Autocomm: Aframework for enabling efficient communication in distributed quantum programs,” in 2022 55th IEEE/ACM International Symposium on Microarchitecture (MICRO) , 2022. [Online]. Available: https://doi.org/10.1109/MICRO56248.2022.00074 [24] L. Liu and X. Dou, “Qucloud: A new qubit mapping mechanism for multi-programming quantum computing in cloud environment,” in 
+
+2021 IEEE International Symposium on High-Performance Computer Architecture (HPCA) . IEEE, 2021, pp. 167–178. [Online]. Available: https://doi.org/10.1109/HPCA51647.2021.00024 [25] S. Niu and A. Todri-Sanial, “Enabling multi-programming mechanism for quantum computing in the nisq era,” Quantum , vol. 7, p. 925, 2023. [Online]. Available: https://doi.org/10.22331/q-2023-02-16-925 [26] D. Vietz, J. Barzen, F. Leymann, and B. Weder, “Splitting quantum-classical scripts for the generation of quantum workflows,” in 
+
+Enterprise Design, Operations, and Computing , Springer. Cham: Springer International Publishing, 2022, pp. 255–270. [Online]. Available: https://doi.org/10.1007/978-3-031-17604-3 15 [27] K. Rallis, I. Liliopoulos, G. D. Varsamis, E. Tsipas, I. G. Karafyllidis, G. C. Sirakoulis, and P. Dimitrakis, “Interfacing quantum computing systems with high-performance computing systems: an overview,” arXiv preprint arXiv:2509.06205 , 2025. [Online]. Available: https://doi.org/10.48550/arXiv.2509.06205 [28] H. Shapourian, E. Kaur, T. Sewell, J. Zhao, M. Kilzer, R. Kompella, and R. Nejabati, “Quantum data center infrastructures: A scalable architectural design perspective,” 2025. [Online]. Available: https: //arxiv.org/abs/2501.05598 [29] X. Fu, J. Yu, X. Su, H. Jiang, H. Wu, F. Cheng, X. Deng, D. Liu, Y. Han, and Y. Wang, “Quingo: A programming framework for heterogeneous quantum-classical computing with nisq features,” ACM Transactions on Quantum Computing , vol. 2, no. 4, 2021. [Online]. Available: https://doi.org/10.1145/3483528 [30] E. Giortamis, F. Rom˜ ao, N. Tornow, and P. Bhatotia, “Qos: Quantum operating system,” in 19th USENIX Symposium on Operating Systems Design and Implementation (OSDI 25) , 2025. [Online]. Available: https://www.usenix.org/conference/osdi25/presentation/giortamis [31] S. Bahrani, R. D. Oliveira, J. M. Parra-Ullauri, R. Wang, and D. Simeonidou, “Resource management and circuit scheduling for distributed quantum computing interconnect networks,” arXiv preprint arXiv:2409.12675 , 2024. [Online]. Available: https://doi.org/10.48550/ arXiv.2409.12675 [32] G. S. Ravi, K. N. Smith, P. Murali, and F. T. Chong, “Adaptive job and resource management for the growing quantum cloud,” in 
+
+2021 IEEE International Conference on Quantum Computing and Engineering (QCE) . IEEE, 2021, pp. 301–312. [Online]. Available: https://doi.org/10.1109/QCE52317.2021.00047 [33] K.-C. Chen, F. Burt, N. K. Panigrahy, and K. K. Leung, “Adaptive resource orchestration for distributed quantum computing systems,” 
+
+IEEE Internet Computing , vol. 30, no. 1, pp. 16–25, 2026. [Online]. Available: https://doi.org/10.1109/MIC.2026.3652322 [34] M. Salm, J. Barzen, F. Leymann, and B. Weder, “Prioritization of compiled quantum circuits for different quantum computers,” in 
+
+2022 IEEE International Conference on Software Analysis, Evolution and Reengineering (SANER) . IEEE, 2022, pp. 1258–1265. [Online]. Available: https://doi.org/10.1109/SANER53432.2022.00150 [35] X. Fu, L. Riesebos, M. A. Rol, J. van Straten, J. van Someren, N. Khammassi, I. Ashraf, R. F. L. Vermeulen, V. Newsum, K. K. L. Loh, J. C. de Sterke, W. J. Vlothuizen, R. N. Schouten, C. G. Almudever, L. DiCarlo, and K. Bertels, “eqasm: An executable quantum instruction set architecture,” 2018. [Online]. Available: https://doi.org/10.48550/arXiv.1808.02449 [36] P.-H. Chen, D.-W. Chiou, B.-H. Chen, and J.-H. R. Jiang, “Shotqc: Reducing sampling overhead in quantum circuit cutting,” 2024. [Online]. Available: https://doi.org/10.48550/arXiv.2412.17704 [37] D. Pal and R. Majumdar, “Low overhead circuit cutting with operator backpropagation,” 2025. [Online]. Available: https://doi.org/10.48550/ arXiv.2510.19467 [38] S. Punch and K. Guha, “Maestrocut: Dynamic, noise-adaptive, and secure quantum circuit cutting on near-term hardware,” 2025. [Online]. Available: https://doi.org/10.48550/arXiv.2509.00811 [39] D. T. Chen, E. H. Hansen, X. Li, A. Orenstein, V. Kulkarni, V. Chaudhary, Q. Guan, J. Liu, Y. Zhang, and S. Xu, “Online detection of golden circuit cutting points,” 2023. [Online]. Available: https://arxiv.org/abs/2308.10153 [40] S. Kan, Z. Du, M. Palma, S. A. Stein, C. Liu, W. Wei, J. Chen, A. Li, and Y. Mao, “Scalable circuit cutting and scheduling in a resource-constrained and distributed quantum system,” 2024. [Online]. Available: https://doi.org/10.1109/QCE60285.2024.00127 [41] Z. Du, Y. Li, Z. Mo, W. Wei, J. Chen, R. Buyya, and Y. Mao, “Hardware-aware circuit cutting and distributed qubit mapping for connected quantum systems,” 2024. [Online]. Available: https://doi.org/10.48550/arXiv.2412.18458 [42] L. Xu, E. H.-M. Sha, X. Cui, and Q. Zhuge, “Optimizing quantum circuit mapping to reduce inter-module communications in distributed architectures,” in Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis , ser. SC ’25. New York, NY, USA: Association for Computing Machinery, 2025, pp. 774–788. [Online]. Available: https://doi.org/10.1145/3712285.3759789 [43] X. Fu, M. A. Rol, C. C. Bultink, J. van Someren, N. Khammassi, I. Ashraf, R. F. L. Vermeulen, J. C. de Sterke, W. J. Vlothuizen, R. N. Schouten, C. G. Almudever, L. DiCarlo, and K. Bertels, “An experimental microarchitecture for a superconducting quantum processor,” in Proceedings of the 50th Annual IEEE/ACM International Symposium on Microarchitecture , 2017. [Online]. Available: https: //doi.org/10.1145/3123939.3123952 [44] F. Zhang, X. Zhu, R. Chao, C. Huang, L. Kong, G. Chen, D. Ding, H. Feng, Y. Gao, X. Ni, L. Qiu, Z. Wei, Y. Yang, Y. Zhao, Y. Shi, W. Zhang, P. Zhou, and J. Chen, “A classical architecture for digital quantum computers,” ACM Transactions on Quantum Computing ,vol. 5, no. 1, 2023. [Online]. Available: https://doi.org/10.1145/3626199 [45] M. Zhang, L. Xie, Z. Zhang, Q. Yu, G. Xi, H. Zhang, F. Liu, Y. Zheng, Y. Zheng, and S. Zhang, “Exploiting different levels of parallelism in the quantum control microarchitecture for superconducting qubits,” in 
+
+Proceedings of the 54th Annual IEEE/ACM International Symposium on Microarchitecture , 2021. [Online]. Available: https://doi.org/10.1145/ 3466752.3480116 [46] J. Romero-Alvarez, J. Alvarado-Valiente, J. Casco-Seco, E. Moguel, J. Garcia-Alonso, J. Berrocal, and J. M. Murillo, “Quantum circuit scheduler for qpus usage optimization,” 2024. [Online]. Available: https://doi.org/10.48550/arXiv.2404.01055 [47] M. Wang, P. Das, and P. J. Nair, “Qoncord: A multi-device job scheduling framework for variational quantum algorithms,” in 
+
+2024 57th IEEE/ACM International Symposium on Microarchitecture (MICRO) . IEEE, 2024, pp. 735–749. [Online]. Available: https: //doi.org/10.1109/MICRO61859.2024.00060 [48] R. Van Meter and S. J. Devitt, “The path to scalable distributed quantum computing,” Computer , vol. 49, no. 9, pp. 31–42, 2016. [Online]. Available: https://doi.org/10.1109/MC.2016.291 [49] M. Suchara, Y. Alexeev, J. Chung Miranda, and R. Kettimuthu, “Distributed quantum computing architectures,” in APS March Meeting Abstracts , vol. 2019. American Physical Society, 2019, p. L28.00003, abstract, APS March Meeting 2019, accessed 2026-04-08. [Online]. Available: https://meetings.aps.org/Meeting/MAR19/Session/L28.3 [50] D. Main, P. Drmota, D. P. Nadlinger, E. M. Ainley, A. Agrawal, B. C. Nichol, R. Srinivas, G. Araneda, and D. M. Lucas, “Distributed quantum computing across an optical network link,” Nature , vol. 638, no. 8050, pp. 383–388, Feb. 2025. [Online]. Available: http://dx.doi.org/10.1038/s41586-024-08404-x [51] Y. Zhao, K. Zhao, P. Zhou, D. Liu, T. Luo, Y. Zheng, P. Luo, S. Hu, J. Lin, C. Guo, Y. Han, Y. Wang, M. Deng, J. Wu, and X. Fu, “Distributed-hisq: A distributed quantum control architecture,” in Proceedings of the 58th IEEE/ACM International Symposium on Microarchitecture , 2025. [Online]. Available: https://doi.org/10.1145/ 3725843.3756048 [52] Y. Xu, G. Huang, J. Balewski, R. Naik, A. Morvan, B. Mitchell, K. Nowrouzi, D. I. Santiago, and I. Siddiqi, “Qubic: An open source fpga-based control and measurement system for superconducting quantum information processors,” IEEE Transactions on Quantum Engineering , vol. 2, pp. 1–11, 2021. [Online]. Available: https: //doi.org/10.1109/TQE.2021.3116540 [53] G. Huang, Y. Xu, N. Fruitwala et al. , “Qubic 2.0: A flexible advanced full stack quantum bit control system,” in 2023 IEEE International Conference on Quantum Computing and Engineering (QCE) , 2023. [Online]. Available: https://doi.org/10.1109/QCE57702.2023.10227

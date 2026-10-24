@@ -1,0 +1,1480 @@
+Title: Data Center Load Accommodation under QoS and Checkpoint-Induced Frequency Security Constraints
+
+URL Source: https://arxiv.org/pdf/2610.22912v1
+
+Published Time: Mon, 19 Oct 2026 00:39:32 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> 1
+
+# Data Center Load Accommodation under QoS and Checkpoint-Induced Frequency Security Constraints 
+
+Ruolan Cui, Student Member, IEEE, Ziang Liu, Student Member, IEEE, Chenxi Hu, Member, IEEE, 
+
+Francis Yunhe Hou, Fellow, IEEE 
+
+Abstract —The rapid growth of artificial intelligence workloads is accelerating the expansion and grid interconnection of data centers (DCs). Existing data center load accommodation (DCLA) assessments primarily focus on grid and resource adequacy and often imply that greater workload flexibility always increases accommodable capacity. However, workload flexibility has a dual effect. Workload deferral and temporal shifting can alleviate net-work congestion, whereas synchronized checkpointing of training workloads can cause large and rapid load reductions, threatening frequency stability. Therefore, DCLA cannot be determined solely by grid adequacy. This paper develops an optimal DCLA method that jointly accounts for workload quality of service (QoS), checkpoint-induced frequency security (FS), and grid adequacy. First, a QoS-aware model characterizes workload-dependent flexibility while ensuring service feasibility. Second, checkpoint-induced FS constraints are developed for periodic and event-triggered power variations, with key frequency-security limits reformulated in algebraic form. Third, a two-stage lexicographic model is developed to maximize DCLA and minimizes the required energy storage (ES) deployment, and then optimizes system operation under the given DC and ES siting and sizing decisions. Case studies show that the proposed method avoids a 40.3% overestimation of DCLA compared with the grid-adequacy benchmark. QoS is the primary limiting factor, while checkpoint-induced frequency-security constraints become more restrictive as training workloads increase. These findings highlight that reliable DCLA should account for both its grid-support value and the associated QoS and FS risks. 
+
+Index Terms —Data center, load accommodation, quality of service, frequency security, checkpoint 
+
+I. I NTRODUCTION 
+
+# THE rapid growth of artificial intelligence (AI) and large language model training is driving a substantial increase in data center (DC) electricity demand, making DCs one of the fastest-growing and most spatially concentrated emerging loads in power systems [1], [2]. Large-scale DC intercon-nection places increasing pressure on transmission corridors, substation capacity, resource adequacy, and interconnection processes [3], while grid expansion often lags behind load growth because of siting, permitting, investment approval, and long construction lead times [4]. Therefore, determining how much DC load can be securely connected to existing grids has become an important operational challenge. In this paper, data center load accommodation (DCLA) refers to the maximum additional DC capacity that can be connected and reliably 
+
+This work was supported in part by the National Key R&D Program of China under Grant 2023YFA1011301, and in part by RGC/GRF under Grant 17201524. Ruolan Cui, Ziang Liu and Francis Yunhe Hou are with the Department of Electrical and Computer Engineering, The University of Hong Kong, Hong Kong. Chenxi Hu is with the Department of Computer Science, The Hang Seng University of Hong Kong, Hong Kong. 
+
+operated through coordinated scheduling of computing work-loads and power-system resources without violating operating constraints. Unlike conventional inflexible loads, DC demand is computing-driven and exhibits workload-dependent temporal flexibility. Inference, fine-tuning, and training workloads have different degrees of deferrability and interruptibility, allowing some workloads to be shifted or temporarily suspended to relieve network congestion [5], [6]. However, such flexibility is bounded by quality-of-service (QoS) requirements, including service continuity and workload completion. Moreover, long-duration training workloads rely on checkpointing to save training states for recovery, and synchronized checkpoint op-erations across large clusters can cause rapid and substantial load releases that threaten frequency security (FS) [2], [7]. Workload flexibility therefore has a dual effect: temporal shift-ing can improve DCLA, whereas synchronized training op-erations can increase frequency-security risks. Consequently, grid-feasible DC accommodation may still be operationally in-feasible because of QoS violations or unacceptable frequency excursions. First, existing load-accommodation studies consider net-work constraints and operational uncertainty [8], as well as dynamic operating limits [9]. Flexible grid resources, such as energy storage (ES) and soft open points, have also been used to improve load accommodation capability [10]. These studies identify grid bottlenecks and quantify grid-side accommoda-tion limits. However, they generally model additional loads as inflexible demand or exogenously specified flexibility, and therefore do not capture the service feasibility or checkpoint-induced frequency impacts of flexible DC workloads. Second, DC flexibility studies have developed workload-to-power models and demand-response formulations [5], [11]. Recent studies further couple computing workloads with power-system regulation and operation [12], [13], while market-oriented frameworks optimize flexible DC operation under electricity-market incentives [14]. These studies demon-strate the operational value of workload flexibility, but most assume predetermined DC capacity rather than determining the maximum accommodable capacity. Moreover, representing flexibility using a fixed shiftable fraction or only a daily energy constraint may allow excessive workload reshaping or implicit curtailment, thereby obscuring the effect of QoS requirements on DCLA. Third, frequency-security studies have highlighted the risks posed by fast variations in emerging large loads [1], [4]. Recent measurements further show that AI training workloads can exhibit synchronized power variations and checkpoint-related transients [2], [7]. Frequency-secure scheduling models arXiv:2610.22912v1 [eess.SY] 16 Oct 2026 2II Quality-of-Service 
+
+Workload Classes  Checkpoint-Induced Power Release 
+
+III Frequency Security 
+
+IV  Optimal Data Center Load Accommodation 
+
+Lexicographic Optimization for Data Center Load Accommodation 
+
+V.A  Data Center 
+
+Accommodation and Energy 
+
+Storage Siting Constraints  Grid 
+
+Adequacy 
+
+FS  and  ES 
+
+Operation 
+
+Service –Power 
+
+Coupling 
+
+Quality-of-Service Constraints 
+
+V.B Operation Feasibility Constraints 
+
+Service - and Frequency -Secure Load Accommodation   
+
+> A: Maximize Load Accommodation
+> B: Minimize Energy Storage Installation
+> Service -Feasible Region
+
+Frequency Security Boundary  
+
+> Frequency -Secure Region
+> Stage II: Minimize
+> Operating Cost
+> Stage I
+
+Fig. 1. Overall structure of the proposed DCLA methodology integrating workload QoS, checkpoint-induced frequency security, grid adequacy, and lexicographic optimization. 
+
+incorporate rate of change of frequency (RoCoF), frequency-peak, and quasi-steady-state (QSS) limits [15]. However, dis-turbance magnitude is typically treated as exogenous. Existing formulations therefore do not endogenously link checkpoint-induced power releases to accommodated training capacity, workload composition, scheduled throughput, and synchro-nization level, nor quantify their impact on maximum DCLA. Taken together, existing studies do not capture the endoge-nous chain linking DC accommodation, workload scheduling, checkpoint-induced power releases, and frequency security. This is important because greater workload flexibility does not necessarily imply greater secure accommodation: the grid benefits of increased deferrability may be offset by checkpoint-induced frequency-security limits. Therefore, DCLA cannot be determined solely by grid adequacy. To address these gaps, this paper develops a DCLA method that jointly accounts for QoS-constrained workload flexibility, checkpoint-induced frequency-security risks, and grid ade-quacy. The main contributions are summarized as follows: 
+
+• QoS constraints are formulated for flexible DC work-loads in DCLA. Workloads are classified according to latency sensitivity, deferrability, and interruptibility. Rolling-window throughput continuity and daily work-load completion are used to ensure service feasibility and prevent implicit workload curtailment. These constraints quantify the reduction in DCLA caused by service re-quirements. 
+
+• Checkpoint-induced FS constraints are formulated by endogenously linking periodic and event-triggered power releases to accommodated training workloads, scheduled throughput, checkpoint power-drop ratios, and synchro-nization levels. Using a reduced-order frequency-response model, the RoCoF, frequency-peak, and QSS limits are reformulated as algebraic constraints compatible with DCLA optimization. 
+
+• A QoS- and FS-aware DCLA formulation is proposed to quantify the maximum DC load that can be ac-commodated under joint grid-adequacy, QoS, and FS constraints. A two-stage lexicographic formulation is developed. Stage I maximizes QoS- and FS-aware DCLA and minimizes the required ES deployment, while Stage Flex-0 
+
+> Flex-1
+> Flex-2
+> Flex-3
+> Wc(h) c
+
+     
+
+> Flexible
+> Workloads
+> Def 2 : QoS -and SoF -
+> Aware DCLA gsf    g
+
+                                                           
+
+> QoS -Aware
+> Region
+> SoF -Aware
+> Region
+> Def 1 :
+> Grid -centric
+> DCLA
+> II Quality-of-Service
+> Rolling window throughput continuity
+> Daily volume conservation
+> Workload Classes Checkpoint-Induced Power Release
+> III Security-of-Frequency
+> RoCoF Limit
+> Frequency-Peak Limit
+> Quasi-Steady-State Frequency Limit
+> IV Optimal DCLA ：Bridging QoS, SoF, and Grid Adequacy
+> Lexicographic Formulation of DCLA
+> V.A Accommodation and Siting Constraints
+> Flex-0:Rigid inference
+> Flex-1:Short-window inference
+> Flex-2:Fine-tuning
+> Flex-3:Long-duration training
+> Grid Adequacy SoF&ES Operation Service Coupling
+> •DC capacity limits
+> •ES siting and budget
+> •Nodal balance
+> and power flow
+> •Generation
+> limits
+> •N−1 security
+> •Throughput limits
+> •Power –throughput
+> mapping
+> •Rolling -window and
+> daily QoS
+> •Checkpoint power
+> release
+> •RoCoF, peak, and
+> QSS limits
+> •ES energy and
+> operating modes
+> QoS Constraints
+> V.B Operation Feasibility Constraints
+> Bias
+> QoS- and SoF-Aware Load Accommodation
+> Grid-centric DCLA A: Max DCLA
+> B: Min ES Installation
+> QoS- and SoF-Aware DCLA Stage I Stage II: Operating-Cost Minimization
+> Strict service feasible region
+> Frequency Security Boundary
+> SoF feasible region
+> Time
+> Checkpoint-induced power release
+> Hour (h)
+> 0510 15 20
+> 0
+> 5
+> 10
+> 15
+> 20 Flex-0
+> 0510 15 20
+> 0
+> 5
+> 10
+> 15
+> 20 Flex-1
+> 0510 15 20
+> 0
+> 10
+> 20
+> 30
+> 40 Flex-2
+> 0510 15 20
+> 0
+> 10
+> 20
+> 30 Flex-3
+> 0510 15 20
+> 0
+> 50
+> 100
+> 150
+> (a) Aggregate checkpoint-induced
+> power release
+> Max:136.5 MW
+> 0510 15 20
+> 0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1
+> (b) RoCoF limit
+> Max:0.423
+> 0510 15 20
+> 0
+> 0.5
+> 1
+> (c) Frequency peak limit
+> Max:1.308
+> 0510 15 20
+> 0
+> 0.5
+> 1
+> 1.5
+> (d) QSS limit
+> Max:1.449
+> QoS-only Proposed
+> Normalized GPU Power
+> Checkpoint Power Release (MW)
+> Hour (h) Hour (h)
+> Hour (h) Hour (h)
+> Max:67.0 MW
+> Max:0.208
+> Max:1.000 Max:0.993 s
+
+f
+
+ 
+
+> Utilization
+> Utilization  Utilization
+> Aggregate Throughput (p.u.)
+> Aggregate Throughput (p.u.)  Aggregate Throughput (p.u.)
+> Aggregate Throughput (p.u.)
+> Hour (h)
+> Hour (h) Hour (h)
+> Baseline Scheduled
+
+Fig. 2. Workload flexibility hier-archy from Flex-0 to Flex-3. TABLE I ROLLING -W INDOW QUALITY OF 
+
+SERVICE REQUIREMENTS 
+
+Class Rolling-Window Requirement 
+
+Flex-0 No service deferral or shortfall. Flex-1 At most 10% service shortfall over 3 h. Flex-2 At most 25% service shortfall over 5 h. Flex-3 At most 50% service shortfall over 6 h. 
+
+Note: Flex-0 is rigid. Larger class numbers indicate longer allowable deferral and larger temporary service shortfalls. 
+
+II fixes the siting and sizing decisions and minimizes the weighted multi-stakeholder operating objective. Case studies show that QoS is the primary limiting factor, while frequency-security constraints become more restrictive as training workloads increase, demonstrating that greater workload flexibility does not necessarily increase secure DCLA. The overall relationship among the main components of the proposed methodology is illustrated in Fig. 1. Sections II and III establish the QoS constraints and checkpoint-induced FS constraints, respectively. These constraints are integrated with grid adequacy in Section IV to define QoS- and FS-aware DCLA, compare it with Grid-Centric DCLA, and formulate the lexicographic objectives. Section V presents the complete optimization constraints. Section VI provides case studies, and Section VII concludes the paper. II. Q UALITY -OF -S ERVICE CONSTRAINTS OF FLEXIBLE DC WORKLOADS 
+
+This section quantifies service feasibility for flexible DC workloads. Workloads are first classified according to their service flexibility, and the corresponding QoS constraints are then formulated for the DCLA problem. 
+
+A. Workload Flexibility Classification 
+
+From the grid perspective, a DC is a large nodal load subject to connection capacity and network security limits. However, its accommodable capacity depends not only on grid adequacy, but also on whether its computing demand can be deferred or interrupted. Workload flexibility must therefore be explicitly represented in the DCLA formulation. We adopt a four-level workload classification based on latency sensitivity, deferrability, and interruptibility [3], [6]. Flex-0 represents latency-critical and non-interruptible ser-vices, such as real-time inference and online search. These workloads require immediate execution and have negligi-ble temporal elasticity, and are therefore modeled as rigid loads [16]. Flex-1 to Flex-3 exhibit progressively greater deferrability and interruptibility. Flex-1 represents batch infer-ence that can be deferred over a short time window. Flex-2 represents fine-tuning workloads that can be temporarily suspended, whereas Flex-3 represents long-duration training workloads with the greatest temporal shifting capability [17]. The resulting flexibility hierarchy is illustrated in Fig. 2. To embed DC service requirements into system-level DCLA optimization, this qualitative hierarchy is translated into class-dependent rolling-window service envelopes that provide an aggregate representation of fine-grained SLA characteristics and bound short-term deviations from the reference execution 3
+
+profile. As summarized in Table I, the rolling-window lengths and allowable service shortfalls are parameterized based on the workload-flexibility characteristics and demonstrated service levels reported in [3], [6], with more flexible workloads allowing a larger temporary service shortfall over a longer time window. The shifted workload volume is preserved through the daily workload completion constraint. 
+
+B. Quality-of-Service Constraints 
+
+The service-side feasible region is described by rolling-window throughput continuity and daily volume conservation. Here, n, c, and t index candidate DC buses, workload classes, and scheduling periods, respectively; Ω is the set of candidate DC buses; C = {0, 1, 2, 3} is the set of workload classes; and 
+
+T is the number of scheduling periods. The parameter dn,c,t 
+
+represents the reference execution profile of an admitted work-load pool whose jobs and required inputs are available within the scheduling horizon; it does not represent a time-dependent job-arrival process. A relaxed daily adequacy constraint is also introduced for the Grid-Centric DCLA benchmark. 
+
+1) Rolling-Window Throughput Continuity: Rolling-window throughput continuity limits short-term deviations from the reference execution profile. The delivered throughput must remain above a prescribed fraction of the reference workload volume in every rolling window: 
+
+> t+Wc−1
+
+X 
+
+> τ=t
+
+Γn,c,τ ≥ (1 − ϵc)
+
+> t+Wc−1
+
+X 
+
+> τ=t
+
+dn,c,τ ,
+
+∀n ∈ Ω, ∀c, ∀t = 1 , . . . , T − Wc + 1 .
+
+(1) Here, Γn,c,τ is the delivered throughput of workload class c
+
+at bus n in scheduling period τ , where τ is the period index within a rolling window. The parameters Wc and ϵc are the rolling-window length and allowable shortfall ratio of class c,respectively. Constraint (1) allows controlled advancement and deferral relative to the reference execution profile, but prevents sustained under-service within a short horizon. 
+
+2) Daily Workload Completion: Daily volume conservation ensures that flexibility is achieved by shifting workloads rather than curtailing them: 
+
+> T
+
+X
+
+> t=1
+
+Γn,c,t =
+
+> T
+
+X
+
+> t=1
+
+dn,c,t , ∀n ∈ Ω, ∀c. (2) Constraint (2) guarantees that the total admitted workload represented by the reference execution profile is completed within the scheduling horizon. Together, (1) and (2) define the service-side feasible region. 
+
+3) Relaxed Daily Adequacy Benchmark: For comparison, the Grid-Centric DCLA benchmark adopts the relaxed daily adequacy constraint 
+
+> T
+
+X
+
+> t=1
+
+Γn,c,t ≥ (1 − ϵc)
+
+> T
+
+X
+
+> t=1
+
+dn,c,t , ∀n ∈ Ω, ∀c. (3) Here, workload flexibility is approximated by the fixed pa-rameter ϵc, which specifies the maximum fraction of reference workload not required to be completed within the scheduling horizon. The remaining workload may be reshaped across periods subject to grid constraints. This approximation cap-tures intraday flexibility but does not enforce rolling-window continuity or full daily completion, and is therefore used only as a relaxed upper-bound benchmark.  
+
+> Fig. 3. Checkpoint-induced GPU power variation during AI training. Each synchronized checkpoint produces a rapid power drop, which appears to the grid as a short-duration load release and can create an overfrequency disturbance.
+
+III. C HECKPOINT -I NDUCED FREQUENCY SECURITY 
+
+BOUNDARY 
+
+This section establishes a checkpoint-induced FS bound-ary for DCLA optimization. The checkpoint-induced power release is first quantified, and the RoCoF, frequency-peak, and QSS limits are then derived to constrain the resulting overfrequency risk. 
+
+A. Checkpoint-Induced Power Release 
+
+Checkpointing introduces synchronized transient phases in large-scale training and fine-tuning workloads. When many graphics processing units (GPUs) or training jobs enter the checkpoint phase simultaneously, the DC load may change rapidly, producing short-term power ramps and frequency security concerns [1], [7]. As illustrated in Fig. 3, synchronized checkpoint operations can cause repeated and rapid reductions in GPU power. This paper considers two checkpointing modes. Periodic checkpointing saves training states at predefined intervals to support fault tolerance and recovery after unexpected interruptions. Event-triggered checkpointing saves states in response to operational actions, such as task suspension, power curtailment, or GPU reallocation, so that the workload can later resume from the saved state. The recovery process after task reloading may cause a reverse load ramp, which can be mitigated by smooth recovery or snapback prevention [6]. This reverse ramp is not treated as the main constraint in this paper. 
+
+1) Periodic Checkpoint-Induced Power Release: The equiv-alent power release caused by periodic checkpointing is 
+
+∆pper  
+
+> n,t
+
+= hdc X
+
+> c∈C tr
+
+αper  
+
+> c,t
+
+Γn,c,t ,αper  
+
+> c,t
+
+= sρc sηc ρper  
+
+> t
+
+ηper  
+
+> t
+
+.
+
+(4) Here, ∆pper  
+
+> n,t
+
+is the periodic checkpoint-induced power release at bus n in period t, hdc is the rated grid-facing power of one DC block, and Ctr ⊆ C is the set of checkpoint-enabled workload classes. The coefficient αper  
+
+> c,t
+
+represents the periodic disturbance intensity of class c. The factors sρc and sηc are the class-dependent power-drop and synchronization factors, while 
+
+ρper  
+
+> t
+
+and ηper  
+
+> t
+
+are the periodic power-drop and synchronization profiles. 
+
+2) Event-Triggered Checkpoint-Induced Power Release: 
+
+Similarly, the equivalent power release caused by event-triggered checkpointing is 
+
+∆pev  
+
+> n,t
+
+= hdc X
+
+> c∈C tr
+
+αev 
+
+> c,t
+
+Γn,c,t , αev  
+
+> c,t
+
+= sρc sηc ρev  
+
+> t
+
+ηev  
+
+> t
+
+. (5) Here, ∆pev  
+
+> n,t
+
+is the event-triggered checkpoint-induced power release, αev  
+
+> c,t
+
+is the corresponding disturbance coefficient, and 
+
+ρev  
+
+> t
+
+and ηev  
+
+> t
+
+are the event-triggered power-drop and synchro-nization profiles. 4
+
+3) Total Checkpoint-Induced Disturbance: The total equiv-alent checkpoint disturbance is 
+
+∆pcp  
+
+> n,t
+
+= ∆ pper  
+
+> n,t
+
++ χt∆pev 
+
+> n,t
+
+. (6) Here, ∆pcp  
+
+> n,t
+
+is the total checkpoint-induced disturbance at bus 
+
+n, and χt is the event-triggered checkpoint activation level in period t. Equations (4)–(6) link frequency risk with workload size, checkpoint triggering, and synchronization level. They do not assume a fixed power reduction ratio for the whole DC. 
+
+B. Frequency Security Boundary 
+
+This subsection converts checkpoint-induced disturbances into algebraic FS constraints. For each scheduling interval, the scheduled operating point defines the pre-disturbance condition, while a credible checkpoint event is evaluated on the seconds-scale frequency trajectory. Thus, the RoCoF, frequency-peak, and QSS limits are embedded into each scheduling interval using the maximum credible short-term power release rather than interval-averaged energy. Since synchronous-unit commitment is not optimized, the equivalent system inertia coefficient is treated as constant and calculated as 
+
+M eq = 2Hsyn 
+
+f0
+
+X
+
+> g∈G syn
+
+¯pg . (7) Here, M eq is the equivalent system inertia coefficient, Hsyn 
+
+is the inertia constant assigned to online synchronous gener-ators, f0 is the nominal frequency, Gsyn is the set of online synchronous generators, g indexes a generator, and ¯pg is its maximum output. For the overfrequency event caused by checkpoint-induced load reduction, P cp  
+
+> t
+
+denotes the aggregated checkpoint-induced disturbance in scheduling period t, and P 0 
+
+> t
+
+represents zero-delay disturbance mitigation available at u = 0 +, where 
+
+u is the continuous time after the disturbance. The residual disturbance is therefore P rt = P cp  
+
+> t
+
+− P 0 
+
+> t
+
+≥ 0. If such zero-delay mitigation is unavailable, P 0 
+
+> t
+
+is set to zero. During the frequency-peak stage, the transient frequency dynamics are written as 
+
+M eq d∆ft(u)
+
+du = P rt − pft (u) − Ddc  
+
+> t
+
+∆ft(u), (8) Here, ∆ft(u) is the dynamic frequency deviation, pft (u) is the delivered fast-response trajectory, and Ddc  
+
+> t
+
+is the aggregate DC frequency-damping coefficient. A positive ∆ft(u) denotes an overfrequency deviation. The fast response is represented by 
+
+pft (u) = Rft
+
+uT f , 0 ≤ u ≤ T f . (9) Here, Rft is the aggregated fast-response capacity and T f is its delivery time. 
+
+1) RoCoF Limit: At the initial instant, ∆ft(0) = 0,and the ramp-type response has not been delivered. Since 
+
+P 0 
+
+> t
+
+represents zero-delay disturbance mitigation available at 
+
+u = 0+, the initial RoCoF is determined by the residual disturbance and the equivalent inertia: 
+
+d∆ft
+
+du 0+
+
+= P rt
+
+M eq . (10) The RoCoF limit is therefore 
+
+P rt ≤ M eq ¯r, ∀t. (11) Here, ¯r is the maximum allowable rate of change of frequency. 
+
+2) Frequency-Peak Limit: Following the no-damping ramp-response approximation in [15], the frequency peak occurs at 
+
+u⋆t = P rt T f
+
+Rft
+
+. (12) Here, u⋆t is the time of the frequency peak in scheduling period 
+
+t. The peak occurs within the fast-response delivery interval if 
+
+Rft ≥ P rt , ∀t. (13) The frequency-peak limit can therefore be represented as the following rotated second-order cone constraint: 
+
+(P rt )2 ≤ 2M eq ∆fT f Rft , ∀t. (14) Here, ∆f is the maximum allowable frequency-peak deviation. 
+
+3) QSS Frequency Limit: In the QSS stage, the transient fast response is replaced by sustained response, while the damping- and droop-based responses are available. Since the considered event is a unidirectional overfrequency disturbance, the sustained response is limited to avoid overcompensation: 
+
+0 ≤ P pt ≤ P rt , ∀t. (15) Here, P pt is the aggregated sustained response in period t.The QSS frequency deviation is 
+
+∆f ss  
+
+> t
+
+= P rt − P pt
+
+Ddc  
+
+> t
+
++ Kg + Kibr . (16) Here, ∆f ss  
+
+> t
+
+is the quasi-steady-state frequency deviation, while Kg and Kibr are the aggregate governor and inverter-based-resource (IBR) quasi-steady-state response coefficients, respectively. The QSS frequency limit is therefore 
+
+P rt − P pt ≤  Ddc  
+
+> t
+
++ Kg + Kibr  ∆f ss , ∀t. (17) Here, ∆f ss is the maximum allowable quasi-steady-state fre-quency deviation. Constraints (11), (13), (14), (15), and (17) form the alge-braic FS boundary. The peak constraint adopts a conservative single-response no-damping approximation, while sustained and droop-based responses are credited in the QSS constraint. The transition between the fast and sustained response stages is assumed not to create a larger secondary frequency excursion. IV. D ATA CENTER LOAD ACCOMMODATION AND BIAS 
+
+QUANTIFICATION 
+
+This section quantifies DCLA and its systematic bias. Based on the QoS constraints in Section II and the FS boundary in Section III, Grid-Centric DCLA and QoS- and FS-aware DCLA are first compared. Then, a two-stage lexicographic formulation is used to maximize the accommodable DC load, minimize the required ES installation, and minimize operating cost in sequence. 
+
+A. Grid-Centric DCLA and QoS- and FS-Aware DCLA 
+
+Traditional DCLA studies often treat DCs as rigid loads or fully dispatchable demand. Both assumptions can be mis-leading. A grid-feasible DC schedule may still be infeasible if it violates service continuity, leaves workloads unfinished, or creates unacceptable frequency security risk. Therefore, DCLA should be defined over the joint grid, service, and FS feasible regions. 5Def 2 :  QoS - and             
+
+> FS -Aware DCLA
+> QoS -Aware
+> Region
+> FS -Aware
+> Region
+> Def 1 : Grid -
+> centric DCLA
+> Fig. 4. Feasible-region interpretation of the two DCLA definitions. Grid-Centric DCLA is optimized over Ωg, whereas QoS- and FS-aware DCLA is restricted to Ωg∩Ωs∩Ωf; the difference between their maxima produces the systematic bias.
+
+1) Grid-Centric DCLA: The Grid-Centric DCLA feasible region Ωg includes the grid-side constraints and the relaxed daily adequacy constraint (3). The maximum Grid-Centric DCLA is defined as 
+
+Definition 1 (Grid-Centric DCLA): 
+
+Hg := max 
+
+(X
+
+> n∈Ω
+
+Hn : Ξ ∈ Ωg
+
+)
+
+. (18) Here, Hg is the maximum Grid-Centric DCLA, Hn is the accommodated DC capacity at bus n, and Ξ is the collection of accommodation and operating variables. This benchmark excludes rolling-window continuity, full daily workload completion, and the FS boundary. It may there-fore admit schedules that are grid-feasible but operationally infeasible. 
+
+2) QoS- and FS-Aware DCLA: The QoS- and FS-aware maximum accommodable DC load is defined as 
+
+Definition 2 (QoS- and FS-Aware DCLA): 
+
+Hs := max 
+
+(X
+
+> n∈Ω
+
+Hn : Ξ ∈ Ωg ∩ Ωs ∩ Ωf
+
+)
+
+. (19) Here, Hs is the maximum QoS- and FS-aware DCLA, while 
+
+Ωs and Ωf are the strict-service and frequency-security feasi-ble regions, respectively. Definition 2 ensures that the accommodated load is feasible under grid adequacy, QoS, and frequency security. Since it imposes stricter operational requirements than Definition 1, the Grid-Centric DCLA definition may overestimate the QoS-and FS-aware DCLA. 
+
+3) Systematic Bias of Grid-Centric DCLA: As shown in Fig. 4, the systematic bias rate is defined as 
+
+δb = Hg − Hs
+
+Hg
+
+. (20) A positive δb means that the Grid-Centric DCLA model overestimates the feasible DC load. A larger δb indicates that QoS or FS constraints become dominant factors limiting QoS-and FS-aware DCLA. 
+
+B. Lexicographic Formulation of DCLA 
+
+The objectives are ordered lexicographically. Stage I-A first maximizes the accommodated DC load, Stage I-B then minimizes the required number of installable ES units without reducing the maximum DCLA, and Stage II finally minimizes a multi-stakeholder operating objective without changing the preceding siting and sizing decisions. 
+
+1) Stage I-A: Maximum DCLA: The first optimization level maximizes the total accommodable DC load: 
+
+max X
+
+> n∈Ω
+
+Hn. (21) The resulting maximum DCLA is denoted by H⋆.
+
+2) Stage I-B: Minimum ES Installation: After fixing the maximum DCLA, the second optimization level minimizes the required number of installable ES units: 
+
+min X
+
+> n∈Ω
+
+xes 
+
+> n
+
+s.t. X
+
+> n∈Ω
+
+Hn = H⋆. (22) Here, xn is the number of accommodated DC blocks at bus 
+
+n, and xes  
+
+> n
+
+is the number of installable energy storage units at bus n. The resulting minimum ES requirement is denoted by 
+
+X⋆
+
+> es
+
+. The corresponding nodal DC and ES siting and sizing decisions are denoted by x⋆n and xes ,⋆ n , respectively. 
+
+3) Stage II: Multi-Stakeholder Operating Objective: After fixing the DC and ES siting and sizing decisions obtained in Stage I-B, Stage II coordinates the interests of the grid operator and the DC operator through a weighted multi-stakeholder objective: 
+
+min wgrid 
+
+> T
+
+X
+
+> t=1
+
+X
+
+> g∈G d
+
+Cg (pg,t )∆ t
+
++ wdc 
+
+> T
+
+X
+
+> t=1
+
+λt
+
+X
+
+> n∈Ω
+
+pdc 
+
+> n,t
+
+∆t
+
++ ces 
+
+> T
+
+X
+
+> t=1
+
+X
+
+> n∈E
+
+ pch  
+
+> n,t
+
++ pdis 
+
+> n,t
+
+ ∆t, 
+
+(23) Here, wgrid and wdc are the weights of the grid-operator and DC-operator objectives; Gd is the set of dispatchable generators; Cg (·) is the generation cost function; pg,t is the output of generator g; and ∆t is the duration of one scheduling period. The parameter λt is the electricity price, pdc  
+
+> n,t
+
+is the grid-facing DC power, ces is the energy storage cycling penalty coefficient, and E is the set of all energy storage buses. The variables pch  
+
+> n,t
+
+and pdis  
+
+> n,t
+
+are the charging and discharging powers. The first two terms represent generation cost and DC electricity expenditure. They are not treated as additive social costs because electricity payments are market transfers. The last term is a small ES cycling penalty that suppresses unnecessary charging and discharging. The Stage-I siting and sizing decisions are fixed by 
+
+xn = x⋆n, xes  
+
+> n
+
+= xes ,⋆ n , ∀n ∈ Ω. (24) Stage II therefore optimizes generator dispatch, workload scheduling, renewable utilization, and ES operation without changing the maximum DCLA, minimum ES requirement, or their nodal allocations. V. O PTIMIZATION CONSTRAINTS OF DCLA U NDER QOS, FS, AND GRID ADEQUACY 
+
+This section presents the complete DCLA optimization model under grid adequacy, QoS, FS, and ES constraints. It first defines the DC accommodation and ES siting decisions. It then formulates the operational constraints for grid dispatch, workload scheduling, frequency response, and ES operation. 
+
+A. Accommodation and Siting Decisions 
+
+This subsection defines the candidate-bus constraints for DCLA and installable ES siting. The installable ES may be 6
+
+sited at any bus in the candidate set Ω and is not required to be co-located with an accommodated DC. It includes the discrete DC block representation, local capacity limits, local ES installation limits, and the system-wide ES budget. 
+
+1) DC Block Accommodation Capacity: The accommo-dated DC capacity at each candidate bus is represented as an integer multiple of a standardized DC block: 
+
+Hn = hdc xn, xn ∈ { 0, 1, . . . , ¯xdc  
+
+> n
+
+}, ∀n ∈ Ω. (25) Here, ¯xdc  
+
+> n
+
+is the maximum number of accommodated DC blocks allowed at bus n.The accommodated DC capacity cannot exceed the available interconnection capacity at each candidate bus: 
+
+0 ≤ Hn ≤ ¯Hdc  
+
+> n
+
+, ∀n ∈ Ω. (26) Here, ¯Hdc  
+
+> n
+
+is the maximum DC capacity at bus n.
+
+2) Installable ES Siting: The number of ES units installed at each candidate bus is restricted by the local installation limit: 
+
+xes  
+
+> n
+
+∈ { 0, 1, . . . , ¯xes  
+
+> n
+
+}, ∀n ∈ Ω. (27) Here, ¯xes  
+
+> n
+
+is the local upper limit on installable energy storage units at bus n.The total number of ES units installed across all candidate buses is limited by the system-wide ES budget: 
+
+X
+
+> n∈Ω
+
+xes  
+
+> n
+
+≤ xes budget . (28) Here, xes budget is the system-wide energy storage unit budget. 
+
+B. Operational Feasibility Constraints 
+
+Given the accommodation and ES siting decisions, these constraints ensure feasible grid dispatch, DC service delivery, frequency response, and ES operation in both optimization stages. 
+
+1) Grid Adequacy Constraints: Grid adequacy is enforced through nodal power balance, DC power flow, and transmis-sion security constraints. DC and ES variables are set to zero at buses without the corresponding facilities. At each bus and period, the total power injection must equal the net outgoing line flow. This constraint couples generator and renewable outputs with DC demand, ES operation, and baseline load: 
+
+X
+
+> g∈Gn
+
+pg,t + X
+
+> w∈Wn
+
+pw 
+
+> w,t
+
++ X
+
+> s∈Sn
+
+ps 
+
+> s,t
+
++ pdis  
+
+> n,t
+
+− pch 
+
+> n,t
+
+− pdc  
+
+> n,t
+
+− pLn,t = X
+
+> k∈δ(n)
+
+fnk,t , ∀n ∈ N , ∀t. (29) Here, N is the set of buses, k indexes a bus adjacent to bus 
+
+n, and δ(n) is the set of buses adjacent to bus n. The sets 
+
+Gn, Wn, and Sn contain the dispatchable generators, wind units, and solar units at bus n, respectively, while w and s
+
+index wind and solar units. The variables pw 
+
+> w,t
+
+and ps 
+
+> s,t
+
+are the utilized wind and solar powers, pLn,t is the non-DC baseline load, and fnk,t is the active power flow from bus n to bus k.The output of each dispatchable generator is bounded by its operating limits: 
+
+pg ≤ pg,t ≤ ¯pg , ∀g ∈ G d, ∀t. (30) Here, pg and ¯pg are the minimum and maximum outputs of generator g.Its intertemporal output variation is limited by the upward and downward ramp rates: 
+
+− Rdown  
+
+> g
+
+∆t ≤ pg,t − pg,t −1 ≤ Rup  
+
+> g
+
+∆t, 
+
+∀g ∈ G d, ∀t = 2 , . . . , T. (31) Here, Rup  
+
+> g
+
+and Rdown  
+
+> g
+
+are the upward and downward ramp-rate limits of generator g.The utilized renewable power is limited by its available output: 
+
+0 ≤ pw 
+
+> w,t
+
+≤ ¯pw
+
+> w,t
+
+, ∀w, ∀t, 
+
+0 ≤ ps 
+
+> s,t
+
+≤ ¯ps
+
+> s,t
+
+, ∀s, ∀t. (32) Here, ¯pw 
+
+> w,t
+
+and ¯ps 
+
+> s,t
+
+are the available wind and solar powers. The active power flow on each transmission line is repre-sented by the DC power flow relation: 
+
+fnk,t = Bnk (θn,t − θk,t ) , ∀(n, k ) ∈ L , ∀t. (33) Here, L is the set of transmission lines, Bnk is the susceptance of line (n, k ), and θn,t is the voltage angle at bus n.The voltage angle at the reference bus is fixed: 
+
+θnref ,t = 0 , ∀t. (34) Here, nref is the reference-bus index. Under normal operating conditions, the flow on each mon-itored line must remain within its continuous thermal rating: 
+
+− ¯f Ank ≤ fnk,t ≤ ¯f Ank , ∀(n, k ) ∈ L , ∀t. (35) Here, ¯f Ank is the continuous flow rating of line (n, k ).Transmission security after a single-line outage is rep-resented using line outage distribution factors [18]. For each monitored line and contingency, the estimated post-contingency flow must remain within the emergency rating: 
+
+− ¯f Cnk ≤ fnk,t + L ij nk fij,t ≤ ¯f Cnk ,
+
+∀(n, k ) ∈ L , ∀(i, j ) ∈ L c, ∀(i, j )̸ = ( n, k ), ∀t. (36) Here, i and j index the terminal buses of a contingency line, 
+
+Lc is the set of considered line contingencies, Lij nk is the line outage distribution factor relating the outage of line (i, j ) to monitored line (n, k ), and ¯f Cnk is the emergency flow rating. 
+
+2) DC Service and Power Coupling: This part links the accommodated DC capacity, delivered workload throughput, and grid-facing DC power. The delivered throughput of each workload class is limited by the computing capacity associated with the accommodated DC blocks: 
+
+0 ≤ Γn,c,t ≤ ¯Γn,c xn, ∀n ∈ Ω, ∀c ∈ C , ∀t. (37) Here, ¯Γn,c is the per-block throughput limit of workload class 
+
+c at bus n.The total throughput across all workload classes cannot exceed the aggregate computing capacity of the accommodated DC blocks: X
+
+> c∈C
+
+Γn,c,t ≤ ¯Γdc xn, ∀n ∈ Ω, ∀t. (38) Here, ¯Γdc is the aggregate throughput limit of one DC block. The grid-facing DC power includes idle information-technology (IT) power, workload-dependent IT power, and auxiliary power represented by power usage effectiveness (PUE) [5]: 
+
+pdc  
+
+> n,t
+
+= PUE P idle  
+
+> n
+
+xn + X
+
+> c∈C
+
+en,c Γn,c,t 
+
+!
+
+, ∀n ∈ Ω, ∀t. 
+
+(39) 7
+
+Here, PUE is the power usage effectiveness, P idle  
+
+> n
+
+is the idle IT power per DC block at bus n, and en,c is the power-to-throughput coefficient of workload class c.The grid-facing DC power cannot exceed the accommodated rated capacity at each candidate bus: 
+
+0 ≤ pdc  
+
+> n,t
+
+≤ Hn, ∀n ∈ Ω, ∀t. (40) The reference execution profile of the admitted workload pool scales with the number of accommodated DC blocks: 
+
+dn,c,t = xn ¯Γdc ˜dc,t , ∀n ∈ Ω, ∀c ∈ C , ∀t. (41) Here, ˜dc,t is the normalized reference execution profile of workload class c.For QoS- and FS-aware DCLA, these coupling constraints are combined with the rolling-window throughput continuity constraint in (1) and the daily workload completion constraint in (2). The Grid-Centric DCLA benchmark instead uses the relaxed daily adequacy constraint in (3). This distinction separates feasible workload shifting from implicit service curtailment. 
+
+3) Checkpoint and Frequency Security Coupling: This part links the node-level workload decisions to the system-level checkpoint disturbance and frequency response quantities. The total checkpoint-induced disturbance is obtained by aggregating the checkpoint power release across all candidate DC buses: 
+
+P cp  
+
+> t
+
+= X
+
+> n∈Ω
+
+∆pcp 
+
+> n,t
+
+, ∀t. (42) The immediate, fast, and sustained DC-side responses are aggregated across candidate buses: 
+
+P 0 
+
+> t
+
+= X
+
+> n∈Ω
+
+p0
+
+> n,t
+
+, Rft = X
+
+> n∈Ω
+
+rfn,t ,P pt = X
+
+> n∈Ω
+
+ppn,t , ∀t. (43) Here, p0
+
+> n,t
+
+, rfn,t , and ppn,t are the zero-delay mitigation, fast response, and sustained response allocated at candidate bus n,respectively. After the zero-delay disturbance mitigation is applied, the remaining disturbance is represented by 
+
+P rt = P cp  
+
+> t
+
+− P 0 
+
+> t
+
+, P rt ≥ 0, ∀t. (44) The available DC-side response capacity depends on the scheduled throughput of flexible workloads: 
+
+¯P resp  
+
+> n,t
+
+= hdc X
+
+> c∈C
+
+ωcΓn,c,t , ∀n ∈ Ω, ∀t. (45) Here, ¯P resp  
+
+> n,t
+
+is the available DC-side response capacity, and 
+
+ωc is the response availability weight of workload class c.The aggregate DC-side damping coefficient is determined by the accommodated Flex-1–Flex-3 workloads: 
+
+Ddc  
+
+> t
+
+= κD
+
+hdc 
+
+f0
+
+X
+
+> n∈Ω
+
+xn ¯Γdc 3X
+
+> c=1
+
+˜dc,t , ∀t. (46) Here, κD is the DC frequency-damping scaling factor. The zero-delay mitigation at each candidate bus is limited by its available capacity and cannot exceed the local check-point disturbance: 
+
+0 ≤ p0 
+
+> n,t
+
+≤ ¯p0
+
+> n,t
+
+,p0 
+
+> n,t
+
+≤ ∆pcp 
+
+> n,t
+
+, ∀n ∈ Ω, ∀t. (47) Here, ¯p0 
+
+> n,t
+
+is the available zero-delay mitigation capacity at bus n.The allocated fast response is limited by a fixed fraction of the available DC response capacity: 
+
+0 ≤ rfn,t ≤ γf ¯P resp  
+
+> n,t
+
+, ∀n ∈ Ω, ∀t. (48) Here, γf is the fraction of available DC response capacity assigned to fast response. The allocated sustained response is limited by a fixed fraction of the available DC response capacity: 
+
+0 ≤ ppn,t ≤ γp ¯P resp  
+
+> n,t
+
+, ∀n ∈ Ω, ∀t. (49) Here, γp is the fraction of available DC response capacity assigned to sustained response. The aggregated disturbance and response quantities are constrained by (11), (13), (14), (15), and (17). The QSS contribution from IBRs cannot exceed their avail-able response headroom: 
+
+Kibr ∆f ss ≤ ¯P ibr  
+
+> t
+
+, ∀t. (50) Here, ¯P ibr  
+
+> t
+
+is the available inverter-based-resource response headroom. These constraints make the FS boundary dependent on workload composition, scheduled throughput, and checkpoint synchronization rather than on a fixed DC power-drop ratio. 
+
+4) ES Operation Constraints: ES provides intertemporal energy buffering to relieve network congestion and renewable power imbalances [19]. All ES units use the same multi-period operating model. At candidate DC buses, the available ES capacities are coupled with the installation decisions: 
+
+¯pE 
+
+> n
+
+= pes xes  
+
+> n
+
+, ¯eE 
+
+> n
+
+= ees xes  
+
+> n
+
+, ∀n ∈ Ω. (51) Here, R is the set of buses with fixed energy storage; ¯pE
+
+> n
+
+and ¯eE 
+
+> n
+
+are the available energy storage power and energy capacities; and pes and ees are the power and energy ratings of one installable energy storage unit. At buses in R, ¯pE 
+
+> n
+
+and 
+
+¯eE 
+
+> n
+
+are fixed. The ES energy state evolves as 
+
+en,t = en,t −1 + ηch pch 
+
+> n,t
+
+∆t − pdis 
+
+> n,t
+
+ηdis ∆t, ∀n ∈ E , ∀t. (52) Here, en,t is the stored energy, while ηch and ηdis are the charging and discharging efficiencies. The ES energy state and charging and discharging powers satisfy 
+
+0 ≤ en,t ≤ ¯eE 
+
+> n
+
+,
+
+0 ≤ pch  
+
+> n,t
+
+≤ ¯pE 
+
+> n
+
+,
+
+0 ≤ pdis  
+
+> n,t
+
+≤ ¯pE 
+
+> n
+
+,
+
+∀n ∈ E , ∀t. (53) Simultaneous charging and discharging are prevented by the binary operating mode variable: 
+
+pch  
+
+> n,t
+
+≤ pE,max  
+
+> n
+
+zes 
+
+> n,t
+
+,pdis  
+
+> n,t
+
+≤ pE,max 
+
+> n
+
+ 1 − zes 
+
+> n,t
+
+ ,zes  
+
+> n,t
+
+∈ { 0, 1},
+
+∀n ∈ E , ∀t. (54) Here, zes  
+
+> n,t
+
+is the binary charging-mode variable, and pE,max  
+
+> n
+
+is the big-M power bound used in the operating-mode constraint. For candidate DC buses, pE,max  
+
+> n
+
+= pes ¯xes  
+
+> n
+
+; for buses with fixed ES, it equals the fixed ES power capacity. The initial and terminal energy states satisfy 
+
+en, 0 = β0 ¯eE 
+
+> n
+
+, en,T = en, 0, ∀n ∈ E . (55) Here, β0 is the initial and terminal energy ratio. 8                                     
+
+> TABLE II WORKLOAD MIXES AND QOS S ETTINGS
+> Setting Flex-0 Flex-1 Flex-2 Flex-3
+> Balanced 0.30 0.15 0.15 0.40 Inference-heavy 0.65 0.25 0.05 0.05 Training-heavy 0.10 0.05 0.15 0.70
+> Wc(periods) 112 20 24
+> ϵc00.10 0.25 0.50
+> ωc00.10 0.25 0.50
+> Note: Workload shares in each mix sum to one. Wcis measured in 15-min periods;
+> ϵcis the allowable rolling-window service shortfall; and ωcis the response-availability weight.
+
+VI. C ASE STUDIES 
+
+This section evaluates the proposed DCLA method on the IEEE 39-bus system. The studies quantify the Grid-Centric DCLA bias and examine the effects of workload composition, workload flexibility, installable ES, and FS constraints. 
+
+A. Case Setup 
+
+The study uses the IEEE 39-bus system over a 24-h horizon (96 15-min intervals) with system demand varying between 75% and 100% of the nominal load. Wind and solar generation replace synchronous units at buses 38 and 37, respectively, following Electric Reliability Council of Texas (ERCOT) pro-files [20], [21]. Dispatchable generators have hourly ramping limits equal to 20% of their operating range. Grid-side fixed 4-h ES is installed at buses 37 and 38, rated at 25% of the con-nected renewable capacity. For installable ES, each candidate bus allows up to five 5 MW/20 MWh units [22], capped at a system-wide budget of 20 units. These units are grid-connected resources modeled over the candidate-bus set and are not required to be co-located with accommodated DC capacity. All ES units operate with ηch = ηdis = √0.85 , a 50% initial and terminal state of charge, and strictly non-simultaneous charging and discharging. Although operating decisions are scheduled at a 15-min resolution, the FS constraints evaluate a seconds-scale checkpoint event at every 15-min operating point through the continuous-time frequency-response model. Candidate DC buses are Ω = {16 , 18 , 19 , 24 , 27 }, each permitting up to fifteen 10 MW blocks with PUE = 1 .21 [23]. The IT-power function is parameterized using NVIDIA A100 GPU measurements [6], [24]. Four workload classes are evalu-ated using inference-derived profiles for Flex-0 and Flex-1 and training-derived profiles for Flex-2 and Flex-3 [7], [25]. Ta-ble II lists their QoS parameters and shares across the balanced baseline, inference-heavy, and training-heavy mixes. Flex-2 and Flex-3 produce checkpoint-induced power disturbances with coefficients sρc sηc of 0.48 and 1.00, respectively, whereas Flex-0 and Flex-1 do not. The maximum event-triggered acti-vation factor is 0.8, and fast and sustained workload responses equal 60% and 30% of the weighted flexible-load response, respectively. Frequency-support parameters M eq and Kg are based on online synchronous units, assuming a 5% governor droop and a 3% available primary-response fraction. The DC damping coefficient is κD = 0.5. Zero-delay mitigation and IBR-based QSS support are omitted. Table III details the main FS parameters [15]. The lexicographic procedure follows Section IV. Stage II uses ERCOT real-time prices in the DC-side electricity-                                                         
+
+> TABLE III FS P ARAMETER SETTINGS
+> Para. Value Para. Value
+> f060 Hz Hsyn 4 s
+> ¯r0.5 Hz/s ∆f0.8 Hz
+> ∆fss 0.5 Hz Tf10 s
+> κD0.5 Kibr 0
+> P0
+> t0γf0.60
+> γp0.30 max tχt0.80
+> Note: The limits are evaluated at every 15-min operating point using the seconds-scale frequency-response model. P0
+> t=0and
+> Kibr = 0 mean that zero-delay mitigation and IBR-based QSS support are not cred-ited.
+> TABLE IV BASELINE DCLA AND ES S ITING
+> Bus Load (MW) ES Units
+> 16 130 018 0519 150 524 150 327 05Total 430 18
+> Note: Load denotes accommodated DC ca-pacity. Each DC block is 10 MW and each installable ES unit is rated 5 MW/20 MWh. The allocation is one minimum-unit so-lution obtained after fixing the 430 MW maximum DCLA.
+
+expenditure term and applies equal stakeholder weights, 
+
+wgrid = wdc = 1 [26]. The model is implemented in MATLAB using YALMIP and solved with Gurobi. 
+
+B. Baseline QoS- and FS-Aware DCLA Results 
+
+The complete QoS- and FS-aware formulation yields 430 MW of DCLA, corresponding to 43 DC blocks. Stage I-B requires 18 installable ES units. These results define the baseline for the following comparisons. 
+
+1) Spatial Siting and ES Allocation: Table IV shows that buses 19 and 24 reach their 150 MW limits, bus 16 accom-modates 130 MW, and buses 18 and 27 host no DC capacity. The ES allocation follows a different pattern. Buses 18, 19, 24, and 27 host ES, while bus 16 supports 130 MW of DC capacity without local storage. This allocation pattern shows that ES siting is driven by system-wide network and temporal operating conditions rather than local DC capacity. Since Stage I-B minimizes only the total ES count, the table represents one minimum-unit siting solution. 
+
+2) Frequency Security Status: The maximum utilization ratios of the RoCoF, frequency-peak, and QSS limits are 0.208, 0.993, and 1.000, respectively. The QSS constraint binds, the frequency-peak constraint is nearly active, and RoCoF retains substantial margin. The baseline DCLA is therefore limited by sustained frequency response capability, while the frequency-peak constraint is nearly active. An assessment based only on RoCoF would overestimate the available frequency security margin. 
+
+3) Temporal Workload Scheduling: Fig. 5 compares the reference and optimized throughput profiles. Flex-0 follows its reference execution profile because it permits no deferral. Flex-1, Flex-2, and Flex-3 exhibit progressively wider tempo-ral shifts as their service windows and QoS tolerances increase. All schedules satisfy the rolling-window and daily completion constraints. The results confirm that longer service windows provide usable temporal flexibility, while the sharp interval-to-interval changes reflect the absence of an explicit throughput ramping constraint. 
+
+C. Evaluation of Load Accommodation and Security Con-straints 
+
+This subsection compares four settings with different QoS and FS constraints to quantify the Grid-Centric DCLA bias and explain the resulting accommodation changes. 
+
+1) Systematic Bias of Grid-Centric DCLA: Table V com-pares DCLA across four settings to quantify the systematic 9Time                                  
+
+> Hour (h)
+> 0510 15 20
+> 0
+> 5
+> 10
+> 15
+> 20 Flex-0
+> 0510 15 20
+> 0
+> 5
+> 10
+> 15
+> 20 Flex-1
+> 0510 15 20
+> 0
+> 10
+> 20
+> 30
+> 40 Flex-2
+> 0510 15 20
+> 0
+> 10
+> 20
+> 30 Flex-3
+> 0510 15 20
+> 0
+> 50
+> 100
+> 0510 15 20
+> 0
+> 0.2
+> 0.4
+> 0.6 Max:0.423
+> 0510 15 20
+> 0
+> 0.5
+> 1
+
+(c) Frequency peak limit     
+
+> Max:1.308
+> 0510 15 20
+> 0
+> 0.5
+> 1
+> 1.5
+
+(d) QSS limit   
+
+> Max:1.449
+> Norma
+> Checkpoint Power Re
+> Hour (h) Hour (h)
+> Hour (h) Hour (h)
+> Max:67.0 MW
+> Max:0.208
+> Max:1.000 Max:0.993
+> Utilization
+> Utilization  Utilizatio
+> Aggregate Throughput (p.u.)
+> Aggregate Throughput (p.u.)  Aggregate Throughput (p.u.)
+> Aggregate Throughput (p.u.)
+> Hour (h)
+> Hour (h) Hour (h)
+> Baseline Scheduled
+
+Fig. 5. Reference and optimized aggregate throughput for Flex-0–Flex-3. The dashed curves denote the reference execution profiles and the solid curves denote the QoS- and FS-aware schedules. Flex-0 remains rigid, whereas Flex-1–Flex-3 show progressively wider temporal shifting. TABLE V DCLA BY CONSTRAINT SETTING AND WORKLOAD MIX 
+
+Case DCLA Across Workload Mixes (MW) ES Units (Balanced) Inference-Heavy Balanced Training-Heavy 
+
+Grid-Centric 630 720 750 16 QoS-only 410 480 500 18 FS-only 630 720 650 16 Proposed 410 430 280 18 
+
+Note: DCLA values are in MW. The ES column reports the balanced mix only. Grid-Centric uses relaxed daily adequacy; QoS-only enforces service constraints; FS-only enforces frequency-security constraints with relaxed service; and Proposed enforces both strict QoS and FS. 
+
+bias of Grid-Centric DCLA assessments. For the balanced mix, the Grid-Centric DCLA benchmark overestimates QoS- and FS-aware DCLA by 40.3%. The main reduction comes from enforcing strict QoS, because rolling-window continuity and full daily completion prevent the benchmark from relying on implicit service curtailment or excessive intraday reshaping. FS alone is not binding under the relaxed service benchmark, since workloads can be shifted away from critical checkpoint periods. When strict QoS and FS are imposed together, this avoidance capability is reduced and the FS boundary further limits the QoS-feasible DCLA. This result shows that service feasibility and frequency security are coupled rather than independent constraints. 
+
+2) Frequency Security Effects of FS Constraints: The im-pact of FS constraints on DCLA is examined by comparing the QoS-only and proposed solutions. Fig. 6(a) shows that the FS-aware formulation substantially suppresses the max-imum checkpoint-induced power release. This reduction is much larger than the decrease in DCLA, indicating that the optimizer mainly improves frequency security by rescheduling checkpoint-enabled workloads and reducing synchronization, not merely by lowering accommodated capacity. Fig. 6(b)– (d) further shows that the QoS-only solution violates the frequency-peak and QSS limits, even though RoCoF remains below its limit. After imposing the FS boundary, the QSS constraint becomes binding and the frequency-peak constraint is nearly active. Therefore, the binding mechanism is associ-ated with fast and sustained response adequacy rather than the initial inertial response alone. QoS -Aware                                       
+
+> Region
+> SoF -Aware
+> Region
+> Siting Constraints
+> •DC capacity limits
+> •ES siting and budget
+> •Nodal balance
+> and power flow
+> •Generation
+> limits
+> •N−1 security
+> •Throughput limits
+> •Power –throughput
+> mapping
+> •Rolling -window and
+> daily QoS
+> •Checkpoint power
+> release
+> •RoCoF, peak, and
+> QSS limits
+> •ES energy and
+> operating modes
+> Time
+> Checkpoint-induced power release
+> Hour (h)
+> 0510 15 20
+> 0
+> 5
+> 10
+> 15
+> 20 Flex-0
+> 0510 15 20
+> 0
+> 5
+> 10
+> 15
+> 20 Flex-1
+> 0510 15 20
+> 0
+> 10
+> 20
+> 30
+> 40 Flex-2
+> 0510 15 20
+> 0
+> 10
+> 20
+> 30 Flex-3
+> 0510 15 20
+> 0
+> 50
+> 100
+> 150
+
+(a) Aggregate checkpoint-induced 
+
+power release     
+
+> Max:136.5 MW
+> 0510 15 20
+> 0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1
+
+(b) RoCoF limit     
+
+> Max:0.423
+> 0510 15 20
+> 0
+> 0.5
+> 1
+
+(c) Frequency peak limit     
+
+> Max:1.308
+> 0510 15 20
+> 0
+> 0.5
+> 1
+> 1.5
+
+(d) QSS limit   
+
+> Max:1.449
+> QoS-only Proposed
+> Normalized GPU Power
+> Checkpoint Power Release (MW)
+> Hour (h) Hour (h)
+> Hour (h) Hour (h)
+> Max:67.0 MW
+> Max:0.208
+> Max:1.000 Max:0.993 s
+
+f
+
+ 
+
+> Utilization
+> Utilization  Utilization
+> Aggregate Throughput (p.u.)
+> Aggregate Throughput (p.u.)  Aggregate Throughput (p.u.)
+> Aggregate Throughput (p.u.)
+> Hour (h)
+> Hour (h) Hour (h)
+> Baseline Scheduled
+
+Fig. 6. Effect of FS constraints on checkpoint disturbances and frequency-security limits. Dashed curves show the QoS-only solution and solid curves show the proposed solution: (a) aggregate checkpoint-induced power release; (b) RoCoF-limit utilization; (c) frequency-peak-limit utilization; and (d) QSS-limit utilization. A utilization above 1 indicates a violation, and 1 denotes a binding limit. 
+
+D. Sensitivity Analysis on Workload Characteristics 
+
+Table V also compares the inference-heavy, balanced, and training-heavy mixes under identical system settings. 
+
+1) QoS-Limited DCLA Across Workload Mixes: Without FS constraints, DCLA increases with the training-workload share. Greater deferrability improves service-feasible accom-modation because training workloads can be shifted over longer windows and can better absorb network and resource constraints. Inference-dominated systems remain more con-strained because a larger share of their demand is rigid or limited to short deferral windows. 
+
+2) Interaction Between Workload Mix and FS: The com-plete formulation changes this ranking. Training-heavy work-loads provide the greatest temporal flexibility, but they also create the largest checkpoint-induced disturbance. As a result, the frequency-security penalty grows faster than the accommo-dation benefit from deferrability. Inference-heavy workloads cause weaker checkpoint disturbances, but their rigid service requirements limit the amount of usable flexibility. Under the studied settings, the balanced mix achieves the highest QoS- and FS-aware DCLA because it best balances service flexibility against frequency security risk. 
+
+E. Complementary Effects of Workload Flexibility and Instal-lable ES 
+
+To evaluate the individual contributions of these two strate-gies, we conducted an ablation study by removing workload flexibility and installable ES independently while retaining all other settings. 
+
+1) Contribution of Workload Flexibility: When both work-load flexibility and ES are disabled, the DCLA is limited to 330 MW. Introducing installable ES under rigid workloads yields no improvement, as the DCLA remains at 330 MW (with zero ES units being deployed). In that case, the active limitation comes from service inflexibility rather than from transferable grid or energy margins. Workload flexibility is therefore the primary enabler of additional accommodation, increasing the DCLA to 400 MW even without the use of 10 
+
+ES. By allowing throughput to move within service windows, flexible scheduling creates feasible operating space that cannot be obtained by storage alone. 
+
+2) Additional Contribution of Installable ES: With flexible scheduling enabled, installable ES provides an additional ac-commodation gain, bringing the maximum DCLA to 430 MW through the deployment of 18 ES units. In the studied system, storage complements workload flexibility rather than replacing it. Flexible scheduling first creates temporal accommodation headroom, after which ES exploits the remaining system-wide network and intertemporal margins. VII. C ONCLUSION 
+
+This paper developed an optimization-based DCLA method that jointly accounts for grid adequacy, workload QoS, and checkpoint-induced FS. A QoS-aware workload model was developed to characterize heterogeneous workload flexibility while ensuring service continuity and workload completion. Checkpoint-induced power releases were linked to accom-modated training workloads, and the corresponding RoCoF, frequency-peak, and QSS limits were reformulated as al-gebraic constraints. These components were then integrated into a two-stage lexicographic formulation, in which Stage I maximizes DCLA and minimizes the required ES deployment, while Stage II optimizes system operation with the DC and ES siting and sizing decisions fixed. Case studies on the IEEE 39-bus system show that conven-tional grid-adequacy-based DCLA methods overestimate QoS-and FS-aware DCLA by 40.3% for the balanced workload mix. QoS accounts for the largest capacity reduction by limiting excessive workload reshaping and preventing implicit work-load curtailment, whereas checkpoint-induced FS constraints become binding for training-heavy workloads. In the baseline case, the QSS limit is binding and the frequency-peak limit is nearly active, while RoCoF retains substantial margin. The results reveal the dual effect of workload flexibility on DCLA. Greater deferrability can alleviate network and in-tertemporal constraints, but the associated checkpoint-induced power releases may offset these benefits and make frequency security the binding constraint. Therefore, greater workload flexibility does not necessarily increase secure DCLA. Reliable DC interconnection decisions should jointly account for the grid-support benefits of workload flexibility, its QoS limita-tions, and the associated frequency-security risks. Future work will incorporate more detailed workload and checkpoint dy-namics, operational uncertainty, and higher-fidelity frequency-response models. REFERENCES [1] North American Electric Reliability Corporation (NERC), “Characteris-tics and risks of emerging large loads,” Large Loads Task Force White Paper, Jul. 9, 2025. [2] R. Vercellino, J. Willard, G. Campos, W. da Silva Pereira, O. Hull, M. Selensky, and J. Mueller, “Measurement of generative AI workload power profiles for whole-facility data center infrastructure planning,” 
+
+arXiv preprint arXiv:2604.07345 , Apr. 2026. [3] Electric Power Research Institute (EPRI), “Integrating data centers into the grid: Benefits of flexibility and strategic siting,” DCFlex White Paper, EPRI Product 3002033797, Nov. 2025. [4] North American Electric Reliability Corporation (NERC), “Assessment of gaps in existing practices, requirements, and reliability standards for emerging large loads,” NERC Large Loads Working Group White Paper, Mar. 2026. [5] M. Chen, C. Gao, M. Shahidehpour, Z. Li, S. Chen, and D. Li, “Internet data center load modeling for demand response considering the coupling of multiple regulation methods,” IEEE Trans. Smart Grid , vol. 12, no. 3, pp. 2060–2076, May 2021. [6] P. Colangelo et al. , “AI data centres as grid-interactive assets,” Nature Energy , vol. 11, pp. 254–261, Feb. 2026. [7] E. Choukse et al. , “Power stabilization for AI training datacenters,” arXiv preprint arXiv:2508.14318 , Aug. 2025. [8] A. N. Madavan, N. Dahlin, S. Bose, and L. Tong, “Risk-based hosting capacity analysis in distribution systems,” IEEE Trans. Power Syst. , vol. 39, no. 1, pp. 355–365, Jan. 2024. [9] J. Qin, H. Sun, N. Yu, J. Guo, Y. Wang, and A. U. Raghunathan, “Temporal surrogate Lagrangian decomposition for operational hosting capacity assessment in unbalanced power distribution systems,” IEEE Trans. Ind. Informat. , early access, Jan. 2026. [10] H. Diao, P. Li, C. Tu, and L. Che, “Optimal co-planning of multi-port soft open points and energy storage systems for improving hosting capacity and operation efficiency in distribution networks,” IEEE Trans. Power Del. , vol. 40, no. 1, pp. 459–471, Feb. 2025. [11] A. Radovanovic, B. Chen, S. Talukdar, B. Roy, A. Duarte, and M. Shah-bazi, “Power modeling for effective datacenter planning and compute management,” IEEE Trans. Smart Grid , vol. 13, no. 2, pp. 1611–1621, Mar. 2022. [12] C. Li, K. Zheng, H. Guo, C. Kang, and Q. Chen, “Computation-power coupled modeling for internet data centers and collaborative optimization in active distribution networks,” IEEE Trans. Smart Grid , vol. 15, no. 3, pp. 2762–2775, May 2024. [13] Y. Zhou, F. Wei, S. Li, Z. Wang, J. Liu, and D. Yu, “Data center load modeling through optimal energy consumption characteristics: A path to simultaneously enhance energy efficiency and demand response quality,” 
+
+Applied Energy , vol. 393, Art. no. 126095, Sep. 2025. [14] R. Cui, C. Hu, R. Yang, X. Cui, and F. Y. Hou, “Co-optimization of coincident peak management and ancillary services for flexible data centers,” IEEE Trans. Smart Grid , early access, 2026. [15] L. Badesa, F. Teng, and G. Strbac, “Simultaneous scheduling of multiple frequency services in stochastic unit commitment,” IEEE Trans. Power Syst. , vol. 34, no. 5, pp. 3858–3868, Sep. 2019. [16] Z. Liu, Y. Chen, C. Bash, A. Wierman, D. Gmach, Z. Wang, M. Marwah, and C. Hyser, “Renewable and cooling aware workload man-agement for sustainable data centers,” in Proc. 12th ACM SIGMET-RICS/PERFORMANCE Joint Int. Conf. Meas. Model. Comput. Syst. (SIGMETRICS ’12) , London, U.K., Jun. 2012, pp. 175–186. [17] Q. Hu, P. Sun, S. Yan, Y. Wen, and T. Zhang, “Characterization and prediction of deep learning workloads in large-scale GPU datacenters,” in Proc. Int. Conf. High Perform. Comput., Netw., Storage Anal. (SC ’21) , St. Louis, MO, USA, Nov. 2021, Art. no. 104, pp. 1–15. [18] J. Guo, Y. Fu, Z. Li, and M. Shahidehpour, “Direct calculation of line outage distribution factors,” IEEE Trans. Power Syst. , vol. 24, no. 3, pp. 1633–1634, Aug. 2009. [19] D. F. Gayme and U. Topcu, “Optimal power flow with large-scale storage integration,” IEEE Trans. Power Syst. , vol. 28, no. 2, pp. 709–717, May 2013. [20] Electric Reliability Council of Texas (ERCOT), “Wind power production—actual 5-minute averaged values,” Data Product NP4-733-CD, updated Feb. 24, 2026. [Online]. Available: https://www.ercot.com/ mp/data-products/data-product-details?id=NP4-733-CD (accessed Jul. 27, 2026). [21] Electric Reliability Council of Texas (ERCOT), “Solar power production—actual 5-minute averaged values,” Data Product NP4-738-CD, updated Feb. 24, 2026. [Online]. Available: https://www.ercot.com/ mp/data-products/data-product-details?id=NP4-738-CD (accessed Jul. 27, 2026). [22] W. Cole and A. Karmakar, “Cost projections for utility-scale battery storage: 2023 update,” National Renewable Energy Laboratory, Golden, CO, USA, Tech. Rep. NREL/TP-6A40-85332, 2023. [23] J. Li, Y. Deng, Z. Zhong, Z. Wu, S. Pang, L. Cui, and G. Min, “An energy-aware virtual machine scheduling approach for cloud data centers,” IEEE Trans. Sustain. Comput. , vol. 10, no. 5, pp. 891–907, 2025. [24] NVIDIA, “NVIDIA A100 Tensor Core GPU architecture,” White Paper, ver. 1.0, 2020. [25] Y. Wang et al. , “BurstGPT: A real-world workload dataset to optimize LLM serving systems,” in Proc. 31st ACM SIGKDD Conf. Knowl. Discovery Data Mining (KDD ’25) , vol. 2, Toronto, ON, Canada, Aug. 2025, pp. 5831–5841. Dataset available: https://github.com/HPMLL/ BurstGPT (accessed Jul. 27, 2026). [26] Electric Reliability Council of Texas (ERCOT), “Historical RTM load zone and hub prices,” Data Product NP6-785-ER. [Online]. Avail-able: https://www.ercot.com/mp/data-products/data-product-details?id= NP6-785-ER (accessed Jul. 27, 2026).

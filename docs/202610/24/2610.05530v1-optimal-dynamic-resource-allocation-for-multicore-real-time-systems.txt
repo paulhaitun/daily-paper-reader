@@ -1,0 +1,834 @@
+Title: Optimal Dynamic Resource Allocation for Multicore Real-time Systems
+
+URL Source: https://arxiv.org/pdf/2610.05530v1
+
+Published Time: Tue, 06 Oct 2026 02:25:57 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# Optimal Dynamic Resource Allocation for Multicore Real-time Systems 
+
+Georgiy A. Bondar, Abigail Eisenklam, Ripon C. Sarker, Linh Thi Xuan Phan, Abhishek Halder 
+
+Abstract — We formulate a novel optimal control problem for data-driven dynamic resource allocation in multicore real-time systems. The proposed formulation accounts for hard deadline constraints and resource bounds. Under mild assumptions, we prove several results on the feasibility and existence of optimal solution for the proposed formulation. Building on these analyses, we design an algorithm to solve the multi-core dynamic resource allocation problem. We demonstrate the practical use of this new algorithm by experimentally evaluating it on a real multicore platform using four benchmarks from the literature. 
+
+I. I NTRODUCTION 
+
+Motivation. Real-time systems, such as those in automotive, robotic, and avionic applications, require predictable timing to operate safely. To meet growing computational demands, these systems are increasingly deployed on multicore plat-forms, where cores share hardware resources such as the last-level cache (LLC) and memory bus. Resource contention arising from this sharing can cause interference among concurrently executing programs, increasing their execution times and, in the worst case, causing deadline misses. A common remedy is to statically partition shared resources across cores [1], [2], typically by solving amixed-integer linear program (MILP) or an approximation thereof [3], [4]. Because these allocations are static, they must be provisioned for the worst-case demand, even though a program’s resource demand may vary over time. Dynamic allocation addresses this limitation by redistributing shared-resource partitions across cores at runtime in response to changing demand. Existing dynamic approaches [5], how-ever, rely on greedy heuristics [6], [7]. While resource allo-cation for soft deadline constraints has been studied before [8], to the best of our knowledge, no prior work computes 
+
+optimal dynamic allocations subject to hard deadlines. In this work, we formulate dynamic multicore resource allocation as a continuous-time continuous-state optimal control problem (OCP) subject to hard deadline constraints. The objective of our OCP captures a system-level cost, such as energy consumption or provisioned resources, which is critical for embedded platforms with stringent size, weight, and power (SWaP) constraints. The continuous formulation                     
+
+> Georgiy A. Bondar is with the Department of Applied Mathemat-ics, University of California Santa Cruz, Santa Cruz, CA 95064, USA,
+> gbondar@ucsc.edu . Abigail Eisenklam and Linh Thi Xuan Phan are with the Department of Computer and Information Science, University of Pennsylvania, PA 19104, USA, {aei,linhphan }@cis.upenn.edu .Ripon C. Sarker and Abhishek Halder are with the Department of Aerospace Engineering, Iowa State University, Ames, IA 50011, USA,
+> {rcsarker,ahalder }@iastate.edu .This research was partially supported by NSF awards CNS-2111688, CNS-1955670, and CCF-2326606.
+
+pursued here is advantageous over discrete formulations in that it allows us to (i) circumvent computationally hard MILP formulations, and (ii) exploit vector field structures that discretize-then-optimize approaches cannot. 
+
+Related work. Optimal control—both deterministic [9], [10] and stochastic [11]—has been applied to general-purpose dynamic resource allocation. However, prior work does not address multicore real-time systems with hard deadlines. A separate line of work (see e.g., [12], [13]) considers resource allocation specifically for control tasks. Our focus, by contrast, is on general multicore tasks. 
+
+Contributions. This work makes the following specific contributions.  
+
+> •
+
+A bespoke OCP formulation of the dynamic multicore resource allocation with resource bounds and hard dead-line constraints (Sec. II).  
+
+> •
+
+Analysis of the proposed OCP (Sec. III), specifically its feasibility (Theorem 1) and sufficient conditions for the existence of its solution (Theorem 2, Proposition 3).  
+
+> •
+
+A proposed algorithm (Algorithm 1 in Sec. IV) that builds on the analysis in Sec. III, and its evaluation (Sec. V) using benchmarks (Table I) from the San Diego Vision Benchmark Suite [14] on a real multicore platform. II. M ODEL AND PROBLEM FORMULATION 
+
+We consider a computer system with s ∈ N≥2 CPU cores, each executing a program (or task). We assume that each program executes a deterministic sequence of instructions. Let JsK := {1, . . . , s } denote the task index set. Each task 
+
+i ∈ JsK is released at a known time t = tstart  
+
+> i
+
+≥ 0 and must complete by a known deadline t = tend  
+
+> i
+
+, where tstart  
+
+> i
+
+< t end  
+
+> i
+
+.Assuming that the first task is released at t = 0 and that all deadlines are finite, the system time window is the interval 
+
+
+
+min  
+
+> i∈JsK
+
+tstart  
+
+> i
+
+, max  
+
+> i∈JsK
+
+tend 
+
+> i
+
+
+
+=: [0 , T ] ⊂ [0 , ∞).
+
+The system has nr ∈ N shared resources that are to be split between all CPU cores in a manner such that all tasks meet their deadlines, their execution rates being dependent on their received allocation of the shared resources. From the physical configuration of the system, there is a total amount Rmax  
+
+> j
+
+of each resource j ∈ Jnr K. The total system resources can then be represented by the vector Rmax ∈ Rnr 
+
+> +
+
+.We may thus represent the total allocation of all shared resources at time t ∈ [0 , T ] as a matrix R(t) ∈ Rs×nr 
+
+> +
+
+. The 
+
+ith row of this matrix, denoted as Ri(t) ∈ Rnr 
+
+> +
+
+, is the total shared resource allocation to task i. Likewise, the jth column arXiv:2610.05530v1 [eess.SY] 4 Oct 2026 of this matrix, denoted as Rj (t) ∈ Rs
+
+> +
+
+, is the allocation of resource j among all tasks. Note that if all of resource j is used, then Rj (t)/R max  
+
+> j
+
+∈
+
+∆s−1, the standard simplex 1. Thus the normalized set of all valid allocations of resource j is the convex hull 
+
+conv( 0, ∆s−1).
+
+A. Resource-dependent Task Dynamics 
+
+For each task or program i ∈ JsK, we refer to its execution progress, measured in total fraction of instructions retired at time t ∈ [0 , T ] as xi(t) ∈ [0 , 1] .The corresponding normalized rate of instructions retired (in instructions executed per second) is ˙xi(t). This latter quantity varies with both the state of program execution, represented by xi, and the current resource allocation, given by Ri. For example, a program may be slow to execute in the beginning as data is loaded to memory, then faster once computation begins. Similarly, allocation of some resources may affect the execution rate far more so than other – e.g., increasing memory bus bandwidth when the program is CPU-bound will have little to no effect. This dependence is expressed via the ordinary differential equation 
+
+˙xi(t) = fi(xi(t), R i(t)) , (1) wherein for each task i, the vector field fi quantifies the rate of instructions retired over time as a function of (cumula-tive) current instructions retired xi(t), and current resource allocation Ri(t). In other words, (1) captures the dynamics 
+
+of task i.In practice, the vector fields fi can be learned from empirical program execution data. However, the following properties can be assumed on fi: 
+
+> •
+
+fi has no explicit dependence on other tasks’ alloca-tions, nor on the current time;  
+
+> •
+
+fi is increasing in Ri, so giving a task more resources will not decrease its performance;  
+
+> •
+
+fi is nonnegative. We next outline the optimal control problem formulation. 
+
+B. Optimal Control Formulation 
+
+We desire to find a time-varying allocation R of all shared resources across given s ∈ N≥2 CPU cores to all tasks such that all tasks meet their deadlines – we call such an allocation 
+
+feasible . Moreover, we desire to do so in some optimal sense with respect to (w.r.t.) a performance objective J, which for an allocation R has ‘cost’ J(R). Thus the problem of interest becomes       
+
+> 1For s∈N≥2, the standard simplex ∆s−1is the convex hull of standard basis vectors in Rs.
+
+minimize  
+
+> R:[0 ,T ]→Rs×nr
+> +
+
+J(R) (2a) subject to 
+
+˙xi(t) = fi(xi(t), R i(t)) ,xi(t) = 0 ∀t ≤ tstart  
+
+> i
+
+,xi(t) = 1 ∀t ≥ tend  
+
+> i
+
+,
+
+0 ⪯ X
+
+> i
+
+Ri ⪯ Rmax ,
+
+∀i ∈ JsK, (2b) where the constraints (2b) fix the dynamics of each task, require that each task starts no earlier than its release time and ends no later than its deadline, and enforce resource limits. If these constraints are feasible, i.e. if at least one feasible allocation R exists, an allocation which minimizes the objective (2a) is called optimal .
+
+C. Performance Objective 
+
+The objective J is motivated by practical goals of system design and utilization, such as minimizing  
+
+> •
+
+the amount of resources required by the system while maintaining schedulability;  
+
+> •
+
+cumulative use of a fixed set of resources;  
+
+> •
+
+energy usage by a system. III. A NALYSIS 
+
+To begin our analysis for the OCP (2), let us define the instantaneous set of admissible controls 
+
+U := 
+
+(
+
+R ∈ Rs×nr 
+
+> +
+
+| X
+
+> i
+
+Ri ⪯ Rmax 
+
+)
+
+, (3) and the total admissible control set 
+
+F := 
+
+(
+
+R(·) | R(t) ∈ U ∀t ∈ [0 , T ]
+
+xi(tend  
+
+> i
+
+, R i) ≥ 1 ∀i ∈ JsK
+
+)
+
+. (4) The inequality in (4) is a slackening of the constraints (2b) that will be useful in the development that follows. 
+
+A. Separable Under-approximation 
+
+We consider the following assumption: for each fi, i ∈ JsK,there exists a nonnegative under-approximator fi, i.e., 
+
+0 ≤ fi(xi, R i) ≤ fi(xi, R i),
+
+which decomposes as 
+
+fi(xi, R i) := gi(xi) · hi(Ri) (5) for some continuous and bounded functions 
+
+gi : [0 , 1] → R++ , hi : Rnr 
+
+> +
+
+→ R+ .
+
+Such an fi is then a separable under-approximator of the real task dynamics fi. In words, fi entails a lower rate of execution progress than fi. We formalize this in the following Proposition 1. 
+
+Proposition 1. Let F be the feasible control set of (2) 
+
+under the dynamics fi. Then, any solution of (2) under the dynamics fi is also feasible under the dynamics fi. I.e, 
+
+F ⊂ F .Proof. Let R ∈ F . Since fi ≤ fi pointwise, and xi(tstart  
+
+> i
+
+) = 
+
+xi(tstart  
+
+> i
+
+) = 0 , by the comparison lemma [15, Lemma 3.4], we have 
+
+xi(t) ≤ xi(t) ∀t ∈ [tstart  
+
+> i
+
+, t end  
+
+> i
+
+] .
+
+Therefore, 
+
+xi(tend  
+
+> i
+
+) ≥ 1 =⇒ xi(tend  
+
+> i
+
+) ≥ 1 ,
+
+which shows that R ∈ F , and the statement follows. ■
+
+We next show that the separability of fi allows us to express feasibility in a different way. 
+
+Lemma 1. Let 
+
+Gi(x) := 
+
+Z x
+
+> 0
+
+dξ gi(ξ) and Wi := Gi(1) ∀i ∈ JsK.
+
+Then, 
+
+R ∈ F ⇐⇒ 
+
+Z tend 
+
+> i
+> tstart
+> i
+
+hi(Ri(t)) dt ≥ Wi ∀i ∈ JsK.
+
+Proof. Define the transformed state 
+
+zi(t) := Gi(xi(t)) ,
+
+and its dynamics 
+
+˙zi = G′
+
+> i
+
+(xi) ˙ xi = 1
+
+gi(xi) gi(xi)hi(Ri) = hi(Ri).
+
+Since gi > 0, Gi is strictly increasing, and so 
+
+xi(tend  
+
+> i
+
+) ≥ 1 ⇐⇒ zi(tend  
+
+> i
+
+) = Gi(xi(tend  
+
+> i
+
+)) ≥ Gi(1) = Wi.
+
+As zi(tstart  
+
+> i
+
+) = 0 ,
+
+zi(tend  
+
+> i
+
+) = 
+
+Z tend 
+
+> i
+> tstart
+> i
+
+hi(Ri(t)) dt , 
+
+completing the proof. ■
+
+Additionally, when hi are concave, then we can deduce the following result in Proposition 2 on the nature of fea-sible solutions. In practice, this concavity assumption holds naturally due to diminishing returns – generally the more resources a task has, the less benefit there is to allocating yet more. 
+
+Proposition 2. Suppose that some R ∈ F exists, and that hi in (5) are concave for all i ∈ JsK. Then there exists a piecewise-constant ¯R ∈ F which changes only at release/deadline times. Proof. Let us sort the distinct values 0, T along with 
+
+{tstart  
+
+> i
+
+, t end  
+
+> i
+
+}i∈JsK as 
+
+0 = τ0 < τ 1 < · · · < τ K = T . 
+
+We then define the resulting intervals and lengths 
+
+Ik := [ τk−1, τ k) , δk := τk − τk−1 ∀k ∈ JKK ,
+
+as well as the set of tasks running on each interval 
+
+Ak := {i | Ik ⊂ [tstart  
+
+> i
+
+, t end  
+
+> i
+
+]} .
+
+Now define ¯R piecewise as 
+
+¯Ri(t) = ¯ rik , where ¯rik := 1
+
+δk
+
+Z
+
+> Ik
+
+Ri(t)dt 
+
+is the average resource allocation of task i ∈ Ak over the interval Ik. To see that ¯R(t) ∈ U , observe that 
+
+X
+
+> i
+
+¯Ri(t) = X
+
+> i
+
+¯rik = 1
+
+δk
+
+Z
+
+> Ik
+
+X
+
+> i
+
+Ri(t)dt ≤ Rmax ,
+
+since R ∈ U .Now, to see that ¯R is feasible, we apply Jensen’s inequality to hi concave, to find 
+
+hi(¯ rik ) = hi
+
+ 1
+
+δk
+
+Z
+
+> Ik
+
+Ri(t)dt 
+
+
+
+≥ 1
+
+δk
+
+Z
+
+> Ik
+
+hi(Ri(t)) dt , 
+
+and thus 
+
+δkhi(¯ rik ) ≥
+
+Z
+
+> Ik
+
+hi(Ri(t)) dt . 
+
+Since [tstart  
+
+> i
+
+, t end  
+
+> i
+
+] can be partitioned into the intervals {Ik |
+
+i ∈ Ak}, we have 
+
+Z tend 
+
+> i
+> tstart
+> i
+
+hi( ¯Ri(t)) dt = X 
+
+> {k|i∈Ak}
+
+δkhi(¯ rik )
+
+≥
+
+Z tend 
+
+> i
+> tstart
+> i
+
+hi(Ri(t)) dt ≥ Wi ,
+
+where the last inequality follows from feasibility of R and Lemma 1, whereby the desired result follows. ■
+
+Under the stated assumptions, Propositions 1 and 2 to-gether tell us that to ascertain whether a feasible R ∈ F 
+
+exists, it is sufficient to verify that a piecewise-constant 
+
+¯R ∈ F as in Proposition 2 exists. This, in turn, requires us to solve the feasibility problem: minimize   
+
+> {rik ∈Rnr
+> +}k∈JKK
+> i∈JsK
+
+0 (6a) subject to 
+
+X 
+
+> {k|i∈Ak}
+
+δkhi(rik ) ≥ Wi,
+
+0 ⪯ rik , X
+
+> i
+
+rik ⪯ Rmax ,
+
+∀i ∈ JsK. (6b) In fact, letting Fpw be the set of piecewise-constant alloca-tions satisfying (6b), Corollary 1 next shows that the non-emptiness of this set is equivalent to that of F.
+
+Corollary 1. 
+
+Fpw ̸ = ∅ ⇐⇒ F̸ = ∅.
+
+Proof. The direction (⇒) follows since members of Fpw 
+
+define a feasible control under the dynamics fi. The direction 
+
+(⇐) was proven in Proposition 2. ■
+
+Furthermore, we have the following result. 
+
+Lemma 2. Fpw , the constraint set of (6) , is bounded and convex. If all hi are concave as before, then Fpw is also closed ( ⇒ compact). Proof. First, notice that the set Fpw in (6b) is finite dimen-sional. The constraints 0 ⪯ rik and P 
+
+> i
+
+rik ⪯ Rmax are closed, bounding and affine in {rik }.The function P  
+
+> {k|i∈Ak}
+
+δkhi(rik ), being a nonnegative sum of concave functions (defined on the interior of the nonnegative orthant) of {rik }, is also concave, and thus continuous (since their domains are open convex sets). Its superlevel sets, which make up the remaining constraint, are therefore also convex and closed. Thus the intersection of these constraining sets, namely Fpw , is itself convex and closed. ■
+
+We summarize the developments above in the following Theorem 1. 
+
+Theorem 1. For each i ∈ JsK, if there exists a separable under-approximation 
+
+0 ≤ fi(xi, R i) = gi(xi)hi(Ri) ≤ fi(xi, R i)
+
+where gi > 0 and hi ≥ 0 concave, then the convex feasibility problem (6) guarantees the existence of a feasible allocation 
+
+R ∈ F . In other words, 
+
+(6) feasible ⇐⇒ F̸ = ∅ =⇒ F̸ = ∅.
+
+When the upder-approximation is lossless ( fi = fi), the right arrow above becomes bidirectional. B. Existence 
+
+Theorem 1 says that if a piecewise-constant allocation exists for the underestimated task dynamics fi, then this same allocation will be feasible for the real dynamics fi. This is not enough, however, to prove the existence of an optimal 
+
+allocation, i.e. a solution to the OCP (2), as there is no guarantee that the minimizer of objective J over F lies in 
+
+Fpw . We now turn to identify conditions where this is indeed the case. The natural condition therefor is that J cannot increase with intra-event averaging. This is shown in Theorem 2 next. For this purpose, we define the averaging operator A from the proof of Proposition 2 as 
+
+(A[R]) i(t) := rik = 1
+
+δk
+
+Z
+
+> Ik
+
+Ri(s)ds t ∈ Ik ,
+
+to succinctly write this condition as 
+
+J(A[R]) ≤ J(R) . (7) Thereunder, the minimal value of the objective (2a) must be attained by a piecewise-constant allocation. 
+
+Theorem 2. Assume that condition (7) holds on J for all 
+
+R ∈ F . Then, 
+
+inf  
+
+> R∈F
+
+J(R) = inf 
+
+> R∈F pw
+
+J(R) . (8) 
+
+If additionally J is lower semicontinuous over Fpw , then this infimum is attained by a minimizer in Fpw .Proof. The inequality (≤) holds trivially as F ⊃ F pw . The reverse holds by condition (7), i.e., ∀R ∈ F , there exists 
+
+A[R] ∈ F pw with lower cost in J.Recall that the set Fpw is finite-dimensional and is com-pact (by Lemma 2). By Weierstrass extreme value theo-rem [16, p. 89, Theorem 4.16], J attains its minimum on 
+
+Fpw . ■
+
+Condition (7) can be shown to hold for a breadth of costs, such as those penalizing sustained and peak resource use. This is captured in Proposition 3. 
+
+Proposition 3. If objective function J takes either the form 
+
+J1(R) = 
+
+Z T
+
+> 0
+
+L (R(t)) dt or J2(R) = max   
+
+> t∈[0 ,T ]
+
+ϕ(R(t)) 
+
+with L and ϕ convex, then the condition (7) is satisfied. Proof. Observe that 
+
+J1(A[R]) = X
+
+> k
+
+Z
+
+> Ik
+
+L (rk)dt = X
+
+> k
+
+δkL (rk)
+
+≤ X
+
+> k
+
+Z
+
+> Ik
+
+L (R(t)) dt = J1(R),
+
+where the inequality above follows from convexity of L and Jensen’s inequality. For J2, we have (again by Jensen) 
+
+ϕ(rk) ≤ 1
+
+δk
+
+Z
+
+> Ik
+
+ϕ(R(t)) dt ≤ max 
+
+> t∈Ik
+
+ϕ(R(t)) ,
+
+and so J2(A[R]) ≤ J2(R), as desired. ■
+
+Remark 1. The costs of the forms in Proposition 3 are both convex in R, which coupled with the convex set Fpw (Lemma 2) makes (2) a finite-dimensional convex program, which can be solved via off-the-shelf algorithms. Moreover, we note that neither condition (7) nor convexity subsumes the other – for a candidate cost J, both need to be verified. 
+
+IV. P ROPOSED ALGORITHM 
+
+Under the assumption that our resource cost J is both convex 
+
+and satisfies (7), we now present our approach to the solution of problem (2) as Algorithm 1 which takes us from empirical data on task resource usage to a locally optimal allocation on a given taskset. The proposed Algorithm 1 first fits true and under-approximated dynamics to each task, then finds the opti-mal allocation for the underestimated dynamics (a finite-dimensional, convex program with the assumption on J, and yielding a piecewise-constant allocation as the optimum, by Theorem 2). It then uses this allocation as a starting point for solving the nonlinear, nonconvex program (2) with the real dynamics. In the following, we explain the steps in the proposed Algorithm 1. 
+
+Step 0: Dynamics fitting and under-approximation 
+
+For each task, we begin by fitting continuous dynamics to our empirical profiling data through the fit dynamics rou-tine. In our implementation, we perform isotonic piecewise-linear regression with a floor constraint of 0, ensuring that the resulting fi is monotone in R and nonnegative. In practice a different fit may be used, so long as those conditions are enforced. Algorithm 1 Solving Optimal Resource Allocation Problem 
+
+Require: Profiles { ˙xi(τ )}i∈JsK 
+
+> r∈Rknown
+
+for all s tasks and for all known contexts Rknown ; resource limits Rmax ;release/deadline times {tstart  
+
+> i
+
+, t end  
+
+> i
+
+}i∈JsK; function fitting algorithms fit dynamics and underapprox ;convex cost functional J satisfying (7); convex and nonconvex program routines solve convex ,
+
+solve nonconvex .
+
+Step 0 (dynamics fitting and under-approximation)):  
+
+> 1:
+
+for i ∈ JsK do  
+
+> 2:
+
+fi ← fit dynamics ({ ˙xi(τ )}i∈JsK 
+
+> r∈Rknown
+
+) 
+
+> 3:
+
+gi, h i ← underapprox (fi) 
+
+> 4:
+
+fi(x, R ) ← gi(x) hi(R) 
+
+> 5:
+
+Wi ←
+
+Z 10
+
+dx gi(x) 
+
+> 6:
+
+end for 
+
+Step 1 (convex relaxation, Thm. 1 & Prop. 3):  
+
+> 7:
+
+{rik } ← solve convex  J, (6b) 
+
+Step 2 (warm-started solve under the true dynamics):  
+
+> 8:
+
+Ropt ← solve nonconvex  J, {rik }, (2b) 
+
+Result: Optimal allocations {rik } and Ropt for (2) with cost 
+
+J and dynamics {fi} and {fi} respectively. The underapprox routine takes gi(·) := fi(·, R max ),and then finds hi as the concave minorant of min x fi(x, ·) 
+
+> gi(x)
+
+. We then explicitly enforce positivity and nonnegativity of these functions respectively via a floor constraint, although we find in practice this is not needed. The under-approximator dynamics fi and the useful quantity Wi from Lemma 1 are then computed as part of this step as well. 
+
+Step 1: Solving the under-approximated problem 
+
+The constraints (6b), obtained through the computed {hi},
+
+{Wi}, release/deadline times, and Rmax , are fed along with objective J into a finite-dimensional convex optimization solver ( scipy ’s minimize , in our implementation) to find the optimal resource allocation for the taskset under the under-approximated dynamics {fi} – by Theorem 2, this will be the piecewise-constant allocation {rik } which changes only at task release/deadline events. 
+
+Step 2: Solving (2) with the real dynamics 
+
+The solution {rik } of the previous step is important for this step as well – it proves that a feasible allocation exists (Theorem 1), and provides a starting point for the solver of (2) – solve nonconvex . In our implementation, we used the sequential least-squares quadratic programming (SLSQP) solver provided in scipy , as we found it to be suitable for our constraint set and problem dimension. Starting from 
+
+{rik }, the solver iteratively converges to a locally cost-minimizing allocation, which we call Ropt . Although we               
+
+> TABLE I SD-VBS B ENCHMARKS [14] U SED IN SEC . V
+> Benchmark Description Characteristic
+> disparity Depth perception for cruise /collision control, tracking Data-intensive
+> localization Estimation of position in envi-ronment from sensor data Compute-intensive
+> sift Scale-invariant feature trans-form for object recognition Compute-intensive
+> tracking Motion extraction from image sequences Data-intensive
+
+assume J is convex, the real dynamics {fi} need not form a convex constraint set (2b), so Ropt need not be globally optimal. V. E VALUATION 
+
+To evaluate the effectiveness of the proposed approach in terms of resource efficiency and safety, measured as objective minimization (2a) and deadline satisfaction (2b), we con-ducted a case study on a real multicore platform. 
+
+A. Evaluation Setup 
+
+Programs. Our case study uses benchmarks from the San Diego Vision Benchmark Suite (SD-VBS) [14], following prior work on multicore resource allocation [4]. Table I summarizes the benchmarks. Each benchmark was profiled and executed using the vga input class from SD-VBS. 
+
+Platform. We performed all measurements and ran all exper-iments on an Intel Xeon E5-2618L v3 processor with 8 cores, a 20 MB 20-way set associative last-level L3 cache, and a single-channel 8 GB PC-2133 DDR4 DRAM. We consider two shared resources: the LLC and memory bandwidth, each divided into 20 partitions using Intel’s Cache Allocation Technology [2] and MemGuard [1], respectively. Because the Cache Allocation Technology enforces a minimum allocation of 2 partitions per core on our platform, the set of feasible allocations, prior to normalization, is 
+
+Rknown := {2, 3, . . . , 20 } × { 1, 2, . . . , 20 }.
+
+Profiling. For each benchmark i in Table I, we learn its dynamics fi from empirical profiling data. To collect these data, we pin the benchmark to a single core, assign it a feasible resource vector r, and sample its state xi(t) every 10 ms. We repeat this procedure five times for each possible resource allocation r, and then compute the corresponding state derivatives ˙xi(t) from the collected time-series data. This yields a dataset of input-output pairs  (xi(t), r ), ˙xi(t)
+
+collected over all r ∈ Rknown , from which we learn fi.
+
+Task set. The goal of our case study is to compute a resource-optimal schedule for a real-time task set built from the profiled SD-VBS benchmarks, where each task is assigned to its own core. We consider periodic tasks with implicit deadlines and synchronous release; that is, all tasks are released simultaneously, and each task must complete by the start of its next period. Based on the profiled execution times, we set the task periods so that the total Fig. 1. Numerical evaluation results for Sec. V showing locally optimal resource allocations and resulting execution profiles for the evaluated task set with costs J1 (red, dashed) and J2 (blue) as in (9) and (10) respectively. We can see the former front-loads resources to maximize ‘dead time’, whereas the latter prioritizes a near-constant, low-peak allocation. 
+
+reference utilization is exactly 1.0, where a task’s reference utilization is the ratio of its execution time under an even partitioning of shared resources to its period. This yields a system window, defined as the least common multiple of the task periods, of 5.22 seconds. Within each system window, the task set releases 1, 2, 1, and 3 instances of disparity ,
+
+localization , sift , and tracking , respectively; the corresponding periods are 5.22, 2.61, 5.22, and 1.74 seconds. 
+
+B. Numerical Evaluation Results 
+
+Objectives. We compute resource-optimal schedules for two objective functions, below: 
+
+J1(R) := 
+
+Z T
+
+> 0
+
+χ
+
+h
+
+∃ i : t ≥ tstart  
+
+> i
+
+∧ xi(t) < 1
+
+i
+
+dt, (9) 
+
+J2(R) := max  
+
+> t∈[0 ,T ]
+
+X
+
+> i
+
+1⊤Ri(t), (10) where χ [·] in (9) is the indicator function, in this case equal to 1 if there is at least one task which has been released but has not completed, else 0. I.e., minimizing J1 is equivalent to maximizing the time during which all cores are idle. This objective encourages the cores to “race to idle,” a common energy-aware scheduling strategy that allows the CPU package to enter a low-power sleep state. Minimizing the second cost, J2, penalizes spikes in resource usage and thus should lead to a shallow, low allocation. In (10), 1 denotes an all-ones vector. Rather than reducing energy consumption on a fixed platform, J2
+
+identifies the minimal hardware resources that guarantee all deadlines are met, allowing designers to provision lower-cost hardware. Notably, it is easy to see from (9) and (10) that J2 is of the form J2 in Proposition 3 – both convex in R and satisfying (7) – and similarly that J1 has neither of these properties. The choice of these two costs in particular is intentional – 
+
+J2 is nicely behaved and satisfies our assumptions in this work, whereas J1 is not and does not. We expect to see the latter potentially benefit much more from a continuous allocation than from a piecewise-constant one. Both costs represent real-world design goals of interest to the real-time community. 
+
+Results. We ran Algorithm 1 for the same taskset with cost 
+
+J2 as in (10). For J1 as in (9) we run a modified version of Step 2 of the algorithm, warm-starting from the feasible piecewise-constant allocation of cost J1.The resulting resource-optimal schedules computed for both J1 and J2 are visualized in Fig. 1. We can see that, as one should expect, the cost imposed affects the nature of the optimal allocation – the J1 solution spikes resource allocation to tasks as soon as they are released in order to quickly complete them and maximize time that the system is idle, whereas J2’s solution prioritizes constant total resource allocation, thereby minimizing system resource requirements. We also observe that, for this taskset, memory bandwidth is the more impactful resource, with both allocations varying it with greater magnitude to control task execution rate – indeed, J2’s solution keeps the cache allocation almost entirely constant for all tasks throughout the hyperperiod [0 , T ].On a Debian 12 machine with an AMD Ryzen 7 5800X CPU and 80GB of RAM, the runtimes for the full algorithm under costs J1 and J2 were ≈ 5 minutes and ≈ 14 minutes respectively. As expected, the better-structured cost J2 was quicker to solve for. 
+
+C. Empirical Evaluation Results 
+
+We next validate on our hardware platform that the computed schedule preserves schedulability in practice and compare its energy consumption against a static baseline. We consider a baseline allocation that statically allocates the full resource capacity of each shared resource evenly across cores. We execute the J1 and J2-optimal schedules and the baseline on our hardware platform, and measure their energy consump-tion and schedulability over the system window. 
+
+Results. The results show that all tasks indeed meet their deadlines when executing on the real platform under both the 
+
+J1 and J2 schedules. The J2-optimal schedule reduces the required number of cache and memory bandwidth partitions by 60% and 15%, respectively, relative to the full capacity of 20 partitions per resource. Further, the J1-optimal schedule reduces the controllable energy consumption (energy con-sumed beyond the static floor) by 6.3% compared to the baseline. These results demonstrate that our OCP formulation and solver can meaningfully optimize system-level objectives via dynamic resource allocation while guaranteeing timing predictability. VI. C ONCLUDING REMARKS 
+
+We presented an optimal control approach for dynamic shared-resource allocation in multicore real-time systems with hard deadlines. By modeling task progress as controlled dynamics and optimizing time-varying resource allocations, our approach reduces both provisioned resource capacity and energy consumption while guaranteeing deadline feasibility. Future work will extend the approach to multiple tasks per core and incorporate online adaptation to account for poten-tial discrepancies between profiled and actual task dynamics at runtime. REFERENCES [1] H. Yun, G. Yao, R. Pellizzoni, M. Caccamo, and L. Sha, “Memguard: Memory bandwidth reservation system for efficient performance iso-lation in multi-core platforms,” in 2013 IEEE 19th Real-Time and Embedded Technology and Applications Symposium (RTAS) , 2013. [2] K. T. Nguyen, “Introduction to cache allocation technology in the Intel Xeon processor E5 v4 family,” https://www. intel.com/content/www/us/en/developer/articles/technical/ introduction-to-cache-allocation-technology.html, Feb. 2016. [3] M. Xu, L. T. X. Phan, H.-Y. Choi, Y. Lin, H. Li, C. Lu, and I. Lee, “Holistic resource allocation for multicore real-time systems,” in 2019 IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS) , 2019. [4] B. Sun, Z. Wei, A. Bastoni, D. Roy, M. Theile, T. Kloda, R. Pellizzoni, and M. Caccamo, “Multi-objective memory bandwidth regulation and cache partitioning for multicore real-time systems,” in Euromicro Conference on Real-Time Systems (ECRTS) , 2025. [5] A. K. Singh, P. Dziurzanski, H. R. Mendis, and L. S. Indrusiak, “A survey and comparative study of hard and soft real-time dynamic resource allocation strategies for multi-/many-core systems,” ACM Computing Surveys (CSUR) , vol. 50, no. 2, pp. 1–40, 2017. [6] R. Gifford, N. Gandhi, L. T. X. Phan, and A. Haeberlen, “Dna: Dynamic resource allocation for soft real-time multicore systems,” in 
+
+2021 IEEE 27th Real-Time and Embedded Technology and Applica-tions Symposium (RTAS) , 2021. [7] A. Eisenklam, R. Gifford, G. A. Bondar, Y. Cai, T. Sial, L. T. X. Phan, and A. Halder, “Rasco: Resource allocation and scheduling co-design for dag applications on multicore,” ACM Transactions on Embedded Computing Systems , vol. 24, no. 5s, pp. 1–27, 2025. [8] G. A. Bondar, A. Eisenklam, Y. Cai, R. Gifford, T. Sial, L. T. X. Phan, and A. Halder, “Generative profiling for soft real-time systems and its applications to resource allocation,” in 2026 IEEE 32nd Real-Time and Embedded Technology and Applications Symposium (RTAS) . IEEE, 2026, pp. 289–302. [9] J. Zhang and X. Xia, “A model predictive control approach to the periodic implementation of the solutions of the optimal dynamic resource allocation problem,” Automatica , vol. 47, no. 2, pp. 358–362, 2011. [10] D. F. Ciocan and V. Farias, “Model predictive control for dynamic resource allocation,” Mathematics of Operations Research , vol. 37, no. 3, pp. 501–525, 2012. [11] H. Valian, M. A. Jafari, and D. Golmohammadi, “Resource allocation with stochastic optimal control approach,” Annals of Operations Research , vol. 239, no. 2, pp. 625–641, 2016. [12] P. Marti, C. Lin, S. A. Brandt, M. Velasco, and J. M. Fuertes, “Optimal state feedback based resource allocation for resource-constrained con-trol tasks,” in 25th IEEE International Real-Time Systems Symposium .IEEE, 2004, pp. 161–172. [13] P. Tabuada, “Event-triggered real-time scheduling of stabilizing control tasks,” IEEE Transactions on Automatic control , vol. 52, no. 9, pp. 1680–1685, 2007. [14] S. K. Venkata, I. Ahn, D. Jeon, A. Gupta, C. Louie, S. Garcia, S. Belongie, and M. B. Taylor, “Sd-vbs: The san diego vision bench-mark suite,” in 2009 IEEE International Symposium on Workload Characterization (IISWC) , 2009. [15] H. K. Khalil, Nonlinear systems . Prentice hall Upper Saddle River, NJ, 2002, vol. 3. [16] W. Rudin, Principles of Mathematical Analysis , 3rd ed., ser. Interna-tional Series in Pure and Applied Mathematics. New York: McGraw-Hill, 1976.

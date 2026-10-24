@@ -1,0 +1,4602 @@
+Title: Non-Monetary Mechanisms for Stochastic Scheduling via Sampled Pairwise Externality Compensation
+
+URL Source: https://arxiv.org/pdf/2610.25067v1
+
+Published Time: Tue, 20 Oct 2026 01:37:40 GMT
+
+Number of Pages: 50
+
+Markdown Content:
+# Non-Monetary Mechanisms for Stochastic Scheduling via Sampled Pairwise Externality Compensation 
+
+David X. Lin ∗
+
+The University of Texas at Austin †
+
+davidlin@cs.utexas.edu 
+
+Chido Onyeze ‡
+
+Cornell University 
+
+chidoonyeze@cs.cornell.edu 
+
+Giannis Fikioris §
+
+Google Research ¶
+
+giannisf@google.com 
+
+Siddhartha Banerjee ∥
+
+Cornell University 
+
+sbanerjee@cornell.edu 
+
+Éva Tardos ∗∗ 
+
+Cornell University 
+
+eva.tardos@cornell.edu 
+
+Abstract 
+
+How can a shared resource be allocated without money when agents have private, stochastic de-mands that can be queued for a while, and may behave strategically, or even adversarially? We in-troduce a paradigm for non-monetary online resource allocation called Sampled Pairwise Externality Compensator (SPEC ). Our objective is to guarantee each agent a large fraction of its ideal utility : an individual benchmark corresponding to serving the highest-valued fraction of its demand permitted by an equal share of capacity. We seek guarantees that hold regardless of other agents’ behavior, in-cluding potentially adversarial and collusive behavior. Our approach builds on the idea of pairwise externality compensation, making it computationally efficient by replacing exact calculations of fu-ture externalities with sampled estimates. The central insight is that local mixing, exploited through coupled simulations, allows these estimates to be computed efficiently while preserving robust utility guarantees. In our main technical contribution, we instantiate SPEC in a stochastic scheduling model in which agents receive jobs with private values, unserved jobs persist across periods subject to ran-dom expiration, and a single server processes at most one job per period. Our mechanism gives each agent a simple strategy that achieves the optimal worst-case fraction of ideal utility available to a fully informed planner, up to a sublinear additive loss in total utility. We also show that this fraction ap-proaches 1 in the long-horizon limit as the expiration probability vanishes: sufficiently persistent jobs allow each agent to secure nearly its full ideal utility. The mechanism runs in 𝑂 (𝑛 2) expected amortized time per period, where 𝑛 is the number of agents; significantly, the expected amortized computational overhead per period is independent of the time horizon 𝑇 .
+
+> ∗
+
+While at Cornell, supported by AFOSR grant FA9550-231-0068, NSF grant ECCS1847393 and through a SPROUT Award from Cornell Engineering. 
+
+> †
+
+Conducted while an M.S. student at Cornell University. 
+
+> ‡
+
+Supported by AFOSR grant FA9550-231-0068, NSF grant ECCS1847393 and through a SPROUT Award from Cornell Engi-neering. 
+
+> §
+
+While at Cornell, supported by the ONR MURI grant N000142412742. 
+
+> ¶
+
+Conducted while a Ph.D. student at Cornell University. 
+
+> ∥
+
+Supported by AFOSR grant FA9550-231-0068, NSF grant ECCS1847393 and through a SPROUT Award from Cornell Engi-neering. 
+
+> ∗∗
+
+Supported in part by AFOSR grant FA9550-23-1-0410, AFOSR grant FA9550-231-0068, ONR MURI grant N000142412742, and through a SPROUT Award from Cornell Engineering. arXiv:2610.25067v1 [cs.GT] 18 Oct 2026 1 Introduction 
+
+Consider the problem of repeatedly allocating a resource among multiple agents: a growing line of work shows how to do so in fair and efficient ways without the use of money [BFT23; FBT25; GBI21b; GCR09; Lin+26a; Lin+25; Lin+26b; Ony+25]. A canonical model in this literature assumes that a request loses its value if it is not served immediately; this is partly for modeling simplicity, but also meaningful in applications like allocating time on a telescope, where a team aiming to observe an event in the sky needs the equipment when the event happens. A more general model of intertemporal dependence is one where unserved jobs can remain available for future service for a while, but then expire. An increasingly relevant example is ML training: for example, Google’s internal Quota Marketplace uses dynamic pricing to allocate shared training resources [Siv+26]. These workloads can have different values and delay tolerances (i.e., some may still be useful to do tomorrow). This motivates the core model we study in this work. 1
+
+Consider an organization (university/company) controlling access to a computing cluster shared between multiple competing agents (labs/teams). This setting exhibits several features. • The computing cluster is a limited resource. In general, the demand for it exceeds its capacity. • Labs have uncertain and varying demand for the cluster over time. Sometimes, labs have a lot of impor-tant jobs that they wish to run and other times, they have few. • If a lab has an important job to run but the cluster is busy with other labs’ jobs, they’ll still likely want to run the job later when the cluster becomes available. However, if a lab does not get to run its job for too long a time, the lab becomes no longer interested in processing that job. For example, perhaps the conference deadline for the job passed. • The allocation procedure should be efficient and fair without charging the labs money. Furthermore, it is unclear from the department’s perspective how to evaluate which labs should be given access to the cluster at each time. For example, asking each lab to rate each of their jobs’ importance on a scale 1– 10 and giving access to the jobs that have the highest ratings has several flaws: different labs may have different interpretations for how important a particular rating like 7 may be, or labs may act strategically and always report 10. • The allocation procedure should be simple; it should be easy for agents to understand, and participate in a way to be able to obtain access to the cluster when they need it most. We consider a simple model for settings like these as follows. There is a fixed set of 𝑛 agents for a long time horizon 𝑇 . Each agent maintains a queue of jobs. In each time period 𝑡 ∈ { 1, 2, . . . ,𝑇 }, each agent 
+
+𝑖 receives a job in their queue with value drawn from some distribution F𝑖 i.i.d. across time. There is a single server that can process at most one job in each time period. Unserved jobs expire with probability 
+
+𝛿 ; unexpired jobs remain in their corresponding queues to the next time period. A principal decides which agent gets access to the server at each time period via some mechanism without knowledge of the agents’ queue states, including the job values and how many jobs are in each agent’s queue at any time. Each agent seeks to maximize the sum of the values of served jobs. Previous work has introduced the benchmark of ideal utility to quantify the efficiency and fairness of a mechanism; we continue to use this in our more general setting. Roughly speaking, the ideal utility of agent 𝑖 is the utility they would receive if their highest-valued 𝑇 /𝑛 jobs were processed. This is a reasonable upper bound for what an agent should receive in a “fair” world: at most 𝑇 total jobs can get processed, so an agent should only hope to process their highest-valued 𝑇 /𝑛 jobs. Notably, this benchmark is easy to compute: it depends only on the agent’s own value distribution and the number of players, and does not require an analysis of other agents’ demands or strategies. Note that the ideal utility does not depend on 𝛿 : it simulates an ideal world where the agent does not have to queue jobs at all, immediately serving 
+
+> 1AI and LLM tools assisted with computational techniques, proof drafting, and error checking; Appendix G details the scope and extent of this use.
+
+1their choice of request, limited only by their fair share. However, it is not possible to guarantee each agent their ideal utility even if the scheduler has full information: for example, in the extreme case that jobs cannot be delayed ( 𝛿 = 1), if each agent has Bern (1/𝑛 ) value distribution, then in (1 − 1/𝑛 )𝑛 𝑇 time periods (in expectation), all agents’ jobs have zero value. This implies that it is impossible to guarantee every agent more than a (1 − ( 1 − 1/𝑛 )𝑛 ) ≈ 1 − 1/𝑒 ≈ 0.63 fraction of their ideal utility in expectation. When jobs do not have to be processed immediately, a higher fraction of ideal utility is achievable with central coordination. Let 𝜆 (𝛿, 𝑛,𝑇 ) ∈ ( 1 − 1/𝑒, 1] denote the optimal fraction of ideal utility that a central planner with full information of the agents’ queue states and job values can guarantee each agent under worst-case value distributions F𝑖 . For each fixed 𝑛 , we show that lim 𝛿 →0 lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) = 1 (see Fig. 1 for how 𝜆 (𝛿, 𝑛,𝑇 ) behaves for fixed 𝑛 and large 𝑇 ). Thus, sufficiently persistent jobs allow nearly the full ideal-utility benchmark to be attained over a sufficiently long horizon. Our mechanism achieves this benefit even when agents’ queue states are private and other agents behave arbitrarily. 
+
+1.1 Our Results and Techniques 
+
+We introduce the Sampled Pairwise Externality Compensator (SPEC ) mechanism, a non-monetary schedul-ing mechanism for our setting which is both efficient and gives optimal ideal utility guarantees. We develop it in two stages. First, we define Pairwise Externality Compensation (PEC ), a mechanism for our model us-ing exact externalities; its pairwise accounting scheme draws on ideas in Safronov [Saf18] and its dynamic development in the Guaranteed Utility Mechanism (GUM) of Csóka et al. [Csó+23]. Second, we obtain 
+
+SPEC by replacing exact externalities with sampled estimates. Coupled simulations and local mixing make this computation efficient while preserving robust individual utility guarantees. In particular, we obtain the following utility guarantee for SPEC .
+
+Theorem 1.1 (First part of Theorem 4.3, rephrased) . For fixed 𝛿 > 0, SPEC gives each agent 𝑖 a strategy that guarantees E[𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − e𝑂 (√𝑛𝑇 ), regardless of the behavior of the other agents, where 𝑈 𝑖 is agent 𝑖 ’s total utility and 𝑣 ★ 
+
+> 𝑖
+
+is its ideal utility per period. 
+
+Thus, each agent can secure this expected-utility guarantee even if all other agents collude to harm it. The leading factor 𝜆 (𝛿, 𝑛,𝑇 ) is optimal: even a fully informed central planner cannot guarantee every agent a larger fraction of ideal utility uniformly over value distributions. Our mechanism attains this factor up to an additive loss of e𝑂 (√𝑛𝑇 ) in total utility, which is sublinear in 𝑇 for fixed 𝑛 and 𝛿 > 0. We focus on the 
+
+𝛿 > 0 case since for 𝛿 = 0 jobs never disappear, making the problem trivial (in particular, round-robin is asymptotically optimal). 
+
+Why persistent jobs create a computational challenge: When 0 < 𝛿 < 1, allocating the server changes both current utility and future competition. Serving one agent leaves other agents’ jobs waiting, changing their future queues and service opportunities. An agent’s report can therefore affect other agents over many subsequent periods. Our mechanism proposes a simple allocation rule that tracks these effects via pairwise externality compensation. However, evaluating them directly requires reasoning about the evo-lution of the queues over the remaining horizon. Our challenge is to estimate these future effects efficiently while preserving utility guarantees against arbitrary reporting strategies. Now, let us give a brief overview of how our mechanism works. At each time 𝑡 , each agent makes a report of how many “high-valued” jobs they currently have. The principal gives access to an agent uni-formly at random among agents who report a nonzero number. One can show that if each agent uses the simple strategy of reporting the number of jobs in their queue of value in the top 1 /𝑛 -quantile of their value distribution, and processes the highest-valued job when given the opportunity, each agent obtains at least a 𝜆 (𝛿, 𝑛,𝑇 ) fraction of their ideal utility in expectation. This choice of threshold also simplifies the mechanism’s information requirements. A newly arriving job is high-valued with probability exactly 1 /𝑛 ,2independently across agents and periods. Under the prescribed strategy, the process of high-valued job counts depends only on 𝑛 , expiration probability 𝛿 , and allocation rule, rather than on the value distribu-tions F𝑖 . This means the principal can simulate the job-count process without knowing or learning the job value distributions; each agent only needs to identify its own highest-valued job when served. This reduc-tion also characterizes the optimal benchmark factor: under the target policy, 𝜆 (𝛿, 𝑛,𝑇 )𝑇 is the expected number of high-valued jobs served, and the symmetric instance F𝑖 = Bern (1/𝑛 ) makes this tight — every positive-valued job has value 1, and no policy can serve more such jobs in expectation than a policy that serves one whenever one is available. Of course, agents need not follow this strategy. Nevertheless, PEC allows an agent to secure this guarantee, up to an e𝑂 (√𝑛𝑇 ) additive loss, even when other agents use arbitrary strategies . The relevant rules of PEC 
+
+can be summarized through its pairwise virtual accounts: for each ordered pair of agents, the mechanism maintains a virtual account recording the cumulative externality of one agent’s reports on the other’s anticipated service. These accounts involve no monetary transfers. If an agent’s cumulative negative ex-ternality on another agent falls below a prescribed threshold, the former is temporarily required to report zero current jobs. Under the prescribed strategy, the externality increments have conditional mean zero, allowing concentration bounds to control the probability of such timeouts. An agent following the pre-scribed strategy avoids being timed out with high probability. Controlling both the externalities imposed by other agents and the loss from these timeouts yields the expected-utility guarantee in Theorem 1.1, regardless of the other agents’ strategies. The prescribed strategy is simple to implement: an agent reports the number of jobs in its queue whose values lie in the top 1 /𝑛 quantile of its own value distribution, and serves its highest-valued job when selected. Securing the guarantee requires neither observing other agents’ reports nor predicting their future behavior. In particular, the guarantee does not depend on other agents following the prescribed strategy or on play converging to an equilibrium. While participating in the PEC mechanism is simple from the perspective of the agents, the principal has a more difficult task. In particular, PEC requires the principal to compute the expected externality imposed on each other agent, which requires evaluating the effect of an agent’s report for the rest of the horizon. The technically challenging part of our work is in showing how coupled simulations and local mixing can be used to estimate these efficiently while preserving the utility guarantee. This leads to the SPEC 
+
+mechanism, with the following runtime guarantee. 
+
+Theorem 1.2 (Second part of Theorem 4.3, rephrased) . For fixed 𝛿 > 0, SPEC runs in 𝑂 (𝑛 2 log 𝑇 ) time per period in the worst case, 𝑂 (𝑛 2 log log 𝑇 ) in expectation, and 𝑂 (𝑛 2) amortized in expectation. These bounds hold under arbitrary reporting strategies. 
+
+In particular, the expected amortized computation per period is independent of the horizon 𝑇 , even though the externalities being estimated include effects on future allocations. 
+
+Pairwise externality compensation and utility guarantees: To explain how we obtain this result, we first describe the pairwise externality accounting underlying the PEC mechanism. Given the reports so far, consider the expected number of high-valued jobs served for each agent over the horizon, assuming that all agents follow the prescribed strategy from then on; call these the anticipated payoffs . In each period, reports are considered sequentially: agent 𝑖 ’s externality on agent 𝑗 is the change in 𝑗 ’s anticipated payoff when 𝑖 ’s report is incorporated. The mechanism records these externalities in pairwise virtual accounts. If an agent’s cumulative externality on any other agent goes below a threshold, the former is temporarily required to report zero. The core idea from Csóka et al. [Csó+23] is that this accounting can protect an agent against the effects of other agents’ reports. In our setting, when an agent follows the prescribed strategy, its reports have zero expected externality conditional on the preceding history. Concentration bounds then show that it 3rarely reaches a virtual debt limit. At the same time, the limits restrict the cumulative negative externalities imposed on it by other agents. Together, these observations yield the robust utility guarantee; we give the formal argument in Section 3. 
+
+Efficient estimation through coupling and local mixing: It is not obvious how the principal could run this mechanism efficiently. In particular, the anticipated payoffs count the expected number of high-valued jobs served over the entire horizon, and when an agent 𝑖 makes a report in a given period, their report affects other agents’ opportunities in future periods as well. Computing these anticipated payoffs directly at every timestep could therefore be expensive. The key idea that allows us to obtain our efficient algorithm is that, at each timestep, the mechanism only needs estimates of externalities (i.e., changes in anticipated payoffs) rather than the anticipated payoffs themselves. We estimate these differences using coupled simulations. Specifically, when agent 𝑖 makes a report, to estimate its externality on agent 𝑗 , we couple two simulated versions of the future process. The first incorporates 𝑖 ’s actual report in the current period; the second replaces it with a report sampled according to the prescribed strategy. In both versions, we assume agents follow the prescribed strategy in future periods. We maximally couple the two chains (i.e., use the same randomness wherever possible) and stop simulating once they sync (i.e., have the same state), since their subsequent service outcomes are henceforth the same. The difference in the number of high-valued jobs served for agent 𝑗 in the two simulations is thus an unbiased estimate of the externality. We show these two Markov chains sync in time 𝑂 (log 𝑇 ) in expectation, giving us an 𝑂 𝑛 (log 𝑇 ) expected runtime for this basic estimator. To obtain the improved runtimes as in Theorem 1.2, we observe that the 𝑂 (log 𝑇 ) bound is pessimistic for queue sizes typically reported by agents following the prescribed strategy. We therefore add per-period and cumulative caps on reported queue lengths. These caps are unlikely to affect an agent following the prescribed strategy, but prevent arbitrary reports from making the simulations expensive. We also stop each simulation after a prescribed number of timesteps. This truncation makes the estimator slightly biased; we bound the resulting error and show that it preserves the utility guarantee up to the stated additive loss. Together, the coupling bound and these additional rules yield the improved runtimes even when agents report arbitrarily. Finally, we believe that this approach extends beyond our specific queuing model. As demonstrated by Csóka et al. [Csó+23], pairwise externality compensation provides a way to protect individual util-ity in dynamic allocation problems; however its implementation requires accounting for the future effects of reports. Our results suggest that these effects can be estimated efficiently in other Markovian settings where the prescribed process can be simulated and local mixing makes coupled trajectories agree quickly. This offers a route to making similar robust guarantees computationally accessible in a broader range of non-monetary allocation problems. 
+
+1.2 Related Work 
+
+Non-Monetary Repeated Resource Allocation: Prior work has investigated designing mechanisms in our setting in the special case when 𝛿 = 1. The problem was first introduced by Guo, Conitzer, and Reeves [GCR09]. Subsequent work [Cav14; GBI21a; JS07] studied repeated non-monetary allocation through linked decisions; in particular, Gorokh, Banerjee, and Iyer [GBI21a] gave a general technique to convert the efficiency guarantee of any monetary mechanism using a non-monetary mechanism up to a sublin-ear error. However, unlike our work, these works assume the principal has full knowledge of the value distributions. A more recent line studies distribution-agnostic mechanisms with agent-specific guarantees relative to the ideal utility benchmark, introduced by Gorokh, Banerjee, and Iyer [GBI21b]. For requests that must be served immediately (i.e., 𝛿 = 1 in our model), a sequence of works [GBI21b; Lin+25; Lin+26b] obtain 4progressively stronger worst-case guarantees that hold regardless of other agents’ behavior. Lin et al. [Lin+26a] obtain the optimal worst-case fraction at equilibrium, together with a weaker guarantee against arbitrary behavior by other agents. Beyond worst-case value distributions, Onyeze et al. [Ony+25] study equilibrium guarantees. Finally, recent work [Csó25; Csó26] on so-called ‘fair-floor guarantees’ implies the optimal worst-case fraction of ideal utility when 𝛿 = 1; we discuss these results and their relationship to our mechanism below. A related form of intertemporal demand arises when agents require the resource for several consecutive periods. Banerjee, Fikioris, and Tardos [BFT23] and Fikioris, Banerjee, and Tardos [FBT25] study such reusable-resource settings and obtain robust guarantees relative to ideal utility. This source of temporal dependence differs from ours: their requests can occupy the resource for multiple periods, whereas our jobs require one period of service but may wait in a queue before being served or expiring. 
+
+Pairwise Externality Compensation and Guaranteed Utility: Our mechanism builds on the general Guaranteed Utility Mechanism (GUM) of Csóka et al. [Csó+23], which combines techniques from Safronov [Saf18] and Gorokh, Banerjee, and Iyer [GBI21a] to build non-monetary mechanisms for dynamic settings. Pairwise externality compensation accounts for the effects of one agent’s reports on another agent’s antici-pated payoff. Combined with techniques for replacing monetary transfers by artificial currencies [GBI21a], this yields non-monetary mechanisms with individual utility guarantees. Csóka, Pongrácz, and Rodivilov [CPR26] surveys guaranteed utility equilibria and their applications; these ideas have also found use in auction design [JST26]. In the immediate-expiration setting, Csóka [Csó25] uses a prior-free version of the GUM framework to get robust guarantees relative to a new fair-floor benchmark; Csóka [Csó26] obtains similar guarantees through a repeated virtual first-price auction. The fair-floor benchmark is more complicated to define, but it is at least a 𝜆 (1, 𝑛,𝑇 ) fraction of the ideal utility. Consequently, these results already imply the optimal worst-case fraction of ideal utility when 𝛿 = 1, up to a sublinear additive loss, regardless of other agents’ behavior. Our contribution is to characterize the optimal fraction of ideal utility with persistent jobs and to attain it through computationally efficient sampled compensation. Persistence makes a report affect other agents’ service opportunities over many future periods, which makes the externalities required by PEC complex. Rather than evaluating these effects exactly, we estimate them through coupled simulations of the high-valued job-count process. This process can be simulated without knowing agents’ value distributions, and local mixing allows the simulations to stop once their states agree. Controlling sampling fluctuations and truncation bias, together with report caps that rarely affect the prescribed strategy, preserves the robust utility guarantee while yielding 𝑂 (𝑛 2) expected amortized computation per period for fixed 𝛿 > 0. Each agent secures its guarantee through a simple strategy based on reporting high-valued job counts, without requiring other agents to follow an equilibrium strategy. 
+
+Strategic Queues, Decentralized Learning, and Fair Sharing: There is a long literature on each of the classical topics from learning in queuing systems, dynamic matching with abandonment and fair sharing. Work on learning in queuing systems, such as [Abe+26; BSV23; FLW24; FHL22; GT23; Kri+16; Kri+21; SBP21] considers outcomes of no-regret learning and clarifies how coordination, information, and learn-ing affect stability and service capacity. Our objective is instead to guarantee each agent utility from heterogeneous, privately valued jobs that may expire. Queueing and expiration also arise in dynamic matching. AmaniHamedani, Aouad, and Saberi [AAS25] study a continuous-time model in which suppliers wait in queues and may abandon, while customers must be matched on arrival by centralized system, highlighting the value of adapting decisions to queue states when opportunities may expire. In contrast, we design a non-monetary mechanism for agents with private values and queue states, with robust individual utility guarantees. 5There is also a long literature of online mechanisms that aim to provide fair shares for all agents. For example recent work of Salem, Iosifidis, and Neglia [SIN23] studies repeated allocation decisions when utilities vary over time and the goal is to satisfy 𝛼 -fairness in the long run. In this paper, we consider ideal utility, an individual fair share benchmark, and develop a mechanism that guarantees each player a fraction of this benchmark independently of the behavior of other players. 
+
+# 2 Preliminaries 
+
+2.1 Model 
+
+A fixed set of 𝑛 agents compete for a shared resource over a horizon 𝑇 . Time proceeds in timesteps 𝑡 =
+
+1, 2, . . . ,𝑇 . Each agent maintains a queue of jobs, initially empty. In each timestep 𝑡 , each agent 𝑖 receives a job 𝑝 𝑖 [𝑡 ] in their queue. The job has value 𝑉 [𝑝 𝑖 [𝑡 ]] , where 𝑉 [𝑝 𝑖 [𝑡 ]] is drawn from some fixed agent-specific distribution F𝑖 independently from the past history and the other agents’ job values. We assume 
+
+F𝑖 is non-negative and bounded above by 1. There is a single server that can serve one job per time period. Unserved jobs in agents’ queues each expire in each period with probability 𝛿 ∈ ( 0, 1], independently from the past history and other job expirations. Unexpired jobs remain in their respective queues for the next time period. The order of events within a timestep is: (1) agents receive jobs, (2) at most 1 job gets served, (3) unserved jobs expire with probability 𝛿 each independently. Agents aim to maximize the total sum of the value of their served jobs. Specifically, agent 𝑖 ’s utility is defined as 
+
+𝑈 𝑖 =∑︁      
+
+> 𝑝 𝑖 [𝑡 ]:𝑝 𝑖 [𝑡 ]served before expiration
+
+𝑉 [𝑝 𝑖 [𝑡 ]] .
+
+Agent 𝑖 ’s queue state is private to agent 𝑖 . In particular, for an agent 𝑖 , neither the principal nor the other agents 𝑗 ≠ 𝑖 know the job values 𝑉 [𝑝 𝑖 [𝑡 ]] nor the expiration events in agent 𝑖 ’s queue. Additionally, the principal does not have knowledge of the value distributions F𝑖 , but each agent knows their own distribution. In each round, the principal has the ability to grant a single agent access to the server. That agent can choose a job from their queue to serve or let the server idle. 
+
+Asymptotic Notation Convention: There are three main parameters to our setting: 𝑇 , 𝑛 , and 𝛿 . We treat 𝑇 as very large and 𝑛 as potentially large. We treat 1 /𝛿 as a fixed constant bounded by a constant independent of 𝑇 and 𝑛 . We shall use asymptotic notation (e.g., 𝑂 , Ω, etc.) to denote dependence on 𝑇 
+
+and 𝑛 only and treat 𝛿 as fixed. Furthermore, we assume we are in a parameter regime where 𝑛 ≤ 𝑇 . We use e𝑂 and eΘ to suppress polylogarithmic factors in 𝑇 and 𝑛 . We also use the notation 𝑂 𝑛 (·) , 𝑜 𝑛 (·) , etc., to suppress dependence on 𝑛 .
+
+2.2 Ideal Utility 
+
+To measure how well an agent would ideally do in our setting given the existence of others, we use the 
+
+ideal utility benchmark used in previous work [BFT23; FBT25; GBI21b; Lin+26a; Lin+25; Lin+26b; Ony+25] in our setting. 
+
+Definition 2.1 (Ideal Utility) . Let 𝐹 −1 
+
+> 𝑖
+
+denote the inverse CDF 2 of agent 𝑖 ’s value distribution F𝑖 . Let 
+
+𝑄 𝑖 ∼ Unif [0, 1] and 𝑉 𝑖 = 𝐹 −1 
+
+> 𝑖
+
+(𝑄 𝑖 ). The ideal utility of agent 𝑖 is 
+
+𝑣 ★ 
+
+> 𝑖
+
+= E[𝑉 𝑖 1{𝑄 𝑖 ≥1−1/𝑛 } ].                
+
+> 2Formally, 𝐹 −1
+> 𝑖 (𝑞 𝑖 )=inf {𝑣 𝑖 :P𝑉 𝑖 ∼F 𝑖 (𝑉 𝑖 ≤𝑣 𝑖 ) ≥ 𝑞 𝑖 }
+
+6In the above definition, 𝑄 𝑖 represents the quantile of the value 𝑉 𝑖 drawn from F𝑖 . Agent 𝑖 ’s ideal utility is then the integral of 𝑉 𝑖 ∼ F 𝑖 over the event that 𝑉 𝑖 is in the top 1 /𝑛 -quantile of F𝑖 .The quantity 𝑣 ★ 
+
+> 𝑖
+
+𝑇 is a natural upper bound on the utility agent 𝑖 should expect to receive in a fair and efficient mechanism. As an individual fair-share benchmark, we allow agent 𝑖 an expected 𝑇 /𝑛 units of service over the horizon and let it devote that capacity to its highest-valued arrivals. The quantity 𝑣 ★ 
+
+> 𝑖
+
+𝑇 is thus the maximum expected utility agent 𝑖 can obtain under this average service cap. 
+
+2.3 High-Valued Jobs and the Target Policy 
+
+Fix 𝛿 , 𝑛 , and 𝑇 . We shall now propose a policy, which we call the target policy, for a social planner who knows all the agents’ private information that guarantees each agent the best achievable fraction of 𝑣 ★ 
+
+> 𝑖
+
+𝑇 (i.e., the minimax fraction over all value distributions F𝑖 ). Formally, for any (𝛿, 𝑛,𝑇 ), the target policy will give each agent at least 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility for any value distributions F𝑖 , while conversely, under any other policy, there exist value distributions F𝑖 such that at least one agent gets at most 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility. We first need one definition: 
+
+Definition 2.2 (High-Valued Job) . We call a job 𝑝 𝑖 [𝑡 ] high-valued if its value 𝑉 [𝑝 𝑖 [𝑡 ]] is in the top 1 /𝑛 -quantile of the value distribution F𝑖 .3.The target policy goes as follows. In each round, if there are no high-valued jobs, leave the server idle. Otherwise, select an agent 𝑖 among the set of agents who have at least 1 high-valued job uniformly at random. Process the highest-valued high-valued job from agent 𝑖 ’s queue, breaking ties arbitrarily. 
+
+Theorem 2.3. For every 𝛿 , 𝑛 , and 𝑇 , there exists 𝜆 (𝛿, 𝑛,𝑇 ) ∈ [ 0, 1] independent of the value distributions 
+
+F𝑖 such that under the target policy, each agent obtains at least 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility. Specifically, 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 is the expected number of high-valued jobs across all agents served under the target policy. Furthermore, if F𝑖 = Bern (1/𝑛 ) for every agent 𝑖 , under any policy, there exists an agent 𝑖 obtaining at most 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility. Proof Sketch. We set 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 to be the expected number of high-valued jobs served across all agents and timesteps by the target policy. By symmetry, each agent gets 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 /𝑛 high-valued jobs served in expectation. By definition of high-valued and ideal utility, the expected value of a job conditioned on being high-valued is 𝑛𝑣 ★ 
+
+> 𝑖
+
+. If the target policy chose a uniformly random high-valued job from the selected agent 𝑖 given access, the target policy’s selection process for which job gets served would be independent of the value of a job conditioned on whether or not it is high-valued. It would follow that each agent obtains 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility. The target policy selects the highest-valued high-valued job from the selected agent, which yields utility that is no worse than selecting a uniformly random high-valued job. Now, assume F𝑖 = Bern (1/𝑛 ) for every agent 𝑖 . Then, 𝑣 ★ 
+
+> 𝑖
+
+= 1/𝑛 and the utility of an agent is equal to the number of high-valued jobs they get served. Any policy, including the target policy, that serves an arbitrary high-valued job whenever one is available maximizes the expected number of high-valued jobs served across all agents and timesteps, because all high-valued jobs look identical at any given timestep. By symmetry and the definition of 𝜆 (𝛿, 𝑛,𝑇 ), under any policy, there exists an agent 𝑖 obtaining at most 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility. The complete proof is in Appendix D. ■       
+
+> 3If F𝑖 has atoms and the top 1 /𝑛 -quantile is not uniquely defined, we randomize appropriately at the cutoff to ensure that we satisfy that P[𝑝 𝑖 [𝑡 ]is high-valued ]=1/𝑛
+
+70.0 0.2 0.4 0.6 0.8 1.0    
+
+> 0.65 0.70 0.75 0.80 0.85 0.90 0.95
+> ( , 200, 500000)
+> (,n,T) as a function of
+
+Figure 1: Empirical estimate of 𝜆 (𝛿, 𝑛,𝑇 ) as a function of 𝛿 for 𝑛 = 200 and 𝑇 = 500000. For 𝛿 = 1, one can show that 𝜆 (1, 𝑛,𝑇 ) is exactly the 1 −(1 − 1/𝑛 )𝑛 bound as mentioned in the introduction using the Bern (1/𝑛 ) value distributions, since the target policy always serves a job of value 1 when one exists. In general, 𝜆 (𝛿, 𝑛,𝑇 ) is nonincreasing in 𝛿 with lim 𝛿 →0 lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) = 1 (Propo-sition D.1). The core reason why 𝜆 (1, 𝑛,𝑇 ) is lower is that when multiple agents have high-valued jobs in a given round, only one can be served and the rest expire. As 𝛿 gets smaller, the fraction of high-valued jobs that can be served increases because they do not instantly expire when not served. We do not know of a closed-form expression for 𝜆 (𝛿, 𝑛,𝑇 ), but we plot empirical estimates of 𝜆 (𝛿, 𝑛,𝑇 ) as a function of 𝛿 to il-lustrate the effect of 𝛿 in Fig. 1. 
+
+Example 2.4 (Random Lottery Does Poorly) . The target policy always guarantees each agent at least a 
+
+𝜆 (𝛿, 𝑛,𝑇 ) ≥ 𝜆 (1, 𝑛,𝑇 ) = 1 − ( 1 − 1/𝑛 )𝑛 ≥ 1 − 1/𝑒 ≈ 0.63 fraction of their ideal utility. In this example, we show that the policy of giving a uniformly random agent access to the server each timestep, which is trivially implementable even if agents are strategic, can give each agent a small fraction of ideal utility even if 𝛿 is not 1 but positive. Suppose agent 𝑖 has a Bern (1/𝑛 ) value distribution. The fraction of ideal utility agent 𝑖 obtains is the fraction of value 1 jobs served. By linearity of expectation, it suffices to bound the probability that a single job gets served. A job’s lifetime is at most some 𝐺 ∼ Geom (𝛿 ) independent of service. By union bounding over the events that a job gets served at some time step in its lifetime, the probability that the job gets served conditioned on 𝐺 is at most 𝐺 /𝑛 with the random lottery. Therefore, the probability it gets served is at most E[𝐺 /𝑛 ] = 1/( 𝑛𝛿 ) → 0 as 𝑛 → ∞ . In contrast, Fig. 1 is high for all 
+
+𝛿 , even for 𝑛 = 200. 
+
+# 3 Pairwise Externality Compensations and Utility Guarantees 
+
+We now provide a brief summary of the steps we follow in the rest of the paper to prove our main result. We first define the pairwise virtual externality of an agent’s report as the change it causes in another agent’s anticipated future utility (Section 3.2). We then formally define the PEC mechanism (Algorithm 1 in Section 3.3), and prove that under this mechanism, agents have a strategy that guarantees them a worst-case optimal fraction of their ideal utility. This guarantee requires a 𝑂 (polylog (𝑇 )) bound on the magnitude of each pairwise externality, to control the increments of the virtual-debt martingales and thus ensure an honest agent is rarely timed out; a priori, it is unclear if this is bound holds. In Section 3.4 we show that the externalities of such individual reports are bounded by a term that grows logarithmically with 𝑇 . To do so, we couple two variants of our queuing process: one incorporates the agent’s report at the current period, while the other samples that report from the target-policy transition kernel. We show that the two processes sync after 𝑂 (log 𝑇 ) periods in expectation, yielding the externality bound. The above coupling turns out to be critical for our subsequent results. In particular, in Section 4, we use this coupling to construct a computationally efficient, slightly biased estimator of each pairwise externality (Algorithm 2). We then bound the bias and combine the estimates with report caps to obtain our SPEC 
+
+mechanism (Algorithm 3). For suitable parameters, we show that SPEC has expected per-period runtime 
+
+𝑂 (𝑛 2 log log 𝑇 ) and expected amortized runtime 𝑂 (𝑛 2) for fixed 𝛿 > 0, even under arbitrary reporting strategies. 83.1 Description of the High-Valued Jobs Stochastic Process 
+
+To define the externality charged to each report in PEC , we first describe a target-policy count process. This is purely an accounting device: it lets us attribute changes in another agent’s anticipated service to one report at a time. In particular, PEC processes reports in each period in the same order, and records externalities in pairwise virtual accounts. The underlying arrival, service, and expiration model remains the one specified in the preliminaries. 
+
+Splitting Each Timestep into Finer-Grained Updates In addition to considering stochastic processes with the timesteps 𝑡 = 1, 2, . . . ,𝑇 , we shall consider stochastic processes with more fine-grained updates .We break down each timestep 𝑡 into 𝑛 + 1 updates (𝑡, 1), (𝑡, 2), . . . , (𝑡, 𝑛 ), (𝑡, 𝑛 + 1) as follows. At each update (𝑡, 𝑖 ) for 𝑖 ∈ [ 𝑛 ], job 𝑝 𝑖 [𝑡 ] arrives to agent 𝑖 ’s queue and the jobs in agent 𝑖 ’s queue from timestep 
+
+𝑡 − 1 expire with probability 𝛿 each independently. Agent 𝑖 ’s queue does not change at updates (𝑡, 𝑗 ) for 
+
+𝑗 ∈ [ 𝑛 ] \ { 𝑖 }. At update (𝑡, 𝑛 + 1), the central server either chooses some job from some agent’s queue to serve and removes that job or chooses no job to serve. Updates (𝑡, 𝑖 ) are ordered lexicographically; we let 
+
+≤ denote this lexicographic ordering on updates (𝑡, 𝑖 ). For convenience, we denote (𝑡, 0) = (𝑡 − 1, 𝑛 + 1)
+
+for 𝑡 > 0 and (0, 𝑛 + 1) be an initial update at which every agent’s queue is empty. In this way, (𝑡, 𝑖 − 1) is the update before update (𝑡, 𝑖 ) for all 𝑡 > 0. 
+
+Remark 3.1. We think of the breakdown of each timestep 𝑡 into updates (𝑡, 𝑖 ) as part of how the algorithm runs and not how the physical job process operates. At the beginning of each time 𝑡 , agents obtain their updated queues, and the algorithm then runs the updates (𝑡, 𝑖 ) for 1 ≤ 𝑖 ≤ 𝑛 + 1. 
+
+States Let 𝜃 𝑖 [𝑡, 𝑗 ] denote the number of high-valued jobs that agent 𝑖 has at (right after) update (𝑡, 𝑗 ).We let 𝜃 [𝑡, 𝑗 ] denote the vector of 𝜃 𝑖 [𝑡, 𝑗 ] for 𝑖 ∈ [ 𝑛 ]. For convenience, we let 𝜃 𝑖 [𝑡 ] = 𝜃 𝑖 [𝑡, 𝑖 ], the number of high-valued jobs that agent 𝑖 has after the job 𝑝 𝑖 [𝑡 ] arrives and the expirations of jobs from timestep 
+
+𝑡 − 1 occur but before service, and 𝜃 [𝑡 ] denotes the vector of the 𝜃 𝑖 [𝑡 ].
+
+Markovian Stochastic Transition Kernel We define Markovian stochastic transition kernels 𝑃 𝑡,𝑗 :
+
+Z𝑛  
+
+> ≥0
+
+→ Δ(Z𝑛 
+
+> ≥0
+
+) so that 𝑃 𝑡,𝑗 (𝜃 [𝑡, 𝑗 − 1]) is the law of 𝜃 [𝑡, 𝑗 ] conditioned on the history up to and including update (𝑡, 𝑗 − 1) under the target policy. For 𝑗 ∈ [ 𝑛 ], we define 
+
+(𝑃 𝑡,𝑗 ( ¯𝜃 [𝑡, 𝑗 − 1])) 𝑗 = Binom ( ¯𝜃 𝑗 [𝑡, 𝑗 − 1], 1 − 𝛿 ) ∗ Bern 
+
+ 1
+
+𝑛 
+
+
+
+,
+
+since at update (𝑡, 𝑗 ), a Binom (𝜃 𝑗 [𝑡, 𝑗 − 1], 1 − 𝛿 ) number of high-valued jobs survive in agent 𝑗 ’s queue from the previous timestep, and with probability 1 /𝑛 , a new high-valued job arrives. For 𝑖 ≠ 𝑗 , we define 
+
+(𝑃 𝑡,𝑗 ( ¯𝜃 [𝑡, 𝑗 − 1])) 𝑖 to be deterministically ¯𝜃 𝑖 [𝑡, 𝑗 − 1] since only agent 𝑗 ’s queue changes at update (𝑡, 𝑗 ). For 
+
+𝑗 = 𝑛 + 1, we define the distribution 𝑃 𝑡,𝑛 +1 ( ¯𝜃 [𝑡, 𝑛 ]) to be deterministically 0 if ¯𝜃 [𝑡, 𝑛 ] = 0, and otherwise, 
+
+(𝑃 𝑡,𝑛 +1 ( ¯𝜃 [𝑡, 𝑛 ])) 𝑘 = ¯𝜃 𝑘 [𝑡, 𝑛 ] − 1 for some 𝑘 chosen uniformly from {𝑖 : ¯𝜃 𝑖 [𝑡, 𝑛 ] > 0} and (𝑃 𝑡,𝑛 +1 ( ¯𝜃 [𝑡, 𝑛 ])) 𝑖 =
+
+¯𝜃 𝑖 [𝑡, 𝑛 ] for 𝑖 ≠ 𝑘 .
+
+Histories Let 𝐻 𝑡,𝑗 = (Z𝑛 
+
+> ≥0
+
+){ ( 𝑠,𝑖 ):(𝑠,𝑖 ) ≤ ( 𝑡,𝑗 ) } denote the set of sequences of states where there is one state for each update (𝑠, 𝑖 ) ≤ ( 𝑡, 𝑗 ). We call an element ℎ𝑡,𝑗 ∈ 𝐻 𝑡,𝑗 a partial history up to update (𝑡, 𝑗 ). Given a partial history ℎ𝑡,𝑗 ∈ 𝐻 𝑡,𝑗 and an update (𝑠, 𝑖 ) ≥ ( 𝑡, 𝑗 ), let 𝜇 𝑠,𝑖 (·| ℎ𝑡,𝑗 ) be the law of ℎ𝑠,𝑖 ∈ 𝐻 𝑠,𝑖 obtained starting from the partial history ℎ𝑡,𝑗 . Formally, define 𝜇 𝑡,𝑗 (·| ℎ𝑡,𝑗 ) at update (𝑡, 𝑗 ) to be the distribution that is deterministically ℎ𝑡,𝑗 and for (𝑠, 𝑖 ) > (𝑡, 𝑗 ), inductively define 𝜇 𝑠,𝑖 (·| ℎ𝑡,𝑗 ) to be the law of ℎ𝑠,𝑖 where ℎ𝑠,𝑖 is obtained from ℎ𝑠,𝑖 −1 ∼ 𝜇 𝑠,𝑖 −1 (·| ℎ𝑡,𝑗 ) by applying 𝑃 𝑠,𝑖 to the last element of ℎ𝑠,𝑖 −1 and appending it to ℎ𝑠,𝑖 −1.93.2 Virtual Anticipated Payoffs and Externalities 
+
+Define e𝑈 𝑗 : 𝐻 𝑡,𝑛 +1 → Z by letting e𝑈 𝑗 (ℎ𝑡,𝑛 +1) be the total number of high-valued jobs of agent 𝑗 served when the history of states is ℎ𝑡,𝑛 +1. Formally, writing ℎ𝑡,𝑛 +1 = ( ¯𝜃 𝑡,𝑗 )(𝑡,𝑗 ) ,
+
+e𝑈 𝑗 (ℎ𝑡,𝑛 +1) =
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+( ¯𝜃 𝑗 [𝑠, 𝑛 ] − ¯𝜃 𝑗 [𝑠, 𝑛 + 1]) .
+
+We now define the virtual anticipated payoffs and externalities used by PEC .
+
+Definition 3.2 (Virtual Anticipated Payoff) . The virtual anticipated payoff of agent 𝑗 given a partial his-tory ℎ𝑡,𝑖 ∈ 𝐻 𝑡,𝑖 is 
+
+Υ𝑗 (ℎ𝑡,𝑖 ) = E   
+
+> ℎ𝑇 ,𝑛 +1∼𝜇 𝑇 ,𝑛 +1(· | ℎ𝑡,𝑖 )
+
+[ e𝑈 𝑗 (ℎ𝑇 ,𝑛 +1)] .
+
+Intuitively, Υ𝑗 (ℎ𝑡,𝑖 ) is the expected number of high-valued jobs that agent 𝑗 has served conditioned on the history up to update (𝑡, 𝑖 ) being ℎ𝑡,𝑖 if the target policy is used on updates after (𝑡, 𝑖 ). When ℎ𝑡,𝑖 has a nonzero probability of being an actual history up to update (𝑡, 𝑖 ), this is precisely what Υ𝑗 (ℎ𝑡,𝑖 ) is. 
+
+Definition 3.3 (Virtual Externality) . Fix 𝑖 ∈ [ 𝑛 ]. Given a partial history ℎ𝑡,𝑖 −1 ∈ 𝐻 𝑡,𝑖 −1, the externality of agent 𝑖 on agent 𝑗 given a state ¯𝜃 𝑖 [𝑡 ] ∈ Z≥0 is 
+
+𝛾 𝑖 →𝑗 (ℎ𝑡,𝑖 −1, ¯𝜃 𝑖 [𝑡 ]) = Υ𝑗 ( ¯ℎ𝑡,𝑖 ) − Υ𝑗 (ℎ𝑡,𝑖 −1)
+
+where ¯ℎ𝑡,𝑖 ∈ 𝐻 𝑡,𝑖 is obtained by appending the last state of ℎ𝑡,𝑖 −1 with coordinate 𝑖 replaced by ¯𝜃 𝑖 [𝑡 ].One can think of 𝛾 𝑖 →𝑗 (ℎ𝑡,𝑖 −1, ¯𝜃 𝑖 [𝑡 ]) as the expected additional high-valued jobs that agent 𝑗 gets served conditioned on the history up to update (𝑡, 𝑖 −1) being ℎ𝑡,𝑖 −1 if agent 𝑖 has state ¯𝜃 𝑖 [𝑡 ] at update (𝑡, 𝑖 ) instead of “the expectation” if the target policy is used on updates after (𝑡, 𝑖 − 1).
+
+3.3 The PEC Mechanism and its Guaranteed Utility Property 
+
+We now formally describe our PEC mechanism, which adapts the transfer-free version of the Guaran-teed Utility Mechanism (GUM) of Csóka et al. [Csó+23] to our queueing setting. The high-level idea is to combine pairwise externality accounting [Saf18] with non-monetary enforcement via virtual ac-counts [GBI21a]. Our enforcement rule differs however: transfer-free GUM replaces all of an agent’s subsequent reports with simulated reports once a debt limit is exceeded, whereas PEC forces zero reports only while the agent’s virtual debt remains above the limit. For completeness, Appendix A provides a brief overview of how pairwise virtual externality accounting works with transferable utilities (i.e., with money) in a simple setting. To adapt this to non-monetary settings, similar to transfer-free GUM, we use virtual debt accounts to limit how much an agent’s reports can reduce another agent’s anticipated payoff. In more detail, the PEC mechanism is parameterized by a virtual debt limit 𝐵 . PEC shall define virtual transfers 𝑝 𝑖 →𝑗 [𝑡 ] at each time 𝑡 . For each time period 𝑡 = 1, 2, . . . ,𝑇 , go in order of agent number 𝑖 and do the following. If Í𝑡 −1 
+
+> 𝑠 =1
+
+𝑝 𝑖 →𝑗 [𝑠 ] > 𝐵 for some 𝑗 ≠ 𝑖 , set b𝜃 𝑖 [𝑡 ] = 0. Otherwise, elicit a report for the number of high-valued jobs b𝜃 𝑖 [𝑡 ] ∈ { 0, 1, . . . ,𝑇 } from agent 𝑖 . (We enforce that b𝜃 𝑖 [𝑡 ] ≤ 𝑇 .) Define the virtual externality of agent 𝑖 on agent 𝑗 ≠ 𝑖 at time 𝑡 to be 𝛾 𝑖 →𝑗 [𝑡 ] := 𝛾 𝑖 →𝑗 (bℎ𝑡,𝑖 −1, b𝜃 𝑖 [𝑡 ]) where bℎ𝑡,𝑖 −1 is the history containing the reports and server allocations right before agent 𝑖 ’s report b𝜃 𝑖 [𝑡 ] (see Algorithm 1 for a precise definition of bℎ𝑡,𝑖 −1). Set agent 𝑖 ’s virtual transfer to each agent 𝑗 ≠ 𝑖 at time 𝑡 by 𝑝 𝑖 →𝑗 [𝑡 ] := −𝛾 𝑖 →𝑗 [𝑡 ].In a time period 𝑡 , after processing all agents 𝑖 in this fashion, if b𝜃 𝑖 [𝑡 ] = 0 for all 𝑖 , leave the server idle; 10 ALGORITHM 1: Pairwise Externality Compensation ( PEC ) Mechanism 
+
+Input: virtual debt limit 𝐵 
+
+Initialize b𝜃 [0, 𝑛 + 1] = 0; 
+
+for 𝑡 = 1, 2, . . . ,𝑇 do for 𝑖 = 1, 2, . . . , 𝑛 do if Í𝑡 −1 
+
+> 𝑠 =1
+
+𝑝 𝑖 →𝑗 [𝑠 ] > 𝐵 for some 𝑗 ≠ 𝑖 then 
+
+Set b𝜃 𝑖 [𝑡 ] = 0; 
+
+else 
+
+Elicit a report b𝜃 𝑖 [𝑡 ] ∈ { 0, 1, . . . ,𝑇 } from agent 𝑖 ;Set b𝜃 𝑖 [𝑡, 𝑖 ] = b𝜃 𝑖 [𝑡 ] and b𝜃 𝑗 [𝑡, 𝑖 ] = b𝜃 𝑗 [𝑡, 𝑖 − 1] for 𝑗 ≠ 𝑖 .; Agent 𝑖 makes virtual transfers 𝑝 𝑖 →𝑗 [𝑡 ] = −𝛾 𝑖 →𝑗 [𝑡 ] where 𝛾 𝑖 →𝑗 [𝑡 ] = 𝛾 𝑖 →𝑗 (bℎ𝑡,𝑖 −1, b𝜃 𝑖 [𝑡 ]) where 
+
+bℎ𝑡,𝑖 −1 = (b𝜃 𝑠,𝑗 )(𝑠,𝑗 ) ≤ ( 𝑡,𝑖 −1) ;
+
+if b𝜃 𝑖 [𝑡 ] = 0 for all 𝑖 then 
+
+Let the server idle; Set b𝜃 [𝑡, 𝑛 + 1] = b𝜃 [𝑡, 𝑛 ];
+
+else 
+
+Grant agent 𝑖 access to the server where 𝑖 ∼ Unif { 𝑗 : b𝜃 𝑗 [𝑡 ] > 0};Set b𝜃 𝑖 [𝑡, 𝑛 + 1] = b𝜃 𝑖 [𝑡 ] − 1 and b𝜃 𝑗 [𝑡, 𝑛 + 1] = b𝜃 𝑗 [𝑡 ] for 𝑗 ≠ 𝑖 ;
+
+otherwise, give access to an agent 𝑖 uniformly at random chosen from agents with b𝜃 𝑖 [𝑡 ] > 0. Pseudocode for the mechanism is given in Algorithm 1. The analogue of honest play in this mechanism is always reporting b𝜃 𝑖 [𝑡 ] = 𝜃 𝑖 [𝑡 ]. Say that agent 𝑖 is timed out at time 𝑡 if Í𝑡 −1 
+
+> 𝑠 =1
+
+𝑝 𝑖 →𝑗 [𝑠 ] > 𝐵 for some 𝑗 ≠ 𝑖 .
+
+Definition 3.4 (honest) . Agent 𝑖 is honest if she reports b𝜃 𝑖 [𝑡 ] = 𝜃 𝑖 [𝑡 ] at every time 𝑡 that she is not timed out and always serves the highest-valued high-valued job in her queue each time she is granted access to the server (breaking ties arbitrarily). Our main result for this mechanism is that each agent is guaranteed a utility level at least close to the benchmark 𝜆 (𝛿, 𝑛,𝑇 )𝑣 ★ 
+
+> 𝑖
+
+𝑇 guaranteed by the target policy by being honest, regardless of the behavior of other agents. 
+
+Definition 3.5 (Error) . A mechanism has error at most 𝑅 if each agent 𝑖 has a strategy that obtains expected utility at least 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − 𝑅 regardless of the behavior of agents 𝑗 ≠ 𝑖 .
+
+Theorem 3.6. There exists a virtual debt limit 𝐵 = e𝑂 (√︁ 𝑇 /𝑛 ) such that Algorithm 1 has error at most e𝑂 (√𝑛𝑇 ).
+
+We prove the theorem in Appendix F and give intuition for why this theorem holds now. Let Υ𝑗 [𝑡, 𝑘 ] = Υ𝑗 (bℎ𝑡,𝑘 ) where bℎ𝑡,𝑘 is the reported history up to update (𝑡, 𝑘 ). Fix an honest agent 𝑖 . Let e𝑈 𝑗 
+
+be the number of high-valued jobs of agent 𝑗 that are served. We first consider a scenario in which the virtual debt limit 𝐵 is not enforced on agent 𝑖 and the utility of each agent 𝑗 were simply the number of high-valued jobs served offset by the virtual transfers (i.e., as if the virtual transfers were real money); now each agent 𝑗 ’s utility is 
+
+e𝑈 ′ 
+
+> 𝑗
+
+= e𝑈 𝑗 −∑︁ 
+
+> 𝑘 ≠𝑗 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑝 𝑗 →𝑘 [𝑡 ] + ∑︁ 
+
+> 𝑘 ≠𝑗 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑝 𝑘 →𝑗 [𝑡 ],
+
+11 and show that if agent 𝑖 is honest, then E[ e𝑈 ′ 
+
+> 𝑖
+
+] = Υ𝑖 [0, 𝑛 + 1] regardless of the behavior of the other agents. The utility e𝑈 ′ 
+
+> 𝑗
+
+can be thought of as the number of high-valued jobs that agent 𝑗 gets served minus compensations paid to other agents plus compensations paid by other agents. We make the following observations. 1. The initial anticipated virtual payoff Υ𝑖 [0, 𝑛 + 1] is the expected number of high-valued jobs served from agent 𝑖 under the target policy. Furthermore, the anticipated virtual payoff Υ𝑗 [𝑡, 𝑘 ] is the expected number of high-valued jobs served from agent 𝑗 given the history up to update (𝑡, 𝑘 ) if the target policy were used after update (𝑡, 𝑘 ).2. By definition, 𝑝 𝑘 →𝑗 [𝑡 ] = −𝛾 𝑘 →𝑗 [𝑡 ] = −( Υ𝑗 [𝑡, 𝑘 ] − Υ𝑗 [𝑡, 𝑘 − 1]) . Thus, the virtual transfer 𝑝 𝑘 →𝑗 [𝑡 ] can be thought of as agent 𝑘 compensating agent 𝑗 for the change Υ𝑗 [𝑡, 𝑘 ] − Υ𝑗 [𝑡, 𝑘 − 1] in agent 𝑗 ’s anticipated virtual payoff when agent 𝑘 reports b𝜃 𝑘 [𝑡 ] at update (𝑡, 𝑘 ).3. The honest agent 𝑖 ’s virtual transfer 𝑝 𝑖 →𝑗 [𝑡 ] has expectation 0 because agent 𝑖 reports b𝜃 𝑖 [𝑡 ] = 𝜃 𝑖 [𝑡 ],which is the exact state that the target policy updates the history with, so agent 𝑗 ’s anticipated virtual payoff does not change in expectation. 4. Similarly, E[Υ𝑗 [𝑡, 𝑛 +1] − Υ𝑗 [𝑡, 𝑛 ]] = 0 for any agent 𝑗 because the server selection process in Algorithm 1 is exactly the same as the target policy. Therefore, agent 𝑖 obtains the same utility in expectation as their anticipated payoff in the beginning. In particular, it doesn’t matter what strategy the other agents take: agent 𝑖 is compensated by any harm done by others regardless of their strategy. Formally, define H𝑡,𝑗 = 𝜎 (bℎ𝑡,𝑗 ), the filtration generated by the reported history up to update (𝑡, 𝑗 ).4 Define 
+
+𝑀 𝑖 [𝑡, 𝑗 ] = Υ𝑖 [𝑡, 𝑗 ] − ∑︁  
+
+> 𝑘 ≠𝑖
+> 𝑡 −1
+
+∑︁ 
+
+> 𝑠 =1
+
+𝑝 𝑖 →𝑘 [𝑠 ] + 𝑝 𝑖 →𝑘 [𝑡 ]1𝑗 ≥𝑖 
+
+!| {z }
+
+> virtual transfers to others
+
++∑︁   
+
+> (𝑠,𝑘 ) ≤ ( 𝑡,𝑗 ):𝑘 ≠𝑖
+
+𝑝 𝑘 →𝑖 [𝑠 ]
+
+| {z }
+
+> virtual transfers from others
+
+.
+
+One can argue that (𝑀 𝑖 [𝑡, 𝑗 ]) (𝑇 ,𝑛 +1)(𝑡,𝑗 )=(0,𝑛 +1) is an H𝑡,𝑗 -martingale using the intuition above. Notice that Υ𝑖 [0, 𝑛 + 1], the number of high-valued jobs served from agent 𝑖 under the target policy, is exactly 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 by definition. Putting the above claim together, we have 
+
+E[ e𝑈 ′ 
+
+> 𝑖
+
+] = E[ e𝑈 𝑖 ] − ∑︁ 
+
+> 𝑗 ≠𝑖
+
+E
+
+" 𝑇 ∑︁ 
+
+> 𝑡 =1
+
+𝑝 𝑖 →𝑗 [𝑡 ]
+
+#
+
++∑︁ 
+
+> 𝑗 ≠𝑖
+
+E
+
+" 𝑇 ∑︁ 
+
+> 𝑡 =1
+
+𝑝 𝑗 →𝑖 [𝑡 ]
+
+#
+
+≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 (1) regardless of agents’ 𝑗 ≠ 𝑖 strategies. For any agent 𝑗 ≠ 𝑖 , if b𝜃 𝑗 [𝑡 ] = 0, then 𝑝 𝑗 →𝑖 [𝑡 ] ≤ 0 for all 𝑖 ≠ 𝑗 ,because reporting 0 cannot produce a negative externality on the others. Additionally, assume we have an absolute bound 𝐷 on any externality on 𝑖 in that |𝛾 𝑗 →𝑖 [𝑡 ]| ≤ 𝐷 for any 𝑗 ≠ 𝑖 . Since we time out agent 𝑗 
+
+whenever their cumulative virtual transfers to agent 𝑖 exceeds 𝐵 and force them to report 0, it follows that agent 𝑗 ’s cumulative virtual transfers to agent 𝑖 cannot exceed 𝐵 + 𝐷 . In particular, Í𝑇 𝑡 =1 𝑝 𝑗 →𝑖 [𝑡 ] ≤ 𝐵 + 𝐷 .Substituting this into (1), we obtain 
+
+E[ e𝑈 𝑖 ] − ∑︁ 
+
+> 𝑗 ≠𝑖
+
+E
+
+" 𝑇 ∑︁ 
+
+> 𝑡 =1
+
+𝑝 𝑖 →𝑗 [𝑡 ]
+
+#
+
+≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 − ( 𝑛 − 1)( 𝐵 + 𝐷 ).
+
+Let G𝑡 denote the filtration generated by the history up to and including time 𝑡 . For any time period 𝑡 in which agent 𝑖 is not timed out, E[𝑝 𝑖 →𝑗 [𝑡 ]|G 𝑡 −1] = 0 for any 𝑗 ≠ 𝑖 using the same reasoning that an honest                   
+
+> 4Note that 𝜃 𝑘 [𝑡 ]is not H𝑡,𝑗 -measurable for 𝑘 >𝑗 since agent 𝑘 makes his report after agent 𝑗 , even though agent 𝑘 may know his true number of high-valued jobs 𝜃 𝑘 [𝑡 ]already at update (𝑡, 𝑗 ).
+
+12 agent has 0 impact to others’ anticipated virtual payoffs in expectation. Using the above display, we obtain 
+
+E[ e𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 − ( 𝑛 − 1)( 𝐵 + 𝐷 ), (2) i.e., the number of high-valued jobs utility without real transfers is lower bounded by the same value the transferable utility is lower bounded by (see (1)), up to the (𝑛 − 1)( 𝐵 + 𝐷 ) error. By a greedy argument, one can show that choosing the highest-valued high-valued job whenever granted access to the server is at least as good as choosing a random high-valued job when granted access. If agent 𝑖 is honest except she chooses a random high-valued job whenever granted access, the event that a high-valued job gets served is independent of its value conditioned on the job being high-valued, and the expected value of a job conditioned on being high-valued is 𝑛𝑣 ★ 
+
+> 𝑖
+
+by the definition of ideal utility. Thus, the above display implies the following lower bound on the expected utility: 
+
+E[𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 )𝑛𝑣 ★ 
+
+> 𝑖
+
+.
+
+This is a utility guarantee for agent 𝑖 in the version of the mechanism where the virtual debt limit is not enforced on agent 𝑖 . To obtain a utility guarantee for the actual version of the mechanism where the virtual debt limit is enforced on agent 𝑖 , it suffices to show that the probability that the agent hits the virtual debt limit is small. Specifically, define the process 𝑋 𝑖 →𝑗 [𝑡 ] = Í𝑡 𝑠 =1 𝑝 𝑖 →𝑗 [𝑠 ] in the mechanism where the virtual debt limit is not enforced on agent 𝑖 . By an appropriate coupling argument, in the actual mechanism, 
+
+E[𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 )𝑛𝑣 ★ 
+
+> 𝑖
+
+− P(∃ 𝑡, 𝑗 ≠ 𝑖 : 𝑋 𝑖 →𝑗 [𝑡 ] > 𝐵 ) · 𝑇 . 
+
+Observe that 𝑋 𝑖 →𝑗 [𝑡 ] is a martingale by the previous observation that E[𝑝 𝑖 →𝑗 [𝑡 ]|G 𝑡 −1] = 0. In Lemma 3.8, we give a value of 𝐷 = 𝑂 (log 𝑇 ) bounding the absolute value of any externality. This directly bounds the increments of 𝑋 𝑖 →𝑗 [𝑡 ] almost surely, allowing us to use martingale concentration inequalities to show that P(∃ 𝑡, 𝑗 ≠ 𝑖 : 𝑋 𝑖 →𝑗 [𝑡 ] > 𝐵 ) ≤ 1/𝑇 for some 𝐵 = e𝑂 (√︁ 𝑇 /𝑛 ), which we do in Appendix F. Substituting these bounds into the above display, we obtain the e𝑂 (√𝑛𝑇 ) error bound in Theorem 3.6. (A simple Azuma-Hoeffding bound lets us perform this martingale concentration argument with 𝐵 = e𝑂 (√𝑇 ) which yields the weaker error bound e𝑂 (𝑛 √𝑇 ); we use Freedman’s inequality (Theorem B.1) for this scenario in Appendix E to obtain the stronger result.) 
+
+Remark 3.7. We emphasize that Theorem 3.6 gives a guaranteed utility property that by being honest, an agent is guaranteed a certain level of utility, as opposed to an equilibrium statement. In fact, every agent being honest might not be an equilibrium. For example, suppose agent 𝑖 has a Bern (1/( 2𝑛 )) value distribution and all other agents are honest. In this case, agent 𝑖 reporting the number of jobs with value 1 makes the system less congested, clearing other agents’ jobs faster, in turn helping agent 𝑖 process more value 1 jobs. 
+
+3.4 Bounding Pairwise Externalities via Coupling 
+
+The below lemma gives a bound on the externalities that is needed for the proof of Theorem 3.6 as described at the end of the last subsection. The proof uses a coupling of two high-valued jobs stochastic processes. The same coupling is the basis for the efficient externality estimates used by SPEC in Section 4. 
+
+Lemma 3.8. For any agents 𝑖, 𝑗 and time 𝑡 0, and any report b𝜃 𝑗 [𝑡 0],
+
+|𝛾 𝑗 →𝑖 [𝑡 0]| ≤ 
+
+(l log (𝑇 +1)− log (1−𝛿 )
+
+m
+
++ 1 
+
+> 𝛿
+
+if 𝛿 < 11 if 𝛿 = 1 .
+
+13 Proof. The proof goes by coupling two high-valued jobs stochastic processes, which are as follows. Let the two processes be (𝜃 report [𝑡, 𝑖 ]) and (𝜃 random [𝑡, 𝑖 ]) . The histories of both processes up to update (𝑡 0, 𝑗 −1) are the same and are equal to the reported history bℎ𝑡 0,𝑗 −1. Let 𝜃 report [𝑡 0, 𝑗 ] = b𝜃 [𝑡 0, 𝑗 ], and 𝜃 random [𝑡 0, 𝑗 ] be drawn from the high-valued jobs stochastic transition kernel. For shorthand, let {𝐴, 𝐵 } = {random , report }. The states in updates (𝑡, 𝑖 ) > (𝑡 0, 𝑗 ) are determined by the stochastic transition kernel applied to both processes in the following coupled way. 
+
+Arrivals A high-valued job arrives at update (𝑡, 𝑖 ) in process 𝐴 if and only if it arrives at update (𝑡, 𝑖 ) in process 𝐵 .
+
+Expirations Fix an update (𝑡, 𝑖 ) with 𝑖 ∈ [ 𝑛 ]. Name the processes so that 𝜃 𝐴 𝑖 [𝑡, 𝑖 − 1] ≥ 𝜃 𝐵 𝑖 [𝑡, 𝑖 − 1].Condition on the history of both processes up to update (𝑡, 𝑖 − 1) in the following description. Denote the number of high-valued job expirations in agent 𝑖 ’s queue at update (𝑡, 𝑖 ) in process 𝐵 by 𝑍 , which has distribution Binom (𝜃 𝐵 𝑖 [𝑡, 𝑖 − 1], 𝛿 ). The number of high-valued job expirations in agent 𝑖 ’s queue at update 
+
+(𝑡, 𝑖 ) in process 𝐴 is 𝑍 plus an independent Binom (𝜃 𝐴 𝑖 [𝑡, 𝑖 − 1] − 𝜃 𝐵 𝑖 [𝑡, 𝑖 − 1], 𝛿 ) random variable. 
+
+Services At each time 𝑡 ≥ 𝑡 0, at the service update (𝑡, 𝑛 + 1), sample a permutation 𝜋 of [𝑛 ] uniformly at random. In both processes, we service the agent 𝑖 with the lowest value of 𝜋 (𝑖 ) among agents 𝑖 with 
+
+𝜃 𝑖 [𝑡 ] > 0. Let 𝜎 = inf {𝑡 ≥ 𝑡 0 : 𝜃 𝐴 [𝑡 ] = 𝜃 𝐵 [𝑡 ]} where inf ∅ = 𝑇 + 1. By the coupling, the two processes sync at time 𝜎 and are identical before service at all 𝑡 ≥ 𝜎 . By the definition of virtual externality, |𝛾 𝑗 →𝑖 [𝑡 0]| is the absolute expected difference in the number of high-valued jobs that agent 𝑖 serves between the two processes. The absolute difference in realized service counts is at most 𝜎 − 𝑡 0 since the two processes are identical right before service at times 𝑡 < 𝑡 0 and 𝑡 ≥ 𝜎 . Hence, we aim to bound E[𝜎 ] − 𝑡 0.Without loss of generality, name the processes such that 𝜃 𝐴 𝑗 [𝑡 0, 𝑗 ] ≥ 𝜃 𝐵 𝑗 [𝑡 0, 𝑗 ]. We shall show that 𝜃 𝐴 [𝑡, 𝑖 ] ≥ 
+
+𝜃 𝐵 [𝑡, 𝑖 ] coordinate-wise for all (𝑡, 𝑖 ) ≥ ( 𝑡 0, 𝑗 ) by induction on the update (𝑡, 𝑖 ). For the base case, 𝜃 𝐴 [𝑡 0, 𝑗 ] ≥ 
+
+𝜃 𝐵 [𝑡 0, 𝑗 ] holds: 𝜃 𝐴 𝑖 [𝑡 0, 𝑗 ] = 𝜃 𝐵 𝑖 [𝑡 0, 𝑗 ] for 𝑖 ≠ 𝑗 since 𝐴 and 𝐵 were perfectly coupled up to update (𝑡 0, 𝑗 −
+
+1), and 𝜃 𝐴 𝑗 [𝑡 0, 𝑗 ] ≥ 𝜃 𝐵 𝑗 [𝑡 0, 𝑗 ] by assumption. Now we consider updates to the states caused by arrivals, expirations, and services to the two processes and show they maintain the invariant that each agent has at least as many high-valued jobs in process 𝐴 as in process 𝐵 .
+
+Arrivals Since arrivals are the same in both processes, the invariant is maintained. 
+
+Expirations By the coupling rule, at update (𝑡, 𝑖 ), agent 𝑖 has at most 𝜃 𝐴 𝑖 [𝑡, 𝑖 − 1] − 𝜃 𝐵 𝑖 [𝑡, 𝑖 − 1] more high-valued job expirations in process 𝐴 than process 𝐵 , maintaining the invariant. 
+
+Services If the same agent in both processes is served, the invariant is maintained. If no agent in process 
+
+𝐵 is served, then no agent has a high-valued job in process 𝐵 , so the invariant is maintained. Otherwise, suppose agent 𝑖 is served in process 𝐴 and agent 𝑘 ≠ 𝑖 is served in process 𝐵 . Denote the permutation used to determine service by 𝜋 . Since 𝑘 was served in process 𝐵 , 𝑘 had a non-zero number of high-valued jobs before service in process 𝐵 . By the invariant, 𝑘 had a non-zero number of high-valued jobs before service in process 𝐴 . Since 𝑖 was served instead of 𝑘 in process 𝐴 , it must have been that 𝜋 (𝑖 ) < 𝜋 (𝑘 ). Despite this, 𝑘 was served instead of 𝑖 in process 𝐵 , so it must have been that 𝑖 had 0 high-valued jobs in process 
+
+𝐵 . Therefore, the service maintains the invariant. For 𝑡 ≥ 𝑡 0, let Δ𝑡 = ∥𝜃 𝐴 [𝑡 ] − 𝜃 𝐵 [𝑡 ] ∥ 1 := Í𝑛 𝑖 =1 (𝜃 𝐴 𝑖 [𝑡 ] − 𝜃 𝐵 𝑖 [𝑡 ]) , the difference in the number of high-valued jobs across all agents in processes 𝐴 and 𝐵 right before service at time 𝑡 . Let us analyze how Δ𝑡 evolves 14 over time for 𝑡 ≥ 𝑡 0. Arrivals do not change Δ𝑡 since arrivals are the same for both processes 𝐴 and 𝐵 .Services can only decrease Δ𝑡 in that ∥𝜃 𝐴 [𝑡, 𝑛 + 1] − 𝜃 𝐵 [𝑡, 𝑛 + 1] ∥ 1 ≤ Δ𝑡 because if a high-valued job in process 𝐵 gets served, then one gets served in 𝐴 too. By the way the expirations occur in the coupling, the difference in the number of high-valued job expirations between times 𝑡 and 𝑡 + 1 between processes 
+
+𝐴 and 𝐵 is distributed as Binom (∥ 𝜃 𝐴 [𝑡, 𝑛 + 1] − 𝜃 𝐵 [𝑡, 𝑛 + 1] ∥ 1, 𝛿 ) conditioned on G𝑡 where G𝑡 denotes the history up to time 𝑡 . This implies 
+
+E[Δ𝑡 +1 |G 𝑡 ] ≤ ( 1 − 𝛿 )∥ 𝜃 𝐴 [𝑡, 𝑛 + 1] − 𝜃 𝐵 [𝑡, 𝑛 + 1] ∥ 1 ≤ ( 1 − 𝛿 )Δ𝑡 .
+
+Thus, E[Δ𝑡 +1 |Δ𝑡 ] ≤ ( 1 − 𝛿 )Δ𝑡 . By induction, E[Δ𝑡 0+𝑠 |Δ𝑡 0 ] ≤ ( 1 − 𝛿 )𝑠 Δ𝑡 0 . For 𝑠 ≤ 𝑇 − 𝑡 0, the event 𝜎 > 𝑡 0 + 𝑠 
+
+is precisely the event that Δ𝑡 0+𝑠 ≥ 1, so 
+
+P(𝜎 > 𝑡 0 + 𝑠 |Δ𝑡 0 ) = P(Δ𝑡 0+𝑠 ≥ 1|Δ𝑡 0 ) ≤ E[Δ𝑡 0+𝑠 |Δ𝑡 0 ] ≤ ( 1 − 𝛿 )𝑠 Δ𝑡 0 .
+
+Summing, 
+
+E[𝜎 |Δ𝑡 0 ] − 𝑡 0 = 
+
+> 𝑇 −𝑡 0
+
+∑︁ 
+
+> 𝑠 =0
+
+P(𝜎 > 𝑡 0 + 𝑠 |Δ𝑡 0 ) ≤ 
+
+> ∞
+
+∑︁ 
+
+> 𝑠 =0
+
+min {1, (1 − 𝛿 )𝑠 Δ𝑡 0 }.
+
+If Δ𝑡 0 = 0, the above is equal to 0. For 𝛿 = 1, the above is equal to 1. For Δ𝑡 0 > 0 and 𝛿 < 1, the above is at most 
+
+ log  Δ𝑡 0
+
+
+
+− log (1 − 𝛿 )
+
+
+
++
+
+> ∞
+
+∑︁ 
+
+> 𝑠 =⌈log
+
+(Δ𝑡 0 )/− log (1−𝛿 ) ⌉ 
+
+(1 − 𝛿 )𝑠 Δ𝑡 0
+
+=
+
+ log  Δ𝑡 0
+
+
+
+− log (1 − 𝛿 )
+
+
+
++ (1 − 𝛿 )⌈log (Δ𝑡 0 )/− log (1−𝛿 ) ⌉ 
+
+𝛿 · Δ𝑡 0
+
+≤
+
+ log  Δ𝑡 0
+
+
+
+− log (1 − 𝛿 )
+
+
+
++ 1
+
+𝛿 .
+
+Since 𝜃 𝐴 [𝑡 0] and 𝜃 𝐵 [𝑡 0] only differ in agent 𝑗 , Δ𝑡 0 ≤ 𝜃 𝐴 𝑗 [𝑡 0] − 𝜃 𝐵 𝑗 [𝑡 0] ≤ 𝑇 + 1, where the last inequality comes from the fact that we never allow agents to report a value greater than 𝑇 in Algorithm 1, which implies that both 𝜃 𝐴 𝑗 [𝑡 0] and 𝜃 𝐵 𝑗 [𝑡 0] are at most 𝑇 + 1. The expression in the above display is then at most the expression in the lemma statement. ■
+
+# 4 Efficiently Computing the Externalities 
+
+It is not clear how to efficiently implement Algorithm 1 because we have not given an algorithm to compute the externalities 𝛾 𝑖 →𝑗 [𝑡 ]. In this section, we first give a mechanism that efficiently computes estimators 
+
+b𝛾 𝑖 →𝑗 [𝑡 ] for all 𝑗 ≠ 𝑖 in time 𝑂 (𝑛 log 𝑇 ) at update (𝑡, 𝑖 ) such that when we use the estimators b𝛾 𝑖 →𝑗 [𝑡 ] instead of the actual externalities 𝛾 𝑖 →𝑗 [𝑡 ] in Algorithm 1, we obtain the same guarantees as in Theorem 3.6. We then show how to improve the algorithm’s runtime by modifying the mechanism slightly. 
+
+4.1 Computational Model 
+
+In this paper, we assume a standard computational model (e.g., Word RAM with randomization) augmented with a sampling oracle that can draw from the distribution Binom (𝜃, 𝛿 ) for 1 ≤ 𝜃 ≤ 2𝑇 in 𝑂 (1) time. 15 4.2 Basic Algorithm 
+
+The proof of Lemma 3.8 already gives an algorithm to compute an unbiased estimator of 𝛾 𝑗 →𝑖 [𝑡 0]: we couple two simulated instances of the high-valued jobs stochastic process starting at update (𝑡 0, 𝑗 ) until the two instances sync, where one of the processes starts with a random state and the other starts with a state with the report b𝜃 𝑗 [𝑡 0], and we output the difference in the number of high-valued jobs that agent 𝑖 
+
+serves between the two processes as the estimator b𝛾 𝑗 →𝑖 [𝑡 0]. This estimator is unbiased by the definition of externality. By the proof of Lemma 3.8, the two coupled processes will sync in expected 𝑂 (log 𝑇 ) timesteps. Since simulating each timestep in each process takes 𝑂 (𝑛 ) computational time since there are 𝑛 updates per timestep, computing the estimator in this fashion takes 𝑂 (𝑛 log 𝑇 ) expected computational time. The proof of Theorem 3.6 would work if we used an unbiased estimator b𝛾 𝑖 →𝑗 [𝑡 ] at each update instead of the actual externalities 𝛾 𝑖 →𝑗 [𝑡 ] as long as the martingale b𝑋 𝑖 →𝑗 [𝑡 ] := − Í𝑡 𝑠 =1 b𝛾 𝑖 →𝑗 [𝑠 ] concentrates around 0 for an honest agent 𝑖 . The only problem with the algorithm described above to compute an estimator 
+
+b𝛾 𝑖 →𝑗 [𝑡 ] is that |b𝛾 𝑖 →𝑗 [𝑡 ]| need not be almost surely bounded by a nontrivial constant since the two coupled instances need not sync until the end of time, which makes proving the martingale concentration difficult. To fix this, we modify the algorithm to stop the simulation after 𝐿 timesteps. Stopping before the two simulations sync introduces some bias into the estimator, but we shall show that we can make 𝐿 sufficiently large to reduce the bias to still obtain the guarantees of Theorem 3.6. Pseudocode for this algorithm is given in Algorithm 2. 
+
+ALGORITHM 2: Compute Estimated Externalities via Coupled Samples 
+
+Input: update (𝑡 0, 𝑗 ), report b𝜃 𝑗 [𝑡 0], reported past states b𝜃 [𝑡 0, 𝑗 − 1], simulation limit 𝐿 
+
+Simulate two coupled high-valued jobs processes (𝜃 report [( 𝑡, 𝑖 )]) and (𝜃 random [( 𝑡, 𝑖 )]) as described in the proof of Lemma 3.8 through timestep min {𝜎, 𝑡 0 + 𝐿 − 1,𝑇 } where 𝜎 = inf {𝑡 ≥ 𝑡 0 : 𝜃 report [𝑡 ] = 𝜃 random [𝑡 ]} ;For each 𝑖 ≠ 𝑗 , set b𝛾 𝑗 →𝑖 [𝑡 0] to be the number of high-valued jobs from agent 𝑖 served in simulation 
+
+(𝜃 report [( 𝑡, 𝑖 )]) minus the number of high-valued jobs from agent 𝑖 served in simulation (𝜃 random [( 𝑡, 𝑖 )]) 
+
+during the timesteps that have been simulated; 
+
+Output: estimated externalities b𝛾 𝑗 →𝑖 [𝑡 0] for 𝑖 ≠ 𝑗 
+
+Next, we define the predictable bias of b𝛾 𝑗 →𝑖 [𝑡 0] as 
+
+𝛽 𝑗 →𝑖 [𝑡 0] := E
+
+hb𝛾 𝑗 →𝑖 [𝑡 0] b𝜃 [𝑡 0, 𝑗 − 1], b𝜃 [𝑡 0, 𝑗 ]
+
+i
+
+− 𝛾 𝑗 →𝑖 [𝑡 0].
+
+Lemma 4.1. Given 𝜖 > 0, by running Algorithm 2 with 
+
+𝐿 ≥
+
+( log 𝑇 +1   
+
+> 𝜖𝛿
+> −log (1−𝛿 )
+
+if 𝛿 < 11 if 𝛿 = 1 ,
+
+the predictable bias 𝛽 𝑗 →𝑖 [𝑡 0] is at most 𝜖 .Proof. As in the proof of Lemma 3.8, if we define Δ𝑡 0 = ∥𝜃 report [𝑡 0] − 𝜃 random [𝑡 0] ∥ 1, then P(𝜎 > 𝑡 0 +𝑠 |Δ𝑡 0 ) ≤ (1 − 𝛿 )𝑠 Δ𝑡 0 and Δ𝑡 0 ≤ 𝑇 + 1 almost surely, yielding the bound P(𝜎 > 𝑡 0 + 𝑠 ) ≤ ( 1 − 𝛿 )𝑠 (𝑇 + 1). By definition, the predictable bias 𝛽 𝑗 →𝑖 [𝑡 0] is the expected difference between the output of Algorithm 2 when run with a simulation limit and the output when run without a simulation limit. This difference is at most 
+
+(𝜎 − ( 𝑡 0 + 𝐿 )) +. Using the tail sum formula, 
+
+E[( 𝜎 − ( 𝑡 0 + 𝐿 )) +] ≤ 
+
+> ∞
+
+∑︁ 
+
+> 𝑠 =𝐿
+
+P(𝜎 > 𝑡 0 + 𝑠 ) ≤ ( 𝑇 + 1)
+
+> ∞
+
+∑︁ 
+
+> 𝑠 =𝐿
+
+(1 − 𝛿 )𝑠 = (𝑇 + 1) · (1 − 𝛿 )𝐿 
+
+𝛿 .
+
+For 𝐿 as chosen in the lemma statement, this is at most 𝜖 . ■
+
+16 Replacing the exact externalities in PEC with the estimates computed by Algorithm 2 gives a basic version of SPEC . We first prove its utility and runtime guarantees, then add report caps to obtain the improved runtimes. We prove the following guarantee for SPEC .
+
+Theorem 4.2. There exist a simulation limit and a virtual debt limit 
+
+𝐿 =
+
+(
+
+Θ(log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1, 𝐵 = eΘ √︂ 𝑇 𝑛 
+
+!
+
+such that Algorithm 1, using estimators b𝛾 𝑖 →𝑗 [𝑡 ] computed by Algorithm 2 with simulation limit 𝐿 instead of the externalities 𝛾 𝑖 →𝑗 [𝑡 ], has error e𝑂 (√𝑛𝑇 ).Furthermore, the mechanism takes worst-case 𝑂 (𝑛 2 log 𝑇 ) computational time per timestep 𝑡 .Proof Sketch. First, let us prove the runtime bound. Our choice of 𝐿 satisfies 𝐿 ≤ 𝑂 (log 𝑇 ), so each simula-tion takes at most 𝑂 (log 𝑇 ) timesteps. Each timestep of a simulation takes 𝑂 (𝑛 ) time since we must update 
+
+𝑂 (𝑛 ) queues. Each timestep of the mechanism runs 𝑂 (𝑛 ) coupled simulations, one for each agent’s report. Thus, a timestep of the mechanism takes 𝑂 (𝑛 2 log 𝑇 ) time. For the error bound, the idea is to use Lemma 4.1 with our choice of 𝜖 = 1/𝑇 . With a predictable bias so small, one can modify the proof of Theorem 3.6 to obtain the same error bound. In more detail, fix an honest agent 𝑖 . Conditioned on the reported history up to an update (𝑡, 𝑖 − 1), the estimated externality 
+
+b𝛾 𝑖 →𝑗 [𝑡 ] has expectation 0 for every other agent 𝑗 because both simulations in the execution of Algorithm 2 are identically distributed since the report b𝜃 𝑖 [𝑡 ] and the simulated random state 𝜃 random  
+
+> 𝑖
+
+[𝑡 ] are identically distributed conditioned on the reported history up to an update (𝑡, 𝑖 − 1). We can then use a similar martingale concentration argument and virtual debt limit 𝐵 as in Theorem 3.6 to show that agent 𝑖 does not exceed any virtual debt limit with high probability. The virtual debt limit 𝐵 in Theorem 3.6 represented a budget on how much of an externality one agent is allowed on another; now, it limits the cumulative estimated externality that one agent may impose on another. Since the estimated externality is off from the true externality by at most the predictable bias in expectation each time period, which is at most 𝜖 , the amount of externality one agent can impose on another is bounded by about 𝐵 + 𝜖𝑇 . But since 𝜖 = 1/𝑇 ,the extra 𝜖𝑇 term has no significant effect. ■
+
+The full proof is given in Appendix E. 
+
+4.3 Improved Algorithm 
+
+By the proof of Lemma 3.8, the expected number of timesteps until the two coupled simulations in Algo-rithm 2 at update (𝑡 0, 𝑖 ) sync conditioned on the initial difference Δ𝑡 0 in the number of high-valued jobs agent 𝑖 has after update (𝑡 0, 𝑖 ) between the two simulations is at most ⌈log  Δ𝑡 0
+
+/− log (1 − 𝛿 )⌉ + 1/𝛿 for 
+
+𝛿 < 1 and Δ𝑡 0 ≥ 1 (and is 0 if Δ𝑡 0 = 0). In the proof of Lemma 3.8, we bounded Δ𝑡 0 ≤ 𝑇 + 1, giving us the 
+
+𝑂 (log 𝑇 ) bound on the expected number of timesteps that we need to simulate. If agent 𝑖 is honest, this is a very pessimistic bound: the bound Δ𝑡 0 ≤ 𝜃 𝑖 [𝑡 0 − 1] + 1, which happens since the number of high-valued jobs agent 𝑖 can have can only increase by 1 per timestep, is a much better bound. One can show that with probability at least 1 − 1/𝑇 , 𝜃 𝑖 [𝑡 ] is bounded by 𝑂 (√︁ log 𝑇 ) (Lemma 4.5). Thus, if agent 𝑖 is honest, the expected number of timesteps that Algorithm 2 runs is 𝑂 (log log 𝑇 ). Furthermore, one can show that with probability at least 1 − 1/𝑇 , Í𝑇 𝑡 =1 𝜃 𝑖 [𝑡 ] is bounded by 𝑂 (𝑇 ) (Lemma 4.6). Then, the total expected number of timesteps that Algorithm 2 runs simulations on updates (𝑡, 𝑖 ) across time 𝑡 is bounded by 𝑂 (𝑇 ). In this sense, the amortized expected number of timesteps spent on simulations to compute externalities 𝛾 𝑖 →𝑗 [𝑡 ]
+
+is 𝑂 (1) per timestep amortized across timesteps 𝑡 .17 The above analysis works if agent 𝑖 is honest. We can extend it to work under arbitrary behavior of agents by enforcing that agents’ reports are not too large in the mechanism. Specifically, to obtain the expected number of simulated timesteps 𝑂 (log log 𝑇 ), we enforce that b𝜃 𝑖 [𝑡 ] ≤ 𝜃 for some 𝜃 = Θ(√︁ log 𝑇 ), and to obtain the expected amortized number of simulated timesteps 𝑂 (1), we require that Í𝑡 𝑠 =1 b𝜃 𝑖 [𝑠 ] ≤ Σ at each timestep 𝑡 for a suitable Σ = eΘ(𝑇 /𝑛 ). For a careful choice of 𝜃 and Σ, the reports b𝜃 𝑖 [𝑡 ] are enforced to be not too high so that we obtain improved runtime guarantees and that honest agents are not affected by the report capping with high probability so we obtain a similar error bound. We give pseudocode for the mechanism with this report capping using estimates b𝛾 𝑗 →𝑖 [𝑡 ] computed by Algorithm 2 in Algorithm 3. 
+
+ALGORITHM 3: Sampled Pairwise Externality Compensator ( SPEC ) with Report Capping and Estimated Ex-ternalities 
+
+Input: virtual debt limit 𝐵 , per-round report cap 𝜃 , cumulative report cap Σ, simulation limit 𝐿 
+
+Initialize b𝜃 [0, 𝑛 + 1] = 0; 
+
+for 𝑡 = 1, 2, . . . ,𝑇 do for 𝑖 = 1, 2, . . . , 𝑛 do if Í𝑡 −1 
+
+> 𝑠 =1
+
+𝑝 𝑖 →𝑗 [𝑠 ] > 𝐵 for some 𝑗 ≠ 𝑖 then 
+
+Set b𝜃 𝑖 [𝑡 ] = 0; 
+
+else 
+
+Elicit a report b𝜃 𝑖 [𝑡 ] ∈ { 0, 1, . . . ,𝑇 } from agent 𝑖 ;Enforce report caps: b𝜃 𝑖 [𝑡 ] ← min 
+
+nb𝜃 𝑖 [𝑡 ], 𝜃, Σ − Í𝑡 −1 
+
+> 𝑠 =1
+
+b𝜃 𝑖 [𝑠 ]
+
+o
+
+;Set b𝜃 𝑖 [𝑡, 𝑖 ] = b𝜃 𝑖 [𝑡 ] and b𝜃 𝑗 [𝑡, 𝑖 ] = b𝜃 𝑗 [𝑡, 𝑖 − 1] for 𝑗 ≠ 𝑖 .; Agent 𝑖 makes virtual transfers 𝑝 𝑖 →𝑗 [𝑡 ] = −b𝛾 𝑖 →𝑗 [𝑡 ] where b𝛾 𝑖 →𝑗 [𝑡 ] is computed by Algorithm 2 at update (𝑡, 𝑖 ) with report b𝜃 𝑖 [𝑡 ], reported past states b𝜃 [𝑡, 𝑖 − 1], and simulation limit 𝐿 ;
+
+if b𝜃 𝑖 [𝑡 ] = 0 for all 𝑖 then 
+
+Let the server idle; Set b𝜃 [𝑡, 𝑛 + 1] = b𝜃 [𝑡, 𝑛 ];
+
+else 
+
+Give agent 𝑖 access to the server where 𝑖 is chosen uniformly at random from {𝑖 : b𝜃 𝑖 [𝑡 ] > 0};Set b𝜃 𝑖 [𝑡, 𝑛 + 1] = b𝜃 𝑖 [𝑡 ] − 1 and b𝜃 𝑗 [𝑡, 𝑛 + 1] = b𝜃 𝑗 [𝑡 ] for 𝑗 ≠ 𝑖 ;
+
+Our main results are listed formally below and are summarized in Table 1. One of them uses a simulation limit 𝐿 = Θ(log 𝑇 ) with a worst-case per-timestep runtime of 𝑂 (𝑛 2 log 𝑇 ) and an error bound of e𝑂 (√𝑛𝑇 ),while the other uses a simulation limit 𝐿 = Θ(log log 𝑇 ) and obtains a worst-case per-timestep runtime of 𝑂 (𝑛 2 log log 𝑇 ) and an error bound of 𝑂 (𝑛𝑇 /log 𝑇 ). Both results achieve an expected per-timestep run-time 𝑂 (𝑛 2 log log 𝑇 ) and an expected amortized runtime of 𝑂 (𝑛 2). Adapting the proof of Lemma E.7, a simulation limit 𝐿 = Ω   log  (𝜃 + 1)/ 𝜖  makes the predictable bias at most 𝜖 . For fixed 0 < 𝛿 < 1 and 
+
+𝜃 = Θ(√︁ log 𝑇 ), choosing 𝜖 = 1/𝑇 permits 𝐿 = Θ(log 𝑇 ) and choosing 𝜖 = 1/log 𝑇 permits 𝐿 = Θ(log log 𝑇 ).The bias can accumulate over 𝑇 periods, contributing 𝑂 (𝑛𝜖𝑇 ) to the error. We use 𝜖 = 1/𝑇 to obtain The-orem 4.3 and 𝜖 = 1/ln 𝑇 to obtain Theorem 4.4. 
+
+Theorem 4.3 (Main Result with 𝐿 = Θ(log 𝑇 )). There exist parameters 
+
+𝜃 =
+
+(
+
+Θ(√︁ log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1, 𝐿 =
+
+(
+
+Θ(log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1,
+
+Σ = eΘ
+
+𝑇 𝑛 
+
+
+
+, 𝐵 = eΘ √︂ 𝑇 𝑛 
+
+!
+
+such that Algorithm 3 has error at most e𝑂 (√𝑛𝑇 ), worst-case 𝑂 (𝑛 2 log 𝑇 ) and expected 𝑂 (𝑛 2 log log 𝑇 ) per-step 
+
+18 𝐿 Θ(log 𝑇 ) Θ(log log 𝑇 )
+
+Error e𝑂 (√𝑛𝑇 ) 𝑂 (𝑛𝑇 /log 𝑇 )
+
+Worst-case 𝑂 (𝑛 2 log 𝑇 ) 𝑂 (𝑛 2 log log 𝑇 )
+
+Expected 𝑂 (𝑛 2 log log 𝑇 ) 𝑂 (𝑛 2 log log 𝑇 )
+
+Expected amortized 𝑂 (𝑛 2) 𝑂 (𝑛 2)
+
+Table 1: Guarantees of Theorems 4.3 and 4.4. The bottom three rows show the per-step runtime of the algorithm. 
+
+runtime, and expected total runtime spent across all time periods at most 𝑂 (𝑛 2𝑇 ).
+
+Theorem 4.4 (Main Result with 𝐿 = Θ(log log 𝑇 )). There exist parameters 
+
+𝜃 =
+
+(
+
+Θ(√︁ log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1, 𝐿 =
+
+(
+
+Θ(log log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1,
+
+Σ = eΘ
+
+𝑇 𝑛 
+
+
+
+, 𝐵 = eΘ √︂ 𝑇 𝑛 
+
+!
+
+such that Algorithm 3 has error at most 𝑂 (𝑛𝑇 /log 𝑇 ), worst-case 𝑂 (𝑛 2 log log 𝑇 ) per-step runtime, and ex-pected total runtime spent across all time periods at most 𝑂 (𝑛 2𝑇 ).
+
+Both of these theorems are proved in Appendix E. The only parts of the proofs that are significantly dif-ferent than the proof of Theorem 4.2 are the parts where we must prove that honest agents do not hit either the per-round or cumulative report cap with high probability. We give sketches for that part of the argument below. 
+
+Lemma 4.5. Fix an agent 𝑖 and 𝜂 ∈ ( 0, 1]. If we set 
+
+𝜃 ≥
+
+
+
+min 
+
+
+
+𝑇 , √︂ 2  
+
+> −ln (1−𝛿 )
+
+ 2 
+
+> 𝛿
+
++ ln 𝑇 𝜂 
+
+
+
++ 1
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+,
+
+then P(∃ 𝑡 : 𝜃 𝑖 [𝑡 ] > 𝜃 ) ≤ 𝜂 .Proof. If 𝛿 = 1, then an agent’s queue only contains 1 job each time period, so the lemma statement holds because 𝜃 ≥ 1. Otherwise, assume 𝛿 < 1. If 𝜃 ≥ 𝑇 , the claim holds deterministically because at most 𝑇 jobs arrive to an agent. Otherwise, assume 
+
+𝜃 < 𝑇 . Fix a time 𝑡 . Let 𝑋 𝑠 ∼ Bern   1
+
+> 𝑛
+
+ be the indicator that a high-valued job arrived to agent 𝑖 ’s queue in timestep 𝑡 − 𝑠 , and let 𝑌 𝑠 ∼ Bern (( 1 − 𝛿 )𝑠 ) be the indicator that the job arriving at timestep 𝑡 − 𝑠 would survive to timestep 𝑡 if not served. Set 𝑍 𝑠 = 𝑋 𝑠 𝑌 𝑠 ∼ Bern   1 
+
+> 𝑛
+
+· ( 1 − 𝛿 )𝑠 . Then, 𝜃 𝑖 [𝑡 ] ≤ Í𝑡 −1 
+
+> 𝑠 =0
+
+𝑍 𝑠 almost surely. We apply a Chernoff bound to Í𝑡 −1 
+
+> 𝑠 =0
+
+𝑍 𝑠 . Specifically, apply Lemma B.3 with 𝑝 = 1/𝑛 , 𝑞 = 1 − 𝛿 , and 
+
+𝑚 = 𝜃 to obtain 
+
+P(𝜃 𝑖 [𝑡 ] > 𝜃 ) ≤ 𝑒 2/𝛿 
+
+ 1
+
+𝑛 
+
+𝜃 
+
+(1 − 𝛿 )𝜃 (𝜃 −1)/ 2.
+
+The right-hand side can be bounded as 
+
+𝑒 2/𝛿 
+
+ 1
+
+𝑛 
+
+𝜃 
+
+(1 − 𝛿 )𝜃 (𝜃 −1)/ 2 ≤ 𝑒 2/𝛿 (1 − 𝛿 ) (𝜃 −1)2/2 ≤ 𝜂 𝑇 
+
+19 for our choice of 𝜃 . By union bounding over all 𝑇 timesteps 𝑡 , we obtain the lemma statement: 
+
+P(∃ 𝑡 : 𝜃 𝑖 [𝑡 ] > 𝜃 ) ≤ 𝜂. 
+
+■
+
+Lemma 4.6. For any agent 𝑖 , for any 𝑥 > 0, with probability at least 1 − 𝑒 −𝑥 ,
+
+𝛿 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝜃 𝑖 [𝑡 ] ≤ 𝑇 𝑛 +√︂ 32 𝑇 𝑥 𝑛 + 2𝑥 . 
+
+Proof. Let 𝐽 𝑡 ∼ Bern (1/𝑛 ) be the indicator that a high-valued job arrives to agent 𝑖 ’s queue in timestep 𝑡 ,and let 𝐺 𝑡 ∼ Geom (𝛿 ) be the number of time periods that job would survive if not served and if we extended the time horizon to infinity. By the counting argument that Í𝑇 𝑡 =1 𝜃 𝑖 [𝑡 ] is at most the total potential lifetime of high-valued jobs in agent 𝑖 ’s queue, 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝜃 𝑖 [𝑡 ] ≤ 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝐽 𝑡 𝐺 𝑡 .
+
+The result follows from applying a Bernstein bound to the above sum; specifically, we apply Lemma B.2 with 𝐻 𝑠 = 𝛿𝐺 𝑠 , 𝑍 𝑠 = 𝐽 𝑠 𝐻 𝑠 , and 𝑝 = 1/𝑛 . ■
+
+# References 
+
+[Abe+26] Ariana Abel, Yoav Kolumbus, Jeronimo Martin Duque, Cristian Palma Foster, and Eva Tardos. “Learning in strategic queuing systems with small buffers”. In: Proceedings of the 27th ACM Conference on Economics and Computation . To appear. 2026. [AAS25] Alireza AmaniHamedani, Ali Aouad, and Amin Saberi. “Adaptive approximation schemes for matching queues”. In: Proceedings of the 57th Annual ACM Symposium on Theory of Computing .2025, pp. 1454–1464. [BFT23] Siddhartha Banerjee, Giannis Fikioris, and Eva Tardos. “Robust Pseudo-Markets for Reusable Public Resources”. In: Proceedings of the 24th ACM Conference on Economics and Computation .2023, pp. 241–241. [BSV23] Lucas Baudin, Marco Scarsini, and Xavier Venel. “Strategic behavior and no-regret learning in queueing systems”. In: arXiv preprint arXiv:2302.03614 (2023). [BLM13] Stéphane Boucheron, Gábor Lugosi, and Pascal Massart. Concentration Inequalities: A Nonasymptotic Theory of Independence . Oxford University Press, Feb. 2013. isbn: 9780199535255. doi: 10 . 1093 / acprof : oso / 9780199535255 . 001 . 0001 . url: https : //doi.org/10.1093/acprof:oso/9780199535255.001.0001 .[Cav14] Ruggiero Cavallo. “Incentive compatible two-tiered resource allocation without money”. In: 
+
+Proceedings of the 2014 international conference on Autonomous agents and multi-agent systems .2014, pp. 1313–1320. [Cha05] Ch A Charalambides. “Moments of a class of discrete q-distributions”. In: Journal of statistical planning and inference 135.1 (2005), pp. 64–76. [Csó25] Endre Csóka. “Prior-free Collusion-proof Dynamic Mechanisms”. In: arXiv preprint arXiv:2511.15727 (2025). 20 [Csó26] Endre Csóka. “A 1.283 Price-of-Anarchy Bound for the Repeated Virtual First-Price Auction”. In: arXiv preprint arXiv:2609.05499 (2026). [Csó+23] Endre Csóka, Heng Liu, Alexander Rodivilov, and Alexander Teytelboym. “A collusion-proof efficient dynamic mechanism”. In: Available at SSRN 4419623 (2023). [CPR26] Endre Csóka, András Pongrácz, and Alexander Rodivilov. “Guaranteed Utility Equilibrium”. In: Proceedings of the 27th ACM Conference on Economics and Computation . To appear. 2026. [FGL15] Xiequan Fan, Ion Grama, and Quansheng Liu. “Exponential inequalities for martingales with applications”. In: Electron. J. Probab. 20 (2015), pp. 1–22. [FBT25] Giannis Fikioris, Siddhartha Banerjee, and Eva Tardos. “Beyond Worst-Case Online Allocation via Dynamic Max-min Fairness”. In: Proceedings of the 26th ACM Conference on Economics and Computation . 2025, p. 92. [Fre75] David A Freedman. “On tail probabilities for martingales”. In: the Annals of Probability (1975), pp. 100–118. [FLW24] Daniel Freund, Thodoris Lykouris, and Wentao Weng. “Efficient decentralized multi-agent learning in asymmetric bipartite queueing systems”. In: Operations Research 72.3 (2024), pp. 1049–1070. [FHL22] Hu Fu, Qun Hu, and Jia’nan Lin. “Stability of decentralized queueing networks beyond com-plete bipartite cases”. In: International Conference on Web and Internet Economics . Springer. 2022, pp. 96–114. [GT23] Jason Gaitonde and Éva Tardos. “The price of anarchy of strategic queuing systems”. In: Jour-nal of the ACM 70.3 (2023), pp. 1–63. [GBI21a] Artur Gorokh, Siddhartha Banerjee, and Krishnamurthy Iyer. “From monetary to nonmone-tary mechanism design via artificial currencies”. In: Mathematics of Operations Research 46.3 (2021), pp. 835–855. [GBI21b] Artur Gorokh, Siddhartha Banerjee, and Krishnamurthy Iyer. “The Remarkable Robustness of the Repeated Fisher Market”. In: Proceedings of the 22nd ACM Conference on Economics and Computation . 2021, pp. 562–562. [GCR09] Mingyu Guo, Vincent Conitzer, and Daniel M Reeves. “Competitive repeated allocation with-out payments”. In: International Workshop on Internet and Network Economics . Springer. 2009, pp. 244–255. [JS07] Matthew O Jackson and Hugo F Sonnenschein. “Overcoming incentive constraints by linking decisions”. In: Econometrica 75.1 (2007), pp. 241–257. [JST26] Ravi Jagadeesan, Ilya R Segal, and Alex Tordjman. “The Limits of Auctions under Ex-Ante Collusion”. In: Available at SSRN (2026). doi: https://doi.org/10.2139/ssrn.6993038 .[Kri+16] Subhashini Krishnasamy, Rajat Sen, Ramesh Johari, and Sanjay Shakkottai. “Regret of Queue-ing Bandits”. In: Advances in Neural Information Processing Systems . Vol. 29. Curran Associates, Inc., 2016, pp. 1669–1677. [Kri+21] Subhashini Krishnasamy, Rajat Sen, Ramesh Johari, and Sanjay Shakkottai. “Learning Un-known Service Rates in Queues: A Multiarmed Bandit Approach”. In: Oper. Res. 69.1 (2021), pp. 315–330. doi: 10.1287/opre.2020.1995 . url: https://doi.org/10.1287/opre.2020. 1995 .21 [Lin+26a] David X Lin, Siddhartha Banerjee, Giannis Fikioris, and Éva Tardos. “Robust equilibria in shared resource allocation via strengthening border’s theorem”. In: Proceedings of the 2026 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA) . SIAM. 2026, pp. 6571–6612. [Lin+25] David X Lin, Daniel Hall, Giannis Fikioris, Siddhartha Banerjee, and Éva Tardos. “Online re-source sharing: better robust guarantees via randomized strategies”. In: Proceedings of the Thirty-Fourth International Joint Conference on Artificial Intelligence . 2025, pp. 179–186. [Lin+26b] David X. Lin, Giannis Fikioris, Siddhartha Banerjee, and Éva Tardos. “Robust Resource Alloca-tion via Competitive Subsidies”. In: 17th Innovations in Theoretical Computer Science Conference (ITCS 2026) . Ed. by Shubhangi Saraf. Vol. 362. Leibniz International Proceedings in Informat-ics (LIPIcs). Dagstuhl, Germany: Schloss Dagstuhl – Leibniz-Zentrum für Informatik, 2026, 96:1–96:15. isbn: 978-3-95977-410-9. doi: 10 . 4230 / LIPIcs . ITCS . 2026 . 96 . url: https : //drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ITCS.2026.96 .[Ony+25] Chido Onyeze, Siddhartha Banerjee, Giannis Fikioris, and Éva Tardos. “Allocating public goods via dynamic max-min fairness: Long-run behavior and competitive equilibria”. In: Proceedings of the ACM on Measurement and Analysis of Computing Systems 9.1 (2025), pp. 1–45. [Saf18] Mikhail Safronov. “Coalition-proof full efficient implementation”. In: Journal of Economic The-ory 177 (2018), pp. 659–677. [SIN23] Tareq Si Salem, Georgios Iosifidis, and Giovanni Neglia. “Enabling Long-term Fairness in Dy-namic Resource Allocation”. In: Abstract Proceedings of the 2023 ACM SIGMETRICS Interna-tional Conference on Measurement and Modeling of Computer Systems, SIGMETRICS 2023, Or-lando, FL, USA, June 19-23, 2023 . Ed. by Evgenia Smirni, Konstantin Avrachenkov, Phillipa Gill, and Bhuvan Urgaonkar. ACM, 2023, pp. 31–32. doi: 10.1145/3578338.3593541 . url: 
+
+https://doi.org/10.1145/3578338.3593541 .[SBP21] Flore Sentenac, Etienne Boursier, and Vianney Perchet. “Decentralized learning in online queuing systems”. In: Advances in Neural Information Processing Systems 34 (2021), pp. 18501– 18512. [Siv+26] Balasubramanian Sivan et al. “Quota Marketplace: Dynamic Pricing for Efficient Allocation of ML Training Resources”. In: 20th USENIX Symposium on Operating Systems Design and Imple-mentation (OSDI 26) . 2026, pp. 1223–1241. 22 A Review of the Guaranteed Utility Mechanism (GUM) 
+
+A.1 GUM for Single Item Allocation with Transferable Utilities and Known Priors 
+
+In this section, we review the mechanism of [Saf18] or [Csó+23] in a simplified setting, which following [Csó+23], we call the Guaranteed Utility Mechanism (GUM). This setting is simpler than the one in which we use GUM, but it illustrates the important ideas. We consider a setting of allocating a single item to an agent among 𝑛 agents with transferable utilities. Each agent 𝑖 has a private value 𝑉 𝑖 drawn from some distribution D𝑖 , independently across agents with values bounded in [0, 1]. We assume utilities are transferable and that each agent 𝑖 can make a transfer 
+
+𝑝 𝑖 →𝑗 to another agent 𝑗 . With such transfers, agent 𝑖 receives utility 
+
+𝑈 𝑖 =
+
+(
+
+𝑉 𝑖 − Í𝑗 ≠𝑖 𝑝 𝑖 →𝑗 + Í𝑗 ≠𝑖 𝑝 𝑗 →𝑖 if agent 𝑖 wins the item 
+
+− Í𝑗 ≠𝑖 𝑝 𝑖 →𝑗 + Í𝑗 ≠𝑖 𝑝 𝑗 →𝑖 otherwise .
+
+The Guaranteed Utility Mechanism works as follows. It is parameterized by a desired allocation rule 
+
+𝜒 : [0, 1]𝑛 → Δ([ 𝑛 ]) , a randomized rule that takes as input the value profile (𝑉 1, . . . , 𝑉 𝑛 ) and outputs a winning agent to receive the item. Denote the probability that agent 𝑖 wins the item under 𝜒 with value profile (𝑉 1, . . . , 𝑉 𝑛 ) by 𝜒 𝑖 (𝑉 1, . . . , 𝑉 𝑛 ). In order of agent number 𝑖 , do the following. Elicit a reported value 
+
+b𝑉 𝑖 ∈ [ 0, 1] from agent 𝑖 . For each agent 𝑗 ∈ [ 𝑛 ], define 
+
+Υ𝑗 [𝑖 ] =
+
+
+
+E𝑉 𝑖 +1∼D 𝑖 +1,...,𝑉 𝑛 ∼D 𝑛 
+
+hb𝑉 𝑗 · 𝜒 𝑗 (b𝑉 1, . . . , b𝑉 𝑖 , 𝑉 𝑖 +1, . . . , 𝑉 𝑛 )
+
+i
+
+if 𝑗 ≤ 𝑖 
+
+E𝑉 𝑖 +1∼D 𝑖 +1,...,𝑉 𝑛 ∼D 𝑛 
+
+h
+
+𝑉 𝑗 · 𝜒 𝑗 (b𝑉 1, . . . , b𝑉 𝑖 , 𝑉 𝑖 +1, . . . , 𝑉 𝑛 )
+
+i
+
+if 𝑗 > 𝑖 . (3) and 
+
+𝛾 𝑖 →𝑗 = Υ𝑗 [𝑖 ] − Υ𝑗 [𝑖 − 1], (4) where Υ𝑗 [0] is still defined by (3). Agent 𝑖 makes a transfer 𝑝 𝑖 →𝑗 = −𝛾 𝑖 →𝑗 to each agent 𝑗 ≠ 𝑖 . At the end, allocate the item according to the rule 𝜒 (b𝑉 1, . . . , b𝑉 𝑛 ). Pseudocode for the mechanism is given in Algorithm 4. 
+
+ALGORITHM 4: Guaranteed Utility Mechanism (GUM) for the allocation of a single item 
+
+Input: allocation rule 𝜒 
+
+for 𝑖 = 1, 2, . . . , 𝑛 do 
+
+Elicit a reported value b𝑉 𝑖 ∈ [ 0, 1] from agent 𝑖 ;Agent 𝑖 makes transfers 𝑝 𝑖 →𝑗 = −𝛾 𝑖 →𝑗 where 𝛾 𝑖 →𝑗 is defined by (4); Allocate the item to agent 𝑗 with probability 𝜒 𝑗 (b𝑉 1, . . . , b𝑉 𝑛 );
+
+Say that agent 𝑖 is guaranteed utility 𝑢 𝑖 if by acting truthfully, i.e., reporting b𝑉 𝑖 = 𝑉 𝑖 , agent 𝑖 ’s expected utility is at least 𝑢 𝑖 regardless of the behavior of the other agents. The main property of GUM is the following, proved in [Csó+23; Saf18]. 
+
+Theorem A.1. Under GUM, each agent 𝑖 is guaranteed utility E𝑉 1∼D 1,...,𝑉 𝑛 ∼D 𝑛 [𝑉 𝑖 · 𝜒 𝑖 (𝑉 1, . . . , 𝑉 𝑛 )] .Additionally, if agent 𝑖 behaves truthfully, then E[𝛾 𝑖 →𝑘 ] = 0.
+
+To explain why this theorem is true, we explain the meanings of Υ𝑖 [ 𝑗 ] and 𝛾 𝑗 →𝑖 . We call Υ𝑖 [ 𝑗 ] agent 
+
+𝑖 ’s anticipated payoff after agent 𝑗 announces b𝑉 𝑗 . It is agent 𝑖 ’s expected utility under the mechanism conditioned on the reports b𝑉 1, . . . , b𝑉 𝑗 from agent 𝑗 and before, assuming b𝑉 𝑖 = 𝑉 𝑖 if 𝑖 ≤ 𝑗 and that the reports of agents 𝑘 > 𝑗 are unknown and drawn from D𝑘 (which includes 𝑘 = 𝑖 if 𝑖 > 𝑗 ). We call 𝛾 𝑗 →𝑖 agent 𝑗 ’s 23 externality on agent 𝑖 . It is the difference between agent 𝑖 ’s expected payoff after agent 𝑗 announces b𝑉 𝑗 and agent 𝑖 ’s expected payoff before agent 𝑗 announces b𝑉 𝑗 . Intuitively, this is the harm that agent 𝑗 places on agent 𝑖 by announcing b𝑉 𝑗 and deviating from expectation. The payment rule 𝑝 𝑗 →𝑖 = −𝛾 𝑗 →𝑖 has a simple interpretation: agent 𝑗 pays agent 𝑖 for the harm done. Theorem A.1 can be explained by following observations. 1. Every agent 𝑖 has anticipated payoff Υ𝑖 [0] = E𝑉 1∼D 1,...,𝑉 𝑛 ∼D 𝑛 [𝑉 𝑖 · 𝜒 𝑖 (𝑉 1, . . . , 𝑉 𝑛 )] at the beginning. 2. Any changes in the anticipated payoff that occur because agents 𝑗 ≠ 𝑖 report values that change this expectation get compensated by those agents. 3. If agent 𝑖 reports b𝑉 𝑖 = 𝑉 𝑖 , she does not change any other agents’ 𝑘 ≠ 𝑖 anticipated payoffs in expectation, so E[𝛾 𝑖 →𝑘 ] = 0. Therefore, if agent 𝑖 behaves truthfully, they obtain the same utility in expectation as their anticipated payoff in the beginning. In particular, it doesn’t matter what strategy the other agents take: agent 𝑖 is compensated by any harm done by others regardless of their strategy. Formally, one can define H𝑗 =
+
+𝜎 (b𝑉 1, . . . , b𝑉 𝑗 ) to be filtration generated by the first 𝑗 reports and show that 
+
+𝑀 𝑖 [ 𝑗 ] := Υ𝑖 [ 𝑗 ] − ∑︁ 
+
+> 𝑘 ≠𝑖
+
+𝑝 𝑖 →𝑘 1𝑗 ≥𝑖 +∑︁   
+
+> 𝑘 ≤𝑗,𝑘 ≠𝑖
+
+𝑝 𝑘 →𝑖 
+
+is an H𝑗 -martingale for every truthful agent 𝑖 , which implies Theorem A.1. 
+
+Example A.2. Suppose there are 2 agents with value distributions both uniform on {0, 1}, and suppose 𝜒 
+
+is the allocation rule that allocates to the agent with the highest value, allocating to agent 2 in the case of a tie. At the beginning, agent 1’s anticipated payoff is 1 /4 and agent 2’s anticipated payoff is 1 /2. Consider what happens after agent 1 reports b𝑉 1. Agent 1’s anticipated payoff updates to b𝑉 1/2. Agent 2’s anticipated payoff does not change, so agent 1 makes 0 payment to agent 2. Now consider what happens when agent 2 reports b𝑉 2. Agent 2’s anticipated payoff updates to b𝑉 21b𝑉 2 ≥ b𝑉 1 . Agent 1’s anticipated payoff updates to 
+
+b𝑉 11b𝑉 1 >b𝑉 2 , so agent 2 pays agent 1 the difference b𝑉 1/2 − b𝑉 11b𝑉 1 >b𝑉 2 .If agent 1 is truthful, then her expected utility is 12 P
+
+b𝑉 1 > b𝑉 2 b𝑉 1 = 1
+
+| {z }
+
+> expected utility from the item
+
++ 14 − 12 P
+
+b𝑉 1 > b𝑉 2 b𝑉 1 = 1
+
+| {z }
+
+> expected payment from agent 2
+
+= 14 .
+
+If agent 2 is truthful, then her expected utility is 12
+
+|{z} 
+
+> expected utility from the item
+
+−
+
+ 12 E[b𝑉 1] − 12 E[b𝑉 11b𝑉 1 >0]
+
+| {z }
+
+> expected payment to agent 1
+
+= 12 .
+
+Remark A.3. Safronov [Saf18] and Csóka et al. [Csó+23] require the allocation rule 𝜒 be efficient in that it always allocates the item to an agent who has the highest value. This allows them to argue that truthful reporting is a Bayes-Nash equilibrium: if all agents 𝑗 ≠ 𝑖 are truthful, they are getting their guaranteed utility, so agent 𝑖 cannot get higher than their guaranteed utility since if they could, the resulting total surplus would violate the efficiency of 𝜒 .In contrast, we are not requiring 𝜒 to be efficient here. We still retain the guaranteed utility property of Theorem A.1. However, it may not be that truthful reporting is a Bayes-Nash equilibrium. Agents may be able to deviate from truth-telling to obtain a utility level even higher than the guaranteed utility level. 
+
+Remark A.4. Safronov [Saf18] and Csóka et al. [Csó+23] also require the allocation rule 𝜒 be deterministic, whereas we allow 𝜒 to be randomized. Allowing 𝜒 to be randomized essentially makes no difference in the analysis. 24 B Auxiliary Concentration Bounds 
+
+We use the following inequality from [Fre75] recorded as Theorem A in [FGL15]. 
+
+Theorem B.1 (Freedman’s Inequality) . Let 𝑆 0, 𝑆 1, . . . be a G𝑡 -supermartingale with 𝑆 0 = 0. Define 𝜉 𝑡 =
+
+𝑆 𝑡 −𝑆 𝑡 −1 and assume there exists 𝑐 > 0 such that 𝜉 𝑡 ≤ 𝑐 almost surely for all 𝑡 . Define ⟨𝑆 ⟩𝑡 = Í𝑡 𝑠 =1 E[𝜉 2 
+
+> 𝑠
+
+|G 𝑠 −1].Then, for any 𝑎, 𝑣 > 0,
+
+P(∃ 𝑡 : 𝑆 𝑡 ≥ 𝑎, ⟨𝑆 ⟩𝑡 ≤ 𝑣 ) ≤ exp 
+
+
+
+− 𝑎 2
+
+2(𝑣 + 𝑐𝑎 )
+
+
+
+.
+
+The below Bernstein bound for the sum of i.i.d. thinned geometric random variables is based on bounding the moments of the sum; this technique can be found in [BLM13]. 
+
+Lemma B.2 (Bernstein bound for thinned geometric random variables) . Let 𝐽 1, . . . , 𝐽 𝑇 be independent 
+
+Bern (𝑝 ) variables and let 𝐺 1, . . . , 𝐺 𝑇 be independent geometric variables on {1, 2, . . . } with success param-eter 𝛿 , independent of the 𝐽 𝑠 . Set 𝐻 𝑠 = 𝛿𝐺 𝑠 and 𝑍 𝑠 = 𝐽 𝑠 𝐻 𝑠 . Then, for every 𝑥 > 0,
+
+P
+
+> 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+(𝑍 𝑠 − 𝑝 ) >√︁ 32 𝑇 𝑝𝑥 + 2𝑥 
+
+!
+
+≤ 𝑒 −𝑥 .
+
+Proof. For 𝑦 ≥ 0, 
+
+P(𝐻 𝑠 > 𝑦 ) = (1 − 𝛿 )⌊𝑦 /𝛿 ⌋ ≤ 𝑒 −𝛿 ⌊𝑦 /𝛿 ⌋ ≤ 𝑒 1−𝑦 .
+
+The tail-integral formula for a nonnegative random variable and the defining integral of the Gamma func-tion now give, for every integer 𝑟 ≥ 1, 
+
+E[𝐻 𝑟 𝑠 ] =
+
+∫ ∞
+
+> 0
+
+𝑟𝑦 𝑟 −1 P(𝐻 𝑠 > 𝑦 )𝑑𝑦 
+
+≤ 𝑒𝑟 
+
+∫ ∞
+
+> 0
+
+𝑦 𝑟 −1𝑒 −𝑦 𝑑𝑦 = 𝑒𝑟 Γ(𝑟 ) = 𝑒𝑟 !.
+
+Moreover, E[𝐻 𝑠 ] = 𝛿 E[𝐺 𝑠 ] = 1, and hence E[𝑍 𝑠 ] = 𝑝 . For every integer 𝑟 ≥ 2, the well-known inequality 
+
+|𝑎 + 𝑏 |𝑟 ≤ 2𝑟 −1 (| 𝑎 |𝑟 + | 𝑏 |𝑟 ) gives 
+
+E[| 𝑍 𝑠 − 𝑝 |𝑟 ] ≤ 2𝑟 −1  E[𝑍 𝑟 𝑠 ] + 𝑝 𝑟  = 2𝑟 −1  𝑝 E[𝐻 𝑟 𝑠 ] + 𝑝 𝑟  ≤ 2𝑟 −1𝑝  𝑒𝑟 ! + 1 ≤ 2𝑟 −1𝑝 (4𝑟 !)
+
+= 𝑟 !2 (16 𝑝 )2𝑟 −2.
+
+We used 𝑒 + 1/𝑟 ! < 4 for 𝑟 ≥ 2 for the last inequality. Let 𝑋 𝑠 = 𝑍 𝑠 − 𝑝 . For 0 < 𝜗 < 1/2, the preceding Bernstein moment bound makes the following series absolutely convergent and gives 
+
+E[𝑒 𝜗𝑋 𝑠 ] = 1 +
+
+> ∞
+
+∑︁  
+
+> 𝑟 =2
+
+𝜗 𝑟 E[𝑋 𝑟 𝑠 ]
+
+𝑟 ! ≤ 1 +
+
+> ∞
+
+∑︁  
+
+> 𝑟 =2
+
+𝜗 𝑟 E[| 𝑋 𝑠 |𝑟 ]
+
+𝑟 ! ≤ 1 + 16 𝑝 
+
+2
+
+> ∞
+
+∑︁  
+
+> 𝑟 =2
+
+𝜗 𝑟 2𝑟 −2
+
+= 1 + 16 𝑝𝜗 2
+
+2(1 − 2𝜗 ) ≤ exp 
+
+ 16 𝑝𝜗 2
+
+2(1 − 2𝜗 )
+
+
+
+.
+
+By independence, 
+
+E
+
+"
+
+exp 𝜗 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+𝑋 𝑠 
+
+!# 
+
+= E
+
+" 𝑇 Ö
+
+> 𝑠 =1
+
+𝑒 𝜗𝑋 𝑠 
+
+#
+
+=
+
+> 𝑇
+
+Ö
+
+> 𝑠 =1
+
+E[𝑒 𝜗𝑋 𝑠 ] ≤ exp 
+
+ 16 𝑇 𝑝𝜗 2
+
+2(1 − 2𝜗 )
+
+
+
+.
+
+25 The case 𝑝 = 0 is immediate; otherwise put 𝑢 =√︁ 2𝑥 /( 16 𝑇 𝑝 ) and choose 
+
+𝜗 = 𝑢 
+
+1 + 2𝑢 ∈ ( 0, 1/2).
+
+Writing 𝑎 =√︁ 32 𝑇 𝑝𝑥 + 2𝑥 , this choice satisfies 1 − 2𝜗 = 11 + 2𝑢 , 16 𝑇 𝑝𝜗 2
+
+2(1 − 2𝜗 ) = 𝑥 
+
+1 + 2𝑢 , 𝜗𝑎 = 𝑥 (2 + 2𝑢 )
+
+1 + 2𝑢 .
+
+Markov’s inequality and the preceding MGF bound therefore yield 
+
+P
+
+> 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+𝑋 𝑠 > 𝑎 
+
+!
+
+≤ exp 
+
+
+
+−𝜗𝑎 + 16 𝑇 𝑝𝜗 2
+
+2(1 − 2𝜗 )
+
+
+
+= exp 
+
+
+
+−𝑥 (2 + 2𝑢 )
+
+1 + 2𝑢 + 𝑥 
+
+1 + 2𝑢 
+
+
+
+= 𝑒 −𝑥 .
+
+This proves the claim. ■
+
+The below lemma is a tail bound for a particular Poisson-Binomial distribution based off a Chernoff bound; a similar bound can actually be derived from the bounds on the factorial moments of the Poisson-Binomial distribution found in [Cha05]. 
+
+Lemma B.3 (Chernoff bound for a Poisson-Binomial distribution) . Let 𝑝 ∈ ( 0, 1], 𝑞 ∈ ( 0, 1), and 𝑍 0, 𝑍 1, . . . 
+
+be independent random variables with 𝑍 𝑡 ∼ Bern (𝑝𝑞 𝑡 ). For any integer 𝑚 ≥ 1,
+
+P
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑍 𝑡 ≥ 𝑚 
+
+!
+
+≤ 𝑒 2/( 1−𝑞 ) 𝑝 𝑚 𝑞 𝑚 (𝑚 −1)/ 2.
+
+Proof. For any 𝜗 > 0, Markov’s inequality applied to the MGF of Í𝑇 𝑡 =0 𝑍 𝑡 and independence give 
+
+P
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑍 𝑡 ≥ 𝑚 
+
+!
+
+= P
+
+> ∞
+
+Ö
+
+> 𝑡 =0
+
+𝑒 𝜗𝑍 𝑡 ≥ 𝑒 𝜗𝑚 
+
+!
+
+≤ 𝑒 −𝜗𝑚 
+
+> ∞
+
+Ö
+
+> 𝑡 =0
+
+E[𝑒 𝜗𝑍 𝑡 ].
+
+Take the logarithm of both sides and substitute E[𝑒 𝜗𝑍 𝑡 ] = 1 − 𝑝𝑞 𝑡 + 𝑝𝑞 𝑡 𝑒 𝜗 to obtain ln P
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑍 𝑡 ≥ 𝑚 
+
+!! 
+
+≤ − 𝜗𝑚 +
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =0
+
+ln 
+
+
+
+1 − 𝑝𝑞 𝑡 + 𝑝𝑞 𝑡 𝑒 𝜗 
+
+≤ − 𝜗𝑚 +
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =0
+
+ln 
+
+
+
+1 + 𝑝𝑞 𝑡 𝑒 𝜗 
+
+. (5) Use the identities ln (1 + 𝑥 ) ≤ ln (𝑥 ) + 1/𝑥 and ln (1 + 𝑥 ) ≤ 𝑥 to obtain ln 
+
+
+
+1 + 𝑝𝑞 𝑡 𝑒 𝜗 
+
+≤ min 
+
+
+
+ln  𝑝𝑞 𝑡  + 𝜗 + 1
+
+𝑝𝑞 𝑡 𝑒 𝜗 , 𝑝𝑞 𝑡 𝑒 𝜗 
+
+
+
+.
+
+Use the first inequality for 𝑡 < 𝑚 and the second inequality for 𝑡 ≥ 𝑚 in (5) to obtain ln P
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑍 𝑡 ≥ 𝑚 
+
+!! 
+
+≤ − 𝜗𝑚 +
+
+> 𝑚 −1
+
+∑︁ 
+
+> 𝑡 =0
+
+
+
+ln  𝑝𝑞 𝑡  + 𝜗 + 1
+
+𝑝𝑞 𝑡 𝑒 𝜗 
+
+
+
++
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =𝑚
+
+𝑝𝑞 𝑡 𝑒 𝜗 
+
+26 Choose 𝜗 = ln (1/𝑝𝑞 𝑚 ) > 0. Substituting this value of 𝜗 above, we obtain ln P
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑍 𝑡 ≥ 𝑚 
+
+!! 
+
+≤ 𝑚 ln (𝑝𝑞 𝑚 ) + 
+
+> 𝑚 −1
+
+∑︁ 
+
+> 𝑡 =0
+
+ln  𝑞 𝑡 −𝑚  +
+
+> 𝑚 −1
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑞 𝑚 −𝑡 +
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =𝑚
+
+𝑞 𝑡 −𝑚 
+
+= 𝑚 ln 𝑝 + 𝑚 2 ln 𝑞 + 𝑚 (𝑚 − 1)
+
+2 ln 𝑞 − 𝑚 2 ln 𝑞 +
+
+> 𝑚 −1
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑞 𝑚 −𝑡 +
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =𝑚
+
+𝑞 𝑡 −𝑚 
+
+= 𝑚 ln 𝑝 + 𝑚 (𝑚 − 1)
+
+2 ln 𝑞 +
+
+> 𝑚 −1
+
+∑︁ 
+
+> 𝑡 =0
+
+𝑞 𝑚 −𝑡 +
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =𝑚
+
+𝑞 𝑡 −𝑚 
+
+≤ 𝑚 ln 𝑝 + 𝑚 (𝑚 − 1)
+
+2 ln 𝑞 + 21 − 𝑞 .
+
+Exponentiating both sides gives the desired bound. ■
+
+# C A Lemma for the Deferred Proofs: Converting Guarantees on the Number of High-Valued Jobs Served into Utility Guarantees 
+
+Our main tool to give lower bounds on the utility of agents is to give lower bounds on the number of high-valued jobs served from that agent. Converting lower bounds on the number of high-valued jobs served into a lower bound on the utility is relatively straightforward if the agent served a random high-valued job each time they are granted access to the server. However, in our results, agents instead serve the highest-valued job each time they are granted access. Intuitively, this can only be better than serving a random high-valued job. We give the formal argument below. For convenience, we assume that for agent 𝑖 , there are i.i.d. 𝑄 𝑖 [𝑡 ] ∼ Unif [0, 1] such that 𝑉 [𝑝 𝑖 [𝑡 ]] =
+
+𝐹 −1 
+
+> 𝑖
+
+(𝑄 𝑖 [𝑡 ]) where 𝐹 −1 
+
+> 𝑖
+
+is the inverse CDF of the value distribution F𝑖 . Here, 𝑄 𝑖 [𝑡 ] is the quantile of the value 𝑉 [𝑝 𝑖 [𝑡 ]] . Formally, a job 𝑝 𝑖 [𝑡 ] is high-valued if and only if 𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 . This specifies what we mean by top 1 /𝑛 -quantile in Definition 2.2. The assumption that these quantiles 𝑄 𝑖 [𝑡 ] exist is without loss of generality, because agent 𝑖 can produce such 𝑄 𝑖 [𝑡 ] by setting 𝑄 𝑖 [𝑡 ] = 𝐹 𝑖 (𝑉 [𝑝 𝑖 [𝑡 ]]) if 𝐹 𝑖 is continuous at 
+
+𝑉 [𝑝 𝑖 [𝑡 ]] and otherwise, sampling 𝑄 𝑖 [𝑡 ] ∼ Unif (𝐹 𝑖 (𝑉 [𝑝 𝑖 [𝑡 ]]−) , 𝐹 𝑖 (𝑉 [𝑝 𝑖 [𝑡 ]])] , where 𝐹 𝑖 is the CDF of F𝑖 ,i.e., 𝐹 𝑖 (𝑣 𝑖 ) = P𝑉 𝑖 ∼F 𝑖 (𝑉 𝑖 ≤ 𝑣 𝑖 ), and 𝐹 𝑖 (𝑣 𝑖 −) = lim 𝑣 ↑𝑣 𝑖 𝐹 𝑖 (𝑣 𝑖 ).
+
+Lemma C.1. Assume that when agent 𝑖 gets access to the server, she always chooses to serve her highest-valued job if she has a job, and when a tie among job values occurs, she always chooses to serve a high-valued job if she has one. Additionally, assume that the event that agent 𝑖 obtains access to the server at any given time 𝑡 is independent of the values in her queue conditioned on the events 1𝑄 𝑖 [𝑠 ] ≥ 1−1/𝑛 and 𝜃 𝑖 [𝑠 ] (the number of high-valued jobs in agent 𝑖 ’s queue at time 𝑠 ) for 𝑠 ≤ 𝑡 .Let e𝑈 𝐺 𝑖 denote the number of high-valued jobs served from agent 𝑖 , and let 𝑈 𝐺 𝑖 denote the total utility of agent 
+
+𝑖 . Then, 
+
+E[𝑈 𝐺 𝑖 ] ≥ 𝑛𝑣 ★ 
+
+> 𝑖
+
+E[ e𝑈 𝐺 𝑖 ].
+
+Proof. In the lemma statement, 𝐺 stands for “greedy”. We couple this process with a process 𝑅 , standing for “random”, in which whenever agent 𝑖 gets access to the server and has at least one high-valued job in her queue, she processes a uniformly random high-valued job among the high-valued jobs in her queue, in the following way. At each timestep, the arriving jobs’ values are the same in both processes. The principal grants server access to the same agent in both processes. If agent 𝑖 is granted access to the server, she chooses to serve her highest-valued job if she has a job in process 𝐺 as assumed, and in process 𝑅 ,agent 𝑖 chooses to serve a uniformly random high-valued job among the high-valued jobs in her queue if 27 she has a high-valued job, and otherwise, chooses to serve her highest-valued (and not high-valued) job if she has one. Each unserved job of agent 𝑖 expires with probability 𝛿 between times 𝑡 and 𝑡 + 1, and we couple expirations such that the 𝑟 th highest-valued job of agent 𝑖 expires in process 𝐺 if and only if the 
+
+𝑟 th highest-valued job of agent 𝑖 expires in process 𝑅 (where 𝑟 th highest is determined by the quantiles of the job values). Observe that the coupled process 𝑅 is a valid job process in the sense that the arrival values and expirations have the correct law. Furthermore, observe that agent 𝑖 has both the same number of jobs and also the same number of high-valued jobs in the processes 𝐺 and 𝑅 .Denote the utility and number of high-valued jobs served from agent 𝑖 in process 𝑅 by 𝑈 𝑅 𝑖 and e𝑈 𝑅 𝑖 , respec-tively. Write 
+
+𝑈 𝑅 𝑖 =
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑝 𝑖 [𝑡 ] served in 𝑅 
+
+≥
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑝 𝑖 [𝑡 ] served in 𝑅 1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 
+
+=
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+> 𝑇
+
+∑︁ 
+
+> 𝑠 =𝑡
+
+𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 1𝑝 𝑖 [𝑡 ] served in 𝑅 at time 𝑠 .
+
+(6) Let H𝑠 denote the 𝜎 -field generated by the events {𝑄 𝑖 [𝑢 ] ≥ 1 − 1/𝑛 } and the random variables 𝜃 𝑖 [𝑢 ] for 
+
+𝑢 ≤ 𝑠 . By assumption of the lemma, the event that agent 𝑖 is served at time 𝑠 is independent of the job values in agent 𝑖 ’s queue at time 𝑠 when conditioned on H𝑠 in the process 𝐺 , by the coupling, the same holds in the process 𝑅 . Furthermore, in the process 𝑅 , since agent 𝑖 picks a uniformly random high-valued job to serve at each timestep when given access, the event that the particular job 𝑝 𝑖 [𝑡 ] gets served in 𝑅 at time 𝑠 is independent of its value 𝑉 [𝑝 𝑖 [𝑡 ]] when conditioned on H𝑠 . Thus, 
+
+E 𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 1𝑝 𝑖 [𝑡 ] served in 𝑅 at time 𝑠 
+
+
+
+= E E 𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 1𝑝 𝑖 [𝑡 ] served in 𝑅 at time 𝑠 H𝑠 
+
+  
+
+= E E 𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 H𝑠 
+
+ E 1𝑝 𝑖 [𝑡 ] served in 𝑅 at time 𝑠 H𝑠 
+
+  .
+
+Similarly, we can argue that 𝑉 [𝑝 𝑖 [𝑡 ]] is independent of H𝑠 conditioned on 𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 for any 𝑠 
+
+by induction on 𝑠 . Clearly, 𝑉 [𝑝 𝑖 [𝑡 ]] is independent of H𝑠 for 𝑠 < 𝑡 . The count 𝜃 𝑖 [𝑡 ] of high-valued jobs is independent of 𝑉 [𝑝 𝑖 [𝑡 ]] conditioned on 𝑄 𝑖 [𝑡 ], so 𝑉 [𝑝 𝑖 [𝑡 ]] is independent of H𝑡 conditioned on 
+
+𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 . Now assume that 𝑉 [𝑝 𝑖 [𝑡 ]] is independent of H𝑠 conditioned on 𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 for some 
+
+𝑠 ≥ 𝑡 ; we prove it for 𝑠 + 1. Conditioned on H𝑠 , the event that agent 𝑖 is served at time 𝑠 is independent of 𝑉 [𝑝 𝑖 [𝑡 ]] by the lemma’s assumption. After that service, the expirations and arrivals of high-valued jobs are independent of 𝑉 [𝑝 𝑖 [𝑡 ]] conditioned on H𝑠 by the model. It follows that 𝑉 [𝑝 𝑖 [𝑡 ]] is independent of H𝑠 +1 conditioned on H𝑠 . Combining with the inductive hypothesis that 𝑉 [𝑝 𝑖 [𝑡 ]] is independent of 
+
+H𝑠 conditioned on 𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 , we conclude that 𝑉 [𝑝 𝑖 [𝑡 ]] is independent of H𝑠 +1 conditioned on 
+
+𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 . Therefore, 
+
+E 𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 H𝑠 
+
+ = E[𝑉 [𝑝 𝑖 [𝑡 ]]| 𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 ]1𝑄 𝑖 [𝑡 ] ≥ 1−1/𝑛 = 𝑛𝑣 ★ 
+
+> 𝑖
+
+1𝑄 𝑖 [𝑡 ] ≥ 1−1/𝑛 .
+
+where the last equality follows from the definition of ideal utility. Combining the previous two displays, 
+
+E 𝑉 [𝑝 𝑖 [𝑡 ]] 1𝑝 𝑖 [𝑡 ] served in 𝑅 1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 
+
+ = 𝑛𝑣 ★
+
+> 𝑖 𝑇
+
+∑︁ 
+
+> 𝑠 =𝑡
+
+E[1𝑄 𝑖 [𝑡 ] ≥ 1−1/𝑛 1𝑝 𝑖 [𝑡 ] served in 𝑅 at time 𝑠 ]
+
+= 𝑛𝑣 ★ 
+
+> 𝑖
+
+E[1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 1𝑝 𝑖 [𝑡 ] served in 𝑅 ].
+
+28 Substitute the above into (6) to obtain 
+
+E[𝑈 𝑅 𝑖 ] ≥ 𝑛𝑣 ★
+
+> 𝑖 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+E[1𝑄 𝑖 [𝑡 ] ≥ 1 − 1/𝑛 1𝑝 𝑖 [𝑡 ] served in 𝑅 ] ≥ 𝑛𝑣 ★ 
+
+> 𝑖
+
+· E[ e𝑈 𝑅 𝑖 ]. (7) Now we use a greedy argument to show that the same holds in the process 𝐺 . At each time 𝑡 , immediately after service and before expirations, suppose there are 𝑙 [𝑡 ] jobs in agent 𝑖 ’s queue. Write their values as 𝑣 𝐺  
+
+> 1
+
+[𝑡 ] ≤ · · · ≤ 𝑣 𝐺 𝑙 [𝑡 ] [𝑡 ] in process 𝐺 and 𝑣 𝑅  
+
+> 1
+
+[𝑡 ] ≤ · · · ≤ 𝑣 𝑅 𝑙 [𝑡 ] [𝑡 ] in process 𝑅 . We shall show that 
+
+𝑣 𝐺 𝑟 [𝑡 ] ≤ 𝑣 𝑅 𝑟 [𝑡 ] for all 𝑟 ∈ [ 𝑙 [𝑡 ]] is maintained by induction on 𝑡 . At 𝑡 = 0, agent 𝑖 ’s queue is empty, so the invariant vacuously holds. Since arrival values are the same, arrivals maintain the invariant. Since the 
+
+𝑟 th highest-valued job in process 𝐺 expires if and only if the 𝑟 th highest-valued job in process 𝑅 expires, expirations preserve the invariant. One can reason that the greedy rule of processing the highest-valued job in process 𝐺 makes the services also preserve the invariant. A job goes unserved if it either expires or is unserved at time 𝑇 . For 𝑡 < 𝑇 , let 𝐷 𝑟 [𝑡 ] indicate that the 𝑟 th smallest job expires in time 𝑡 ; set 𝐷 𝑟 [𝑇 ] = 1 for every unserved job after the final service. One can see that for either process 𝑃 ∈ { 𝐺, 𝑅 },
+
+𝑈 𝑃 𝑖 =
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑉 [𝑝 𝑖 [𝑡 ]] − 
+
+> 𝑇
+
+∑︁   
+
+> 𝑡 =1
+> 𝑙 [𝑡 ]
+
+∑︁  
+
+> 𝑟 =1
+
+𝑣 𝑃 𝑟 [𝑡 ]𝐷 𝑟 [𝑡 ],
+
+the total value of all jobs minus the value of the unserved jobs. Since 𝑣 𝐺 𝑟 [𝑡 ] ≤ 𝑣 𝑅 𝑟 [𝑡 ] for all 𝑡 and all 𝑟 , the above expression implies that 𝑈 𝐺 𝑖 ≥ 𝑈 𝑅 𝑖 . Therefore, by (7), 
+
+E[𝑈 𝐺 𝑖 ] ≥ 𝑛𝑣 ★ 
+
+> 𝑖
+
+· E[ e𝑈 𝑅 𝑖 ] = 𝑛𝑣 ★ 
+
+> 𝑖
+
+· E[ e𝑈 𝐺 𝑖 ]
+
+where the last equality follows from the fact that e𝑈 𝑅 𝑖 = e𝑈 𝐺 𝑖 almost surely since a high-valued job gets served in process 𝐺 if and only if a high-valued job gets served in process 𝑅 by the coupling. ■
+
+# D Deferred Proofs from Section 2.3 
+
+Theorem 2.3. For every 𝛿 , 𝑛 , and 𝑇 , there exists 𝜆 (𝛿, 𝑛,𝑇 ) ∈ [ 0, 1] independent of the value distributions 
+
+F𝑖 such that under the target policy, each agent obtains at least 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility. Specifically, 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 is the expected number of high-valued jobs across all agents served under the target policy. Furthermore, if F𝑖 = Bern (1/𝑛 ) for every agent 𝑖 , under any policy, there exists an agent 𝑖 obtaining at most 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility. Proof. We set 𝜆 (𝛿, 𝑛,𝑇 ) such that 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 is the expected number of high-valued jobs served across all agents and timesteps by the target policy. By symmetry, each agent gets 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 /𝑛 high-valued jobs served in expectation. Lemma C.1 implies that each agent obtains at least 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 in expected utility. Indeed the conditions of Lemma C.1 are satisfied: the target policy always serves the highest-valued job of an agent and the target policy only depends on the high-valued jobs process. Now, assume F𝑖 = Bern (1/𝑛 ) for every agent 𝑖 . Then, high-valued jobs are precisely the jobs of value 1 and 
+
+𝑣 ★ 
+
+> 𝑖
+
+= 1/𝑛 . The utility of an agent is equal to the number of high-valued jobs they get served. In particular, by the definition of 𝜆 (𝛿, 𝑛,𝑇 ), the total utility under the target policy, summed across agents, is 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 
+
+in expectation. We shall show that no other policy can guarantee a higher expected total utility, which implies that there is always an agent 𝑖 obtaining at most 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 /𝑛 = 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 expected utility by symmetry. Take an arbitrary policy 𝜋 and couple two of the job processes, one using the target policy 29 and one using the policy 𝜋 , in the following way. All arriving jobs have the same values in both processes. After service at each time 𝑡 , let 𝑚 [𝑡 ] be the number of total unserved jobs with value 1 across all queues in the process with the target policy and 𝑚 ′ [𝑡 ] be the number total unserved jobs with value 1 across all queues in the process with the policy 𝜋 . We shall inductively define how the expirations are coupled to maintain the invariant that 𝑚 [𝑡 ] ≤ 𝑚 ′ [𝑡 ] for each 𝑡 , and the number of expirations of jobs of value 1 in the process with the target policy is at most that of the process with the policy 𝜋 . We have 𝑚 [1] ≤ 𝑚 ′ [1]:the target policy always serves a job of value 1 if possible and the number of jobs of value 1 arriving at time 1 are the same across both processes by the coupling. Fix a time 𝑡 , and suppose we have defined how the expirations in periods before 𝑡 were defined such that 𝑚 [𝑡 ] ≤ 𝑚 ′ [𝑡 ]. Sample 𝐷 1 ∼ Binom (𝑚 [𝑡 ], 𝛿 ) and 
+
+𝐷 2 ∼ Binom (𝑚 ′ [𝑡 ] − 𝑚 [𝑡 ], 𝛿 ) independently. Each job with value 0 expires independently with probability 
+
+𝛿 , arbitrarily coupled across both processes. Choose a uniformly random subset of size 𝐷 1 of the 𝑚 [𝑡 ] jobs with value 1 in the process with the target policy to expire, and choose a uniformly random subset of size 
+
+𝐷 1 + 𝐷 2 of the 𝑚 ′ [𝑡 ] jobs with value 1 in the process with the policy 𝜋 to expire, independently of the expirations of the value-0 jobs. If 𝑚 ′ [𝑡 ] ≥ 𝑚 [𝑡 ], then 𝐷 1 and 𝐷 2 are well-defined and each job in a given process expires independently with probability 𝛿 . Furthermore, if 𝑡 < 𝑇 , in time 𝑡 + 1 before service, the number of jobs of value 1 in the process with the target policy is at most that of the process with policy 𝜋 .The same remains true after service since the target policy serves a job of value 1 if one exists, establishing 
+
+𝑚 [𝑡 + 1] ≤ 𝑚 ′ [𝑡 + 1]. By induction, we have coupled these two processes such that 𝑚 [𝑡 ] ≤ 𝑚 ′ [𝑡 ] at each timestep 𝑡 , and the number of expirations of jobs of value 1 in the target policy process is at most that of the 𝜋 policy process. The total number of jobs of value 1 served in either process is the total number of jobs arriving with value 1 minus the number of jobs of value 1 that expire before time 𝑇 , minus the number left immediately after service at time 𝑇 . Since the arrivals are the same across process, but both the expirations before 𝑇 and the terminal remainder ( 𝑚 [𝑇 ] ≤ 𝑚 ′ [𝑇 ]) are at least as big under 𝜋 , the total number of jobs of value 1 served is at least as high under the target policy, establishing the claim. ■
+
+Proposition D.1. For each fixed 𝛿 and 𝑛 , the limit lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) exists. Additionally, for each fixed 𝑛 ,
+
+lim  
+
+> 𝛿 →0
+
+lim   
+
+> 𝑇 →∞
+
+𝜆 (𝛿, 𝑛,𝑇 ) = 1.
+
+Proof. By Theorem 2.3, 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 is the expected number of high-valued jobs served across all agents and timesteps by the target policy. First, let us handle the case when 𝑛 = 1. In that case, every job is a high-valued job and every job gets served, so 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 = 𝑇 . This implies that 𝜆 (𝛿, 𝑛,𝑇 ) = 1, establishing all claims in the proposition for 
+
+𝑛 = 1. In the case 𝛿 = 1, then 𝜆 (1, 𝑛,𝑇 ) = 1 − ( 1 − 1/𝑛 )𝑛 for every 𝑇 , so lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) exists. Now assume 𝑛 ≥ 2 and fix 𝛿 < 1. As in the notation defined in Section 3, let 𝜃 𝑖 [𝑡 ] be the number of high-valued jobs in agent 𝑖 ’s queue at timestep 𝑡 after arrivals and before service. One can reason that under the target policy, the vector 𝜃 [𝑡 ] = (𝜃 1 [𝑡 ], . . . , 𝜃 𝑛 [𝑡 ]) evolves as a Markov chain on Z𝑛 
+
+> ≥0
+
+. Specifically, the services, expirations, and arrivals of high-valued jobs between timesteps 𝑡 and 𝑡 + 1 only depend on the state 𝜃 [𝑡 ] and independent randomness. A high-valued job gets served at time 𝑡 whenever 𝜃 [𝑡 ] ≠ 0, so we can write 
+
+𝜆 (𝛿, 𝑛,𝑇 ) = E
+
+"
+
+1
+
+𝑇 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+1𝜃 [𝑡 ]≠0
+
+#
+
+.
+
+Thus, to show that lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) exists, we shall show that the Markov chain (𝜃 [𝑡 ]) 𝑡 is irreducible and positive recurrent. Then, we can apply the Ergodic theorem to see that 1
+
+> 𝑇
+
+Í𝑇 𝑡 =1 1𝜃 [𝑡 ]≠0 converges almost surely, and then conclude lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) exists by the bounded convergence theorem. We first show that (𝜃 [𝑡 ]) 𝑡 is irreducible. From any state 𝜃 ∈ Z𝑛 
+
+> ≥0
+
+, it is possible to get to 0 if all the high-valued jobs expire and no new high-valued jobs arrive. Starting from 0, it is possible to get to any state 30 𝜃 ∈ Z𝑛  
+
+> ≥0
+
+since up to 𝑛 ≥ 2 high-valued jobs can arrive in each period, and only at most 1 is served in each period, and expirations need not necessarily happen. Now let us argue positive recurrence. Consider the Lyapunov function ∥ · ∥ 1 on states 𝜃 ∈ Z𝑛  
+
+> ≥0
+
+given by ∥𝜃 ∥1 = Í𝑛 𝑖 =1 𝜃 𝑖 . The drifts ∥𝜃 [𝑡 + 1] ∥ 1 − ∥ 𝜃 [𝑡 ] ∥ 1 are bounded almost surely: they can increase by at most 𝑛 since there can only be 𝑛 high-valued job arrivals. When ∥𝜃 [𝑡 ] ∥ 1 ≥ 2, 
+
+E[∥ 𝜃 [𝑡 + 1] ∥ 1 |𝜃 [𝑡 ]] − ∥ 𝜃 [𝑡 ] ∥ 1 = −1 − 𝛿 (∥ 𝜃 [𝑡 ] ∥ 1 − 1) + 1 = −𝛿 (∥ 𝜃 [𝑡 ] ∥ 1 − 1) ≤ − 𝛿. 
+
+because there is 1 service, an expected number 𝛿 (∥ 𝜃 [𝑡 ] ∥ 1 − 1) then expire, and 1 high-valued job arrives in expectation (each agent has a high-valued job arrive with probability 1 /𝑛 ). The last inequality uses 
+
+∥𝜃 [𝑡 ] ∥ 1 ≥ 2. By Foster’s criterion, (𝜃 [𝑡 ]) 𝑡 is positive recurrent. This establishes that we can use the Ergodic theorem to show that lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) exists. Now fix 𝑛 ≥ 2 and we shall show lim 𝛿 →0 lim 𝑇 →∞ 𝜆 (𝛿, 𝑛,𝑇 ) = 1. First, let us define an alterative policy used by a social planner to select jobs. Fix a window size 𝑤 , and divide the first ⌊𝑇 /𝑤 ⌋ · 𝑤 time periods into 
+
+⌊𝑇 /𝑤 ⌋ windows of size 𝑤 . The alternative policy serves no jobs in the 𝑇 − ⌊ 𝑇 /𝑤 ⌋ · 𝑤 time periods outside one of these windows. At each timestep in a given window, the alternative policy picks an agent uniformly at random among agents have an unserved high-valued job that arrived in that window, regardless of if that high-valued job has expired, and serves one of such jobs. In other words, the alternative policy is the same as the target policy, except it ignores high-valued jobs that arrived before the current window, and it also ignores expirations and might serve an expired job. We shall first analyze the number of high-valued jobs, expired or not, served by the alternative policy, and then use this to analyze the number of unexpired high-valued jobs served. Fix a window, and without loss of generality, number the time periods in this window by 𝑡 = 1, 2, . . . , 𝑤 . Let 𝐴 𝑡 be the number of high-valued jobs that arrive at time 𝑡 , and let 𝑆 𝑡 be the indicator of whether a high-valued job, expired or not, is served by the alternative policy at time 𝑡 . Now, we claim and shall show that 
+
+> 𝑤
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑆 𝑡 ≥ 𝑤 − max   
+
+> 0≤𝑡 ≤𝑤
+
+𝑡 −
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+𝐴 𝑠 
+
+!
+
+. (8) Let 𝑡 0 be the last time period 𝑡 in the window in which 𝑆 𝑡 = 0. If there is no such 𝑡 , then Í𝑤 𝑡 =1 𝑆 𝑡 = 𝑤 and there is nothing to prove. Since no job is served at time 𝑡 0, it must be that every high-valued job up to time 𝑡 0 has been served, so Í𝑡 0 
+
+> 𝑡 =1
+
+𝑆 𝑡 = Í𝑡 0 
+
+> 𝑠 =1
+
+𝐴 𝑠 . By definition of 𝑡 0, in every time period after 𝑡 0, a service happens, so Í𝑤 𝑡 =𝑡 0+1 𝑆 𝑡 = 𝑤 − 𝑡 0. Write 
+
+> 𝑤
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑆 𝑡 =
+
+> 𝑡 0
+
+∑︁ 
+
+> 𝑡 =1
+
+𝑆 𝑡 +
+
+> 𝑤
+
+∑︁ 
+
+> 𝑡 =𝑡 0+1
+
+𝑆 𝑡 =
+
+> 𝑡 0
+
+∑︁ 
+
+> 𝑠 =1
+
+𝐴 𝑠 + 𝑤 − 𝑡 0 = 𝑤 − 𝑡 0 −
+
+> 𝑡 0
+
+∑︁ 
+
+> 𝑠 =1
+
+𝐴 𝑠 
+
+!
+
+≥ 𝑤 − max   
+
+> 0≤𝑡 ≤𝑤
+
+𝑡 −
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+𝐴 𝑠 
+
+!
+
+.
+
+Write the last term above as max   
+
+> 0≤𝑡 ≤𝑤
+
+𝑡 −
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+𝐴 𝑠 
+
+!
+
+= max  
+
+> 0≤𝑡 ≤𝑤
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+(1 − 𝐴 𝑠 )
+
+!
+
+.
+
+Each 1 −𝐴 𝑠 ∼ 1−Binom (𝑛, 1/𝑛 ), which has mean E[1−𝐴 𝑠 ] = 0 and variance Var [1−𝐴 𝑠 ] = 𝑛 ·1/𝑛 ·( 1−1/𝑛 ) ≤ 
+
+1, and the 1 − 𝐴 𝑠 are independent. By Doob’s 𝐿 2 inequality, 
+
+E
+
+
+
+max  
+
+> 0≤𝑡 ≤𝑤
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+(1 − 𝐴 𝑠 )
+
+!! 2
+
+≤ 4 E
+
+
+
+> 𝑤
+
+∑︁ 
+
+> 𝑡 =1
+
+(1 − 𝐴 𝑡 )
+
+!2
+
+= 4
+
+> 𝑤
+
+∑︁ 
+
+> 𝑡 =1
+
+Var (1 − 𝐴 𝑡 ) ≤ 4𝑤 . 
+
+31 By Jensen’s inequality, 
+
+E
+
+"
+
+max  
+
+> 0≤𝑡 ≤𝑤
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+(1 − 𝐴 𝑠 )
+
+!# 
+
+≤
+
+vuuut
+
+E
+
+
+
+max  
+
+> 0≤𝑡 ≤𝑤
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+(1 − 𝐴 𝑠 )
+
+!! 2
+
+≤ 2√𝑤 . 
+
+It now follows from (8) that 
+
+E
+
+" 𝑤 ∑︁ 
+
+> 𝑡 =1
+
+𝑆 𝑡 
+
+#
+
+≥ 𝑤 − 2√𝑤 . 
+
+This lower bounds the number of high-valued jobs served in the window, but that might include expired jobs. To lower bound the number of unexpired jobs served, we note that the expected number of jobs that arrive in the window and expire before its end is at most 𝛿𝑤 2, because 𝑤 high-valued jobs arrive in expectation, and each has a probability of at most 𝛿𝑤 in the whole window of size 𝑤 . Thus, the expected number of unexpired high-valued jobs served by the alternative policy is at least 𝑤 − 2√𝑤 − 𝛿𝑤 2. Sum this lower bound over all ⌊𝑇 /𝑤 ⌋ windows to see that over all 𝑇 time periods, the expected number of unexpired high-valued jobs served by the alternative policy is at least 
+
+ 𝑇 𝑤 
+
+
+
+(𝑤 − 2√𝑤 − 𝛿𝑤 2).
+
+By the proof of Theorem 2.3, the target policy maximizes the number of unexpired high-valued jobs served, so 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 is at least the above display. (Alternatively, we can argue without invoking the proof of Theorem 2.3 as follows. If every agent had a F𝑖 = Bern (1/𝑛 ) value distribution, then a job is high-valued if and only if it has value 1, the ideal utility 𝑣 ★ 
+
+> 𝑖
+
+= 1/𝑛 , and the utility of an agent is the number of unexpired high-valued jobs they have served. By the second part Theorem 2.3, at least one agent obtains at most 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 utility, so by symmetry of the alternative policy and since 𝑣 ★ 
+
+> 𝑖
+
+= 1/𝑛 , the expected total utility is at most 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 under the alternative policy. By the first part of Theorem 2.3, under the target policy, each agent obtains at least 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 utility, so the total utility is at least 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 
+
+under the target policy. Thus, the total number of high-valued jobs served by the target policy is at least that of the alternative policy). Now, we conclude lim  
+
+> 𝛿 →0
+
+lim   
+
+> 𝑇 →∞
+
+𝜆 (𝛿, 𝑛,𝑇 ) ≥ lim  
+
+> 𝛿 →0
+
+lim  
+
+> 𝑇 →∞
+
+1
+
+𝑇 
+
+ 𝑇 𝑤 
+
+
+
+(𝑤 − 2√𝑤 − 𝛿𝑤 2)
+
+= lim 
+
+> 𝛿 →0
+
+
+
+1 − 2
+
+√𝑤 − 𝛿𝑤 
+
+
+
+= 1 − 2
+
+√𝑤 .
+
+Since 𝑤 was arbitrary, we can send 𝑤 → ∞ to see that the above limit is at least 1, and therefore equal to 1 since 𝜆 (𝛿, 𝑛,𝑇 ) ≤ 1. ■
+
+# E Deferred Proofs from Section 4 
+
+E.1 Lemmas about Individual Runs of Algorithm 2 
+
+In this subsection, we prove lemmas about an individual run of Algorithm 2. Throughout, we consider a run of Algorithm 2 at update (𝑡 0, 𝑖 ), report b𝜃 𝑖 [𝑡 0], reported past states b𝜃 [𝑡 0, 𝑖 − 1], and simulation limit 𝐿 .Unless stated otherwise, in this subsection, we consider the reported past states not as random but rather fixed, and probabilistic statements condition on the reported past states. 32 The algorithm runs two coupled simulations as described in the proof of Lemma 3.8, and we mostly keep the notation from there. The two coupled processes are (𝜃 report [𝑡, 𝑗 ]) and (𝜃 random [𝑡, 𝑗 ]) . We also name the processes 𝐴 and 𝐵 such that 𝜃 𝐴 𝑖 [𝑡 0, 𝑖 ] ≥ 𝜃 𝐵 𝑖 [𝑡 0, 𝑖 ]. The algorithm stops the coupled processes after timestep 
+
+𝑟 := min {𝜎, 𝑡 0 + 𝐿 − 1,𝑇 } where 𝜎 = inf {𝑡 ≥ 𝑡 0 : 𝜃 𝐴 [𝑡 ] = 𝜃 𝐵 [𝑡 ]} where inf ∅ = 𝑇 + 1. At that time, the algorithm outputs b𝛾 𝑖 →𝑗 [𝑡 0] for 𝑗 ≠ 𝑖 , which is the difference in the number of high-valued jobs from agent 
+
+𝑗 served between the simulation (𝜃 report [( 𝑡, 𝑗 )]) and (𝜃 random [( 𝑡, 𝑗 )]) in timesteps 𝑡 ∈ [ 𝑡 0, 𝑟 ]. We denote 
+
+Δ𝑡 = ∥𝜃 𝐴 [𝑡 ] − 𝜃 𝐵 [𝑡 ] ∥ 1.
+
+Lemma E.1. For all (𝑡, 𝑗 ) ≥ ( 𝑡 0, 𝑖 ), 𝜃 𝐴 [𝑡, 𝑗 ] ≥ 𝜃 𝐵 [𝑡, 𝑗 ].Additionally, for any 𝑠 ≥ 0,
+
+P(𝜎 > 𝑡 0 + 𝑠 |Δ𝑡 0 ) ≤ ( 1 − 𝛿 )𝑠 Δ𝑡 0
+
+and 
+
+E[𝜎 |Δ𝑡 0 ] − 𝑡 0 ≤
+
+
+
+0 if Δ𝑡 0 = 0
+
+l log (Δ𝑡 0 )  
+
+> −log (1−𝛿 )
+
+m
+
++ 1/𝛿 if Δ𝑡 0 ≥ 1 and 𝛿 < 11 if Δ𝑡 0 ≥ 1 and 𝛿 = 1
+
+.
+
+Proof. These were proven as intermediate statements in the proof of Lemma 3.8. ■
+
+Corollary E.2. Given 𝜃 and 𝜖 > 0, if b𝜃 𝑖 [𝑡 0 − 1], b𝜃 𝑖 [𝑡 0] ≤ 𝜃 , then 
+
+E[𝜎 |Δ𝑡 0 ] − 𝑡 0 ≤
+
+& log    
+
+> 
+> 𝜃 +1
+> 
+> −log (1−𝛿 )
+
+'
+
++ 1/𝛿 if 𝛿 < 11 if 𝛿 = 1
+
+.
+
+Proof. Since an agent gains at most 1 high-valued job per time period, 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] ≤ b𝜃 𝑖 [𝑡 0 − 1] + 1 ≤ 𝜃 + 1. Since b𝜃 𝑖 [𝑡 0] ≤ 𝜃 , Δ𝑡 0 ≤ 𝜃 + 1. Substitute this bound into the bound on E[𝜎 |Δ𝑡 0 ] in Lemma E.1. ■
+
+Lemma E.3. If b𝜃 𝑖 [𝑡 0] is drawn randomly according to the stochastic transition kernel applied to b𝜃 [𝑡 0, 𝑖 − 1]
+
+(and independently of 𝜃 random  
+
+> 𝑖
+
+[𝑡 0, 𝑖 ]), then E[b𝛾 𝑖 →𝑗 [𝑡 0]] = 0 for any 𝑗 ≠ 𝑖 .Proof. If b𝜃 𝑖 [𝑡 0] is drawn randomly according to the stochastic transition kernel applied to b𝜃 [𝑡 0, 𝑖 − 1], then the processes (𝜃 report [( 𝑡, 𝑗 )]) and (𝜃 random [( 𝑡, 𝑗 )]) have the same law. Since b𝛾 𝑖 →𝑗 [𝑡 0] is the difference in the number of high-valued jobs served from agent 𝑗 between these two processes equal in law, it has expectation 0. ■
+
+Lemma E.4. For any agent 𝑗 ≠ 𝑖 , the sign of b𝛾 𝑖 →𝑗 [𝑡 0] is opposite that of b𝜃 𝑖 [𝑡 0] − 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] in that 
+
+b𝛾 𝑖 →𝑗 [𝑡 0] ( b𝜃 𝑖 [𝑡 0] − 𝜃 random  
+
+> 𝑖
+
+[𝑡 0]) ≤ 0, and |b𝛾 𝑖 →𝑗 [𝑡 0]| ≤ Δ𝑡 0 almost surely. Proof. For each process 𝑃 ∈ { 𝐴, 𝐵 }, denote the number of high-valued jobs arriving to an arbitrary agent 
+
+𝑘 during updates after (𝑡 0, 𝑖 ) and not after timestep 𝑟 := min {𝜎, 𝑡 0 + 𝐿 − 1,𝑇 } by Arrivals 𝑃 𝑘 . Denote the number of agent 𝑘 ’s high-valued jobs that expire and the number of services of high-valued jobs of agent 𝑘 
+
+during the same update interval by Expirations 𝑃 𝑘 and Services 𝑃 𝑘 , respectively. Then, by a flow conservation argument, 
+
+𝜃 𝑃 𝑘 [𝑟, 𝑛 + 1] − 𝜃 𝑃 𝑘 [𝑡 0, 𝑖 ] = Arrivals 𝑃 𝑘 − Expirations 𝑃 𝑘 − Services 𝑃 𝑘 .
+
+33 By the coupling, Arrivals 𝐴 𝑘 = Arrivals 𝐵 𝑘 , so by rearranging the above equation for 𝑃 = 𝐴, 𝐵 and equating the arrivals, we obtain 
+
+
+
+(𝜃 𝐴 𝑘 [𝑟, 𝑛 + 1] − 𝜃 𝐴 𝑘 [𝑡 0, 𝑖 ]) − ( 𝜃 𝐵 𝑘 [𝑟, 𝑛 + 1] − 𝜃 𝐵 𝑘 [𝑡 0, 𝑖 ]) 
+
+
+
++
+
+
+
+Expirations 𝐴 𝑘 − Expirations 𝐵 𝑘 
+
+
+
++
+
+
+
+Services 𝐴 𝑘 − Services 𝐵 𝑘 
+
+
+
+= 0.
+
+(9) As established in Lemma E.1, every agent 𝑘 has at least as many high-valued jobs in process 𝐴 as in process 
+
+𝐵 at all updates after (𝑡 0, 𝑖 ). By the coupling, this implies 𝜃 𝐴 𝑘 [𝑟, 𝑛 + 1] ≥ 𝜃 𝐵 𝑘 [𝑟, 𝑛 + 1] and Expirations 𝐴 𝑘 ≥
+
+Expirations 𝐵 𝑘 . The above display then implies 
+
+−( 𝜃 𝐴 𝑘 [𝑡 0, 𝑖 ] − 𝜃 𝐵 𝑘 [𝑡 0, 𝑖 ]) + 
+
+
+
+Services 𝐴 𝑘 − Services 𝐵 𝑘 
+
+
+
+≤ 0. (10) Fix an agent 𝑗 ≠ 𝑖 , and observe 𝜃 𝐴 𝑗 [𝑡 0, 𝑖 ] = 𝜃 𝐵 𝑗 [𝑡 0, 𝑖 ]. Eq. (9) with 𝑘 = 𝑗 says Services 𝐴 𝑗 − Services 𝐵 𝑗 ≤ 0.
+
+By how we labeled 𝐴 and 𝐵 , b𝛾 𝑖 →𝑗 [𝑡 0] = Services 𝐴 𝑗 − Services 𝐵 𝑗 if b𝜃 𝑖 [𝑡 0] ≥ 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] and b𝛾 𝑖 →𝑗 [𝑡 0] =
+
+−( Services 𝐴 𝑗 − Services 𝐵 𝑗 ) if b𝜃 𝑖 [𝑡 0] < 𝜃 random  
+
+> 𝑖
+
+[𝑡 0]. This observation and the previous display imply that 
+
+b𝛾 𝑖 →𝑗 [𝑡 0] has sign opposite that of b𝜃 𝑖 [𝑡 0] − 𝜃 random  
+
+> 𝑖
+
+[𝑡 0].This also establishes that 
+
+|b𝛾 𝑖 →𝑗 [𝑡 0]| = −( Services 𝐴 𝑗 − Services 𝐵 𝑗 ).
+
+Substitute this into (9) with 𝑘 = 𝑗 and the observation that 𝜃 𝐴 𝑗 [𝑡 0, 𝑖 ] = 𝜃 𝐵 𝑗 [𝑡 0, 𝑖 ] to obtain 
+
+|b𝛾 𝑖 →𝑗 [𝑡 0]| =
+
+
+
+𝜃 𝐴 𝑗 [𝑟, 𝑛 + 1] − 𝜃 𝐵 𝑗 [𝑟, 𝑛 + 1]
+
+
+
++
+
+
+
+Expirations 𝐴 𝑗 − Expirations 𝐵 𝑗 
+
+
+
+By definition, Δ𝑡 0 = 𝜃 𝐴 𝑖 [𝑡 0, 𝑖 ] − 𝜃 𝐵 𝑖 [𝑡 0, 𝑖 ]. Use this, the previous display, and sum (9) across all 𝑘 ∈ [ 𝑛 ] to obtain 
+
+−Δ𝑡 0 +
+
+
+
+𝜃 𝐴 𝑖 [𝑟, 𝑛 + 1] − 𝜃 𝐵 𝑖 [𝑟, 𝑛 + 1]
+
+
+
++
+
+
+
+Expirations 𝐴 𝑖 − Expirations 𝐵 𝑖 
+
+
+
++∑︁ 
+
+> 𝑗 ≠𝑖
+
+|b𝛾 𝑖 →𝑗 [𝑡 0]| +∑︁  
+
+> 𝑘 ∈ [ 𝑛 ]
+
+
+
+Services 𝐴 𝑘 − Services 𝐵 𝑘 
+
+
+
+= 0.
+
+(11) It was established earlier that both 𝜃 𝐴 𝑖 [𝑟, 𝑛 + 1] − 𝜃 𝐵 𝑖 [𝑟, 𝑛 + 1] ≥ 0 and Expirations 𝐴 𝑖 − Expirations 𝐵 𝑖 ≥ 0. Since the server in process 𝐵 idles whenever the server in process 𝐴 idles by the coupling, ∑︁  
+
+> 𝑘 ∈ [ 𝑛 ]
+
+
+
+Services 𝐴 𝑘 − Services 𝐵 𝑘 
+
+
+
+≥ 0.
+
+Eq. (11) then implies ∑︁ 
+
+> 𝑗 ≠𝑖
+
+|b𝛾 𝑖 →𝑗 [𝑡 0]| ≤ Δ𝑡 0 .
+
+Therefore, each individual term in the sum is at most Δ𝑡 0 . ■
+
+Corollary E.5. If b𝜃 𝑖 [𝑡 0] = 0, then b𝛾 𝑖 →𝑗 [𝑡 0] ≥ 0 for all 𝑗 ≠ 𝑖 .Proof. If b𝜃 𝑖 [𝑡 0] = 0, then b𝜃 𝑖 [𝑡 0] − 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] ≤ 0, so b𝛾 𝑖 →𝑗 [𝑡 0] ≥ 0 by Lemma E.4. ■
+
+34 Corollary E.6. If b𝜃 𝑖 [𝑡 0 − 1], b𝜃 𝑖 [𝑡 0] ≤ 𝜃 , then |b𝛾 𝑖 →𝑗 [𝑡 0]| ≤ min {𝐿, 𝜃 + 1} almost surely. Proof. The absolute count |b𝛾 𝑖 →𝑗 [𝑡 0]| is at most the number of simulation steps run, so |b𝛾 𝑖 →𝑗 [𝑡 0]| ≤ 𝐿 .Since an agent gains at most 1 high-valued job per time period, 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] ≤ b𝜃 𝑖 [𝑡 0 − 1] + 1 ≤ 𝜃 + 1. Since 
+
+b𝜃 𝑖 [𝑡 0] ≤ 𝜃 , Δ𝑡 0 ≤ 𝜃 + 1. Then, |b𝛾 𝑖 →𝑗 [𝑡 0]| ≤ 𝜃 + 1 by Lemma E.4. ■
+
+Denote the predictable bias of b𝛾 𝑖 →𝑗 [𝑡 0] by 
+
+𝛽 𝑖 →𝑗 [𝑡 0] = E[b𝛾 𝑖 →𝑗 [𝑡 0]] − 𝛾 𝑖 →𝑗 [𝑡 0].
+
+Lemma E.7. Given 𝜃 and 𝜖 > 0, if b𝜃 𝑖 [𝑡 0 − 1], b𝜃 𝑖 [𝑡 0] ≤ 𝜃 and 
+
+𝐿 ≥
+
+     
+
+> log 𝜃 +1
+> 𝜖𝛿
+> −log (1−𝛿 )
+
+if 𝛿 < 11 if 𝛿 = 1
+
+,
+
+then 𝛽 𝑖 →𝑗 [𝑡 0] ≤ 𝜖 for all 𝑗 ≠ 𝑖 .Proof. Since an agent gains at most 1 high-valued job per time period, 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] ≤ b𝜃 𝑖 [𝑡 0 − 1] + 1 ≤ 𝜃 + 1. Since b𝜃 𝑖 [𝑡 0] ≤ 𝜃 , Δ𝑡 0 ≤ 𝜃 + 1. Substitute this bound into the bound on P(𝜎 > 𝑡 0 + 𝑠 |Δ𝑡 0 ) in Lemma E.1 
+
+P(𝜎 > 𝑡 0 + 𝑠 ) ≤ ( 1 − 𝛿 )𝑠 (𝜃 + 1).
+
+By definition, the predictable bias 𝛽 𝑖 →𝑗 [𝑡 0] is the expected difference between the output of Algorithm 2 when run with a simulation limit and the output when run without a simulation limit. This difference is at most (𝜎 − ( 𝑡 0 + 𝐿 )) +. Using the tail sum formula, 
+
+E[( 𝜎 − ( 𝑡 0 + 𝐿 )) +] ≤ 
+
+> ∞
+
+∑︁ 
+
+> 𝑠 =𝐿
+
+P(𝜎 > 𝑡 0 + 𝑠 ) ≤ ( 𝜃 + 1)
+
+> ∞
+
+∑︁ 
+
+> 𝑠 =𝐿
+
+(1 − 𝛿 )𝑠 = (𝜃 + 1) · (1 − 𝛿 )𝐿 
+
+𝛿 .
+
+For 𝐿 as chosen in the lemma statement, this is at most 𝜖 .
+
+■
+
+Lemma E.8. If b𝜃 𝑖 [𝑡 0] is drawn randomly and independently from 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] according to the stochastic transition kernel applied to b𝜃 [𝑡 0 − 1, 𝑛 + 1], then for any 𝑗 ≠ 𝑖 ,
+
+E[b𝛾 𝑖 →𝑗 [𝑡 0]2] ≤ 2𝛿 b𝜃 𝑖 [𝑡 0 − 1] + 2
+
+𝑛 .
+
+Proof. By Lemma E.4, |b𝛾 𝑖 →𝑗 [𝑡 0]| ≤ Δ𝑡 0 almost surely. Observe that with the assumption that b𝜃 𝑖 [𝑡 0] is drawn randomly, 
+
+b𝜃 𝑖 [𝑡 0], 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] ∼ Binom (b𝜃 𝑖 [𝑡 0 − 1, 𝑛 + 1], 1 − 𝛿 ) ∗ Bern 
+
+ 1
+
+𝑛 
+
+
+
+35 because a Binom (b𝜃 𝑖 [𝑡 0 − 1, 𝑛 + 1], 1 − 𝛿 ) number of high-valued jobs survive from the previous period and with probability 1 /𝑛 , a new one arrives at time 𝑡 0. Hence, 
+
+E[b𝛾 𝑖 →𝑗 [𝑡 0]2] ≤ E[Δ2 
+
+> 𝑡 0
+
+] = E[( b𝜃 𝑖 [𝑡 0] − 𝜃 random  
+
+> 𝑖
+
+[𝑡 0]) 2]
+
+= Var [b𝜃 𝑖 [𝑡 0] − 𝜃 random  
+
+> 𝑖
+
+[𝑡 0]] = 2 Var [b𝜃 𝑖 [𝑡 0]] 
+
+= 2 Var [Binom (b𝜃 𝑖 [𝑡 0 − 1, 𝑛 + 1], 1 − 𝛿 )] + 2 Var 
+
+
+
+Bern 
+
+ 1
+
+𝑛 
+
+ 
+
+= 2b𝜃 𝑖 [𝑡 0 − 1, 𝑛 + 1] ( 1 − 𝛿 )𝛿 + 2
+
+ 1
+
+𝑛 
+
+  
+
+1 − 1
+
+𝑛 
+
+
+
+≤ 2𝛿 b𝜃 𝑖 [𝑡 0 − 1, 𝑛 + 1] + 2
+
+𝑛 ≤ 2𝛿 b𝜃 𝑖 [𝑡 0 − 1] + 2
+
+𝑛 .
+
+■
+
+Lemma E.9. Almost surely, 
+
+Δ𝑡 0 ≤ b𝜃 𝑖 [𝑡 0 − 1] + b𝜃 𝑖 [𝑡 0] + 1.
+
+Proof. Since an agent gains at most 1 high-valued job per time period, 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] ≤ b𝜃 𝑖 [𝑡 0 − 1] + 1. Thus, 
+
+Δ𝑡 0 = 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] − b𝜃 𝑖 [𝑡 0] ≤ b𝜃 𝑖 [𝑡 0 − 1] + b𝜃 𝑖 [𝑡 0] + 1.
+
+■
+
+E.2 Deferred Proofs about Algorithm 3 
+
+In this section, we prove theorems about Algorithm 3. Let us first define some notation used throughout. We shall set the algorithm parameters 𝐵 , 𝜃 , Σ, and 𝐿 
+
+later. Let H𝑡,𝑖 be the filtration generated by the history of all reports and server allocations recorded by the mechanism up to update (𝑡, 𝑖 ) and the estimated externalities b𝛾 𝑗 →𝑘 [𝑠 ] used up to update (𝑡, 𝑖 ). (It doesn’t matter for our results whether the estimated externalities are public.) Let G𝑡 be the filtration generated by the history of all reports and server allocations recorded by the mechanism up to timestep 𝑡 and the estimated externalities b𝛾 𝑗 →𝑘 [𝑠 ] for 𝑠 ≤ 𝑡 , i.e., G𝑡 = H𝑡,𝑛 +1.Fix an honest agent 𝑖 . Define an auxiliary mechanism that is the same as the actual mechanism except the virtual debt limit and both the per-round and cumulative report caps are not enforced on the fixed honest agent 𝑖 ; all restrictions on agents 𝑗 ≠ 𝑖 remain enforced in the auxiliary mechanism. We denote quantities in the auxiliary mechanism with the superscript aux. Since there is no virtual debt limit or report cap enforcement on agent 𝑖 , we always have b𝜃 aux  
+
+> 𝑖
+
+[𝑡 ] = 𝜃 aux  
+
+> 𝑖
+
+[𝑡 ]. Couple the auxiliary mechanism with the real mechanism in which all restrictions are enforced such that the mechanisms agree until agent 𝑖 makes a report that gets modified by one of the report caps or virtual debt limit. 
+
+E.2.1 Proving that the two coupled processes never differ with high probability Lemma E.10. For any agent 𝑖 , for any 𝑥 > 0, with probability at least 1 − 𝑒 −𝑥 ,
+
+𝛿 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝜃 aux  
+
+> 𝑖
+
+[𝑡 ] ≤ 𝑇 𝑛 +√︂ 32 𝑇 𝑥 𝑛 + 2𝑥 . 
+
+36 Proof. This is the same statement as Lemma 4.6 except for the auxiliary mechanism, and the same proof applies. ■
+
+Lemma E.11. Fix an honest agent 𝑖 . For 𝑗 ≠ 𝑖 , define 
+
+b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] = −
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+b𝛾 aux  
+
+> 𝑖 →𝑗
+
+[𝑠 ].
+
+Fix 𝜂 ∈ ( 0, 1]. Set 𝑥 = ln (2𝑛 /𝜂 ) and 𝑣 = 4𝑇 /𝑛 + 2√︁ 32 𝑇 𝑥 /𝑛 + 4𝑥 . If we set 𝐵 ≥ 𝐿𝑥 +√︁ 𝑥 (𝐿 2𝑥 + 2𝑣 ), then 
+
+P(∃ 𝑡, 𝑗 ≠ 𝑖 : b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] > 𝐵 ) ≤ 𝜂 .Proof. For a fixed 𝑗 ≠ 𝑖 , set 𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] = b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] − b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 − 1]. By Lemma E.8, 
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ]2 |G aux  
+
+> 𝑡 −1
+
+] ≤ 2𝛿𝜃 aux  
+
+> 𝑖
+
+[𝑡 − 1] + 2
+
+𝑛 .
+
+Summing over 𝑡 , 𝑇 ∑︁ 
+
+> 𝑡 =1
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ]2 |G aux  
+
+> 𝑡 −1
+
+] ≤ 2𝛿 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝜃 aux  
+
+> 𝑖
+
+[𝑡 − 1] + 2𝑇 𝑛 .
+
+Lemma E.10 implies that 𝛿 Í𝑇 𝑡 =1 𝜃 aux  
+
+> 𝑖
+
+[𝑡 − 1] ≤ 𝑇 /𝑛 +√︁ 32 𝑇 𝑥 /𝑛 + 2𝑥 with probability at least 1 − 𝑒 −𝑥 , so the above display implies 
+
+P
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ]2 |G aux  
+
+> 𝑡 −1
+
+] > 4𝑇 𝑛 + 2√︂ 32 𝑇 𝑥 𝑛 + 4𝑥 
+
+!
+
+≤ 𝑒 −𝑥 .
+
+Observe that b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] is a Gaux  
+
+> 𝑡
+
+-martingale by Lemma E.3. Furthermore, by Corollary E.6, its increments are almost surely bounded by 𝐿 . By Theorem B.1 with 𝑆 𝑡 = b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ], 𝜉 𝑡 = 𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ], 𝑐 = 𝐿 , and 𝑎 = 𝐵 ,
+
+P ∃𝑡 : b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵, 
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑠 ]2 |G aux  
+
+> 𝑠 −1
+
+] ≤ 𝑣 
+
+!
+
+≤ exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐿𝐵 )
+
+
+
+.
+
+Combine the previous two displays to obtain 
+
+P
+
+
+
+∃𝑡 : b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵 
+
+
+
+≤ exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐿𝐵 )
+
+
+
++ 𝑒 −𝑥 .
+
+By a union bound over 𝑗 ≠ 𝑖 ,
+
+P
+
+
+
+∃𝑡, 𝑗 ≠ 𝑖 : b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵 
+
+
+
+≤ 𝑛 exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐿𝐵 )
+
+
+
++ 𝑛𝑒 −𝑥 .
+
+Expanding 𝐵 ≥ 𝐿𝑥 +√︁ 𝑥 (𝐿 2𝑥 + 2𝑣 ) gives 𝐵 2 ≥ 2𝑥 (𝑣 + 𝐿𝐵 ), so 
+
+𝑛 exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐿𝐵 )
+
+
+
+≤ 𝑛𝑒 −𝑥 .
+
+Therefore, 
+
+P
+
+
+
+∃𝑡, 𝑗 ≠ 𝑖 : b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵 
+
+
+
+≤ 2𝑛𝑒 −𝑥 = 𝜂. 
+
+■
+
+37 Lemma E.12. Fix an agent 𝑖 and 𝜂 ∈ ( 0, 1]. If we set 
+
+𝜃 ≥
+
+
+
+min 
+
+
+
+𝑇 , √︂ 2  
+
+> −ln (1−𝛿 )
+
+ 2 
+
+> 𝛿
+
++ ln 𝑇 𝜂 
+
+
+
++ 1
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+,
+
+then P(∃ 𝑡 : 𝜃 aux  
+
+> 𝑖
+
+[𝑡 ] > 𝜃 ) ≤ 𝜂 .Proof. This is the same statement as Lemma 4.5 except for the auxiliary mechanism, and the same proof applies. ■
+
+Lemma E.13. Fix an agent 𝑖 and 𝜂 ∈ ( 0, 1]. If we set 
+
+Σ ≥ 1
+
+𝛿 
+
+𝑇 𝑛 +√︂ − 32 𝑇 𝑛 ln 𝜂 − 2 ln 𝜂 
+
+!
+
+,
+
+then P
+
+Í𝑇 𝑡 =1 𝜃 aux  
+
+> 𝑖
+
+[𝑡 ] > Σ
+
+
+
+≤ 𝜂 .Proof. This follows from Lemma E.10 with 𝑥 = − ln 𝜂 . ■
+
+Corollary E.14. Let 𝜂 = 1/𝑇 , 𝑥 = ln (2𝑛 /𝜂 ) and 𝑣 = 4𝑇 /𝑛 + 2√︁ 32 𝑇 𝑥 /𝑛 + 4𝑥 . If we set 
+
+𝐵 ≥ 𝐿𝑥 +√︁ 𝑥 (𝐿 2𝑥 + 2𝑣 ),𝑇 ≥ 𝜃 ≥
+
+
+
+min 
+
+
+
+𝑇 , √︂ 2  
+
+> −ln (1−𝛿 )
+
+ 2 
+
+> 𝛿
+
++ ln 𝑇 𝜂 
+
+
+
++ 1
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+,
+
+and Σ ≥ 1
+
+𝛿 
+
+𝑇 𝑛 +√︂ − 32 𝑇 𝑛 ln 𝜂 − 2 ln 𝜂 
+
+!
+
+,
+
+then the real mechanism and the auxiliary mechanism differ with probability at most 3/𝑇 .Proof. Fix an honest agent 𝑖 . By Lemmas E.11 to E.13, with our parameter choices, with b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] defined as in Lemma E.11, 
+
+P(∃ 𝑡, 𝑗 ≠ 𝑖 : b𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] > 𝐵 ) ≤ 𝜂, P(∃ 𝑡 : 𝜃 aux  
+
+> 𝑖
+
+[𝑡 ] > 𝜃 ) ≤ 𝜂, P
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝜃 aux  
+
+> 𝑖
+
+[𝑡 ] > Σ
+
+!
+
+≤ 𝜂. 
+
+If none of the conditions occur in the above display, then neither the virtual debt limit nor either report cap alters agent 𝑖 's report in the real mechanism, so by the coupling, the real mechanism and auxiliary mechanism never differ. The result now follows from a union bound over the events in the above display. 
+
+■
+
+E.2.2 Using PEC /SPEC properties to prove low error bounds 
+
+For each agent 𝑘 , write Υ𝑘 [𝑡, 𝑗 ] := Υ𝑘 (bℎ𝑡,𝑗 ) for agent 𝑖 ’s anticipated payoff at update (𝑡, 𝑗 ), where bℎ𝑡,𝑗 is the reported history through update (𝑡, 𝑗 ) (recall Υ𝑘 (·) is defined at Definition 3.2)). 38 Lemma E.15. Fix an honest agent 𝑖 . Define 
+
+𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] = Υaux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] + ∑︁  
+
+> 𝑘 ≠𝑖
+> 𝑡 −1
+
+∑︁ 
+
+> 𝑠 =1
+
+𝛾 aux  
+
+> 𝑖 →𝑘
+
+[𝑠 ] + 𝛾 aux  
+
+> 𝑖 →𝑘
+
+[𝑡 ]1𝑗 ≥𝑖 
+
+!| {z }     
+
+> externality on agents 𝑘 ≠𝑖 by 𝑖
+
+−∑︁   
+
+> (𝑠,𝑘 ) ≤ ( 𝑡,𝑗 ):𝑘 ≠𝑖
+
+𝛾 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]
+
+| {z } 
+
+> externality on agent 𝑖
+
+.
+
+Then, 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] is an H aux  
+
+> 𝑡,𝑗
+
+-martingale starting at 𝑀 aux  
+
+> 𝑖
+
+[0, 𝑛 + 1] = 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 /𝑛 .Proof. It is readily checked that 𝑀 aux  
+
+> 𝑖
+
+[( 𝑡, 𝑗 )] is H aux  
+
+> 𝑡,𝑗
+
+-measurable. Fix some update (𝑡, 𝑗 ). To show that the increments of 𝑀 aux  
+
+> 𝑖
+
+[( 𝑡, 𝑗 )] have expectation 0 conditioned on the history, we break down into 3 cases: 
+
+𝑗 = 𝑛 + 1, 𝑗 = 𝑖 , and 𝑗 ∈ [ 𝑛 ] \ { 𝑖 }.If 𝑗 = 𝑛 + 1, then 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] − 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 − 1] = Υaux  
+
+> 𝑖
+
+[𝑡, 𝑛 + 1] − Υaux  
+
+> 𝑖
+
+[𝑡, 𝑛 ]. Conditioned on H aux   
+
+> 𝑡,𝑗 −1
+
+= H aux  
+
+> 𝑡,𝑛
+
+, this difference has expectation 0 by the tower law: Υaux  
+
+> 𝑖
+
+[𝑡, 𝑛 ] is the expected value of e𝑈 𝑖 (ℎaux 
+
+> 𝑇 ,𝑛 +1
+
+) starting at the reported history bℎaux  
+
+> 𝑡,𝑛
+
+up to update (𝑡, 𝑛 ), and Υaux  
+
+> 𝑖
+
+[𝑡, 𝑛 + 1] is the same thing but with the random service at time 𝑡 realized; in particular, note that the state b𝜃 aux [𝑡, 𝑛 + 1] is drawn from the same distribution as the target policy when the reported history is bℎaux  
+
+> 𝑡,𝑛
+
+as in Algorithm 3. Now consider the case when 𝑗 = 𝑖 , in which case 
+
+𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] − 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 − 1] = Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 ] − Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 − 1] + ∑︁ 
+
+> 𝑘 ≠𝑖
+
+𝛾 aux  
+
+> 𝑖 →𝑘
+
+[𝑡 ].
+
+By a similar argument as in the previous case, 
+
+E[Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 ] − Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 − 1]|H aux  
+
+> 𝑡,𝑖 −1
+
+] = 0by the tower law. Specifically, Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 − 1] is the expected value of e𝑈 𝑖 (ℎaux 
+
+> 𝑇 ,𝑛 +1
+
+) starting at the reported partial history bℎaux   
+
+> 𝑡,𝑖 −1
+
+up to update (𝑡, 𝑖 − 1) with truthful random reports thereafter, and Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 ] is the same thing but starting at the reported partial history bℎaux  
+
+> 𝑡,𝑖
+
+. Since agent 𝑖 is honest, bℎaux  
+
+> 𝑡,𝑖
+
+is bℎaux   
+
+> 𝑡,𝑖 −1
+
+with the last state vector with its 𝑖 th coordinate replaced by 𝜃 aux  
+
+> 𝑖
+
+[𝑡 ] appended. By the tower law, Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 − 1]
+
+and Υaux  
+
+> 𝑖
+
+[𝑡, 𝑖 ] have equal expectations conditioned on H aux  
+
+> 𝑡,𝑖 −1
+
+. We can then apply Lemma E.3 to see that 
+
+E[𝛾 aux  
+
+> 𝑖 →𝑘
+
+[𝑡 ]|H aux  
+
+> 𝑡,𝑖 −1
+
+] = 0 for each 𝑘 ≠ 𝑖 . Thus, E[𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] − 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 − 1]|H aux  
+
+> 𝑡,𝑗 −1
+
+] = 0. Now we consider the final case when 𝑗 ∈ [ 𝑛 ] \ { 𝑖 }. In this case, 
+
+𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] − 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 − 1] = Υaux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] − Υaux  
+
+> 𝑖
+
+[𝑡, 𝑗 − 1] − 𝛾 aux  
+
+> 𝑗 →𝑖
+
+[𝑡 ].
+
+By definition, 𝛾 aux  
+
+> 𝑗 →𝑖
+
+[𝑡 ] = Υaux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] − Υaux  
+
+> 𝑖
+
+[𝑡, 𝑗 −1], so the above is 0 almost surely, establishing that 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ]
+
+is an H aux  
+
+> 𝑡,𝑗
+
+-martingale. By definition, Υaux  
+
+> 𝑖
+
+[0, 𝑛 +1] is the expected number of high-valued jobs served from agent 𝑖 under the target policy described in Section 2.3. By Theorem 2.3 and symmetry, Υaux  
+
+> 𝑖
+
+[0, 𝑛 + 1] =
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 /𝑛 . ■
+
+Denote 
+
+𝛽 aux  
+
+> 𝑗 →𝑖
+
+[𝑡 ] = E[b𝛾 aux  
+
+> 𝑗 →𝑖
+
+[𝑡 ]|H aux  
+
+> 𝑡,𝑗 −1
+
+, b𝜃 aux  
+
+> 𝑗
+
+[𝑡 ]] − 𝛾 aux  
+
+> 𝑗 →𝑖
+
+[𝑡 ].
+
+Lemma E.16. Fix an honest agent 𝑖 . Suppose 𝛽 aux  
+
+> 𝑗 →𝑖
+
+[𝑡 ] ≤ 𝜖 almost surely for all 𝑗 ≠ 𝑖 and all 𝑡 . Additionally, suppose the probability that the real mechanism and auxiliary mechanism differ is bounded above by 𝑞 . Define 
+
+𝐷 = min {𝐿, 𝜃 + 1}. Then, 
+
+E[𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − (( 𝑛 − 1)( 𝐵 + 𝐷 + 𝜖𝑇 ) + 𝑞 · 𝑇 ) .
+
+39 Proof. We first lower-bound agent 𝑖 ’s utility in the auxiliary mechanism. Taking 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] as defined in Lemma E.15, we have 𝑀 aux  
+
+> 𝑖
+
+[0, 𝑛 + 1] = Υaux  
+
+> 𝑖
+
+[0, 𝑛 + 1]. Because 𝑀 aux  
+
+> 𝑖
+
+[( 𝑡, 𝑗 )] is a martingale starting at 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 /𝑛 as established in Lemma E.15, 
+
+E[𝑀 aux  
+
+> 𝑖
+
+[𝑇 , 𝑛 + 1]] = 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 (12) Observe that the true externality 𝛾 aux  
+
+> 𝑖 →𝑘
+
+[𝑠 ] is the conditional expectation of the output of Algorithm 2 when run at update (𝑠, 𝑖 ) with the reported history therebefore and 𝐿 = ∞. We can then apply Lemma E.3 to see that E[𝛾 aux  
+
+> 𝑖 →𝑘
+
+[𝑠 ]] = 0 for every agent 𝑘 ≠ 𝑖 and timestep 𝑠 . It follows from the definition of 𝑀 aux  
+
+> 𝑖
+
+[𝑡, 𝑗 ] and (12) that 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 = E[Υaux  
+
+> 𝑖
+
+[𝑇 , 𝑛 + 1]] − ∑︁ 
+
+> 𝑘 ≠𝑖 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+E[𝛾 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] . (13) Write 
+
+E[𝛾 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] = E[b𝛾 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] − E[𝛽 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] = − E[𝑝 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] − E[𝛽 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] .
+
+Then, 
+
+−∑︁ 
+
+> 𝑘 ≠𝑖 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+E[𝛾 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] =∑︁ 
+
+> 𝑘 ≠𝑖 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+(E[𝑝 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] + E[𝛽 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]]) .
+
+At any time 𝑡 , if Í𝑡 −1 
+
+> 𝑠 =1
+
+𝑝 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ] > 𝐵 , then the mechanism puts b𝜃 aux  
+
+> 𝑘
+
+[𝑡 ] = 0. It follows from Corollaries E.5 and E.6 that Í𝑡 𝑠 =1 𝑝 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ] ≤ 𝐵 + 𝐷 at all times 𝑡 . Substituting this bound and the bound E[𝛽 aux  
+
+> 𝑗 →𝑖
+
+[𝑠 ]] ≤ 𝜖 
+
+into the above display, we obtain 
+
+−∑︁ 
+
+> 𝑘 ≠𝑖 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+E[𝛾 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ]] ≤ ( 𝑛 − 1)( 𝐵 + 𝐷 + 𝜖𝑇 ).
+
+Substitute into (13) to obtain 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 ≤ E[Υaux  
+
+> 𝑖
+
+[𝑇 , 𝑛 + 1]] + ( 𝑛 − 1)( 𝐵 + 𝐷 + 𝜖𝑇 ).
+
+Let e𝑈 aux  
+
+> 𝑖
+
+be the total number of high-valued jobs of agent 𝑖 served. Observe that e𝑈 aux  
+
+> 𝑖
+
+= Υaux  
+
+> 𝑖
+
+[𝑇 , 𝑛 + 1].Substituting this into the above display and rearranging, 
+
+E[ e𝑈 aux  
+
+> 𝑖
+
+] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 − ( 𝑛 − 1)( 𝐵 + 𝐷 + 𝜖𝑇 ). (14) We shall apply Lemma C.1 to obtain 
+
+E[𝑈 aux  
+
+> 𝑖
+
+] ≥ 𝑛𝑣 ★ 
+
+> 𝑖
+
+· E[ e𝑈 aux  
+
+> 𝑖
+
+].
+
+Indeed, the conditions of Lemma C.1 are satisfied: agent 𝑖 is honest so she always chooses to serve her highest-valued job, the auxiliary mechanism grants agents access to the server only depending on the reports of the numbers of high-valued jobs, and the other agents’ strategies do not depend on the job values of agent 𝑖 nor the high-valued arrivals of agent 𝑖 when conditioned on the reports of the numbers of high-valued jobs. Substitute (14) into the above to obtain 
+
+E[𝑈 aux  
+
+> 𝑖
+
+] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 + 𝜖𝑇 )𝑛𝑣 ★ 
+
+> 𝑖
+
+.
+
+By the assumption that values are bounded in [0, 1], by the definition of ideal utility, 
+
+𝑣 ★ 
+
+> 𝑖
+
+≤ P   
+
+> 𝑄 aux
+> 𝑖 ∼Unif [0,1]
+
+(𝑄 aux  
+
+> 𝑖
+
+≥ 1 − 1/𝑛 ) = 1/𝑛, 
+
+40 so 
+
+E[𝑈 aux  
+
+> 𝑖
+
+] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 + 𝜖𝑇 ).
+
+Since 𝑈 aux  
+
+> 𝑖
+
+≤ 𝑇 almost surely, using the fact that 𝑈 aux  
+
+> 𝑖
+
+= 𝑈 𝑖 with probability at least 1 − 𝑞 since the real mechanism and auxiliary mechanism agree with probability at least 1 − 𝑞 ,
+
+E[𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 + 𝜖𝑇 ) − 𝑞 · 𝑇 . 
+
+■
+
+E.2.3 Main Results Theorem E.17 (Error Bound Result 1) . Set 𝜖 = 1/𝑇 . Assume we set the algorithm’s parameters so that 
+
+𝐿 =
+
+ log 𝜃 +1  
+
+> 𝜖𝛿
+> −log (1−𝛿 )
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+,
+
+and 
+
+𝐵 = 𝐿 ln (2𝑇𝑛 ) + 
+
+vut
+
+𝐿 2 ln (2𝑇𝑛 ) + 8𝑇 𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 8 ln (2𝑇𝑛 )
+
+!
+
+ln (2𝑇𝑛 ) (15) 
+
+where 𝜃 and Σ satisfy the conditions of Corollary E.14. Then, Algorithm 3 has error at most 
+
+𝑂 
+
+√︁ 
+
+𝑛𝑇 log 𝑇 + 𝑛 log 2 𝑇 
+
+
+
+.
+
+Proof. Substituting in the variables that the lower bound for 𝐵 in the condition of Corollary E.14, one can check that condition says 
+
+𝐵 ≥ 𝐿 ln (2𝑇𝑛 ) + 
+
+vut
+
+𝐿 2 ln (2𝑇𝑛 ) + 8𝑇 𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 8 ln (2𝑇𝑛 )
+
+!
+
+ln (2𝑇𝑛 ).
+
+This is exactly the budget in (15). It is easy to see that 𝐿 satisfies the condition of Corollary E.14, and 𝜃 
+
+and Σ satisfy the conditions of Corollary E.14 by assumption. Thus, all our parameter choices satisfy the conditions of Corollary E.14. For 𝛿 < 1, substitute 𝜖 = 1/𝑇 and 𝜃 ≤ 𝑇 to obtain 
+
+𝐿 ≤
+
+& log 𝑇 (𝑇 +1)
+
+> 𝛿
+
+− log (1 − 𝛿 )
+
+'
+
+= 𝑂 (log 𝑇 ).
+
+By substituting the bound 𝐷 ≤ 𝐿 with 𝐿 = 1 for 𝛿 = 1 and the above bound on 𝐿 for 𝛿 < 1 into (15), one can find that 
+
+𝐵 ≤ 𝑂  √︂ 𝑇 log 𝑇 𝑛 + log 2 𝑇 
+
+!
+
+.
+
+(Recall that we are in the regime where 𝑛 ≤ 𝑇 .) Using Lemma E.16 with the above bounds and the 𝑞 ≤ 3/𝑇 bound from Corollary E.14 for honest 𝑖 , the error is at most 𝑂 
+
+√︁ 
+
+𝑛𝑇 log 𝑇 + 𝑛 log 2 𝑇 
+
+
+
+. ■
+
+41 Theorem E.18 (Error Bound Result 2) . Set 𝜖 = 1/ln 𝑇 and 𝜂 = 1/𝑇 . Assume we set the algorithm’s param-eters so that 
+
+𝐿 =
+
+ log 𝜃 +1  
+
+> 𝜖𝛿
+> −log (1−𝛿 )
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+, 𝜃 =
+
+
+
+min 
+
+
+
+𝑇 , 
+
+√︂   
+
+> 2
+> −ln (1−𝛿 )
+
+ 2 
+
+> 𝛿
+
++ ln 𝑇 𝜂 
+
+
+
++ 1
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+.
+
+and 
+
+𝐵 = 𝐿 ln (2𝑇𝑛 ) + 
+
+vut
+
+𝐿 2 ln (2𝑇𝑛 ) + 8𝑇 𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 8 ln (2𝑇𝑛 )
+
+!
+
+ln (2𝑇𝑛 ) (16) 
+
+where Σ satisfies the condition of Corollary E.14. Then, Algorithm 3 has error at most 
+
+𝑂 
+
+ 𝑛𝑇 
+
+log 𝑇 
+
+
+
+.
+
+Proof. Substituting in the variables that the lower bound for 𝐵 in the condition of Corollary E.14, one can check that condition says 
+
+𝐵 ≥ 𝐿 ln (2𝑇𝑛 ) + 
+
+vut
+
+𝐿 2 ln (2𝑇𝑛 ) + 8𝑇 𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 8 ln (2𝑇𝑛 )
+
+!
+
+ln (2𝑇𝑛 ).
+
+This is exactly the budget in (16). It is easy to see that 𝐿 and 𝜃 satisfy the conditions of Corollary E.14, and Σ satisfies the condition of Corollary E.14 by assumption. Thus, all our parameter choices satisfy the conditions of Corollary E.14. Substituting in the variables that define 𝐿 , one can check that for 𝛿 < 1, 
+
+𝐿 ≤
+
+
+
+log (ln 𝑇 ) − log (𝛿 ) + log 
+
+√︃ 2  
+
+> −ln (1−𝛿 )
+
+  2 
+
+> 𝛿
+
++ 2 ln 𝑇  + 3
+
+
+
+− log (1 − 𝛿 )
+
+
+
+≤ 𝑂 (log log 𝑇 ).
+
+By substituting the bound 𝐷 ≤ 𝐿 with 𝐿 = 1 for 𝛿 = 1 and the above bound on 𝐿 for 𝛿 < 1 into (16), one can find that 
+
+𝐵 ≤ 𝑂  √︂ 𝑇 log 𝑇 𝑛 + log (𝑇 ) log log (𝑇 )
+
+!
+
+.
+
+Using Lemma E.16 with the above bounds and the 𝑞 ≤ 3/𝑇 bound from Corollary E.14 for honest 𝑖 , the error is at most 𝑂 
+
+ 𝑛𝑇 
+
+> log 𝑇
+
+
+
+. ■
+
+Theorem E.19 (Runtime Result) . To run one timestep of Algorithm 3, it takes 𝑂 (𝑛 2𝐿 ) worst-case and expected 
+
+𝑂 
+
+
+
+𝑛 2
+
+
+
+1 + log 
+
+
+
+𝜃 + 1
+
+ 
+
+computational time. To run all 𝑇 timesteps of 𝐴𝑙𝑔𝑜𝑟𝑖𝑡ℎ𝑚 3, it takes 𝑂 (𝑛 2 (Σ + 𝑇 )) 
+
+expected computational time. Proof. The runtime is dominated by the amount of time it takes to compute the estimators b𝛾 𝑗 →𝑖 [𝑡 ] in the calls to Algorithm 2. Specifically, suppose we run 𝜎 𝑡,𝑗 timesteps in the coupled simulation in Algorithm 2. It takes 𝑂 (𝑛𝜎 𝑡,𝑗 ) to run the coupled simulation, since in each simulated timestep, one has to update 𝑛 
+
+queues, each can be done in 𝑂 (1) time as per the discussion in Section 4.1. Thus, it takes 𝑂 
+
+
+
+𝑛 Í𝑛 𝑗 =1 𝜎 𝑡,𝑗 
+
+
+
+to simulate each timestep. To bound this, we give uniform bounds on 𝜎 𝑡,𝑗 .42 The per-timestep worst-case runtime bound 𝑂 (𝑛 2𝐿 ) follows from the fact that each 𝜎 𝑡,𝑗 ≤ 𝐿 almost surely by definition. The per-timestep expected runtime bound 𝑂 
+
+
+
+𝑛 2
+
+
+
+1 + log 
+
+
+
+𝜃 + 1
+
+ 
+
+follows from Corol-lary E.2. By summing Lemma E.9 and using Corollary E.2, we obtain 
+
+E
+
+" 𝑇 ∑︁ 
+
+> 𝑡 =1
+
+𝜎 𝑡,𝑗 
+
+#
+
+≤ 𝑂 E
+
+" 𝑇 ∑︁ 
+
+> 𝑡 =1
+
+b𝜃 𝑗 [𝑡 ] + 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+b𝜃 𝑗 [𝑡 − 1] + 𝑇 
+
+# ! 
+
+≤ 𝑂 (Σ + 𝑇 ).
+
+The total expected computational time bound follows. ■
+
+Theorem 4.2. There exist a simulation limit and a virtual debt limit 
+
+𝐿 =
+
+(
+
+Θ(log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1, 𝐵 = eΘ √︂ 𝑇 𝑛 
+
+!
+
+such that Algorithm 1, using estimators b𝛾 𝑖 →𝑗 [𝑡 ] computed by Algorithm 2 with simulation limit 𝐿 instead of the externalities 𝛾 𝑖 →𝑗 [𝑡 ], has error e𝑂 (√𝑛𝑇 ).Furthermore, the mechanism takes worst-case 𝑂 (𝑛 2 log 𝑇 ) computational time per timestep 𝑡 .Proof. Set 𝜖 = 1/𝑇 and 
+
+𝐿 =
+
+l log 𝑇 +1  
+
+> 𝜖𝛿
+> −log (1−𝛿 )
+
+m
+
+if 𝛿 < 11 if 𝛿 = 1 .
+
+Choose the virtual debt limit 
+
+𝐵 = 𝐿 ln (2𝑇𝑛 ) + 
+
+vut
+
+𝐿 2 ln (2𝑇𝑛 ) + 8𝑇 𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 8 ln (2𝑇𝑛 )
+
+!
+
+ln (2𝑇𝑛 )
+
+For fixed 𝛿 and 𝑛 ≤ 𝑇 , these choices have the orders as in the theorem statement. The mechanism described in the theorem statement is Algorithm 3 with 𝜃 = 𝑇 and Σ = ∞. The choice of 
+
+𝐿 and 𝐵 is the same as in Theorem E.17. The error bound of e𝑂 (√𝑛𝑇 ) comes from that theorem. For the runtime result, observe that 𝐿 ≤ 𝑂 (log 𝑇 ) and apply Theorem E.19. ■
+
+Theorem 4.3 (Main Result with 𝐿 = Θ(log 𝑇 )). There exist parameters 
+
+𝜃 =
+
+(
+
+Θ(√︁ log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1, 𝐿 =
+
+(
+
+Θ(log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1,
+
+Σ = eΘ
+
+𝑇 𝑛 
+
+
+
+, 𝐵 = eΘ √︂ 𝑇 𝑛 
+
+!
+
+such that Algorithm 3 has error at most e𝑂 (√𝑛𝑇 ), worst-case 𝑂 (𝑛 2 log 𝑇 ) and expected 𝑂 (𝑛 2 log log 𝑇 ) per-step runtime, and expected total runtime spent across all time periods at most 𝑂 (𝑛 2𝑇 ).
+
+43 Proof. Choose the parameters explicitly as 
+
+𝜃 =
+
+
+
+min 
+
+n
+
+𝑇 , 
+
+l√︃ 2  
+
+> −ln (1−𝛿 )
+
+  2 
+
+> 𝛿
+
++ 2 ln 𝑇 m
+
++ 1
+
+o
+
+if 𝛿 < 11 if 𝛿 = 1 , 𝐿 =
+
+ log (𝜃 +1)𝑇 𝛿   
+
+> −log (1−𝛿 )
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+,
+
+Σ =
+
+&
+
+1
+
+𝛿 
+
+𝑇 𝑛 +√︂ 32 𝑇 𝑛 ln 𝑇 + 2 ln 𝑇 
+
+!' 
+
+, and 
+
+𝐵 = 𝐿 ln (2𝑇𝑛 ) + 
+
+vut
+
+𝐿 2 ln (2𝑇𝑛 ) + 8𝑇 𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 8 ln (2𝑇𝑛 )
+
+!
+
+ln (2𝑇𝑛 ).
+
+For fixed 𝛿 and 𝑛 ≤ 𝑇 , these choices have the orders stated in the theorem statement. For the error bound, one can check that these parameter choices satisfy the conditions of Theorem E.17 and apply that theorem. For the runtime bound, one can check that 𝜃 ≤ 𝑂 (√︁ log 𝑇 ), 𝐿 ≤ 𝑂 (log 𝑇 ), and 
+
+Σ ≤ 𝑂 (𝑇 ) and apply Theorem E.19. ■
+
+Theorem 4.4 (Main Result with 𝐿 = Θ(log log 𝑇 )). There exist parameters 
+
+𝜃 =
+
+(
+
+Θ(√︁ log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1, 𝐿 =
+
+(
+
+Θ(log log 𝑇 ) if 𝛿 < 1,
+
+1 if 𝛿 = 1,
+
+Σ = eΘ
+
+𝑇 𝑛 
+
+
+
+, 𝐵 = eΘ √︂ 𝑇 𝑛 
+
+!
+
+such that Algorithm 3 has error at most 𝑂 (𝑛𝑇 /log 𝑇 ), worst-case 𝑂 (𝑛 2 log log 𝑇 ) per-step runtime, and ex-pected total runtime spent across all time periods at most 𝑂 (𝑛 2𝑇 ).Proof. Choose the parameters explicitly as 
+
+𝜃 =
+
+
+
+min 
+
+n
+
+𝑇 , 
+
+l√︃ 2  
+
+> −ln (1−𝛿 )
+
+  2 
+
+> 𝛿
+
++ 2 ln 𝑇 m
+
++ 1
+
+o
+
+if 𝛿 < 11 if 𝛿 = 1 , 𝐿 =
+
+ log (𝜃 +1) ln 𝑇 𝛿   
+
+> −log (1−𝛿 )
+
+
+
+if 𝛿 < 11 if 𝛿 = 1
+
+,
+
+Σ =
+
+&
+
+1
+
+𝛿 
+
+𝑇 𝑛 +√︂ 32 𝑇 𝑛 ln 𝑇 + 2 ln 𝑇 
+
+!' 
+
+, and 
+
+𝐵 = 𝐿 ln (2𝑇𝑛 ) + 
+
+vut
+
+𝐿 2 ln (2𝑇𝑛 ) + 8𝑇 𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 8 ln (2𝑇𝑛 )
+
+!
+
+ln (2𝑇𝑛 ).
+
+For fixed 𝛿 and 𝑛 ≤ 𝑇 , these choices have the orders stated as in the theorem statement. For the error bound, one can check that these parameter choices satisfy the conditions of Theorem E.18 and apply that theorem. For the runtime bound, one can check that 𝐿 ≤ 𝑂 (log log 𝑇 ) and Σ ≤ 𝑂 (𝑇 ) and apply Theorem E.19. ■
+
+# F Deferred Proof of Theorem 3.6 
+
+In this section, we prove Theorem 3.6. The proof is a simpler version of the proofs in Appendix E, and we reuse some of the logic from there. The difference is that we reason about Algorithm 1 instead of 44 Algorithm 3, which uses the actual externalities 𝛾 𝑖 →𝑗 [𝑡 ] instead of the estimated externalities b𝛾 𝑖 →𝑗 [𝑡 ] for the virtual transfers and has no per-round nor cumulative report cap. Let us first define some notation used throughout. We shall set the budget 𝐵 later. Let H𝑡,𝑖 be the filtration generated by the history of all reports and server allocations recorded by the mechanism up to update 
+
+(𝑡, 𝑖 ). Let G𝑡 be the filtration generated by the history of all reports and server allocations recorded by the mechanism up to timestep 𝑡 , i.e., G𝑡 = H𝑡,𝑛 +1.The below lemma is analogous to Lemma E.3. 
+
+Lemma F.1. If b𝜃 𝑖 [𝑡 0] is drawn randomly according to the stochastic transition kernel applied to b𝜃 [𝑡 0, 𝑖 − 1]
+
+(and independently of 𝜃 random  
+
+> 𝑖
+
+[𝑡 0, 𝑖 ]), then E[𝛾 𝑖 →𝑗 [𝑡 0]|H 𝑡 0,𝑖 −1] = 0 for any 𝑗 ≠ 𝑖 .Proof. Observe that the true externality 𝛾 𝑖 →𝑗 [𝑡 0] is the conditional expectation of the output b𝛾 𝑖 →𝑗 [𝑡 0] of Algorithm 2 when run at update (𝑡 0, 𝑖 ) with the reported history therebefore and 𝐿 = ∞. For any 𝑗 ≠ 𝑖 , by Lemma E.3, the expectation of b𝛾 𝑖 →𝑗 [𝑡 0] conditioned on the reported state at (𝑡 0, 𝑖 − 1) is 0, which implies 
+
+E[𝛾 𝑖 →𝑗 [𝑡 0]|H 𝑡 0,𝑖 −1] = 0. ■
+
+The below corollary is analogous to Corollary E.5. 
+
+Corollary F.2. If b𝜃 𝑗 [𝑡 0] = 0, then 𝛾 𝑗 →𝑘 [𝑡 0] ≥ 0 for all 𝑘 ≠ 𝑗 .Proof. Observe that the true externality 𝛾 𝑗 →𝑘 [𝑡 0] is the conditional expectation of the output b𝛾 𝑗 →𝑘 [𝑡 0] of Algorithm 2 when run at update (𝑡 0, 𝑗 ) with the reported history therebefore and 𝐿 = ∞. For any 𝑘 ≠ 𝑗 ,by Corollary E.5, b𝛾 𝑗 →𝑘 [𝑡 0] ≥ 0, so it follows that 𝛾 𝑗 →𝑘 [𝑡 0] ≥ 0. ■
+
+The below lemma is analogous to Lemma E.8. 
+
+Lemma F.3. If b𝜃 𝑖 [𝑡 0] is drawn randomly and independently from 𝜃 random  
+
+> 𝑖
+
+[𝑡 0] according to the stochastic transition kernel applied to b𝜃 [𝑡 0 − 1, 𝑛 + 1], then for any 𝑗 ≠ 𝑖 ,
+
+E[𝛾 𝑖 →𝑗 [𝑡 0]2 |H 𝑡 0,𝑖 −1] ≤ 2𝛿 b𝜃 𝑖 [𝑡 0 − 1] + 2
+
+𝑛 .
+
+Proof. Observe that the true externality 𝛾 𝑖 →𝑗 [𝑡 0] is the conditional expectation of the output b𝛾 𝑖 →𝑗 [𝑡 0] of Algorithm 2 when run at update (𝑡 0, 𝑖 ) with the reported history therebefore and 𝐿 = ∞. For any 𝑗 ≠
+
+𝑖 , by Lemma E.8, the expectation of b𝛾 𝑖 →𝑗 [𝑡 0]2 conditioned on the reported state at (𝑡 0, 𝑖 − 1) is at most 2𝛿 b𝜃 𝑖 [𝑡 0 − 1] + 2/𝑛 , which by conditional Jensen's inequality, implies 
+
+E[𝛾 𝑖 →𝑗 [𝑡 0]2 |H 𝑡 0,𝑖 −1] ≤ E[b𝛾 𝑖 →𝑗 [𝑡 0]2 |H 𝑡 0,𝑖 −1] ≤ 2𝛿 b𝜃 𝑖 [𝑡 0 − 1] + 2/𝑛. 
+
+■
+
+As in Appendix E, fix an honest agent 𝑖 , and define an auxiliary mechanism that is the same as the actual mechanism except the virtual debt limit is not enforced on the fixed agent 𝑖 ; the virtual debt limit remains enforced on agents 𝑗 ≠ 𝑖 in the auxiliary mechanism. We denote quantities in the auxiliary mechanism with the superscript aux. Since there is no virtual debt limit enforcement on agent 𝑖 , we always have 
+
+b𝜃 aux  
+
+> 𝑖
+
+= 𝜃 aux  
+
+> 𝑖
+
+. Couple the auxiliary mechanism with the real mechanism in which the virtual debt limit is actually enforced such that the mechanisms agree until agent 𝑖 makes a report that gets modified by the virtual debt limit. Throughout, we denote 
+
+𝐷 =
+
+(l log (𝑇 +1)− log (1−𝛿 )
+
+m
+
++ 1 
+
+> 𝛿
+
+if 𝛿 < 11 if 𝛿 = 1 ,
+
+45 the almost sure bound on the externalities given in Lemma 3.8. The below lemma is analogous to Lemma E.11. Its proof below is basically the same as the proof of Lemma E.11 with 𝛾 aux  
+
+> 𝑖 →𝑗
+
+replacing b𝛾 aux  
+
+> 𝑖 →𝑗
+
+and 𝐷 replacing 𝐿 .
+
+Lemma F.4. Fix an honest agent 𝑖 . For 𝑗 ≠ 𝑖 , define 
+
+𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] = −
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+𝛾 aux  
+
+> 𝑖 →𝑗
+
+[𝑠 ].
+
+Fix 𝜂 ∈ ( 0, 1]. Set 𝑥 = ln (2𝑛 /𝜂 ) and 𝑣 = 4𝑇 /𝑛 + 2√︁ 32 𝑇 𝑥 /𝑛 + 4𝑥 . If we set 𝐵 ≥ 𝐷𝑥 +√︁ 𝑥 (𝐷 2𝑥 + 2𝑣 ), then 
+
+P(∃ 𝑡, 𝑗 ≠ 𝑖 : 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] > 𝐵 ) ≤ 𝜂 .Proof. For a fixed 𝑗 ≠ 𝑖 , set 𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] = 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] − 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 − 1]. By Lemma F.3, 
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ]2 |G aux  
+
+> 𝑡 −1
+
+] ≤ 2𝛿𝜃 aux  
+
+> 𝑖
+
+[𝑡 − 1] + 2
+
+𝑛 .
+
+Summing over 𝑡 , 𝑇 ∑︁ 
+
+> 𝑡 =1
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ]2 |G aux  
+
+> 𝑡 −1
+
+] ≤ 2𝛿 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝜃 aux  
+
+> 𝑖
+
+[𝑡 − 1] + 2𝑇 𝑛 .
+
+The auxiliary mechanisms to Algorithm 1 and Algorithm 3 only differ in the virtual payments and the report caps. The proof of Lemma E.11 uses Lemma E.10, whose proof does not use anything about the vir-tual payments, which does not use the virtual payments or report caps of Algorithm 3. Thus, Lemma E.10 applies here even though we are reasoning about the auxiliary mechanism to Algorithm 1 instead of Al-gorithm 3. Lemma E.10 implies that 𝛿 Í𝑇 𝑡 =1 𝜃 aux  
+
+> 𝑖
+
+[𝑡 − 1] ≤ 𝑇 /𝑛 +√︁ 32 𝑇 𝑥 /𝑛 + 2𝑥 with probability at least 1 − 𝑒 −𝑥 , so the above display implies 
+
+P
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ]2 |G aux  
+
+> 𝑡 −1
+
+] > 4𝑇 𝑛 + 2√︂ 32 𝑇 𝑥 𝑛 + 4𝑥 
+
+!
+
+≤ 𝑒 −𝑥 .
+
+Observe that 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] is a Gaux  
+
+> 𝑡
+
+-martingale by Lemma F.1. Furthermore, by Lemma 3.8, its increments are almost surely bounded by 𝐷 . By Theorem B.1 with 𝑆 𝑡 = 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ], 𝜉 𝑡 = 𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ], 𝑐 = 𝐷 , and 𝑎 = 𝐵 ,
+
+P ∃𝑡 : 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵, 
+
+> 𝑡
+
+∑︁ 
+
+> 𝑠 =1
+
+E[𝜉 aux  
+
+> 𝑖 →𝑗
+
+[𝑠 ]2 |G aux  
+
+> 𝑠 −1
+
+] ≤ 𝑣 
+
+!
+
+≤ exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐷𝐵 )
+
+
+
+.
+
+Combine the previous two displays to obtain 
+
+P
+
+
+
+∃𝑡 : 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵 
+
+
+
+≤ exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐷𝐵 )
+
+
+
++ 𝑒 −𝑥 .
+
+By a union bound over 𝑗 ≠ 𝑖 ,
+
+P
+
+
+
+∃𝑡, 𝑗 ≠ 𝑖 : 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵 
+
+
+
+≤ 𝑛 exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐷𝐵 )
+
+
+
++ 𝑛𝑒 −𝑥 .
+
+Expanding 𝐵 ≥ 𝐷𝑥 +√︁ 𝑥 (𝐷 2𝑥 + 2𝑣 ) gives 𝐵 2 ≥ 2𝑥 (𝑣 + 𝐷𝐵 ), so 
+
+𝑛 exp 
+
+
+
+− 𝐵 2
+
+2(𝑣 + 𝐷𝐵 )
+
+
+
+≤ 𝑛𝑒 −𝑥 .
+
+Therefore, 
+
+P
+
+
+
+∃𝑡, 𝑗 ≠ 𝑖 : 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] ≥ 𝐵 
+
+
+
+≤ 2𝑛𝑒 −𝑥 = 𝜂. 
+
+■
+
+46 The below lemma is analogous to Lemma E.16. 
+
+Lemma F.5. Fix an honest agent 𝑖 . Suppose the probability that the real mechanism and auxiliary mechanism differ is bounded above by 𝑞 . Then, 
+
+E[𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − (( 𝑛 − 1)( 𝐵 + 𝐷 ) + 𝑞 · 𝑇 ) .
+
+Proof. The reasoning to reach (13) for any 𝑘 ≠ 𝑖 in the proof of Lemma E.16, including the entire statement and proof of Lemma E.15 which is used in the proof of Lemma E.16, holds in the auxiliary mechanism to Algorithm 1 since it does not involve the virtual payments of the mechanism nor the report caps, which are the only ways the auxiliary mechanisms to Algorithm 1 and Algorithm 3 differ. At any time 𝑡 , if 
+
+Í𝑡 −1 
+
+> 𝑠 =1
+
+𝑝 aux  
+
+> 𝑘 →𝑖
+
+[𝑠 ] > 𝐵 , then the mechanism puts b𝜃 aux  
+
+> 𝑘
+
+= 0. It follows from Corollary F.2 and Lemma 3.8 that 
+
+Í𝑡 𝑠 =1 𝑝 aux  
+
+> 𝑘 →𝑖
+
+≤ 𝐵 + 𝐷 at all times 𝑡 . Substituting this bound and the fact that 𝑝 aux  
+
+> 𝑘 →𝑖
+
+= −𝛾 aux  
+
+> 𝑘 →𝑖
+
+into (13), we obtain 
+
+𝜆 (𝛿, 𝑛,𝑇 ) · 𝑇 𝑛 ≤ E[Υaux  
+
+> 𝑖
+
+[𝑇 , 𝑛 + 1]] + ( 𝑛 − 1)( 𝐵 + 𝐷 ).
+
+We shall apply Lemma C.1 to obtain 
+
+E[𝑈 aux  
+
+> 𝑖
+
+] ≥ 𝑛𝑣 ★ 
+
+> 𝑖
+
+· E[ e𝑈 aux  
+
+> 𝑖
+
+].
+
+Indeed, the conditions of Lemma C.1 are satisfied: agent 𝑖 is honest so she always chooses to serve her highest-valued job, the auxiliary mechanism grants agents access to the server only depending on the reports of the numbers of high-valued jobs, and the other agents’ strategies do not depend on the job values of agent 𝑖 nor the high-valued arrivals of agent 𝑖 when conditioned on the reports of the numbers of high-valued jobs. Combine the previous two displays with the identity Υaux  
+
+> 𝑖
+
+[𝑇 , 𝑛 + 1] = e𝑈 aux  
+
+> 𝑖
+
+to obtain 
+
+E[𝑈 aux  
+
+> 𝑖
+
+] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 )𝑛𝑣 ★ 
+
+> 𝑖
+
+.
+
+By the assumption that values are bounded in [0, 1], by the definition of ideal utility, 
+
+𝑣 ★ 
+
+> 𝑖
+
+≤ P   
+
+> 𝑄 aux
+> 𝑖 ∼Unif [0,1]
+
+(𝑄 aux  
+
+> 𝑖
+
+≥ 1 − 1/𝑛 ) = 1/𝑛, 
+
+so 
+
+E[𝑈 aux  
+
+> 𝑖
+
+] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 ).
+
+Since 𝑈 aux  
+
+> 𝑖
+
+≤ 𝑇 almost surely, using the fact that 𝑈 aux  
+
+> 𝑖
+
+= 𝑈 𝑖 with probability at least 1 − 𝑞 since the real mechanism and auxiliary mechanism agree with probability at least 1 − 𝑞 ,
+
+E[𝑈 𝑖 ] ≥ 𝜆 (𝛿, 𝑛,𝑇 ) · 𝑣 ★ 
+
+> 𝑖
+
+𝑇 − ( 𝑛 − 1)( 𝐵 + 𝐷 ) − 𝑞 · 𝑇 . 
+
+■
+
+Theorem 3.6. There exists a virtual debt limit 𝐵 = e𝑂 (√︁ 𝑇 /𝑛 ) such that Algorithm 1 has error at most e𝑂 (√𝑛𝑇 ).Proof. Set the virtual debt limit 𝐵 as 
+
+𝐵 =
+
+
+
+1 + 1
+
+𝛿 − log (𝑇 + 1)
+
+log (1 − 𝛿 )
+
+
+
+ln (2𝑇𝑛 )+√︄ 
+
+1 + 1
+
+𝛿 − log (𝑇 + 1)
+
+log (1 − 𝛿 )
+
+2
+
+ln 2 (2𝑇𝑛 ) + 8𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 ln (2𝑇𝑛 ) + 8 ln 2 (2𝑇𝑛 )
+
+47 if 𝛿 < 1 and 
+
+𝐵 = ln (2𝑇𝑛 ) + √︄ 8𝑇 ln (2𝑇𝑛 )
+
+𝑛 + 16 √︂ 2𝑇 ln (2𝑇𝑛 )
+
+𝑛 ln (2𝑇𝑛 ) + 9 ln 2 (2𝑇𝑛 )
+
+if 𝛿 = 1. For fixed 𝛿 and 𝑛 ≤ 𝑇 , indeed 𝐵 = eΘ(√︁ 𝑇 /𝑛 ).One can check that our choice of 𝐵 satisfies the condition on Lemma F.4 with 𝜂 = 1/𝑇 . If 𝑋 aux  
+
+> 𝑖 →𝑗
+
+[𝑡 ] defined as in that lemma never exceeds 𝐵 , then the virtual debt limit never alters agent 𝑖 ’s report in the real mechanism, so by the coupling, the real mechanism and the auxiliary mechanism never differ. Thus, the two coupled mechanisms differ with probability at most 1 /𝑇 . By Lemma F.5 with 𝑞 = 1/𝑇 , the mechanism’s error is at most (𝑛 − 1)( 𝐵 + 𝐷 ) + 1, which one can check to be at most e𝑂 (√𝑛𝑇 ). ■
+
+# G AI and LLM Usage Disclosure 
+
+We used the LLMs Google Gemini in the Google Antigravity application and OpenAI ChatGPT in the OpenAI Codex extension in Visual Studio Code in the process of developing some of the techniques in this paper. We used the ChatGPT 6 Astra (medium) to fill in routine mathematical details and computations and rewrote its proofs to be more stylistically in line with our writing. After writing the paper, we used ChatGPT 6 Astra (medium) to check for typos and mathematical errors. Only very minor errors were found and the corrections needed were small. Beyond checking for errors and filling in routine mathematical details, our usage of AI and LLMs was limited to developing the computational aspects of the mechanism. We developed all the modelling details and results of this paper, ignoring computational concerns, without any AI or LLM use. In particular, we came up with the general idea of the paper, the specific model, the idea to use the ideal utility benchmark, and the idea to use the Guaranteed Utility Mechanism all without any AI or LLM use. As for the computational aspects of our paper, almost all high-level ideas came from us with the LLMs only helping to speed up the process of filling in technical details and giving first drafts of formal proofs. Specifically, our research process to come up with first drafts of formal proofs can be summarized as follows. 1. We proposed to the Gemini 3.1 Pro (High) model our general idea of simulating the future timesteps of the mechanism at each GUM update until the Markov chain mixes many times to efficiently compute the externality payments. Gemini 3.1 Pro formalized this idea as simulating two coupled Markov chains until they sync and wrote initial drafts of proofs. 2. With the help of the ChatGPT 5.6 Luna (High) model, we spotted multiple errors. We asked Gemini to fix its errors by following the following multi-agent setup with two nested loops. In the inner loop, the main Gemini agent would fix its errors and have two “mathematical reviewer” subagents review its work and find errors repeatedly until both “mathematical reviewer” subagents agreed there were no more errors. In the outer loop, a “writing reviewer” subagent would review the proof writing quality and comment on issues. Pseudocode for this multi-agent setup is given in Algorithm 5. We repeated this multi-agent setup a few times, pointing out errors along the way that both we and independent ChatGPT 5.6 Luna (High) and ChatGPT 5.6 Luna (Very High) chats found. In this way, we quickly wrote an initial draft of our mechanism that is close to the initial mechanism that we presented with the e𝑂 𝑛 (√𝑇 ) utility error bound and e𝑂 𝑛 (log 𝑇 ) runtime at each step. Throughout this process, the LLMs also found that doing multiple simulations at each step is not helpful. Finally, we asked ChatGPT 5.6 Terra (Very High) to completely rewrite the proofs to be more readable and then reviewed the proofs carefully for correctness. 48 ALGORITHM 5: Multi-Agent Setup for an Initial Algorithm     
+
+> while the “writing reviewer” subagent does not approve do while either “mathematical reviewer” subagent does not approve do
+> The main agent rewrites the proofs; The main agent calls the two mathematical reviewers to evaluate; The main agent calls the writing reviewers to evaluate;
+
+3. After the initial algorithm, we had the following improvement ideas. (a) Improving the runtime to 𝑂 𝑛 (log log 𝑇 ) by capping per-round reports. (b) Improving the utility error bound to e𝑂 𝑛 (√𝑇 ) while maintaining 𝑂 𝑛 (log log 𝑇 ) expected runtime at the cost of an 𝑂 𝑛 (log 𝑇 ) worst-case runtime. (c) Improving the sublinear utility error bounds by using a tighter exponential probability tail bound for the accumulation of virtual payments for honest agents. (We were initially using Azuma-Hoeffding for this instead of the tighter Freedman inequality that we use in the paper.) (d) Giving an 𝑂 𝑛 (1) amortized runtime bound while retaining the previous guarantees by capping the cumulative reports. We developed these ideas in the order that they were listed above. For each of them, we did the fol-lowing. We came up with the idea by reading the current draft of results and proofs without further LLM usage. Then, we asked Gemini 3.1 Pro (High) to draft a short “proposal” Markdown document that outlined the proposed improvement. We sent the proposal document to ChatGPT 5.6 Sol (Ultra) to implement in the draft. In addition, we used ChatGPT 5.6 Sol (High) to find the related work using similar probability concentration bounds as used for the above improvements. We did not directly use the draft of results and proofs that came out of the process described above; instead, we rewrote them. 49

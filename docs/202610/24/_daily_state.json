@@ -1,0 +1,313 @@
+{
+  "date": "20261024",
+  "date_label": "",
+  "generated_at": "2026-10-24 22:09:24 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.23098v1",
+      "route": "202610/24/2610.23098v1-instagent-a-recursively-self-improving-agent-operating-system-for-heterogeneous-robot-collaboration",
+      "title": "InstAgent: A Recursively Self-Improving Agent Operating System for Heterogeneous Robot Collaboration",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向异构机器人协作的智能体操作系统与行为树",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.23319v1",
+      "route": "202610/24/2610.23319v1-from-sliding-windows-to-self-evolving-lifelong-memory-a-dual-perspective-survey-of-memory-paradigms-for-long-horizon-robotics-vla-models",
+      "title": "From Sliding Windows to Self-evolving Lifelong Memory: A Dual-perspective Survey of Memory Paradigms for Long-Horizon Robotics VLA Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "长时程具身VLA智能体的记忆范式",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.24534v1",
+      "route": "202610/24/2610.24534v1-structured-latent-dynamics-for-long-horizon-embodied-world-models",
+      "title": "Structured Latent Dynamics for Long-Horizon Embodied World Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向长时程具身世界模型的结构化潜在动力学",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.26395v1",
+      "route": "202610/24/2610.26395v1-foragersim-evaluating-embodied-map-based-reasoning-in-large-scale-dynamic-worlds",
+      "title": "ForagerSim: Evaluating Embodied Map-Based Reasoning in Large-Scale Dynamic Worlds",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "动态世界中的具身地图推理基准",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.26751v1",
+      "route": "202610/24/2610.26751v1-beyond-omni-a-unified-mllm-for-embodied-sensory-understanding",
+      "title": "Beyond Omni: A Unified MLLM for Embodied Sensory Understanding",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向多样物理感官感知的统一具身多模态大模型",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.29308v1",
+      "route": "202610/24/2610.29308v1-llm-based-exogenous-world-modeling-for-dynamic-scheduling",
+      "title": "LLM-Based Exogenous World Modeling for Dynamic Scheduling",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "基于大语言模型的外生世界模型预测未来作业到达，用于动态调度与规划",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.04301v1",
+      "route": "202610/24/2610.04301v1-envdreamer-large-scale-multimodal-to-environment-generation-for-embodied-ai",
+      "title": "EnvDreamer: Large-Scale Multimodal-to-Environment Generation for Embodied AI",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向具身智能与机器人训练的环境生成平台",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.04861v1",
+      "route": "202610/24/2610.04861v1-awkernel-rtos-bridging-dag-scheduling-theory-and-component-oriented-real-time-systems-practice",
+      "title": "Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向组件化实时系统支持DAG调度的实时操作系统",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.05530v1",
+      "route": "202610/24/2610.05530v1-optimal-dynamic-resource-allocation-for-multicore-real-time-systems",
+      "title": "Optimal Dynamic Resource Allocation for Multicore Real-time Systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "多核实时系统中带硬截止期的动态资源分配",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.05964v1",
+      "route": "202610/24/2610.05964v1-from-social-reasoning-to-embodied-interaction-an-agentic-framework-for-social-robots",
+      "title": "From Social Reasoning to Embodied Interaction: An Agentic Framework for Social Robots",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "连接智能体推理与具身表达的社交机器人框架",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.26297v1",
+      "route": "202610/24/2610.26297v1-mobile-embodied-agent-network-mean-integrated-framework-enabling-technologies-and-task-driven-deployment",
+      "title": "Mobile Embodied Agent Network (MEAN): Integrated Framework, Enabling Technologies, and Task-Driven Deployment",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "融合感知、通信与行动的移动具身智能体网络综述",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.24096v1",
+      "route": "202610/24/2610.24096v1-dynamic-control-of-a-make-to-order-manufacturing-system-under-throughput-time-constraints-an-effective-computational-method-in-the-high-dimensional-case",
+      "title": "Dynamic Control of a Make-to-Order Manufacturing System under Throughput Time Constraints: An Effective Computational Method in the High-Dimensional Case",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "按订单生产系统中的动态排程控制",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.27651v1",
+      "route": "202610/24/2610.27651v1-constrained-federated-reinforcement-learning-for-secure-offloading-in-vehicular-edge-computing",
+      "title": "Constrained Federated Reinforcement Learning for Secure Offloading in Vehicular Edge Computing",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "车联网边缘计算中的DAG任务卸载与资源分配",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.27755v1",
+      "route": "202610/24/2610.27755v1-evaluating-runtime-prediction-and-conservative-walltime-policies-in-hpc-systems",
+      "title": "Evaluating Runtime Prediction and Conservative Walltime Policies in HPC Systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向高性能计算作业调度的保守墙钟时间推荐框架",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.30482v1",
+      "route": "202610/24/2610.30482v1-resource-aware-scheduling-for-distributed-quantum-computing",
+      "title": "Resource-Aware Scheduling for Distributed Quantum Computing",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向分布式量子计算的资源感知运行时调度器",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.22912v1",
+      "route": "202610/24/2610.22912v1-data-center-load-accommodation-under-qos-and-checkpoint-induced-frequency-security-constraints",
+      "title": "Data Center Load Accommodation under QoS and Checkpoint-Induced Frequency Security Constraints",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "兼顾工作负载服务质量与负荷平移的数据中心负荷接纳优化",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.23250v1",
+      "route": "202610/24/2610.23250v1-longaussian-tracking-foundation-priors-for-long-context-feedforward-gaussian-reconstruction",
+      "title": "LonGaussian: Tracking Foundation Priors for Long-Context Feedforward Gaussian Reconstruction",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "服务机器人感知与具身智能的三维场景重建",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.24867v1",
+      "route": "202610/24/2610.24867v1-a-partial-duty-formulation-for-crew-scheduling",
+      "title": "A Partial Duty Formulation for Crew Scheduling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "带约束的乘务排班用列生成求解",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    },
+    {
+      "paper_id": "2610.25067v1",
+      "route": "202610/24/2610.25067v1-non-monetary-mechanisms-for-stochastic-scheduling-via-sampled-pairwise-externality-compensation",
+      "title": "Non-Monetary Mechanisms for Stochastic Scheduling via Sampled Pairwise Externality Compensation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "embodied-ai"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "非货币化的在线资源分配与调度机制",
+      "first_seen_at": "2026-10-24 22:09:24 UTC",
+      "updated_at": "2026-10-24 22:09:24 UTC"
+    }
+  ]
+}

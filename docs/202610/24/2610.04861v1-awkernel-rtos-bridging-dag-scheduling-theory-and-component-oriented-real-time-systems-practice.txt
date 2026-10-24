@@ -1,0 +1,420 @@
+Title: Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice
+
+URL Source: https://arxiv.org/pdf/2610.04861v1
+
+Published Time: Tue, 06 Oct 2026 01:16:46 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+# Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice 
+
+Atsushi Yano 1,2( )[0000 −0003 −2420 −3622] , Ryo Nishimura 1, Yutaro Kobayashi 2,Yuuki Takano 2, Takahiro Ishikawa-Aso 3,2, and Takuya Azumi 4[0000 −0003 −0767 −4086]  
+
+> 1
+
+Graduate School of Science and Engineering, Saitama University, Saitama, Japan 
+
+yano.a.112@ms.saitama-u.ac.jp  
+
+> 2
+
+TIER IV, Inc., Tokyo, Japan  
+
+> 3
+
+The University of Tokyo, Tokyo, Japan  
+
+> 4
+
+Academic Association (Graduate School of Science and Engineering), Saitama University, Saitama, Japan 
+
+Abstract. Real-time directed acyclic graph (DAG) scheduling provides a rigorous basis for timing analysis and efficiency in component-oriented real-time systems (CORTS) such as autonomous driving systems, yet chal-lenges remain from the perspectives of both theorists and practitioners. For theorists, no OS natively supports the DAG task model; algorithms are therefore evaluated only analytically or in simulation, ignoring real-hardware overheads. For practitioners, today’s CORTS platforms (ROS 2 and AUTOSAR Adaptive Platform) are designed for service composition rather than for timing analyzability; adopting DAG scheduling research therefore demands substantial code changes and developer discipline. This paper proposes Awkernel, the first open-source real-time operat-ing system (RTOS) that natively supports real-time DAG scheduling research, bridging DAG scheduling theory and CORTS practice. For theorists, Awkernel is a real-hardware testbed: it exposes a modular OS-native DAG scheduler for easy algorithm implementation, plus a random workload generator and built-in metrics for evaluation. For practitioners, Awkernel is not a full replacement for today’s platforms but a CORTS platform maximizing timing analyzability: its familiar publish/subscribe model keeps porting mechanical, mapping each callback to one subtask. Moreover, its function-as-subtask (FasS) API enforces DAG semantics (precedence constraints) without programmer discipline, yielding appli-cations that match the theoretical DAG model and directly inherit its efficiency and safety guarantees. On a Raspberry Pi 4, microbenchmarks confirm microsecond-level scheduling overheads; a global earliest deadline first (GEDF) scheduler fits in 226 lines; and a practitioner ports part of an autonomous driving system using only the FasS API, without reasoning about DAG semantics. 
+
+Keywords: Operating Systems · Real-time Scheduling · Publish/Sub-scribe · Directed Acyclic Graph arXiv:2610.04861v1 [cs.OS] 4 Oct 2026 2 A. Yano et al. 
+
+# 1 Introduction 
+
+Modern cyber-physical systems, exemplified by autonomous driving systems, are typically realized as component-oriented real-time systems (CORTS) in which a collection of units implementing minimal functionalities cooperatively achieve the system-level objectives through mutual message-passing communication [1, 2]. Representative CORTS platforms include ROS 2 [3, 4] (used in autonomous driv-ing stacks such as Autoware [5]) and the AUTOSAR Adaptive Platform (AP) [6] (the automotive-industry standard for high-performance electronic control units (ECUs)). Both are POSIX-based middleware layers that delegate scheduling deci-sions to the underlying OS [7, 8]. Each unit is implemented as callbacks triggered by timers or incoming messages that publish to downstream channels, forming a system-wide dataflow whose timing requirements the underlying platform must satisfy efficiently. Real-time directed acyclic graph (DAG) scheduling offers a rigorous foundation for timing analysis in such systems by explicitly representing intra-task parallelism and dependencies [9]. Yet no publicly available OS or runtime currently treats the DAG task model as a first-class OS abstraction, that is, a concept the kernel itself represents in its internal data structures, exposes through dedicated scheduling APIs, and whose semantic constraints are enforced by the OS scheduler rather than by a user-space runtime. DAG-aware techniques (global earliest deadline first (GEDF) [10], reservation-based scheduling [11], fluid scheduling [12], and adaptive scheduling [13]) therefore cannot run on real hardware, and proposed DAG algorithms are evaluated only by analysis or simulation, hiding overheads that only real hardware exposes. Although a ROS 2 system superficially resembles a DAG, its execution semantics diverge from the theoretical DAG model due to middleware-level behaviors such as executor-specific callback scheduling [14–16] and customizable message synchronization [17]. A large body of work has analyzed and improved the timing behavior of ROS 2 executors [14–19], but the resulting two-level scheduling complicates analysis and yields ROS 2-specific models that cannot reuse the DAG scheduling literature at the OS scheduling layer. This is also a practical concern: modern CORTS such as autonomous driving stacks already carry substantial application-level complexity, so it is preferable that the platform beneath them contribute as little complexity as possible to the timing argument on which safety assurance rests. From this perspective, scheduling behavior arising from the interaction of two independently designed layers leaves room for improvement. Efforts to apply DAG scheduling directly to ROS 2 [1, 2, 20] face two further obstacles: callback description is free enough to break strict DAG semantics [1], and no platform offers runtime control based on DAG information. Consequently, CORTS practitioners cannot readily exploit the rich legacy of real-time DAG scheduling. 
+
+Research questions (RQ): Building on the above background, this work formulates the following three research questions: 1. What differences exist between the DAG model and the models adopted by representative CORTS platforms, and what requirements must system Awkernel: Bridging DAG Scheduling Theory and Practice 3
+
+software satisfy to bridge these differences and enable DAG scheduling on real hardware? 2. How can DAG scheduling theorists evaluate their algorithms on real hardware with low implementation effort? 3. How can practitioners of CORTS leverage the existing body of research on DAG scheduling? 
+
+Awkernel is the first open-source real-time operating system (RTOS) that natively supports real-time DAG scheduling research, bridging DAG scheduling theorists and practitioners of CORTS. For theorists, it is a real-hardware testbed for DAG scheduling algorithms; for practitioners, it is not a complete replacement for ROS 2 but a CORTS platform maximizing timing analyzability and direct reuse of the DAG scheduling literature. Concretely, Awkernel (i) is open-source, unlike commercial AP implementations; (ii) treats DAG structure as a first-class OS abstraction, unlike platforms that delegate scheduling to a generic POSIX OS; and (iii) exposes a scheduler interface for implementing, swapping, and measuring DAG scheduling algorithms on real hardware. Awkernel provides a ROS 2-like publish/subscribe model and the function-as-subtask (FasS) API [1], an OS-level interface for native DAG scheduling that represents each subtask as a function whose arguments and return values are the input and output edges of the DAG. By minimizing the freedom of subtask description, the OS enforces DAG semantics without relying on programmer discipline. Awkernel further pairs a scheduler with arbitrary preemption granularity, a DAG management substrate tracking runtime metadata, and a scheduler interface decoupling algorithms from OS internals; practitioners apply any DAG scheduling algorithm via the FasS API, and theorists evaluate algorithms on real hardware with minimal effort. It further includes a random DAG workload generator built on RD-Gen [21] and in-kernel metrics covering context-switch counts, preemption overhead, and DAG response times, enabling comprehensive evaluation of algorithm generality and performance. 
+
+Contributions: The main contributions of this paper include the following: 
+
+– We analyze the structural differences between the theoretical DAG model and POSIX-based CORTS platforms (ROS 2 and AUTOSAR Adaptive Platform), derive the conditions and abstractions required to realize DAG scheduling on real hardware, and confirm Awkernel satisfies them. 
+
+– The integration of a scheduler that supports arbitrary preemption granularity, together with a DAG management substrate, the FasS API, and a random DAG workload generation facility into Awkernel establishes a comprehensive platform. This environment facilitates the straightforward implementation of DAG scheduling algorithms and enables evaluation on real hardware. 
+
+– The combination of the publish/subscribe communication model within Awkernel and the FasS API enables practitioners of CORTS to leverage real-time DAG scheduling with modest, largely mechanical porting effort. 4 A. Yano et al.       
+
+> Table 1. Evaluation methods of DAG scheduling papers from the top real-time systems conferences over the past 15 years.
+> References Simulation Schedulability Tests Real Hardware
+> [20, 22–30] ✓
+> [31–43] ✓
+> [11, 44–46] ✓✓
+
+# 2 Related Work 
+
+2.1 Theoretical Real-Time DAG Scheduling 
+
+Theoretical real-time DAG scheduling addresses computational complexity, re-source heterogeneity, and multicore timing guarantees across autonomous, auto-motive/avionics, edge/IoT, and high-performance computing workloads, yet how these advances are validated in practice remains unclear. To address this ques-tion, we survey 27 papers on real-time scheduling for DAG tasks from ECRTS, RTSS, and RTAS over the past 15 years [11, 20, 22–46]. Table 1 shows all rely on simulations and schedulability tests; none use real hardware. This reinforces the problem in Section 1. The only widely accepted real-time scheduling testbed, LITMUS RT [47], is a Linux-based plugin framework for empirically comparing partitioned, global, and Pfair multiprocessor algorithms under realistic overheads (scheduling latencies, context-switch costs), but it targets independent sequential tasks and lacks DAG support; no DAG-scheduling testbed exists, a gap Awkernel fills. Awkernel continues this testbed lineage, extending the target model to DAG tasks. 
+
+2.2 Real-Time Support in CORTS Platforms 
+
+A CORTS platform is a service-oriented middleware atop a POSIX OS, where mod-ular components communicate by asynchronous message passing. Its two dominant instances, ROS 2 and AP, share a Data Distribution Service (DDS)/SOME/IP-on-POSIX architecture [6, 7]. The single-threaded executor of ROS 2 non-preemptively dispatches callbacks in fixed-priority order [14], diverging from classical real-time schedulers and prompting dedicated analyses: response-time analysis for single-threaded [14, 15, 19] and multi-threaded [16, 48] executors, end-to-end metrics such as reaction time and data age [18], and DDS-layer synchronization bounds [17]. Motivated by these analyses, numerous enhancements have been proposed to improve the real-time performance of ROS 2: chain-aware fixed-priority scheduling (PiCAS [49]), dynamic-priority earliest deadline first (EDF) executors [50], lock-free multi-threaded execution (RTeX [51]), reconciliation with classical non-preemptive scheduling [52], flexible scheduling policies (ROS RT [53]), fully preemptive per-callback thread designs [2, 54], and zero-copy inter-process communication (IPC) via shared memory (Agnocast [55]). The AUTOSAR Adaptive Platform, introduced in 2017 for advanced driver-assistance and autonomous driving ECUs [6], layers SOME/IP and ara::com over POSIX (Linux/QNX). Lacking timing determinism, it has spawned middleware research: SL-LET [8], Logical Execution Time on POSIX [56], and response-time analysis of QNX Adaptive Partitioning [57]. Awkernel: Bridging DAG Scheduling Theory and Practice 5
+
+YASMIN [58] is an open-source real-time middleware natively supporting a DAG task model with FIFO-channel precedence, and global and partitioned variants of EDF and fixed-priority scheduling. However, as a user-space C library on POSIX [58, §3], thread-scheduling ultimately falls to the POSIX scheduler, which lacks any notion of DAG precedence, the same two-level structure as ROS 2 and AP; Section 7.2 quantifies the cost of this structure empirically. None of ROS 2, AP, or YASMIN treats the DAG model as a first-class OS abstraction, leaving structural gaps that block practitioners from leveraging real-time DAG scheduling research (see Section 3). 
+
+2.3 Real-Time Parallel Programming Models 
+
+OpenMP is the de facto programming model for precedence-constrained par-allel tasks within a single process; real-time research on it includes task-graph derivation (ompTG [59]), worst-case response-time analyses for OpenMP with loops [60] and conditional branches [61], and predictable parallel programming methodologies [62]. These efforts share the goal of Awkernel but operate at a different granularity: OpenMP research addresses intra-process parallelism (subtasks sharing one address space under a runtime library), whereas Awkernel targets CORTS, where independent components cooperate via publish/subscribe (e.g., ROS 2-based autonomous driving systems). 
+
+# 3 Differences between DAG Model and ROS 2 Model 
+
+This paper focuses on ROS 2 within existing CORTS platforms because its implementation is open for API-level analysis and it dominates timing analyses at top real-time venues. AP is restricted by licensing and tooling [63], but shares the same two-level (middleware + POSIX OS) architecture, so our ROS 2 observations transfer directly to AP. Linux/ROS 2 is the primary CORTS development platform, and prior work has documented its structural differences from the theoretical DAG model. These differences are expected, since ROS 2 is a component middleware, not a DAG scheduling platform. Rather than cataloging them, we identify which platform properties invalidate DAG scheduling theory’s assumptions: exactly those that system software must restore for the theory to transfer (Section 4 derives the corresponding design principles). We characterize these properties along two axes, 
+
+task model and scheduling model , contrasting the DAG and ROS 2 sides of each. 
+
+3.1 Differences in Task Models DAG Task Model A DAG task is represented as G = ( V, E ), where V denotes the set of vertices and E denotes the set of directed edges. Each vertex u, v ∈ V
+
+represents a subtask , and each edge (u, v ) ∈ E encodes a precedence constraint. DAG tasks are released periodically or sporadically and generate an infinite sequence of jobs. For the k-th job, let akv and f kv denote the arrival time and the finishing time of subtask v, respectively. Let the source vertex of the DAG be denoted as vsrc , the precedence constraint for the k-th job can be formalized as 
+
+∀v ∈ V \ vsrc : akv = max  
+
+> (u,v )∈E
+
+f ku . (1) 6 A. Yano et al. 
+
+That is, v becomes executable exactly when its last predecessor finishes, with no partial joins or timestamp-based merging and, ideally, zero join delay. 
+
+ROS 2 Task Model A ROS 2 application operates as a chain of callbacks connected through topics. Treating each callback as a subtask and message flow as precedence constraints, the callback chain resembles a DAG task; however, the ROS 2 API does not express these constraints directly and can inadvertently break them depending on usage. First, ROS 2 allows publish() anywhere in a callback; a mid-callback publish can therefore release a successor before its predecessor has logically completed. Even when all publish() calls sit at the end, blocking of earlier publishes induced by quality-of-service (QoS) settings can delay later ones, again breaking precedence. This breaks the completion boundary of Eq. (1), so any response-time bound that assumes edge activation at subtask completion no longer holds. Second, multi-input callbacks require a developer-selected message-matching policy via 
+
+message_filters [64]; common policies ( ExactTime , ApproximateTime ) join on timestamps, not the strict AND synchronization the theoretical model assumes, so which messages form one job instance, the very object DAG analyses reason about, is decided at runtime rather than statically. Third, unless zero-copy IPC middleware (e.g., Agnocast [55]) is employed, ROS 2 incurs non-negligible communication delays; the resulting join delay violates the zero-delay release assumption of Eq. (1), introducing an unmodeled additive term into every path-length argument. 
+
+3.2 Differences in Scheduling Models DAG Scheduling Model The scheduling model centers on a ready queue of executable subtasks, into which released subtasks are immediately enqueued, and a scheduler that selects the highest-priority one using algorithms such as rate monotonic, deadline monotonic, or EDF [9]. DAG task schedulers use three preemption models [65, 66]: fully preemptive 
+
+(preemption anywhere; best responsiveness, highest context-switch and cache cost), non-preemptive (no preemption; zero overhead, blocking risk), and limited preemptive (preemption only between subtasks; an intermediate trade-off). Diverse dynamic algorithms have been proposed for the DAG task model (EDF-based dynamic-priority [67, 68], fluid scheduling [12], dynamic voltage and frequency scaling (DVFS)-based energy-aware [69,70], and DAG-level reservation-based scheduling [11, 26]), all assuming the scheduler can maintain and update DAG metadata at runtime. 
+
+ROS 2 Scheduling Model The executor of ROS 2 is a user-space callback scheduler nested under the OS scheduler; SingleThreadedExecutor and Multi-ThreadedExecutor are the defaults. Each maintains a wait set of executable instances and alternates between a polling point and a processing window . At a polling point, when the wait set is empty, the lower layer is queried and one instance per activated callback (timer or subscription) is sampled; in a Awkernel: Bridging DAG Scheduling Theory and Practice 7
+
+Table 2. Comparison of the ROS 2 scheduling model and the DAG scheduling model.                                     
+
+> NLat CPS NNS PCS SRC DBDS
+> SingleThreadedExecutor, MultiThreadedExecutor EventExecutor ✓✓
+> PiCAS [49] ✓
+> PiCAS Multi [48] ✓✓
+> Dynamic-Priority based Executor [50] ✓✓
+> Extended EventExecutor [52] ✓✓✓
+> RTeX [51] ✓✓✓
+> Preemptive EDF Executor [54] ✓✓✓✓
+> CallbackIsolatedExecutor [2] ✓✓✓✓
+> ROS RT [53] ✓✓✓✓✓
+> DAG scheduling model ✓✓✓✓✓✓
+> NLat : negligible subtask release-to-enqueue latency. PCS : preemptive callback scheduling.
+> CPS : interface for callback priority setting. SRC : support for reentrant callbacks.
+> NNS : non-nested scheduling. DBDS : DAG-based dynamic scheduling.
+
+processing window, instances are selected non-preemptively under fixed, callback-type-determined priorities that the user cannot configure. These defaults diverge from the DAG scheduling model [52], and each di-vergence invalidates an assumption the theory rests on. Instead of immediate enqueueing on release, the executor samples one instance per callback at each polling point; schedulability analyses assume a released subtask is immediately visible to the scheduler, so the polling-induced release delays add a term that none of the surveyed analyses model. Priority comparisons occur only within the wait set, so high-priority callbacks outside it can be blocked by low-priority ones. ROS 2 also exposes no deadline or callback-priority API, leaving DAG-level scheduling parameters no place to be expressed; thread-level OS policies exist, but nested scheduling and the absence of one-to-one callback-thread correspondence prevent precise per-instance control [2]. Nested scheduling moreover means that the entity making priority decisions (the executor) is not the entity allocating CPUs (the OS scheduler), so the core premise of the DAG scheduling model, a single scheduler dispatching the globally highest-priority ready subtasks, has no counterpart on the platform. 
+
+Recent Work on the ROS 2 Scheduling Model Recent work has removed several of these differences individually, as Table 2 summarizes: the EventEx-ecutor line and RTeX eliminate polling-induced release latency through event queues with immediate enqueueing [51, 52]; PiCAS and its multi-threaded and dynamic-priority extensions add callback-priority interfaces [48–50]; and Call-backIsolatedExecutor [2], the preemptive EDF executor of Wilson et al. [54], and ROS RT [53] remove nested scheduling by dedicating OS threads to callbacks. How-ever, all remain user-space mechanisms above a thread-based OS scheduler: each recovers individual scheduling properties, but none maintains the runtime DAG metadata that the dynamic algorithms of Section 3.2 presuppose, so DAG-based dynamic scheduling remains unimplementable even atop their combination. 8 A. Yano et al. 
+
+# 4 Design Principle 
+
+Building on Section 3, we enumerate seven design principles (P1 to P7) for a DAG scheduling implementation platform from three perspectives. From the real-time scheduling researcher’s perspective :
+
+P1 The platform must provide sufficient freedom to describe arbitrary DAG scheduling algorithms and their parameters. 
+
+P2 An algorithm expressed at the model level should be directly translatable into a working implementation without non-trivial platform-specific adaptations. From the application programmer’s perspective :
+
+P3 The API must allow natural description of CORTS, maintaining continuity with the publish/subscribe paradigm widely adopted in the target ecosystem. 
+
+P4 The API must preserve the DAG task structure and all precedence constraints regardless of programming practices, so programmers can write components without scheduling expertise while the platform enforces the task model. From the system perspective :
+
+P5 Overheads causing divergence between model and runtime behavior (such as inter-subtask communication latency and release-to-enqueueing delay) must be minimized. 
+
+P6 The system must support every mechanism arbitrary DAG scheduling al-gorithms require: arbitrary preemption granularity (fully, limited, and non-preemptive), reentrant subtasks, and OS-level runtime DAG maintenance. 
+
+P7 The system must not introduce platform-induced complexity absent from the scheduling model, such as nested scheduling hierarchies that are artifacts of the system architecture. 
+
+# 5 System Model 
+
+Overview. By integrating publish/subscribe and a DAG-aware scheduler into the kernel, Awkernel avoids the middleware and nested scheduling of ROS 2 (Section 3) while satisfying the design principles of Section 4. Fig. 1 doubles as a roadmap for Section 6. 
+
+Modules. Awkernel comprises five components, organized by the design principles each satisfies. (1) The foundation layer combines the static memory safety of Rust, a single address space, and the async/await runtime, underpinning low-overhead inter-subtask communication and memory-safe state sharing. (2) The execution model comprises per-CPU workers, inter-processor interrupt (IPI)-based preemption, and periodic-task release driven by the primary CPU. (3) The 
+
+programming model exposes the function-as-subtask (FasS) API [1] together with an OS-level publish/subscribe substrate. (4) The scheduler interface comprises the scheduler trait and the runtime DAG metadata managed inside the kernel. (5) The evaluation support layer provides a workload loader for YAML from RD-Gen [21] and in-kernel metrics collection exposing per-CPU latency statistics. 
+
+Design principle coverage. Table 3 maps the principles of Section 4 to the subsections of Section 6 that satisfy them. Awkernel: Bridging DAG Scheduling Theory and Practice 9CORTS practitioners DAG scheduling theorists DAG Workload Loader §6.5 parses RD-Gen YAML → FasS API calls uses call uses implements 
+
+FasS API + Publish/Subscribe §6.3 create_dag() register_subtasks() 
+
+Scheduler Interface (trait) §6.4 wake_task() get_next_task() 
+
+DAG Metadata Management §6.4 nodes, edges, absolute deadline    
+
+> vₛv₁
+> v₂vₜ
+> source sink = pub/sub channel (zero-copy)
+
+Scheduler Object §6.4 static singleton, one per scheduler type     
+
+> Run Queue (one per scheduler type) v₁v₂v₃v₄
+
+…  
+
+> get_next_task()
+> ↓dequeue
+> wake_task()
+> ↑enqueue
+
+Execution Model PREEMPT_IRQ (forced preemption) §6.2 
+
+CPU 0: primary   
+
+> periodic release mgmt timer IRQ →wake_task()
+
+CPU 1: worker    
+
+> get_next_task() →poll
+> v₁
+
+…CPU N: worker     
+
+> get_next_task() →poll
+> vₙ
+> Metrics Collection per-CPU task/idle time, ctx-switch duration, preemptions §6.5
+
+Foundation: Rust ownership + single address space + async/await §6.1 
+
+Fig. 1. Awkernel architecture. The gray tag in each block gives the subsection of Section 6 that describes that component. 
+
+Design alternatives. One may ask whether the design principles of Section 4 could be met by extending an existing platform instead of building a new RTOS. We argue they cannot, as Table 4 summarizes. (i) User-space executor extensions of ROS 2, including all recent work summarized in Table 2, remain nested under the POSIX scheduler, violating P7, and cannot make OS-level preemption decisions from DAG metadata (P6). (ii) Extending Linux, in the style of LITMUS RT [47] or sched_ext [71], retains a thread-based scheduler abstraction with no task-graph state; more fundamentally, a POSIX kernel cannot restrict how applications publish or synchronize, so DAG semantics cannot be enforced without programmer discipline (P4), and process isolation makes zero-copy communication (P5) conditional on unsafe shared-memory mechanisms. (iii) Retrofitting an existing RTOS would require replacing its task model, scheduler core, and communication substrate simultaneously, which amounts to a rewrite, while the memory-safe single address space that P5 relies on requires language-level ownership guarantees unavailable in C-based kernels. A new, small, analyzable kernel is therefore not a stylistic choice but the direct consequence of P4 to P7. Awkernel accordingly takes two positions: for theorists, it is a real-hardware testbed, playing for DAG scheduling the role that LITMUS RT 
+
+has played for multiprocessor scheduling of independent tasks; for practitioners, 10 A. Yano et al. 
+
+Table 3. Mapping between design principles and Awkernel subsections.               
+
+> Design principle Where satisfied P1 Freedom to describe arbitrary DAG scheduling algorithms Section 6.4
+> P2 Model-level algorithms directly translatable Section 6.4
+> P3 Natural description of CORTS Section 6.3
+> P4 DAG task structure preserved regardless of programmer practice Sections 6.1 and 6.3
+> P5 Minimization of model-runtime divergence overhead Sections 6.1 and 6.2
+> P6 All mechanisms for arbitrary DAG scheduling (preemption, reentrancy, DAG md) Sections 6.2 and 6.4
+> P7 Absence of platform-induced complexity (no nested scheduling) Section 6.2
+
+Table 4. Whether each design-alternative class satisfies principles P4 to P7 ( ✓: sat-isfied; Limited: only with unsafe mechanisms or rewrite-scale changes; –: structurally unsatisfiable).                      
+
+> Approach P4 P5 P6 P7
+> ROS 2 executor extensions (user space, Table 2) –Limited ––Linux scheduler extensions (LITMUS RT ,sched_ext )–Limited –✓
+> Retrofitting an existing RTOS (e.g., FreeRTOS, Zephyr) Limited Limited Limited ✓
+> Awkernel (new kernel design) ✓✓✓✓
+
+it is not a complete replacement for production ROS 2 systems, whose ecosystem it does not replicate, but a CORTS platform maximizing timing analyzability and reuse of the DAG scheduling literature, in which following a single API contract suffices to inherit the guarantees of DAG scheduling theory. 
+
+Use-cases for the two target users. Awkernel is designed for two distinct classes of users with disjoint API surfaces. CORTS practitioners interact exclu-sively through the FasS API (Section 6.3); they write each subtask as a pure function and never call publish() or manipulate scheduler state. The kernel automatically enforces DAG semantics (completion boundaries and AND-join synchronization), so applications can safely benefit from real-time DAG schedul-ing without specialized knowledge of the underlying algorithm (RQ 3). DAG scheduling theorists, in contrast, plug a new DAG scheduling algorithm into Awkernel by implementing the scheduler trait (Section 6.4); they reuse the FasS API and the DAG metadata facility, so the engineering effort is concentrated on the algorithm itself rather than on building an experimental platform (RQ 2). 
+
+# 6 Design and Implementation 
+
+6.1 Foundation: Rust, Single Address Space, and async/await 
+
+The minimization-of-overhead principle (P5) demands that inter-subtask commu-nication and the latency from release to enqueueing remain close to the model. A single address space directly satisfies this demand: pointer-based message passing eliminates data copies, address-space switches, and IPC marshaling. The ownership and borrow system of Rust resolves this tension by providing compile-time memory safety without any runtime mechanism, enabling the single address space to be simultaneously low-overhead and memory-safe; the same strategy has been validated by RedLeaf [72] and Theseus [73]. Finally, the async/await runtime splits a subtask’s runnable state into two flavors (Fig. 2): a stackless state, reached when a cooperative .await returns Awkernel: Bridging DAG Scheduling Theory and Practice 11 Runnable (stackful) Runnable (stackless) Running Waiting activate dispatch terminate preemption wait wake  
+
+> Fig. 2. Task state transition.
+
+Poll::Pending and resumed by re-entering poll() with no register restoration; and a stackful state, reached only on forced preemption (Section 6.2) and resumed by a register-restoring context switch. 
+
+6.2 Execution Model: Per-Core Workers, Preemption, and Periodic Releases 
+
+Awkernel instantiates one scheduler object per scheduling algorithm (e.g., GEDF, Prioritized FIFO, and round-robin (RR)) as a static kernel-internal singleton that owns a run queue and implements a scheduling rule; it is not a thread, has no dedicated stack, no schedulable entity, and no spawn site, and the precedence among scheduler objects is fixed at compile time. Scheduler invocations occur at two opportunities: (i) on wake (by a publisher, sleep-timer expiration, or IPI), the wake site calls wake_task() on the appropriate scheduler object, which enqueues the woken subtask onto the run queue of that scheduler; (ii) at the top of the run loop of each per-core worker, it calls get_next_task() to dequeue the highest-priority runnable subtask, consulting scheduler objects in the fixed precedence order. Awkernel runs one worker per CPU, and the primary CPU (CPU 0) drives periodic releases of tasks: each iteration walks a time-ordered delta list to release expired periodic releases. Every other CPU runs a tight get_next_task() →
+
+poll loop; thus there are num _cpu − 1 such workers. Preemption in Awkernel is built on a dedicated IPI on PREEMPT_IRQ , reserved at boot, and is exposed at the three granularities of P6. When wake_task() 
+
+finds a woken subtask outranking every running and pending-preemption target across all cores, it enqueues the subtask on the preemption-pending queue of the target core and sends the IPI; the handler performs a stackful context switch to the preempting subtask. Two reduction modes complement this default fully preemptive behavior: the no_preempt Cargo feature compiles the preemption subsystem out (a non-preemptive build where .await yields are the only switch points), and wrapping a critical region in an InterruptGuard , which disables interrupts, makes it limited preemptive on demand. A single kernel-wide MCS lock [74] serializes every wake_task() and 
+
+get_next_task() across all scheduler objects, performing in one critical section (i) the cross-core preemption decision, (ii) the run-queue enqueue/dequeue, and (iii) the per-CPU running-task table update. This eliminates priority inversion across scheduler classes. Subtask-level parallelism is preserved across multi-core: 12 A. Yano et al. 
+
+every subtask of every DAG task is an independent async task (a Future in Rust terminology), and each is enqueued and dispatched on its own merit; this independence is exactly what realizes reentrant subtask execution required by P6, with no need for a dedicated stack pool or worker-thread cache. 
+
+6.3 Programming Model: FasS API and Publish/Subscribe 
+
+The FasS API is a programming model that represents each subtask in the DAG task model as a simple function f . Intuitively, the arguments and return values of f correspond, respectively, to the incoming and outgoing edges of the subtask in the DAG. Strictly speaking, however, they correspond to topics (publish/subscribe data channels), so a single argument may aggregate data flowing in from multiple incoming edges, and a single return value may feed multiple outgoing edges. The publish/subscribe (pub/sub) substrate underlying the FasS API treats each topic, within the single address space (Section 6.1), as a shared-memory channel that passes payloads by pointer; zero-copy is achieved by wrapping each payload in Arc<T> [75]. Concretely, the API is realized as a registration interface through which the application programmer supplies the following three pieces of information for each subtask: 1. A function f representing the subtask : within the body of f , operations that modify or expose the DAG structure (most notably explicit publish() 
+
+calls) are disallowed. 2. Lists of topics : the input topic list, paired with the arguments of f , and the output topic list, paired with its return values. 3. Attributes : additional parameters required by the chosen DAG scheduling algorithm; for example, under a static-priority DAG scheduler, each FasS subtask is assigned its priority through this slot. The kernel wraps every registered f in a control loop of the form loop { args = recv_all.await; results = f(args); pubs.send_all(results).await } ,yielding two consequences that the programmer cannot violate. First, out-going publishes are structurally pinned to the tail of the subtask, match-ing the completion-boundary clause of the DAG task model (P4). Second, 
+
+recv_all.await blocks until every input topic has supplied a message, enforcing AND-join synchronization at the API layer rather than via a developer-chosen matching policy. The FasS API provides three registration forms that map onto the source, internal, and sink roles of a DAG task; all three carry the attributes slot of item 3. The periodic form takes a function with no input topics, an output topic list, and a period; the kernel attaches a tick -based reactor that releases the subtask every period. The intermediate form takes a function with both input and output topic lists and covers every non-source, non-sink vertex. The sink 
+
+form takes a function whose argument tuple corresponds to its own input topics, together with a relative deadline against which the end-to-end timing of the DAG is checked. A single call to finish_create_dags(&[dag]) then finalizes the DAG: it statically verifies the assembled graph (weakly connected, acyclic, one source, one sink) and commits it to the runtime metadata store (Section 6.4). Awkernel: Bridging DAG Scheduling Theory and Practice 13 Rust 1 let dag = create_dag () ;                                       
+
+> 23dag . register_periodic_subtask :: <_ , ( i32 ,) >(
+> 4f0 , // || -> ( i32 ,)
+> 5vec ![" topic0 "] , period , attributes ) ;
+> 67dag . register_subtask :: <_ , ( i32 ,) , ( i32 , i32 ) >(
+> 8f1 , // |( i32 ,) | -> ( i32 , i32 )
+> 9vec ![" topic0 "] ,
+> 10 vec ![" topic1 " , " topic2 "] , attributes ) ;
+> 11 12 dag . register_sink_subtask :: <_ , ( i32 , i32 ) >(
+> 13 f2 , // |( i32 , i32 ) | -> ()
+> 14 vec ![" topic1 " , " topic2 "] , attributes ) ;
+> 15 16 finish_create_dags (&[ dag . clone () ]) ;
+> Fig. 3. A minimal DAG built with the FasS API.
+
+The committed DAG is immutable, which is what lets the scheduler maintain accurate per-job runtime metadata such as absolute deadlines. Fig. 3 illustrates the resulting brevity on a minimal DAG: a periodic source 
+
+f0 emitting an i32 every period , an intermediate f1 mapping it to an (i32, i32) pair, and a sink f2 consuming the pair within relative_deadline . This brevity is the concrete realization of P3 (natural description) and P4 (the kernel, not the programmer, owns DAG semantics). Awkernel does not aim to run unmodified ROS 2 binaries, and this is a consequence of the design rather than a missing feature: any API that accepts arbitrary mid-callback publishes reintroduces exactly the semantic violations identified in Section 3. What Awkernel preserves is the programming model, not the API surface: components remain callbacks connected by named topics, so a port is a re-expression, not a redesign. 
+
+6.4 Scheduler Interface and DAG Metadata Management 
+
+Awkernel exposes the scheduling algorithm as a Rust trait that every scheduler implementation realizes. A scheduler implementation provides wake_task() and 
+
+get_next_task() as required by the execution model (Section 6.2), together with a priority queue keyed on the priority that the algorithm dictates. Adding a new DAG scheduling algorithm reduces to (i) implementing the trait against an algorithm-specific run queue and (ii) registering it as a new scheduler object; the rest of the kernel (the per-CPU workers, the preemption IPI mechanism, the FasS-driven release path, and the DAG metadata store) is reused without modification. This factoring substantiates P1 (freedom to describe arbitrary DAG scheduling algorithms) and P2 (model-level algorithms directly translatable into a working implementation). The runtime DAG metadata maintained by the kernel mirrors the elements that a DAG scheduling algorithm needs at scheduling time. For each DAG, the metadata records a graph identifier, the nodes (each carrying a subtask 14 A. Yano et al. 
+
+identifier and FasS-declared parameters), the edges (each tagged with its topic name), and the absolute deadline. For each subtask, the metadata maintains a bidirectionally referenceable link to the DAG it belongs to, so a scheduler invoked on a single subtask can in O(1) recover the deadline of the parent DAG, its sibling subtasks, and its sources and sinks. The metadata is mutable at runtime through the scheduler trait (for example, GEDF rewrites the absolute deadline of a subtask at every release), so reservation-based or deadline-rewriting algorithms are first-class. This combination of static structure (committed at 
+
+finish_create_dags ) and mutable per-instance state (updated at scheduling time) embodies the DAG-metadata clause of P6. 
+
+6.5 Evaluation Support: DAG Workload Loader and Metrics Collection 
+
+RD-Gen [21] is an offline random DAG generator (not part of Awkernel) that emits YAML. Awkernel adds an in-kernel DAG workload loader that ingests this YAML and invokes the FasS register_subtask APIs, turning the synthetic workload into a runnable DAG with no manual translation. Together with the scheduler trait (Section 6.4) and the FasS API (Section 6.3), the loader lets a researcher evaluate a new DAG scheduling algorithm on real hardware with engineering effort proportional to the algorithm, not the platform. Awkernel also includes a built-in metrics feature that records, on every context switch and preemption, the execution time of the preceding task, the cumulative idle time of the CPU, the context-switch duration, and the preemption count of each subtask. Statistics are aggregated per CPU and per scheduler type and can be sampled at evaluation time. 
+
+6.6 Extensions to More General Models 
+
+This paper targets the single-rate DAG with AND join (Section 3), the model most commonly assumed in ROS 2-oriented timing analysis [14, 48–50, 52]; more general models (multi-rate DAGs, cause-effect chains, and time-triggered/event-driven mixtures with precedence) are widely studied. Two facts make extending this scope straightforward. First, FasS is not the only work surface on Awkernel: application code can spawn ordinary (non-DAG) async tasks via task::spawn(name, future, SchedulerType) without attaching DAG metadata. Both task kinds share the scheduler interface of Section 6.4, so any installed scheduler (Partitioned EDF, GEDF, Prioritized FIFO, or Prioritized RR) can be selected for non-DAG tasks. The wake_task of GEDF, for example, derives the absolute deadline from the relative deadline carried by SchedulerType::GEDF whenever DAG metadata is absent, so non-DAG tasks are scheduled under deadline-driven priority with no special-case logic. Second, inter-task communication is not bound to the FasS API. The pub/sub substrate that FasS uses is itself a public API: any task may directly instantiate publishers and subscribers to allocate ROS 2-style many-to-many topics with configurable queue depth, flow control, latching, and lifespan, independently of the Awkernel: Bridging DAG Scheduling Theory and Practice 15 
+
+Table 5. Changes to DAG generation parameters in RD-Gen.              
+
+> Graph structure Properties
+> Parameter Value Parameter Value Number of chains 1 (Fixed) Maximum utilization 1.0 (Fixed) Number of sub-sequences [1, 2, 3] End-to-end deadline ratio (1.1, 1.5, 0.1) Number of sink nodes 1 (Fixed) Period [50, 100]
+
+DAG edges. Awkernel further exposes both synchronous mutexes (MCS/spinlock) and asynchronous mutexes ( Future -returning sleeplock); wrapped in a reference-counted shared pointer, they provide a memory-safe shared-variable channel under the compile-time aliasing rules of Rust. Both layers offer DAG-edge-independent communication. Combining these facts yields a sketch for workload models not natively covered. Each independent rate or event source is registered as a separate single-rate DAG, and inter-rate communication, including time-based extrapolation and partial-update compensation for stale or partial inputs, is expressed either as reads/writes of a shared variable protected by AsyncLock<T> , or as a directly created pub/sub topic outside any DAG edge, with the consumer DAG implementing compensation in its subtask body. First-class FasS support for these extended models, so the kernel enforces their semantics, is left to future work. 
+
+# 7 Evaluation 
+
+To answer RQ1, we experimentally validate the gap analysis of Section 3 and the design principles of Section 4. Microbenchmarks verify that Awkernel satisfies the DAG scheduling model requirements of Section 4, after which we quantify the design-space cost of expressing DAG-level dynamic scheduling on a representative POSIX-based CORTS platform (ROS 2/Linux) and on a DAG-native user-space middleware (YASMIN), compared with OS-native DAG scheduling on Awkernel. Where Section 3 identified the platform properties that invalidate the assumptions of DAG scheduling theory, this section shows how those properties manifest quantitatively. Awkernel and the entire codebase used in this evaluation are publicly available [76]. 
+
+7.1 Evaluation Setup 
+
+We evaluate on a Raspberry Pi 4 Model B 4 GB. CPU 0 handles periodic release management (Section 6), leaving three worker cores and a maximum schedulable utilization of 3.0. The CPU frequency is fixed at the maximum in all experiments, on every system under evaluation. DAGs are generated with the chain-based method of RD-Gen [21] using the parameters of Table 5, where [·] denotes a value drawn uniformly at random from the listed candidates and (min , max , step ) one drawn from the arithmetic sequence it defines. Each generated DAG consists of a single main chain ( Number of chains ), from which Number of sub-sequences 
+
+branches diverge and later merge into a single sink node ( Number of sink nodes ). All time parameters are integers interpreted in milliseconds: each DAG is assigned a period drawn from Period and a utilization capped by Maximum utilization ,and their product, the total worst-case execution time (WCET) of the DAG, is 16 A. Yano et al. 1.0 2.0 3.0     
+
+> Total Utilization
+> 10 4
+> 10 5
+> 10 6
+> Response Time [  s]  Awkernel - GEDF YASMIN - G-EDF CIE + SCHED_DEADLINE
+> Fig. 4. Response times of OS-native GEDF on Awkernel, user-space GEDF on repaired YASMIN, and the SCHED_DEADLINE -based approximation of GEDF on Linux/ROS 2.
+
+randomly partitioned into per-subtask WCETs of at least 1 ms. The end-to-end deadline of each DAG is its critical-path length multiplied by a ratio drawn from 
+
+End-to-end deadline ratio . The data-size sweep in Section 7.3 uses a FasS-built Awkernel DAG embedding the target size in the message; other evaluations use Table 5. 
+
+7.2 GEDF on Awkernel vs. POSIX-Based Realizations on Linux/ROS 2 and YASMIN 
+
+This section quantitatively compares three ways of realizing DAG-level dynamic scheduling for the same CORTS application: (a) Awkernel, where the OS itself maintains the DAG structure and natively schedules subtasks (P6 of Section 4), (b) Linux/ROS 2, where DAG-level GEDF is approximated through general-purpose Linux EDF facilities ( SCHED_DEADLINE ) combined with recent ROS 2 executor research, and (c) YASMIN, where a DAG-native middleware schedules subtasks in user space above the POSIX scheduler. As a representative DAG-based dynamic scheduling algorithm, we consider global earliest deadline first (GEDF) for DAG tasks. 
+
+GEDF for DAG tasks. We briefly restate the GEDF scheduler for DAG tasks following Li et al. [10]. We consider a task set τ = {τ1, τ 2, . . . , τ n} of n
+
+independent sporadic tasks, where each task τi is represented as a DAG with period Pi and relative deadline Di. Each subtask of task τi has its own WCET 
+
+Cji . Directed edges represent precedence constraints among subtasks within a task. We denote by Jk,a the a-th job instance of task τk during system execution. Let rk,a and dk,a be the absolute release time and absolute deadline of job Jk,a ,respectively, so that dk,a − rk,a = Dk. When scheduled by a GEDF scheduler, individual subtasks carry neither release offsets nor deadlines of their own; they share the absolute deadline of the job to which they belong. At any time t, the GEDF scheduler assigns all ready subtasks to available cores in non-decreasing order of absolute deadline dk,a .
+
+ROS 2 workload construction. To evaluate whether GEDF-like scheduling can be approximated in ROS 2, we rebuild the RD-Gen workload of Awker-nel (Section 7.1) as a ROS 2 application: source subtasks become timer call-backs , triggered at the DAG period; non-source subtasks become subscription Awkernel: Bridging DAG Scheduling Theory and Practice 17 
+
+callbacks , triggered by incoming messages. When a subtask has multiple in-coming edges, the corresponding subscription callbacks are synchronized using 
+
+message_filters::Synchronizer with the ExactTime policy [64]. All callbacks are hosted within a single process to avoid inter-process communication latency and the spawning of additional DDS threads. 
+
+Candidate scheduling approaches. The SCHED_DEADLINE policy of Linux [77] implements the constant bandwidth server (CBS) algorithm combined with EDF, making it a natural choice for approximating EDF-based scheduling in ROS 2. Based on the analysis of the scheduling-model gap in Section 3, we examine three approaches for scheduling the above ROS 2 system: 1. SingleThreadedExecutor with SCHED_DEADLINE . All callbacks forming the DAG are assigned to a single SingleThreadedExecutor , and its thread is configured with SCHED_DEADLINE using period = Pi, runtime = Ci (total WCET of the DAG), and deadline = Di.2. ROS RT with SCHED_EXT EDF scheduler. ROS RT [53] proposes a
+
+SCHED_EXT -based EDF scheduler that applies OS-level EDF scheduling to individual ROS 2 callback threads. 3. CallbackIsolatedExecutor with per-thread SCHED_DEADLINE . Each call-back’s Callback Group is isolated and assigned to a CallbackIsolatedExecu-tor [2], which maps each callback to a dedicated thread. Each thread is then configured with SCHED_DEADLINE , setting period = Pi, runtime = Cji (the individual subtask’s WCET), and deadline = Di.Approach 1 uses a single thread; consequently, all subtasks within a DAG execute sequentially, precluding any intra-DAG parallelism that GEDF would exploit. Approach 2 is conceptually promising but cannot be evaluated in practice: the implementation of the proposed SCHED_EXT EDF scheduler has not been publicly released, and its usage remains undocumented. We therefore adopt Approach 3 as the ROS 2 baseline; the implementation details of GEDF on Awkernel are presented in Section 8.1. We stress that even Approach 3 is not an equivalent implementation of DAG-level GEDF: SCHED_DEADLINE implements CBS scheduling at the thread level, and no principled mapping from DAG-level timing constraints to per-callback CBS parameters exists in the literature. This arm of the experiment is therefore designed as evidence of a semantic mismatch and its configuration burden: it quantifies what happens when DAG-level dynamic scheduling is approximated through the best available combination of general-purpose OS facilities and ROS 2 executor research. 
+
+YASMIN baseline. Beyond approximating GEDF with SCHED_DEADLINE ,we evaluate YASMIN [58], the middleware closest to DAG-native scheduling (Section 2.2): it maintains DAG precedence through FIFO channels and imple-ments GEDF in user space above the POSIX scheduler. We build the identical workload on YASMIN: source subtasks become periodic YASMIN tasks, edges become FIFO channels, and response time is measured as in the ROS 2 workload, propagating the source’s start time along edges to the sink. However, the publicly released YASMIN implementation [78] does not realize EDF scheduling: under its EDF configuration, no code path ever assigns a task priority (the EDF com-18 A. Yano et al. 
+
+parator is dead code), the release thread sleeps for twice the requested duration, and a semaphore leak strands ready tasks in the queue until the next release. We repaired these defects with a patch of fewer than 30 lines and made each data-driven subtask inherit its job’s absolute deadline, so that the repaired YAS-MIN schedules with exactly the GEDF semantics defined above; all modifications strengthen the baseline. Mirroring the Awkernel setup, three SCHED_FIFO worker threads run on cores 1–3 and the release thread on core 0. This arm of the experiment thus complements Approach 3: it preserves the GEDF semantics and instead isolates the architectural cost of executing them in user space above a DAG-unaware POSIX scheduler. 
+
+Response-time comparison. Fig. 4 compares the response times of GEDF on Awkernel, Approach 3 (CallbackIsolatedExecutor with per-thread 
+
+SCHED_DEADLINE ), and the repaired YASMIN across different total utilization levels. As the figure shows, the response times of Approach 3 inflate substantially in a large number of cases. This inflation is not a deficiency of SCHED_DEADLINE 
+
+itself but the manifestation of the semantic mismatch stated above. First, CBS assumes that each task is released sporadically with a known minimum inter-arrival time, whereas subscription callbacks are activated by message arrivals whose spacing is perturbed by scheduling delays, queuing effects, and precedence-induced waiting; when a callback is activated earlier than the CBS mechanism expects, the server defers its deadline replenishment, inflating the observed response time. Second, the per-callback CBS parameters have no principled derivation from the DAG-level deadline, so any chosen configuration, including ours, misrepresents the DAG-level constraint to some degree. Awkernel does not exhibit this inflation because its OS scheduler operates directly on the DAG-level deadline (P6 of Section 4). The repaired YASMIN, which executes the same GEDF logic in user space, comes considerably closer to Awkernel, keeping its response-time tails bounded up to a total utilization of 2.5. Nevertheless, the median response times of YASMIN remain 11 –81% above those of Awkernel, and the gap widens toward saturation: at a total utilization of 3.0, YASMIN yields 1.8× the median response time. The residual cost is architectural: even with identical scheduling logic, YASMIN dispatches subtasks through a user-space ready queue, realizes preemption with POSIX signals, and mediates every release through a periodic scheduler thread, all above a POSIX scheduler that remains unaware of DAG precedence. The comparison thus characterizes two distinct costs of expressing DAG-level GEDF above a POSIX scheduler, relative to a design in which the OS itself maintains the DAG structure and schedules subtasks accordingly: the semantic mismatch and configuration burden of the thread-level CBS approximation, and the archi-tectural overhead of user-space dispatching even when the GEDF semantics are preserved. In particular, the Linux/ROS 2 results should be read as the price of an approximation, not as a ranking between two equivalent GEDF implementations. 
+
+7.3 Awkernel Microbenchmark Results 
+
+From Section 4, we quantitatively evaluate the two measurable principles, negli-gible communication latency between subtasks and negligible release-to-enqueue Awkernel: Bridging DAG Scheduling Theory and Practice 19 256 512 1K 2K 4K 8K 16K 32K 64K 
+
+Data Size [byte]      
+
+> 0.0 0.5 1.0 1.5
+> Latency [ms]  Arc-based (Awkernel) Non-Arc
+> Fig. 5. Medians of the publish/subscribe communication latency between subtasks by data size. Release→Enqueue Preemption Ctx-Sw (yield) Ctx-Sw (run_main)
+> 10 0
+> 10 1
+> 10 2
+> Latency [μs]
+> Fig. 6. Latency breakdown of basic scheduling operations.
+
+latency (P5), plus two scheduler metrics: preemption and context-switch overhead. All use the workload of Section 7.2: three concurrent RD-Gen DAGs (Table 5) with total utilization swept from 1.0 to 3.0, spanning lightly loaded to saturated operation of the three worker cores. 
+
+Communication latency between subtasks. Fig. 5 compares publish/-subscribe latency using Arc (pointer-based sharing) versus raw copying. With Arc, the single address space of Awkernel enables zero-copy and keeps latency constant in data size; without Arc, cloning makes latency grow linearly. 
+
+Scheduling-path overheads. Fig. 6 breaks down three latencies on the scheduling path. (i) Release-to-enqueue : time from a subtask becoming executable to its insertion into the run queue, stays in the microsecond range, with fluctu-ations from lock-acquisition waits during DAG metadata access, so Awkernel satisfies P5 of Section 4. (ii) Preemption decision : also in the microsecond range, adding negligible delay to the scheduling path. (iii) Context switch : Awkernel has two paths: yield only saves/restores registers, whereas run_main additionally checks for a saved context (restoring it if present), yielding slightly higher latency. For large real-world payloads, Section 8.2 confirms end-to-end impact remains negligible and comparable to existing systems. 
+
+Bounded blocking under load. A single kernel-wide MCS lock serializes all scheduler operations (wake-up, enqueue, dequeue, and the per-CPU RUNNING -table update) within a fixed four-step critical section, bounding worker-side blocking by the number of contending workers, independent of DAG or subtask count. Sweeping utilization from 1.0 to 3.0 keeps median release-to-enqueue latency in the microsecond range (Fig. 6) with no blocking explosion at saturation; scaling beyond four cores is out of scope, as we target the Raspberry Pi 4 embedded class. 
+
+# 8 Case Study 
+
+Two case studies validate Awkernel: Section 8.1 implements GEDF, showing theorists can evaluate a DAG algorithm on real hardware with minimal effort (RQ2, Contribution 2); Section 8.2 partially ports an Autoware application, 20 A. Yano et al. 
+
+Algorithm 1 GEDF core logic.       
+
+> 1: wake_time ←CURRENT_TIME; 2: absolute_deadline ←wake_time +relative_deadline (retrieved from DAG sink node); 3: Update priority based on absolute_deadline; Treated as one source subtask in Awkernel
+
+imu vehicle imu driver imu corrector vehicle velocity converter gyro odometer ekf localizer  
+
+> Fig. 7. Minimum risk maneuver (MRM) in Autoware.
+
+showing practitioners can leverage DAG scheduling via publish/subscribe and the FasS API (RQ3, Contribution 3). 
+
+8.1 Case Study 1: Implementation of GEDF 
+
+Using the customizable scheduler of Section 6, adding an algorithm requires registering a unique name, declaring priority queues, and inserting algorithm-specific logic into the task-insertion routine of the scheduler trait; other operations (e.g., preemption checks, task removal) are reused with minor edits. On enqueue (Algorithm 1), GEDF records ri,k , computes di,k = ri,k + Di
+
+using Di from the DAG sink node, and after a mutex-protected priority update either preempts via an interrupt or queues the task. The core logic is 226 lines in a single file. 
+
+8.2 Case Study 2: Partial Porting of the Autoware Application 
+
+Case study 2 ports part of Autoware [5], a representative ROS 2/Linux CORTS application, onto Awkernel via the FasS API to show that FasS-enforced DAG semantics preserve operational behavior. The scope is portability : the two systems ingest sensor data through different I/O paths (CSV replay over UDP/IP versus the live AWSIM stack), so a timing comparison would confound platform and I/O effects; the controlled timing comparison on identical workloads is in Section 7. MRM, an Autoware feature that safely stops the vehicle when humans cannot intervene, forms a minimal DAG suited to our platform. In Fig. 7, imu driver 
+
+and vehicle velocity converter forward angular velocity and velocity down-stream each cycle [20], and ekf localizer self-localizes from the odometry. 
+
+Implementation Details Each MRM node is reimplemented as a subtask of one DAG via the FasS API [1], following a fixed mechanical mapping: each ROS 2 node becomes one FasS function, each subscription an argument, each publish a return value, and each timer a periodic release. Inputs are CSVs from Awkernel: Bridging DAG Scheduling Theory and Practice 21 Awkernel end (243.66, 5.39) Autoware end (242.81, 5.10)      
+
+> 050 100 150 200 X [m] −10 010 Y [m] Trajectory Comparison (XY Plane)
+> Awkernel Autoware Start
+> Fig. 8. Trajectory comparison between Autoware and Awkernel.
+
+AWSIM ros_bag data; the self-position of ekf localizer is sent over UDP/IP and qualitatively compared with an Autoware reference trace. 
+
+Evaluation of MRM Fig. 8 shows the ported MRM tracks the Autoware reference within 0.29 m in y, well inside the MRM safety envelope. The residual is by design: Autoware activates gyro odometer and ekf localizer via messages or timers, while Awkernel fires a subtask only when all predecessors deliver data under FasS-enforced AND synchronization. Autoware-style timer-based join or partial update can be expressed on Awkernel (Section 6.6). We avoid this here to keep the case study within the strict single-rate DAG with AND-join scope. 
+
+# 9 Conclusion 
+
+This paper introduced Awkernel, the first open-source RTOS with native real-time DAG scheduling support: a real-hardware testbed for theorists, and for practitioners a CORTS platform maximizing timing analyzability and reuse of the DAG scheduling literature rather than a replacement for ROS 2. We identified gaps between the DAG model and POSIX-based CORTS, derived seven design principles, and validated them on Raspberry Pi 4: microsecond-range overheads, zero-copy Arc communication, and FasS-enforced precedence by construction (RQ1 ). Baselines on Linux/ROS 2 ( SCHED_DEADLINE -based approximation) and YASMIN (repaired user-space GEDF) exposed, respectively, the mismatch and configuration burden of approximating DAG-level GEDF with thread-level CBS, and the cost of user-space execution. The GEDF case study implemented a DAG algorithm in 226 lines via the scheduler interface, showing low implementation effort for theorists ( RQ2 ). The Autoware MRM case study ported a real-world CORTS application via the FasS API, tracking the Autoware reference within 0.29 m under FasS-enforced semantics ( RQ3 ). These insights, API-enforced DAG semantics and OS-level DAG metadata management, can also be fed back into ROS 2 and AP. 
+
+Future work. First, we will extend the FasS API beyond single-rate DAGs with AND-join to multi-rate DAGs, cause-effect chains, and mixed time-triggered/event-driven nodes with precedence (Section 6.6). Second, we will implement and compare additional DAG scheduling algorithms (federated [40], 22 A. Yano et al. 
+
+reservation-based [28], and fluid [12]) on Awkernel for reproducible real-hardware comparisons. Third, we plan a tool that generates FasS subtask skeletons from ROS 2 node graphs. 
+
+Acknowledgments. This work was supported by JST CREST Grant Number JPMJCR23M1 and based on results obtained from a project, Green Innovation Fund Projects / Development of In-vehicle Computing and Simulation Technology for Energy Saving in Electric Vehicles (JPNP21027), subsidized by the New Energy and Industrial Technology Development Organization (NEDO). 
+
+Disclosure of Interests. A. Yano, Y. Kobayashi, Y. Takano, and T. Ishikawa-Aso are employed by TIER IV, Inc., which develops Awkernel as open-source software. The other authors have no competing interests to declare that are relevant to the content of this article. 
+
+# References 
+
+1. Ishikawa-Aso, T., Yano, A., Kobayashi, Y., Jin, T., Takano, Y., Kato, S.: Work-in-progress: Function-as-subtask API replacing publish/subscribe for OS-native DAG scheduling. In: Proceedings of the 46th IEEE Real-Time Systems Symposium (RTSS). pp. 604–607 (2025). https://doi.org/10.1109/RTSS66672.2025.00059 2. Ishikawa-Aso, T., Yano, A., Azumi, T., Kato, S.: Work in progress: Middleware-transparent callback enforcement in commoditized component-oriented real-time systems. In: Proceedings of the 31st IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 426–429 (2025). https://doi.org/10.1109/ RTAS65571.2025.00017 3. Open Source Robotics Foundation (OSRF): ROS 2. https://github.com/ros2 4. Maruyama, Y., Kato, S., Azumi, T.: Exploring the performance of ROS2. In: Pro-ceedings of the 25th International Conference on Embedded Software (EMSOFT). pp. 5:1–5:10 (2016). https://doi.org/10.1145/2968478.2968502 5. Autoware. https://github.com/autowarefoundation/autoware 6. Fürst, S., Bechter, M.: AUTOSAR for connected and autonomous vehicles: The AUTOSAR adaptive platform. In: Proceedings of the 46th IEEE/IFIP International Conference on Dependable Systems and Networks Workshop (DSN-W). pp. 215–217 (2016). https://doi.org/10.1109/DSN-W.2016.24 7. Henle, J., Stoffel, M., Schindewolf, M., Nägele, A.T., Sax, E.: Architecture platforms for future vehicles: A comparison of ROS2 and adaptive AUTOSAR. In: Proceedings of the 25th IEEE International Conference on Intelligent Transportation Systems (ITSC). pp. 3095–3102 (2022). https://doi.org/10.1109/ITSC55140.2022.9921894 8. Bellassai, D., Sciangula, G., Scordino, C., Casini, D., Biondi, A.: Modeling the SL-LET paradigm in AUTOSAR adaptive. In: Proceedings of the Design, Automation & Test in Europe Conference (DATE). pp. 1–7 (2025). https://doi.org/10.23919/ DATE64628.2025.10992699 9. Verucchi, M., Olmedo, I.S., Bertogna, M.: A survey on real-time DAG scheduling, revisiting the global-partitioned infinity war. Real-Time Systems 59 (3), 479–530 (2023). https://doi.org/10.1007/s11241-023-09403-3 10. Li, J., Agrawal, K., Lu, C., Gill, C.: Analysis of global EDF for parallel tasks. In: Proceedings of the 25th Euromicro Conference on Real-Time Systems (ECRTS). pp. 3–13 (2013). https://doi.org/10.1109/ECRTS.2013.12 Awkernel: Bridging DAG Scheduling Theory and Practice 23 11. Tong, Z., Ahmed, S., Anderson, J.H.: Holistically budgeting processing graphs. In: Proceedings of the 44th IEEE Real-Time Systems Symposium (RTSS). pp. 27–39 (2023). https://doi.org/10.1109/RTSS59052.2023.00013 12. Guan, F., Peng, L., Qiao, J.: A fluid scheduling algorithm for DAG tasks with constrained or arbitrary deadlines. IEEE Transactions on Computers 71 (8), 1860– 1873 (2022). https://doi.org/10.1109/TC.2021.3111512 13. Senapati, D., Sarkar, A., Karfa, C.: Energy-aware real-time scheduling of multiple periodic DAGs on heterogeneous systems. IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 42 (8), 2447–2460 (2023). https://doi. org/10.1109/TCAD.2022.3228504 14. Casini, D., Blaß, T., Lütkebohle, I., Brandenburg, B.: Response-time analysis of ROS 2 processing chains under reservation-based scheduling. In: Proceedings of the 31st Euromicro Conference on Real-Time Systems (ECRTS). pp. 6:1–6:23 (2019). https://doi.org/10.4230/LIPIcs.ECRTS.2019.6 15. Blaß, T., Casini, D., Bozhko, S., Brandenburg, B.B.: A ROS 2 response-time analysis exploiting starvation freedom and execution-time variance. In: Proceedings of the 42nd IEEE Real-Time Systems Symposium (RTSS). pp. 41–53 (2021). https://doi.org/10.1109/RTSS52674.2021.00016 16. Jiang, X., Ji, D., Guan, N., Li, R., Tang, Y., Yi, W.: Real-time scheduling and analysis of processing chains on multi-threaded executor in ROS 2. In: Proceedings of the 43rd IEEE Real-Time Systems Symposium (RTSS). pp. 27–39 (2022). https: //doi.org/10.1109/RTSS55097.2022.00013 17. Li, R., Guan, N., Jiang, X., Guo, Z., Dong, Z., Lv, M.: Worst-case time disparity analysis of message synchronization in ROS. In: Proceedings of the 43rd IEEE Real-Time Systems Symposium (RTSS). pp. 40–52 (2022). https://doi.org/10.1109/ RTSS55097.2022.00014 18. Teper, H., Günzel, M., Ueter, N., von der Brüggen, G., Chen, J.J.: End-to-end timing analysis in ROS2. In: Proceedings of the 43rd IEEE Real-Time Systems Symposium (RTSS). pp. 53–65 (2022). https://doi.org/10.1109/RTSS55097.2022.00015 19. Tang, Y., Feng, Z., Guan, N., Jiang, X., Lv, M., Deng, Q., Yi, W.: Response time analysis and priority assignment of processing chains on ROS2 executors. In: Proceedings of the 41st IEEE Real-Time Systems Symposium (RTSS). pp. 231–243 (2020). https://doi.org/10.1109/RTSS49844.2020.00030 20. Yano, A., Azumi, T.: Work-in-progress: Multi-deadline DAG scheduling model for autonomous driving systems. In: Proceedings of the 45th IEEE Real-Time Systems Symposium (RTSS). pp. 451–454 (2024). https://doi.org/10.1109/RTSS62706.2024. 00049 21. Yano, A., Azumi, T.: RD-Gen: Random DAG generator considering multi-rate applications for reproducible scheduling evaluation. In: Proceedings of the 26th IEEE International Symposium on Real-Time Distributed Computing (ISORC). pp. 21–31 (2023). https://doi.org/10.1109/ISORC58943.2023.00015 22. Han, J., Park, S., Jeon, H., Lee, C.G.: Guaranteeing safety despite physical errors in cyber-physical systems. In: Proceedings of the 28th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 1–12 (2022). https://doi. org/10.1109/RTAS54340.2022.00009 23. Zhao, H., Li, S., Wang, Q., Wang, J.: Work in progress: Power-aware scheduling strategy for multiple DAGs in the heterogeneous cloud. In: Proceedings of the 27th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 509–512 (2021). https://doi.org/10.1109/RTAS52030.2021.00064 24 A. Yano et al. 24. Guo, Z., Bhuiyan, A., Liu, D., Khan, A., Saifullah, A., Guan, N.: Energy-efficient real-time scheduling of DAGs on clustered multi-core platforms. In: Proceedings of the 25th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 156–168 (2019). https://doi.org/10.1109/RTAS.2019.00021 25. Voudouris, P., Stenström, P., Pathan, R.: Timing-anomaly free dynamic scheduling of task-based parallel applications. In: Proceedings of the 37th IEEE Real-Time Systems Symposium (RTSS). p. 371 (2016). https://doi.org/10.1109/RTSS.2016.050 26. Ueter, N., Günzel, M., von der Brüggen, G., Chen, J.J.: Parallel path progression DAG scheduling. IEEE Transactions on Computers 72 (10), 3002–3016 (2023). https://doi.org/10.1109/TC.2023.3280137 27. Tang, Y., Jiang, X., Guan, N., Liu, S., Luo, X., Yi, W.: Optimizing end-to-end latency of sporadic cause-effect chains using priority inheritance. In: Proceedings of the 44th IEEE Real-Time Systems Symposium (RTSS). pp. 411–422 (2023). https://doi.org/10.1109/RTSS59052.2023.00042 28. Ahmed, S., Anderson, J.H.: Exact response-time bounds of periodic DAG tasks under server-based global scheduling. In: Proceedings of the 43rd IEEE Real-Time Systems Symposium (RTSS). pp. 447–459 (2022). https://doi.org/10.1109/ RTSS55097.2022.00045 29. He, Q., Guan, N., Lv, M., Jiang, X., Chang, W.: Bounding the response time of DAG tasks using long paths. In: Proceedings of the 43rd IEEE Real-Time Systems Symposium (RTSS). pp. 474–486 (2022). https://doi.org/10.1109/RTSS55097.2022. 00047 30. Agrawal, K., Baruah, S.: A measurement-based model for parallel real-time tasks. In: Proceedings of the 30th Euromicro Conference on Real-Time Systems (ECRTS). pp. 5:1–5:19 (2018). https://doi.org/10.4230/LIPIcs.ECRTS.2018.5 31. Shi, J., Günzel, M., Ueter, N., von der Brüggen, G., Chen, J.J.: DAG scheduling with execution groups. In: Proceedings of the 30th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 149–160 (2024). https://doi. org/10.1109/RTAS61025.2024.00020 32. Wasly, S., Pellizzoni, R.: Bundled scheduling of parallel real-time tasks. In: Pro-ceedings of the 25th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 130–142 (2019). https://doi.org/10.1109/RTAS.2019.00019 33. Ahmed, S., Anderson, J.H.: A soft-real-time optimal scheduler for DAG tasks with node-level self dependencies. In: Proceedings of the 46th IEEE Real-Time Systems Symposium (RTSS). pp. 122–134 (2025). https://doi.org/10.1109/RTSS66672.2025. 00019 34. Guan, F., Lee, J., Xue, C.J., Wu, J.M., Guan, N.: Mixed-criticality federated scheduling for relaxed-deadline DAG tasks. In: Proceedings of the 45th IEEE Real-Time Systems Symposium (RTSS). pp. 362–374 (2024). https://doi.org/10.1109/ RTSS62706.2024.00038 35. Lin, C.C., Shi, J., Ueter, N., Günzel, M., Reineke, J., Chen, J.J.: Type-aware federated scheduling for typed DAG tasks on heterogeneous multicore platforms. IEEE Transactions on Computers 72 (5), 1286–1300 (2023). https://doi.org/10. 1109/TC.2022.3202748 36. Dong, Z., Liu, C.: An efficient utilization-based test for scheduling hard real-time sporadic DAG task systems on multiprocessors. In: Proceedings of the 40th IEEE Real-Time Systems Symposium (RTSS). pp. 181–193 (2019). https://doi.org/10. 1109/RTSS46320.2019.00026 37. Casini, D., Biondi, A., Nelissen, G., Buttazzo, G.: Partitioned fixed-priority schedul-ing of parallel tasks without preemptions. In: Proceedings of the 39th IEEE Real-Awkernel: Bridging DAG Scheduling Theory and Practice 25 Time Systems Symposium (RTSS). pp. 421–433 (2018). https://doi.org/10.1109/ RTSS.2018.00056 38. Jiang, X., Guan, N., Long, X., Yi, W.: Semi-federated scheduling of parallel real-time tasks on multiprocessors. In: Proceedings of the 38th IEEE Real-Time Systems Symposium (RTSS). pp. 80–91 (2017). https://doi.org/10.1109/RTSS.2017.00015 39. Jiang, X., Long, X., Guan, N., Wan, H.: On the decomposition-based global EDF scheduling of parallel real-time tasks. In: Proceedings of the 37th IEEE Real-Time Systems Symposium (RTSS). pp. 237–246 (2016). https://doi.org/10.1109/RTSS. 2016.031 40. Li, J., Chen, J.J., Agrawal, K., Lu, C., Gill, C., Saifullah, A.: Analysis of federated and global scheduling for parallel real-time tasks. In: Proceedings of the 26th Euromicro Conference on Real-Time Systems (ECRTS). pp. 85–96 (2014). https: //doi.org/10.1109/ECRTS.2014.23 41. He, Q., Lv, M., Guan, N.: Response time bounds for DAG tasks with arbitrary intra-task priority assignment. In: Proceedings of the 33rd Euromicro Conference on Real-Time Systems (ECRTS). pp. 8:1–8:21 (2021). https://doi.org/10.4230/ LIPIcs.ECRTS.2021.8 42. Pathan, R.M.: Improving the schedulability and quality of service for federated scheduling of parallel mixed-criticality tasks on multiprocessors. In: Proceedings of the 30th Euromicro Conference on Real-Time Systems (ECRTS). pp. 12:1–12:22 (2018). https://doi.org/10.4230/LIPIcs.ECRTS.2018.12 43. Aromolo, F., Nelissen, G., Biondi, A.: Replication-based scheduling of parallel real-time tasks. In: Proceedings of the 35th Euromicro Conference on Real-Time Systems (ECRTS). pp. 18:1–18:23 (2023). https://doi.org/10.4230/LIPIcs.ECRTS.2023.18 44. Verucchi, M., Theile, M., Caccamo, M., Bertogna, M.: Latency-aware generation of single-rate DAGs from multi-rate task sets. In: Proceedings of the 26th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 226–238 (2020). https://doi.org/10.1109/RTAS48715.2020.000-4 45. Jiang, X., Guan, N., Liang, H., Tang, Y., Qiao, L., Yi, W.: Virtually-federated scheduling of parallel real-time tasks. In: Proceedings of the 42nd IEEE Real-Time Systems Symposium (RTSS). pp. 482–494 (2021). https://doi.org/10.1109/ RTSS52674.2021.00050 46. Zhao, S., Dai, X., Bate, I., Burns, A., Chang, W.: DAG scheduling and analysis on multiprocessor systems: Exploitation of parallelism and dependency. In: Proceedings of the 41st IEEE Real-Time Systems Symposium (RTSS). pp. 128–140 (2020). https://doi.org/10.1109/RTSS49844.2020.00022 47. Calandrino, J.M., Leontyev, H., Block, A., Devi, U.C., Anderson, J.H.: LITMUS RT :A testbed for empirically comparing real-time multiprocessor schedulers. In: Pro-ceedings of the 27th IEEE Real-Time Systems Symposium (RTSS). pp. 111–126 (2006). https://doi.org/10.1109/RTSS.2006.27 48. Sobhani, H., Choi, H., Kim, H.: Timing analysis and priority-driven enhancements of ROS 2 multi-threaded executors. In: Proceedings of the 29th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 106–118 (2023). https://doi.org/10.1109/RTAS58335.2023.00016 49. Choi, H., Xiang, Y., Kim, H.: PiCAS: New design of priority-driven chain-aware scheduling for ROS2. In: Proceedings of the 27th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 251–263 (2021). https://doi. org/10.1109/RTAS52030.2021.00028 50. Al Arafat, A., Wilson, K., Yang, K., Guo, Z.: Dynamic priority scheduling of multithreaded ROS 2 executor with shared resources. IEEE Transactions on 26 A. Yano et al. Computer-Aided Design of Integrated Circuits and Systems 43 (11), 3732–3743 (2024). https://doi.org/10.1109/TCAD.2024.3445259 51. Liu, S., Jiang, X., Guan, N., Wang, Z., Yu, M., Yi, W.: RTeX: An efficient and timing-predictable multithreaded executor for ROS 2. IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 43 (9), 2578–2591 (2024). https: //doi.org/10.1109/TCAD.2024.3380551 52. Teper, H., Bell, O., Günzel, M., Gill, C., Chen, J.J.: Reconciling ROS 2 with classical real-time scheduling of periodic tasks. In: Proceedings of the 31st IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 177–189 (2025). https://doi.org/10.1109/RTAS65571.2025.00027 53. Liu, S., Wagle, R., Ahmed, S., Tong, Z., Anderson, J.: ROS RT : Enabling flexible scheduling in ROS 2. In: Proceedings of the 46th IEEE Real-Time Systems Sympo-sium (RTSS). pp. 42–54 (2025). https://doi.org/10.1109/RTSS66672.2025.00013 54. Wilson, K., Al Arafat, A., Baugh, J., Yu, R., Guo, Z.: Physics-informed mixed-criticality scheduling for F1Tenth cars with preemptable ROS 2 executors. In: Proceedings of the 31st IEEE Real-Time and Embedded Technology and Applica-tions Symposium (RTAS). pp. 215–227 (2025). https://doi.org/10.1109/RTAS65571. 2025.00030 55. Ishikawa-Aso, T., Kato, S.: ROS 2 Agnocast: Supporting unsized message types for true zero-copy publish/subscribe IPC. In: Proceedings of the 28th IEEE Interna-tional Symposium on Real-Time Distributed Computing (ISORC). pp. 1–10 (2025). https://doi.org/10.1109/ISORC65339.2025.00026 56. Bellassai, D., Biondi, A., Biasci, A., Morelli, B.: Supporting logical execution time in multi-core POSIX systems. Journal of Systems Architecture 144 , 102987 (2023). https://doi.org/10.1016/j.sysarc.2023.102987 57. Dasari, D., Becker, M., Casini, D., Blaß, T.: End-to-end analysis of event chains under the QNX adaptive partitioning scheduler. In: Proceedings of the 28th IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS). pp. 214–227 (2022). https://doi.org/10.1109/RTAS54340.2022.00025 58. Rouxel, B., Altmeyer, S., Grelck, C.: YASMIN: a real-time middleware for COTS heterogeneous platforms. In: Proceedings of the 22nd International Middleware Conference (Middleware). pp. 298–309. ACM, New York, NY, USA (2021). https: //doi.org/10.1145/3464298.3493402 59. Sun, J., Jin, T., Xue, Y., Zhang, L., Liu, J., Guan, N., Zhou, Q.: ompTG: From OpenMP programs to task graphs. Journal of Systems Architecture 126 , 102470 (2022). https://doi.org/10.1016/j.sysarc.2022.102470 60. Sun, J., Guan, N., Guo, Z., Xue, Y., He, J., Tan, G.: Calculating worst-case response time bounds for OpenMP programs with loop structures. In: Proceedings of the 42nd IEEE Real-Time Systems Symposium (RTSS). pp. 123–135 (2021). https://doi.org/10.1109/RTSS52674.2021.00022 61. Sun, J., Guan, N., Sun, J., Zhang, X., Chi, Y., Li, F.: Algorithms for computing the WCRT bound of OpenMP task systems with conditional branches. IEEE Transactions on Computers 70 (1), 57–71 (2021). https://doi.org/10.1109/TC.2020. 2984502 62. Serrano, M.A., Royuela, S., Marongiu, A., Quiñones, E.: Predictable Paral-lel Programming with OpenMP, pp. 33–62 (09 2022). https://doi.org/10.1201/ 9781003338413-3 63. Iwakami, R., Peng, B., Hanyu, H., Ishigooka, T., Azumi, T.: AUTOSAR AP and ROS 2 collaboration framework. In: Proceedings of the 27th Euromicro Conference on Digital System Design (DSD). pp. 319–326 (2024). https://doi.org/10.1109/ DSD64264.2024.00050 Awkernel: Bridging DAG Scheduling Theory and Practice 27 64. message_filters — ROS Wiki. https://wiki.ros.org/message_filters 65. Buttazzo, G., Bertogna, M., Yao, G.: Limited preemptive scheduling for real-time systems. a survey. IEEE Transactions on Industrial Informatics 9(1), 3–15 (2013). https://doi.org/10.1109/TII.2012.2188805 66. Dai, G., Mohaqeqi, M., Voudouris, P., Yi, W.: Response-time analysis of limited-preemptive sporadic DAG tasks. IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 41 (11), 3673–3684 (2022). https://doi.org/10. 1109/TCAD.2022.3200527 67. Qamhieh, M., Fauberteau, F., George, L., Midonnet, S.: Global EDF scheduling of directed acyclic graphs on multiprocessor systems. In: Proceedings of the 21st ACM International Conference on Real-Time Networks and Systems (RTNS). pp. 287–296 (2013). https://doi.org/10.1145/2516821.2516836 68. Baruah, S., Bonifaci, V., Marchetti-Spaccamela, A.: The global EDF scheduling of systems of conditional sporadic DAG tasks. In: Proceedings of the 27th Euromicro Conference on Real-Time Systems (ECRTS). pp. 222–231 (2015). https://doi.org/ 10.1109/ECRTS.2015.27 69. Saifullah, A., Fahmida, S., Modekurthy, V.P., Fisher, N., Guo, Z.: CPU energy-aware parallel real-time scheduling. In: Proceedings of the 32nd Euromicro Conference on Real-Time Systems (ECRTS). pp. 2:1–2:26 (2020). https://doi.org/10.4230/LIPIcs. ECRTS.2020.2 70. Reghenzani, F., Bhuiyan, A., Fornaciari, W., Guo, Z.: A multi-level DPM approach for real-time DAG tasks in heterogeneous processors. In: Proceedings of the 42nd IEEE Real-Time Systems Symposium (RTSS). pp. 14–26 (2021). https://doi.org/ 10.1109/RTSS52674.2021.00014 71. Extensible scheduler class — the Linux kernel documentation. https://docs.kernel. org/scheduler/sched-ext.html 72. Narayanan, V., Huang, T., Detweiler, D., Appel, D., Li, Z., Zellweger, G., Burt-sev, A.: RedLeaf: Isolation and communication in a safe operating system. In: Proceedings of the 14th USENIX Symposium on Operating Systems Design and Implementation (OSDI). pp. 21–39 (2020) 73. Boos, K., Liyanage, N., Ijaz, R., Zhong, L.: Theseus: an experiment in operating system structure and state management. In: Proceedings of the 14th USENIX Symposium on Operating Systems Design and Implementation (OSDI). pp. 1–19 (2020) 74. Mellor-Crummey, J.M., Scott, M.L.: Algorithms for scalable synchronization on shared-memory multiprocessors. ACM Transactions on Computer Systems (TOCS) 
+
+9(1), 21–65 (1991). https://doi.org/10.1145/103727.103729 75. Struct alloc::sync::Arc. https://doc.rust-lang.org/beta/alloc/sync/struct.Arc.html 76. Awkernel and the codebase used in this evaluation. Repository withheld for double-blind review; it will be released in the camera-ready version 77. Lelli, J., Scordino, C., Abeni, L., Faggioli, D.: Deadline scheduling in the Linux kernel. Software: Practice and Experience 46 (6), 821–839 (2016). https://doi.org/ 10.1002/spe.2335 78. YASMIN implementation. https://bitbucket.org/uva-sne/coordinationruntime
