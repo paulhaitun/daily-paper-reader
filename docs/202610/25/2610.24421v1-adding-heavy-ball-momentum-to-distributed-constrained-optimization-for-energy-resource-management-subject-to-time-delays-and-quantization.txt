@@ -1,0 +1,1512 @@
+Title: Adding Heavy-Ball Momentum to Distributed Constrained Optimization for Energy Resource Management Subject to Time-Delays and Quantization
+
+URL Source: https://arxiv.org/pdf/2610.24421v1
+
+Published Time: Tue, 20 Oct 2026 00:34:45 GMT
+
+Number of Pages: 46
+
+Markdown Content:
+# Graphical Abstract 
+
+Adding Heavy-Ball Momentum to Distributed Constrained Op-timization for Energy Resource Management Subject to Time-Delays and Quantization 
+
+Mohammadreza Doostmohammadian, Sergio Pequito 1arXiv:2610.24421v1 [eess.SY] 17 Oct 2026 Highlights 
+
+Adding Heavy-Ball Momentum to Distributed Constrained Op-timization for Energy Resource Management Subject to Time-Delays and Quantization 
+
+Mohammadreza Doostmohammadian, Sergio Pequito 
+
+• Addressing optimal convergence and resource-demand feasibility for distributed generator-battery coordination 
+
+• Addressing communication delays for energy resource management. 
+
+• Addressing quantization as in real-world communication systems. Adding Heavy-Ball Momentum to Distributed Constrained Optimization for Energy Resource Management Subject to Time-Delays and Quantization 
+
+Mohammadreza Doostmohammadian a, Sergio Pequito b
+
+> aFaculty of Mechanical Engineering Semnan University Semnan Postal code Iran Phone number doost@semnan.ac.ir.
+> bDepartment of Electrical and Computer Engineering and Institute for Systems and Robotics Instituto Superior Tecnico University of Lisbon Portugal sergio.pequito@tecnico.ulisboa.pt
+
+Abstract 
+
+This paper studies a hybrid discrete-time signed gradient-consensus method with heavy-ball momentum, paired communication delays, and fixed loga-rithmic quantization. The method preserves the aggregate supply-demand equality at every iteration. For a static connected undirected graph and bounded delays, a Lyapunov-Krasovskii analysis establishes practical stabil-ity by isolating the discontinuous quantization error as an additive distur-bance and closing a computable invariant-sublevel argument. The resulting ergodic residual bound is quadratic in the quantization resolution, and exact convergence to the smooth penalized equality-constrained optimizer is recov-ered in the unquantized case. For delay-free unquantized quadratic costs, an exact modal analysis identifies the heavy-ball stability region and optimal parameters, with the predicted rate validated on a fixed sparse network. A reproducible delayed experiment reports all constants and a certificate whose guaranteed steady-state level lies below the reported initialization. A sepa-rate mixed generator-battery experiment exercises the signed update directly. Finite smooth penalties approximate, but do not generally enforce, the local box constraints exactly. 
+
+Keywords: Distributed constrained optimization, energy resource scheduling, heavy-ball momentum, quantization, time-delays  
+
+> Preprint submitted to Nonlinear Analysis: Hybrid Systems October 20, 2026
+
+1. Introduction 
+
+Distributed energy resource management systems (DERMS) coordinate distributed energy resources, including solar generation, storage, electric ve-hicles, flexible loads, and small generators, to satisfy system-level operating objectives [1, 2]. In the optimization model studied here, each resource is represented by a local controller that evaluates a private cost gradient and ex-changes only a quantized signed-gradient value with neighboring controllers. The controllers collectively minimize the separable operating cost while main-taining the aggregate supply-demand equality. Thus, the DERMS interpreta-tion is a networked economic-dispatch/resource-allocation layer rather than a complete model of distribution-system power flow, voltage regulation, or market clearing. Distributing the computation can improve scalability, reduce communi-cation bottlenecks, and remove dependence on a single computational co-ordinator [3]. It does not, by itself, eliminate every single point of failure: communication cut sets, common infrastructure, and critical agents can still fail. Resilience therefore depends on the network topology and implementa-tion. Parallel hardware and distributed scheduling can exploit resources more efficiently than centralized processing [4, 5], supported by advances in con-vex/nonconvex decomposition [6], consensus methods [7], and asynchronous protocols [8]. By distributing control and coordination across many agents (e.g., local controllers, microgrids), DERMS can adapt faster to local demand condi-tions, optimize resource use with lower latency, and maintain the supply-demand balance more effectively. Decentralized approaches also reduce coor-dination costs, enable privacy-preserving transactions [9], and allow parallel computation and data processing [10, 11] without relying on a central infras-tructure. These attributes make DERMS particularly relevant for modern power systems, edge computing applications, and networked resource envi-ronments in smart cities [12]. 
+
+1.1. Related Work 
+
+For broad overviews of distributed optimization and its control appli-cations, we refer to [13, 14]. These surveys are distinguished below from application papers and individual algorithms. The literature on distributed optimization for DERMS has evolved from early linear and ideal multi-agent models [15, 16, 17, 18, 19] to more advanced 2formulations that account for practical non-idealities. 
+
+DERMS optimization architectures. Game-theoretic approaches for mi-crogrid energy management via graph analysis are studied in [20]. Decentral-ized blockchain strategies for distributed energy resources in virtual power plants are developed in [21]. Machine learning and big-data methods for integrating renewable resources into the grid are investigated in [22], with extensions to hybrid energy sources and battery storage in [23]. 
+
+Distributed constrained optimization for economic dispatch. A focused line of research formulates DERMS as distributed constrained optimization, as surveyed in [3]. Foundational gradient-based methods with anytime feasi-bility are proposed in [24, 25, 26]. Extensions include adaptive optimization over unbalanced networks [27], ADMM-based solutions [28, 29, 30, 31], satu-rated dynamics for power ramp-rate limits [32], multi-step gradient descent for economic dispatch [33], and consensus-based multi-agent power flow anal-ysis [34]. 
+
+Accelerated distributed optimization. The convergence rate of distributed algorithms is a critical concern, as faster convergence translates to fewer communication rounds, lower computation overhead, and reduced risk of oscillations when system conditions change. Acceleration via heavy-ball mo-mentum has been studied in the general distributed optimization literature [35, 36], along with Nesterov-type momentum [37] and non-Lipschitz sign-based dynamics for fixed-time convergence [38, 39]. Improved convergence for DERMS specifically is also investigated in [40]. Push-sum and push-pull methods [41, 42] address directed and time-varying topologies but typically do not consider quantization or coupling constraints jointly. 
+
+Communication impairments. Data quantization due to limited chan-nel bit-rate is a significant practical concern. Uniform quantization for dis-tributed optimization is studied in [43, 44, 45], and logarithmic quantization in [46, 47, 48]. Time-delays in distributed algorithms are addressed in several works (e.g., [24]), but typically not jointly with quantization and momentum acceleration. Two recent delay-robust power-system results clarify the scope of the present contribution. Shi et al. [49] treat economic dispatch with hetero-geneous delays, bounded generation, adaptive penalties, and a continuous-time primal-dual/scattering construction. Li et al. [50] establish delay-independent stability for distributed secondary frequency control through a reformulated continuous-time primal-dual controller. In contrast, the present method is a discrete-time signed-gradient allocation scheme with exact preser-3vation of the aggregate equality under paired symmetric delays, fixed log-arithmic quantization, and heavy-ball momentum. Its delay guarantee is delay-dependent and assumes a static undirected graph; it neither subsumes the scattering-based heterogeneous-delay result nor provides frequency-dynamics guarantees. 
+
+1.2. Gap and Contributions 
+
+The main technical contribution is a distributed momentum-based signed gradient-consensus method that preserves the coupling equality at every iter-ation. In particular, paired delays and fixed logarithmic quantization coexist with exact per-iteration conservation of the coupling equality. The delayed fixed-quantized recursion is naturally a hybrid dynamical object: continuous resource states evolve through discrete quantizer-cell and delay selections. The practical-stability theorem is stated for a static connected graph; the feasibility identity itself also holds for paired time-varying undirected edges. The specific results are as follows: (i) Ergodic practical-stability under quantization, momentum, and delays: 
+
+We prove a self-contained Lyapunov-Krasovskii result. The delay mis-match is decomposed into a smooth-gradient history term and an ad-ditive discontinuous-quantization term, and a computable invariant-sublevel condition removes the former a priori orbit assumption. This additive-disturbance treatment avoids any Lipschitz assumption on the discontinuous quantizer and is reusable in delayed quantized-network analyses. The resulting average residual is explicit and scales as O(ρ2)(Theorem 1). The exact-convergence result is recovered in the unquan-tized case ρ = 0 (Corollary 1). (ii) Anytime feasibility under symmetric delays: We prove that the supply-demand coupling constraint is satisfied at every iteration, even in the presence of log-scale quantization, momentum, and bounded symmetric delays (Lemma 9). (iii) Quantized equilibria and approximate optimality: We characterize the equilibria of the fixed-quantized dynamics as quantized-consensus points and show that every such equilibrium is feasible and satisfies an ex-plicit O(ρ2) optimality-gap bound with respect to the penalized prob-lem (Lemma 2 and Proposition 4). The bound is stated using the 4exact logarithmic-quantizer constant and, therefore, remains valid for the quantizer defined. (iv) Spectral momentum characterization: For the delay-free unquantized quadratic case, we derive the exact modal stability condition, the op-timal heavy-ball pair ( ηHB , μ HB ), and its worst-case contraction factor (Proposition 2). 
+
+1.3. Paper Organization 
+
+Section 2 formulates the DERMS optimization problem and states the standing assumptions. Section 3 develops the momentum-based distributed algorithm and its extension to delayed communication. Section 4 provides the feasibility, optimality, and convergence analysis. Section 5 presents numerical experiments, and Section 6 concludes the paper. 
+
+Notation. Bold symbols denote vectors and matrices; scalar components and dummy arguments are not bold. The vector 1n denotes the all-ones vector of size n. We define the signed vector sn := [ 1n1 ; −1n2 ] ∈ Rn and the signing matrix B := diag( bi) with bi = 1 for generators and bi = −1 for batteries. The operator “;” denotes column concatenation. We write ∇i for  
+
+> df i
+> dz i
+
+and ∇z F for the gradient of F (·) with respect to z.
+
+2. Problem Formulation 
+
+2.1. Constrained Optimization Formulation 
+
+The goal of the energy resource management problem is to minimize the total energy cost across n1 generator nodes (producing power) and n2 battery nodes (storing power). This is formulated as [51]: min  
+
+> x,y
+
+F (x, y) = 
+
+> n1
+
+X
+
+> i=1
+
+gi(xi) + 
+
+> n2
+
+X
+
+> i=1
+
+hi(yi), (1) where xi ∈ R denotes the power output of generator i ∈ { 1, . . . , n 1}, yi ∈ R
+
+denotes the power assigned to battery i ∈ { 1, . . . , n 2}, and gi : R → R,
+
+hi : R → R are the local generation and storage cost functions, respectively. For notational convenience, let n := n1 + n2 and define z = [ x; y] ∈ Rn.Further, let fi(zi) := gi(zi) for i ∈ { 1, . . . , n 1} (generators) and fi(zi) := 5hi−n1 (zi) for i ∈ { n1 + 1 , . . . , n } (batteries). The problem (1) takes the compact form: min  
+
+> z
+
+F (z) = 
+
+> n
+
+X
+
+> i=1
+
+fi(zi). (2) The optimization (2) is subject to a coupling equality constraint repre-senting the supply-demand balance [51]: 
+
+> n1
+
+X
+
+> i=1
+
+xi = D +
+
+> n2
+
+X
+
+> i=1
+
+yi, (3) where D ∈ R+ denotes the total power demand. Equivalently, given initial allocations dxi and dyi satisfying Pn1 
+
+> i=1
+
+dxi − Pn2 
+
+> i=1
+
+dyi = D, the constraint can be written as: n1X
+
+> i=1
+
+(xi − dxi ) = 
+
+> n2
+
+X
+
+> i=1
+
+(yi − dyi ). (4) A key requirement is anytime resource-demand feasibility : the coupling con-straint (4) must hold at every iteration k ∈ N of the algorithm. In addition, each energy node is subject to local box constraints reflecting physical limits: 
+
+mi ≤ zi(k) ≤ Mi, ∀ i ∈ { 1, . . . , n }, ∀ k, (5) where mi and Mi denote the minimum and maximum power capacity of node i.
+
+2.2. Standing Assumptions 
+
+Assumption 1 (Strong convexity and Lipschitz gradient) . Each local com-posite penalized cost function fi : R → R used by the dynamics is twice con-tinuously differentiable and globally strongly convex with globally Lipschitz-continuous gradient. Specifically, there exist constants 0 < v ≤ u such that 
+
+2v ≤ ∂2 
+
+> zi
+
+fi(zi) ≤ 2u, ∀ zi ∈ R, ∀ i. (6) 
+
+The global domain is required because a finite smooth penalty does not project an iterate onto [mi, M i].
+
+Remark 1. Under the convention (6) , the Hessian strong-convexity modulus is 2v, while the quadratic lower bound is F (z) − F (z⋆) ≥ v∥z − z⋆∥2 on the feasible affine space. For the quadratic costs fi(zi) = γiz2 
+
+> i
+
++ βizi + αi with 
+
+γi > 0, Assumption 1 holds with v = min i γi and u = max i γi.
+
+62.3. Log-Scale Quantization 
+
+In practical DERMS, data exchanged over communication channels is subject to quantization due to limited bit-rate. This paper adopts log-scale quantization [46, 47, 48], which yields a significantly smaller optimality gap near convergence compared to uniform quantization [43, 44, 45]. To make the unquantized limit well defined, we distinguish it from the logarithmic formula: 
+
+q0(s) := s, qρ(0) := 0 , ρ > 0,qρ(s) := sgn( s) exp 
+
+
+
+ρ
+
+log( |s|)
+
+ρ
+
+ 
+
+, ρ > 0, s ̸ = 0 . (7) where [ ·] denotes rounding to the nearest integer and ρ is the quantization resolution parameter. For ρ > 0, this mapping is odd ( qρ(−s) = −qρ(s)) and, by the rounding-to-nearest construction, satisfies the exact multiplicative bound 
+
+e−ρ/ 2 ≤ q(s)
+
+s ≤ eρ/ 2, ∀ s̸ = 0 . (8) Define 
+
+δρ := eρ/ 2 − 1. (9) Then (8) implies the componentwise relative-error bound 
+
+|q(s) − s| ≤ δρ|s|, ∀ s ∈ R. (10) As illustrated in Fig. 1, logarithmic quantization is strongly sign-preserving : 
+
+> q(s)
+> s
+
+remains bounded away from zero for all s̸ = 0. By contrast, uniform quantization has a dead-zone around the origin that prevents exact conver-gence (see Section 5). 
+
+Remark 2. The subsequent analysis uses the odd symmetry and componen-twise relative-error property of the quantizer. In particular, with eq(s) := 
+
+qρ(s) − s, (10) gives |eq(s)| ≤ δρ|s| for all s ∈ R, where δρ = eρ/ 2 − 1 = O(ρ).The proof never treats qρ as a Lipschitz mapping: its discontinuous error is isolated as an additive disturbance. For the fixed-quantized dynamics, this yields residual terms of order O(δ2 
+
+> ρ
+
+) = O(ρ2) in the Lyapunov descent in-equality; exact convergence is recovered in the special case ρ = 0 .
+
+73 2 1 0 1 2 3input u         
+
+> 3
+> 2
+> 1
+> 0123quantized output  q(u)Uniform quantizer ( = 0.5)
+> 3210123input u
+> Logarithmic quantizer ( = 0.35)
+> identity
+> q(u)
+
+Figure 1: Uniform quantization (left) and logarithmic quantization (right). 
+
+Remark 3 (Alphabet size and finite-bit implementation) . The ideal loga-rithmic quantizer in (7) has countably many nonzero levels and is the ob-ject covered by the theorem. A practical implementation may retain indices 
+
+ℓmin , . . . , ℓ max . With Mq = ℓmax − ℓmin + 1 , the signed levels plus zero has 
+
+2Mq + 1 symbols and requires ⌈log 2(2 Mq + 1) ⌉ bits per scalar (apart from protocol overhead). The relative-error analysis remains valid while all trans-mitted magnitudes lie within the retained range. Underflow or saturation adds a separate bounded error and is not covered by Theorem 1; the selected dynamic range must therefore be reported in a finite-bit deployment. 2.4. Communication Network 
+
+The communication network among energy nodes is modeled as a static undirected graph G = ( V, E). Let A = A⊤ ≥ 0 be its weighted adjacency ma-trix, Ni := {j : Aij > 0}, D := diag( P 
+
+> j
+
+Aij ) its degree matrix, and L = D− A
+
+its Laplacian. We denote the smallest positive and largest eigenvalues of L
+
+by λ2 and λn, and the maximum weighted degree by dmax := max i
+
+P 
+
+> j
+
+Aij .The static assumption is part of the corrected practical-stability theorem. 
+
+Assumption 2 (Connectivity) . The graph G is connected, i.e., λ2 > 0.
+
+Remark 4. This assumption is stronger than B-connectivity. Under mere 
+
+B-connectivity an instantaneous Laplacian can have λ2(L(k)) = 0 , invalidat-ing the one-step coercivity used below. A changing graph also requires a delay model that specifies messages on appearing and disappearing edges. There-fore, no convergence claim under B-connectivity is made; it would require a windowed Lyapunov analysis. Time-delays: The links in G may be subject to communication delays. Let τij (k) ≥ 0 denote the delay at link ( j, i ) at iteration k.8Assumption 3 (Bounded symmetric delays) . The delays satisfy: (i) τij (k) ≤
+
+¯τ < ∞ for all links (j, i ) and all k; and (ii) τij (k) = τji (k) for all active links and all k. The delays are otherwise arbitrary (possibly time-varying and heterogeneous across links). 
+
+Remark 5. The symmetry condition τij (k) = τji (k) ensures that for every undirected edge {i, j }, the two endpoint updates use the same delayed pair at each iteration. This is essential for the pairwise cancellation argument in the feasibility proof (Lemma 9). It is an implementation requirement rather than a property of arbitrary wireless delays: a time-stamped edge transaction, handshake, or paired-release buffer can make both endpoints apply the same delay index. Node i must know the realized per-edge delay and retain its own past quantized gradients so that q(∇i(k − r)) is paired with the received 
+
+q(∇j (k−r)) . Fully directional asynchronous delays would require a redesigned conservation mechanism, which we leave for future work. 2.5. Problem Statement 
+
+Problem Formulation 1. Compute a distributed solution of the smooth pe-nalized approximation of (2) on the coupling hyperplane (4) , under Assump-tions 1-3 and with log-quantized channels (7) . The original box-constrained problem is recovered exactly only under the exact-penalty conditions of Propo-sition 1, or approached as the smooth penalty is sharpened. The solution must satisfy: (i) Anytime equality feasibility: the coupling constraint (4) holds at every iteration; finite penalties do not imply per-iterate box feasibility; (ii) Practical convergence under fixed quantization: under bounded symmet-ric delays and connected graphs, the iterates satisfy an explicit ergodic residual bound for the penalized problem; exact convergence is recovered in the unquantized case ρ = 0 ;(iii) Acceleration: convergence is improved via heavy-ball momentum. 
+
+3. Momentum-Based Distributed Optimization 
+
+This section develops the proposed distributed algorithm for solving Prob-lem 1. 93.1. Handling Box Constraints via Penalty Functions 
+
+To approximate the box constraints (5) within the distributed dynamics, we adopt a penalty-based approach [52, 53, 54]. Each original local cost 
+
+f 0 
+
+> i
+
+(zi) is augmented with a penalty term f σi (zi), and the algorithm optimizes the penalized composite function bfi(zi) := f 0 
+
+> i
+
+(zi) + f σi (zi). A finite smooth penalty does not guarantee zi(k) ∈ [mi, M i] at every iteration; “anytime feasibility” in this paper refers only to the coupling equality (4). Two choices for the penalty term are 
+
+f σi (zi) := σ[zi − Mi]+ + σ[mi − zi]+, (11) with [ u]+ := max {u, 0} and σ > 0; and the smooth softplus approximation 
+
+f σi (zi) := σκ log(1 + eκ(zi−Mi)) + σκ log(1 + eκ(mi−zi)), (12) with κ > 0. 
+
+Remark 6 (Effect of penalty on problem constants) . Adding the penalty modifies the smoothness constant. If the original Hessian is bounded above by 2u0, then the two softplus terms contribute 
+
+σκ {s+(1 − s+) + s−(1 − s−)} ≤ σκ/ 2,
+
+where s+ =  1 + e−κ(zi−Mi)−1 and s− =  1 + e−κ(mi−zi)−1. Thus the con-servative global choice bu = u0 + σκ/ 4 is valid. Writing Wi = Mi − mi and splitting the real line at the box midpoint gives the sharper global bound 
+
+bu ≤ u0 + σκ 
+
+8 + σκ 
+
+2 e−κW i/2, (13) 
+
+because one logistic curvature factor is at most 1/4 and the other at most 
+
+e−κW i/2. Every theorem coefficient must use a valid composite bu, not the cur-vature of the unpenalized quadratic alone. For notational simplicity, fi, F, u 
+
+below denote the smooth composite cost and its constants. 
+
+Proposition 1 (Exact hinge penalty and smooth approximation) . Let ZD := 
+
+{z : s⊤ 
+
+> n
+
+z = D}, let z⋆ 
+
+> box
+
+be the unique optimizer of the original cost F0 over 
+
+ZD ∩ [m, M ], and suppose KKT multipliers λ+ 
+
+> i
+
+, λ − 
+
+> i
+
+≥ 0 exist for zi ≤ Mi and 
+
+zi ≥ mi. Define 
+
+σex := max  
+
+> i
+
+{λ+ 
+
+> i
+
+, λ − 
+
+> i
+
+}.
+
+10 For every σ > σ ex , the hinge-penalized optimizer z⋆σ over ZD equals z⋆
+
+> box
+
+. For the softplus-penalized optimizer z⋆σ,κ and strong-convexity constant v,
+
+∥z⋆σ,κ − z⋆σ∥ ≤ 
+
+r2nσ log 2 
+
+vκ , z⋆σ,κ → z⋆σ (κ → ∞ ). (14) 
+
+Consequently, a fixed finite (σ, κ ) generally solves only a smooth approxima-tion; it need not satisfy the box constraints exactly. Proof. The first claim is the convex exact ℓ1-penalty theorem: the KKT inequality multipliers give the threshold above which every violation costs more than its possible first-order decrease in F0 [52]. For the smooth ap-proximation, 0 ≤ κ−1 log(1 + eκt ) − [t]+ ≤ (log 2) /κ . Thus the softplus objective lies one-sidedly between the hinge objective and the hinge objec-tive plus ∆ := 2 nσ log 2 /κ . Since the Hessian convention in Assumption 1 is ∇2F ⪰ 2vI , optimality of the two minimizers gives v∥z⋆σ,κ − z⋆σ∥2 ≤ ∆, which proves (14). The one-sided comparison is why no additional factor of two appears. 
+
+Remark 7 (Scope of the subsequent convergence claims) . Proposition 1 con-cerns only the relation between the original box-constrained problem and its penalized counterparts. The dynamical results proved later in Theorem 1 and Corollary 1 apply to the penalized distributed dynamics. In particular, for fixed quantization level ρ > 0, the analysis yields practical stability and an 
+
+O(ρ2) residual neighborhood around the penalized optimizer. Exact asymp-totic convergence is recovered in the unquantized case ρ = 0 . The theorem requires the smooth penalty (12) ; the nonsmooth hinge (11) is outside As-sumption 1. Relation to the box-constrained optimizer is obtained separately through Proposition 1, and no per-iterate box-feasibility claim is made. 3.2. Delay-Free Dynamics 
+
+We present the algorithm first in the delay-free case (¯ τ = 0). The dy-namics is based on a signed gradient-consensus mechanism: each node drives its signed local gradient bi∇i toward agreement with its neighbors, which at equilibrium yields the optimality condition (Lemma 1). 11 Each energy node i updates (we, henceforth, write q = qρ): 
+
+zi(k + 1) = zi(k) + ηb i
+
+X
+
+> j∈N i
+
+Aij 
+
+
+
+bj q(∇j (k)) − biq(∇i(k)) 
+
+
+
+(15) + μw i(k),wi(k + 1) = zi(k + 1) − zi(k), (16) where η > 0 is the step size and 0 < μ < 1 is the heavy-ball momentum coefficient. Setting μ = 0 recovers the non-accelerated dynamics. 
+
+Compact form: Define the signed gradient ϕ(k) := B∇z F (z(k)) and its quantized version g(k) := B q (∇z F (z(k))), where quantization is applied componentwise. With μ = 0, the dynamics (15) reads in vector form: 
+
+z(k + 1) = z(k) − η B L g(k)= z(k) − η B L B q (∇z F (z(k))) . (17) Note the two occurrences of B: the outer B arises from the bi prefactor in (15), and the inner B converts the quantized gradient q(∇z F ) into the signed quantity g.
+
+Initialization: For anytime feasibility, the initial states must satisfy: 
+
+zi(0) = di, wi(0) = 0 , ∀ i, (18) where di := dxi for generators and di := dyi for batteries, with Pn1 
+
+> i=1
+
+dxi −Pn2 
+
+> i=1
+
+dyi = D.
+
+Proposition 2 (Spectral heavy-ball characterization for quadratic costs) .
+
+Consider the static, delay-free, unquantized case and a quadratic composite cost F (z) = 12 z⊤Qz + r⊤z, where Q = diag( hi) ≻ 0. Let 0 < θ min ≤
+
+θmax be the smallest and largest positive eigenvalues of Q1/2LQ 1/2. On the equality-feasible subspace, every modal error satisfies 
+
+eθ(k + 1) = (1 + μ − ηθ )eθ(k) − μe θ(k − 1) . (19) 
+
+Thus all modes are Schur stable if and only if 
+
+0 ≤ μ < 1, 0 < ηθ max < 2(1 + μ). (20) 12 The minimax heavy-ball choice and contraction factor are 
+
+ηHB = 4(√θmax + √θmin )2 ,μHB =
+
+√θmax − √θmin 
+
+√θmax + √θmin 
+
+2
+
+, (21) 
+
+rHB =
+
+√κ − 1
+
+√κ + 1 , κ := θmax /θ min . (22) 
+
+For comparison, optimally tuned gradient descent has factor rGD = ( κ −
+
+1) /(κ + 1) . Hence, rHB < r GD whenever κ > 1.Proof. Let x(k) = z(k) − z⋆ and y(k) = Bx(k). Equality feasibility gives 
+
+1⊤y(k) = 0, and the update becomes y(k + 1) = ( I − ηLQ )y(k) + μ(y(k) −
+
+y(k − 1)). The nonzero spectrum of LQ equals that of the symmetric matrix 
+
+Q1/2LQ 1/2, yielding (19). The second-order Jury conditions give (20); mini-mizing the maximum root modulus over [ θmin , θ max ] gives (21)-(22) [55]. 
+
+Remark 8. Proposition 2 provides a principled momentum choice for the quadratic baseline, and Section 5.2 validates its predicted modal recurrence on an actual fixed sparse network. At the minimax pair, the two extreme modes have repeated roots; hence rHB is the asymptotic root-modulus factor, while a finite-time bound may include a polynomial prefactor. For nonlinear, delayed, or quantized dynamics, Theorem 1 gives a sufficient robust region rather than an optimal rate; the general μ∗(η, ¯τ , ρ ) remains open. 3.3. Extension to Delayed Communication 
+
+Under Assumption 3, we introduce the indicator function: 
+
+Ik,ij (r) := 
+
+ 1, if τij (k) = r, 
+
+0, otherwise . (23) The delayed dynamics is given by 
+
+zi(k + 1) = zi(k) + ητ bi
+
+X
+
+> j∈N i
+> ¯τ
+
+X
+
+> r=0
+
+Aij 
+
+
+
+bj q(∇j (k − r)) 
+
+− biq(∇i(k − r)) 
+
+
+
+Ik,ij (r) + μw i(k), (24) 
+
+wi(k + 1) = zi(k + 1) − zi(k), (25) 13 where ητ > 0 is the step size for the delayed case. Setting ¯ τ = 0 recovers (15)-(16) with ητ = η. For k < 0, set z(k) = z(0) and w(k) = 0. At each update time k, exactly one indicator Ik,ij (r) is active per edge. This convention is used in the delay-mismatch bound below. Algorithm 1 summarizes the procedure. 
+
+Algorithm 1: Heavy-ball momentum DERMS dynamics  
+
+> 1
+
+Input: A, G, ητ , μ, σ, {di}ni=1 , {fi(·)}ni=1 , τ ; 
+
+> 2
+
+Initialization: k = 0, zi(0) = di, wi(0) = 0 for all i; 
+
+> 3
+
+allocate a local gradient-history buffer of length ¯ τ + 1;  
+
+> 4
+
+while not converged do  
+
+> 5
+
+foreach energy node i ∈ V in parallel do  
+
+> 6
+
+compute and store q(∇i(k)) and transmit its index;  
+
+> 7
+
+for each edge {i, j } obtain the common realized delay 
+
+r = τij (k) = τji (k) and retrieve the local value q(∇i(k − r)) paired with the received q(∇j (k − r));  
+
+> 8
+
+update zi(k + 1) by (24) and wi(k + 1) by (25);  
+
+> 9
+
+k ← k + 1;  
+
+> 10
+
+Return: {zi(k)}ni=1 and bF (z(k)); 
+
+3.4. Computational, Communication, and Storage Complexity 
+
+We briefly quantify the per-iteration arithmetic, communication, and memory requirements of Algorithm 1. Since each agent maintains a scalar decision variable zi and the local gradients are available in closed form, the local gradient and quantizer evaluations are constant-time operations. The dominant per-iteration cost therefore comes from aggregating information over neighboring agents. 
+
+Proposition 3 (Per-iteration complexity of Algorithm 1) . Consider Algo-rithm 1 over G = ( V, E) with neighbor set Ni for agent i, and let ¯τ denote the maximum communication delay. Suppose a finite implementation retains 
+
+Mq positive logarithmic levels as in Remark 3. For scalar local decision variables, one iteration of Algorithm 1 at node i
+
+requires: 1. O(1) arithmetic operations to evaluate the local gradient and its quan-tized version; 
+
+14 2. O(|N i|) arithmetic operations to aggregate neighbor contributions in the update; 3. transmission and reception of one quantizer index per active neighbor, using ⌈log 2(2 Mq + 1) ⌉ bits per index apart from protocol metadata; 4. O(¯ τ (|N i| + 1)) scalar memory to store delayed neighbor values and the node’s own gradient history. Hence, the local per-iteration arithmetic cost is O(|N i|), while the network-wide arithmetic cost is 
+
+O
+
+> n
+
+X
+
+> i=1
+
+|N i|
+
+!
+
+= O(|E| ).
+
+Likewise, the network-wide communication cost per iteration is 2|E|⌈ log 2(2 Mq+1) ⌉ bits apart from protocol metadata, and the total delay-buffer storage cost is O(¯ τ (|E| + n)) .In particular, if the graph has bounded degree, i.e., |N i| ≤ ∆max for all i,then the total per-iteration arithmetic and communication costs scale linearly with n. For dense graphs, the corresponding costs scale as O(n2).Proof. At each iteration, agent i performs one local gradient evaluation, one quantizer evaluation, and one update of its own primal/momentum variables; these are O(1) operations under the scalar-node model adopted in this paper. The remaining work is the neighbor aggregation appearing in the distributed update, which requires one contribution per active neighbor, yielding O(|N i|)arithmetic operations locally. For communication, each edge {i, j } ∈ E carries one quantizer index in each direction per iteration, giving the stated bit count from Remark 3. For storage, bounded delays require each agent to retain delayed neighbor information and its own quantized-gradient history over at most ¯ τ past steps. Thus, node i stores at most O(¯ τ (|N i| + 1)) scalar values. Summing the local arithmetic and storage costs over all agents and using 
+
+> n
+
+X
+
+> i=1
+
+|N i| = 2 |E| ,
+
+gives the stated network-wide bounds. The bounded-degree and dense-graph scalings follow immediately. 15 Remark 9. The above statement is given for the scalar-agent setting con-sidered in this paper. If each agent instead controls a vector in Rp, then all arithmetic, communication, and storage bounds scale linearly in p.
+
+4. Analysis of Feasibility, Optimality, and Convergence 
+
+The analysis proceeds in three layers. First, we study the distributed dy-namics for the smooth penalized equality-constrained problem and establish anytime feasibility together with practical stability of the fixed-quantized algorithm. Second, we characterize the equilibria of the fixed-quantized dy-namics and bound their suboptimality relative to the penalized optimizer. Third, in the special case ρ = 0, the residual vanishes and exact convergence to the penalized optimizer is recovered. The approximation of the origi-nal box-constrained problem by the penalized problem is handled separately through Proposition 1. 
+
+4.1. Optimality Condition 
+
+Lemma 1 (Optimality condition) . [56] The optimal state z⋆ of the con-strained problem (2) -(4) satisfies ∇z F (z⋆) ∈ span( sn). Equivalently, there exists ψ⋆ ∈ R such that bi∇i(z⋆i ) = ψ⋆ for all i.4.2. Quantized Equilibrium Characterization 
+
+Lemma 2 (Quantized equilibrium) . Let Assumption 2 hold. If (z∞, w∞) is an equilibrium of the dynamics (24) -(25) , then: 
+
+w∞ = 0, (26) 
+
+q(B∇z F (z∞)) = α 1n (27) 
+
+for some α ∈ R.Proof. At equilibrium, (25) gives w∞ = z∞ −z∞ = 0. Substituting into (24), using that all delayed copies coincide at equilibrium, yields BL q (B∇z F (z∞)) = 0. Because B is invertible, Lq (B∇z F (z∞)) = 0. Connectivity gives ker L =span( 1n), and therefore q(B∇z F (z∞)) = α1n for some α ∈ R.
+
+Remark 10. Lemma 2 shows that (27) does not imply ∇z F (z∞) ∈ span( sn)
+
+and, therefore, does not imply exact optimality. Exact optimality is recovered only in the unquantized case ρ = 0 .
+
+16 4.3. Quantization-Error Bounds 
+
+We retain the standard Laplacian bound only for the unquantized signal and handle quantization errors explicitly. 
+
+Lemma 3. Given a symmetric adjacency matrix A with Laplacian L, define 
+
+z := z − 1⊤  
+
+> nz
+> n
+
+1n. Then 
+
+λ2∥z∥22 ≤ z⊤Lz = z⊤Lz ≤ λn∥z∥22. (28) 
+
+Proof. Standard; see [57]. 
+
+Lemma 4 (Explicit feasible-sublevel gradient envelope) . Let z⋆ minimize the smooth composite F over ZD, let B∇F (z⋆) = ψ⋆1, and, for any chosen 
+
+R > 0, define 
+
+ΩR := {z ∈ Z D : F (z) − F (z⋆) ≤ R}, (29) 
+
+GR := |ψ⋆| + 2 upR/v. (30) 
+
+Then ΩR is compact and every z ∈ ΩR satisfies ∥B∇F (z)∥∞ ≤ GR.Proof. Strong convexity on the feasible affine space gives F (z) − F (z⋆) ≥
+
+v∥z − z⋆∥2, so Ω R is bounded and closed. Global 2 u-Lipschitz continuity of each scalar gradient and the KKT identity give |bi∇i − ψ⋆| ≤ 2u|zi − z⋆i | ≤ 
+
+2upR/v .
+
+Lemma 5 (Componentwise quantization error) . Let ϕ ∈ Rn, g := q(ϕ),
+
+e := g − ϕ. Under (10) , |ei| ≤ δρ|ϕi| for all i, where δρ := eρ/ 2 − 1. If 
+
+∥ϕ∥∞ ≤ GR, then 
+
+∥e∥2 ≤ nδ 2 
+
+> ρ
+
+G2
+
+> R
+
+, (31) 
+
+e⊤Le ≤ λnnδ 2 
+
+> ρ
+
+G2
+
+> R
+
+. (32) 
+
+Proof. From (10), |ei| ≤ δρ|ϕi| for every i, including the case ϕi = 0 since 
+
+q(0) = 0. Therefore |ei| ≤ δρGR, which yields (31) after squaring and sum-ming. The bound (32) follows from e⊤Le ≤ λn∥e∥2.
+
+Lemma 6 (Lower bound for the mixed Laplacian term) . Let ϕ ∈ Rn, g =
+
+q(ϕ), Φ := ϕ⊤Lϕ. For z ∈ ΩR and every ξ > 0, we have 
+
+ϕ⊤Lg ≥
+
+
+
+1 − ξ
+
+2
+
+
+
+Φ − λnn
+
+2ξ δ2 
+
+> ρ
+
+G2
+
+> R
+
+. (33) 17 Proof. Write g = ϕ + e. Then, it readily follows that ϕ⊤Lg = Φ + ϕ⊤Le.By Cauchy-Schwarz and Young, we have 
+
+|ϕ⊤Le| ≤ √Φ√e⊤Le ≤ ξ
+
+2Φ + 12ξ e⊤Le.
+
+Applying Lemma 5 yields (33). 
+
+Lemma 7 (Quantized Laplacian-energy bound) . Let ϕ ∈ Rn, g = q(ϕ). For 
+
+z ∈ ΩR, the following inequalities hold: 
+
+g⊤Lg ≤ 2 ϕ⊤Lϕ + 4 dmax nδ 2 
+
+> ρ
+
+G2
+
+> R
+
+, (34) 
+
+g⊤L2g ≤ 2λn ϕ⊤Lϕ + 4 λndmax nδ 2 
+
+> ρ
+
+G2
+
+> R
+
+. (35) 
+
+Proof. Let e := g − ϕ. Using ( a + b)2 ≤ 2a2 + 2 b2 and ( ei − ej )2 ≤ 2e2 
+
+> i
+
++ 2 e2 
+
+> j
+
+,we obtain 
+
+g⊤Lg ≤ 2ϕ⊤Lϕ + 4 
+
+> n
+
+X
+
+> i=1
+
+die2 
+
+> i
+
+.
+
+Lemma 5 and di ≤ dmax give (34). Since g⊤L2g ≤ λng⊤Lg, (35) follows. 
+
+4.4. Descent Lemma 
+
+Lemma 8 (Descent bound) . [56] Under Assumption 1, let δ(k) := z(k +1) − z(k). Then, we have 
+
+F (z(k + 1)) ≤ F (z(k)) + ∇z F (z(k)) ⊤δ(k) + u δ (k)⊤δ(k). (36) 
+
+4.5. Anytime Feasibility 
+
+Lemma 9 (Anytime feasibility) . Under Algorithm 1 with initialization (18) 
+
+and Assumption 3 (symmetric delays), the coupling constraint Pni=1 bizi(k) = 
+
+D holds for all k ≥ 0.Proof. Summing (24) over all nodes weighted by bi, the gradient-tracking term vanishes by antisymmetry ( Aij = Aji and Ik,ij (r) = Ik,ji (r) from sym-metric delays). The identity Pni=1 biwi(k) = 0 follows by induction from 
+
+wi(0) = 0. Therefore Pni=1 bizi(k + 1) = Pni=1 bizi(k) = D.
+
+Remark 11. The proof critically uses τij (k) = τji (k). This property con-trasts with ADMM-based approaches [28, 29, 30, 31], where feasibility is achieved only asymptotically. 
+
+18 4.6. Feasible-Subspace Error Bound and Quantized Optimality Gap 
+
+Lemma 10 (Feasible-subspace error bound) . Under Assumption 1, let z⋆
+
+be the optimizer of F over ZD := {z : s⊤ 
+
+> n
+
+z = D}, and define F (z) := 
+
+F (z) − F (z⋆) and ϕ(z) := ( I − 1 
+
+> n
+
+1n1⊤ 
+
+> n
+
+)ϕ(z) with ϕ = B∇z F . Then, every 
+
+z ∈ Z D satisfies 
+
+F (z) ≤ u
+
+4v2 ∥ϕ(z)∥2 ≤ u
+
+4v2λ2
+
+Φ( z) (37) 
+
+for the connected Laplacian L.Proof. Let x := z − z⋆ with s⊤ 
+
+> n
+
+x = 0, y := Bx with 1⊤ 
+
+> n
+
+y = 0. By the mean-value theorem with diagonal Hessian 2 vI ⪯ H ⪯ 2uI and BHB = H:
+
+ϕ = ( I − 1 
+
+> n
+
+1n1⊤ 
+
+> n
+
+)Hy. Since y ⊥ 1n: y⊤ϕ ≥ 2v∥y∥2. Cauchy-Schwarz gives 
+
+∥x∥ ≤ 12v ∥ϕ∥, then F ≤ u∥x∥2 ≤ u 
+
+> 4v2
+
+∥ϕ∥2.
+
+Proposition 4 (Approximate optimality of quantized equilibria) . Let As-sumptions 1 and 2 hold. Let (z∞, 0) be an equilibrium of Algorithm 1 with 
+
+z∞ ∈ ΩR. Then, z∞ is feasible and there exists α ∈ R such that q(B∇z F (z∞)) = 
+
+α1n. Moreover, defining 
+
+∆ρ := ( eρ − 1) GR, (38) 
+
+we have 
+
+max  
+
+> i,j
+
+|ϕi(z∞) − ϕj (z∞)| ≤ ∆ρ, (39) 
+
+∥z∞ − z⋆∥ ≤ √n
+
+4v ∆ρ, (40) 
+
+F (z∞) − F (z⋆) ≤ un 
+
+16 v2 ∆2
+
+> ρ
+
+. (41) 
+
+Hence, every fixed-quantized equilibrium has an O(ρ2) optimality gap. Proof. Feasibility follows from Lemma 9, and the quantized-consensus char-acterization follows from Lemma 2. If α = 0, then q(ϕ∞ 
+
+> i
+
+) = 0 for every 
+
+i, which for the logarithmic quantizer implies ϕ∞ 
+
+> i
+
+= 0 and the claims are immediate. Assume therefore that α̸ = 0. By (8), 
+
+|α|e−ρ/ 2 ≤ | ϕ∞ 
+
+> i
+
+| ≤ | α|eρ/ 2, ∀i. 
+
+Since |ϕ∞ 
+
+> i
+
+| ≤ GR, we also have |α| ≤ eρ/ 2GR. Therefore max  
+
+> i,j
+
+|ϕ∞ 
+
+> i
+
+− ϕ∞ 
+
+> j
+
+| ≤ | α| eρ/ 2 − e−ρ/ 2 ≤ GR(eρ − 1) = ∆ ρ,
+
+which is (39). Thus, we obtain ∥ϕ(z∞)∥2 ≤ n 
+
+> 4
+
+∆2
+
+> ρ
+
+. Applying Lemma 10 yields (40) and (41). 19 4.7. Practical Convergence Under Fixed Quantization 
+
+We now state the main result for the fixed log-quantized dynamics. Recall from Remark 6 that F , fi, and u refer to the penalized cost. Throughout this subsection G = ( V, E) is static, connected, and undirected, with fixed Laplacian L, and F (k) := F (z(k)) − F (z⋆), where z⋆ is the unique optimizer of the smooth penalized problem over ZD. Consider the following definitions: 
+
+ϕ(k) := B∇z F (z(k)) , g(k) := q(ϕ(k)) ,
+
+Φ( k) := ϕ(k)⊤Lϕ(k), δ(k) := z(k + 1) − z(k),H(k) := 
+
+> k−1
+
+X
+
+> s=k−¯τ
+
+∥δ(s)∥2,W (k) := 
+
+> ¯τ
+
+X
+
+> j=1
+> k−1
+
+X
+
+> s=k−j
+
+∥δ(s)∥2,
+
+with H(k) = W (k) = 0 when ¯ τ = 0. For ¯ τ ≥ 1, H(k) ≤ W (k) ≤ ¯τ H (k) and 
+
+W (k + 1) − W (k) = ¯ τ ∥δ(k)∥2 − H(k). 
+
+Lemma 11 (Correct delay-mismatch bound) . Choose an orientation he =
+
+ei − ej for each edge e = {i, j }, let ae = Aij and re(k) = τij (k), and define 
+
+p(k) := B X
+
+> e∈E
+
+aeheh⊤ 
+
+> e
+
+{g(k) − g(k − re(k)) }. (42) 
+
+If z(k − r), r = 0 , . . . , ¯τ , lie in ΩR, then 
+
+∥p(k)∥2 ≤ CH H(k) + Cp,ρ , (43) 
+
+CH := 16 u2λndmax ¯τ , Cp,ρ := 16 χ¯τ λnnd max δ2 
+
+> ρ
+
+G2
+
+> R
+
+, (44) 
+
+where χ¯τ = 0 if ¯τ = 0 and 1 otherwise. Proof. Write g = ϕ + eq and split p = pϕ + pe. The incidence-matrix in-equality ∥ P 
+
+> e
+
+aeheαe∥2 ≤ λn
+
+P 
+
+> e
+
+aeα2 
+
+> e
+
+applies to both parts. Global smooth-ness gives |ϕi(k) − ϕi(k − r)|2 ≤ 4u2 ¯τ Pk−1 
+
+> s=k−¯τ
+
+|δi(s)|2; summing endpoints with weighted degree at most dmax yields ∥pϕ∥2 ≤ 8u2λndmax ¯τ H (k). Lem-mas 4-5 give |eq,i (t)| ≤ δρGR, and hence ∥pe∥2 ≤ 8χ¯τ λnnd max δ2 
+
+> ρ
+
+G2
+
+> R
+
+. Finally, 
+
+∥pϕ + pe∥2 ≤ 2∥pϕ∥2 + 2 ∥pe∥2 proves (43). 20 Remark 12. Lemma 11 does not use an estimate of the form ∥q(ϕ(k)) −
+
+q(ϕ(k − r)) ∥ ≤ C∥ϕ(k) − ϕ(k − r)∥; the discontinuous quantization error is bounded additively. 
+
+Theorem 1 (Ergodic practical-stability under delays and momentum) . Let Assumptions 1, 2, and 3 hold on a static connected undirected graph. Fix 
+
+R > 0, compute GR from (30) , and suppose the feasible initialization and constant prehistory satisfy V(0) ≤ R. Consider the Lyapunov-Krasovskii functional 
+
+V(k) := F (k) + ωw
+
+2 ∥w(k)∥2 + ωH W (k), (45) 
+
+with Lyapunov-Krasovskii weights ωw, ω H > 0, Young parameters ϵ, γ >
+
+0, and auxiliary parameter ξ ∈ (0 , 2) . Define CH , C p,ρ by (44) and the quantization-induced constants 
+
+C×,ρ := λnn
+
+2ξ δ2 
+
+> ρ
+
+G2
+
+> R
+
+, Cg,ρ := 4 λndmax nδ 2 
+
+> ρ
+
+G2
+
+> R
+
+, (46) 
+
+and the descent/residual coefficients 
+
+eβ1 := ητ (1 − ξ/ 2) − μ
+
+2ϵλ 2
+
+− ητ
+
+2γλ 2
+
+− (6 u + 3 ωw + 6 ωH ¯τ )η2 
+
+> τ
+
+λn, (47) 
+
+eβ2 := ωw
+
+2 (1 − 3μ2) − 3uμ 2 − μϵ 
+
+2 − 3ωH ¯τ μ 2, (48) 
+
+eβ3 := ωH −
+
+ητ γ
+
+2 + (3 u + 3ωw 
+
+> 2
+
++ 3 ωH ¯τ )η2
+
+> τ
+
+
+
+CH , (49) 
+
+ερ := ητ C×,ρ 
+
++
+
+ητ γ
+
+2 + (3 u + 3ωw 
+
+> 2
+
++ 3 ωH ¯τ )η2
+
+> τ
+
+
+
+Cp,ρ 
+
++ (3 u + 3ωw 
+
+> 2
+
++ 3 ωH ¯τ )η2 
+
+> τ
+
+Cg,ρ . (50) 
+
+A necessary condition for this sufficient certificate is μ < 1/√3, since eβ2 ≤
+
+ωw(1 − 3μ2)/2. Define 
+
+κH := 
+
+( eβ3/(ωH ¯τ ), ¯τ ≥ 1,
+
++∞, ¯τ = 0 , (51) 21 and let 
+
+AF := u
+
+4v2λ2
+
+, κV := min 
+
+(
+
+1, eβ1
+
+AF
+
+, 2 eβ2
+
+ωw
+
+, κ H
+
+)
+
+. (52) 
+
+If eβ1, eβ2, eβ3 > 0 and the self-consistency condition 
+
+ερ ≤ κV R (53) 
+
+holds, then z(k) ∈ ΩR for every k and 
+
+V(k + 1) − V (k) ≤ − eβ1Φ( k) − eβ2∥w(k)∥2 − eβ3H(k) + ερ. (54) 
+
+Moreover, 
+
+V(k) ≤ (1 − κV )kV(0) + 1 − (1 − κV )k
+
+κV
+
+ερ, (55) 
+
+Consequently, 
+
+lim sup  
+
+> N→∞
+
+1
+
+N 
+
+> N−1
+
+X
+
+> k=0
+
+
+
+Φ( k) + ∥w(k)∥2 + H(k)
+
+
+
+≤ ερ
+
+min { eβ1, eβ2, eβ3}. (56) 
+
+Hence, the fixed-quantized dynamics satisfies an explicit ergodic residual bound of order O(δ2 
+
+> ρ
+
+) = O(ρ2).Proof. All iterates lie in ZD by Lemma 9. Assume inductively that the states used at time k lie in Ω R; this is true at k = 0 by the constant-prehistory convention. The delayed displacement decomposes as δ(k) = −ητ BLg (k) + 
+
+ητ p(k) + μw (k), and Lemma 11 gives ∥p(k)∥2 ≤ CH H(k) + Cp,ρ .
+
+Step 1: cost increment. By Lemma 8: F (k + 1) − F (k) ≤ ∇ z F ⊤δ + u∥δ∥2.The Laplacian term uses Lemma 6: −ητ ϕ⊤Lg ≤ − ητ (1 − ξ/ 2)Φ + ητ C×,ρ .The cross-terms use s⊤ 
+
+> n
+
+w = 0 and s⊤ 
+
+> n
+
+p = 0 (Lemma 9): 
+
+μ|∇ z F ⊤w| ≤ μ
+
+2ϵλ 2
+
+Φ + μϵ 
+
+2 ∥w∥2, (57) 
+
+ητ |∇ z F ⊤p| ≤ ητ
+
+2γλ 2
+
+Φ + ητ γ
+
+2 (CH H + Cp,ρ ). (58) 22 Using Lemma 7: g⊤L2g ≤ 2λnΦ + Cg,ρ . Therefore, we obtain 
+
+∥δ∥2 ≤ 3η2 
+
+> τ
+
+(2 λnΦ + Cg,ρ )+ 3 η2 
+
+> τ
+
+(CH H + Cp,ρ ) + 3 μ2∥w∥2. (59) 
+
+Step 2: momentum increment. Since w(k + 1) = δ(k), using (59): 
+
+ωw
+
+2 (∥w(k + 1) ∥2 − ∥ w(k)∥2) ≤ 3ωwη2 
+
+> τ
+
+λnΦ + 3ωw
+
+2 η2 
+
+> τ
+
+Cg,ρ 
+
++ 3ωw
+
+2 η2 
+
+> τ
+
+(CH H + Cp,ρ ) (60) 
+
+− ωw
+
+2 (1 − 3μ2)∥w∥2. (61) 
+
+Step 3: Krasovskii-history increment. The double sum satisfies W (k +1) − W (k) = ¯ τ ∥δ(k)∥2 − H(k). Hence, 
+
+ωH (W (k + 1) − W (k)) ≤ 6ωH ¯τ η 2 
+
+> τ
+
+λnΦ + 3 ωH ¯τ η 2 
+
+> τ
+
+Cg,ρ 
+
++ 3 ωH ¯τ η 2 
+
+> τ
+
+(CH H + Cp,ρ )+ 3 ωH ¯τ μ 2∥w∥2 − ωH H(k). (62) 
+
+Step 4: combined descent and invariant set. Adding all three gives (54). Lemma 10 gives F (k) ≤ AF Φ( k), while W (k) ≤ ¯τ H (k) for ¯ τ ≥ 1 (and both vanish when ¯ τ = 0). Hence (51)-(52) imply V(k + 1) ≤ (1 − κV )V(k) + ερ. If 
+
+V(k) ≤ R, condition (53) gives V(k + 1) ≤ R, so induction proves z(k) ∈ ΩR
+
+and validates every bound used above without an orbit assumption. Iterating the scalar recursion gives (55). Summing (54) from k = 0 to N − 1, dividing by N , and using V(k) ≥ 0 gives (56). 
+
+Remark 13 (Interpretation of Theorem 1) . Theorem 1 is an ergodic practical-stability result for the fixed-ρ dynamics. It does not claim exact convergence of the state trajectory to the penalized optimizer when ρ > 0. Instead, it guar-antees that the average gradient-disagreement, momentum energy, and delay-history energy remain bounded by an explicit constant of order O(ρ2). Exact convergence is recovered only in the unquantized limit ρ = 0 ; see Corollary 1. Existence of a fixed-quantized equilibrium is not asserted: discontinuous fixed quantization may instead yield a bounded cycle. Proposition 4 and Corol-lary 2 are conditional equilibrium statements, whereas (56) is unconditional under the theorem hypotheses. 
+
+23 Corollary 1 (Exact convergence in the unquantized case) . Under the as-sumptions of Theorem 1, if ρ = 0 , then δρ = ερ = 0 and (54) is a strict Lyapunov descent. Consequently, P∞ 
+
+> k=0
+
+Φ( k) < ∞, P∞ 
+
+> k=0
+
+∥w(k)∥2 < ∞, and P∞ 
+
+> k=0
+
+H(k) < ∞, hence 
+
+Φ( k) → 0, w(k) → 0, H(k) → 0.
+
+Every accumulation point of z(k) is feasible by Lemma 9 and satisfies ϕ(z) = 
+
+0 because Φ( k) → 0 and L is connected. By Lemma 1, every accumulation point therefore equals the unique optimizer of the penalized problem on ZD,denoted again by z⋆. Hence, it readily follows that z(k) → z⋆.
+
+Corollary 2 (Optimality of convergent quantized trajectories) . Under the assumptions of Theorem 1, if the trajectory converges to an equilibrium (z∞, 0),then 
+
+F (z∞) − F (z⋆) ≤ unG 2
+
+> R
+
+16 v2 (eρ − 1) 2.
+
+Proof. Apply Proposition 4. 
+
+Remark 14 (Verifying the descent conditions) . The conditions eβ1, eβ2, eβ3 > 0
+
+can be satisfied for sufficiently small ητ and μ: the leading term in eβ1 is 
+
+O(ητ ), the negative corrections are O(η2 
+
+> τ
+
+) and O(μ); eβ2 > 0 requires μ small enough; eβ3 > 0 requires ωH large relative to ητ CH . The necessary ceiling 
+
+μ < 1/√3 is only algebraic and need not be attainable after the coupled eβ1
+
+and eβ3 restrictions are imposed. Experiments outside the explicitly computed admissible region are labeled empirical. 
+
+Remark 15 (On the admissible ( ητ , μ ) region) . Conditions (47) -(49) define a two-dimensional sufficient region. Proposition 2 gives the exact optimum for the delay-free quadratic baseline. Identifying the optimal μ∗(ητ , ¯τ , ρ ) for the general robust setting remains open. 
+
+Remark 16 (Delay-step-size trade-off) . The bound on ητ from eβ3 > 0 scales as O(1 /(¯ τ + 1)) . For small ητ , its leading form is ητ < 2ωH /(γC H ) = 
+
+ωH /(8 γu 2λndmax ¯τ ) when ¯τ ≥ 1.
+
+Remark 17 (Network topology) . The bounds depend on λ2/λ n and dmax .Graphs with higher algebraic connectivity admit larger step sizes and smaller residuals [58, 59, 60]. Table ?? summarizes the leading effects of the principal parameters. 
+
+24 5. Simulation Results 
+
+This section validates the theoretical results through numerical experi-ments. All simulations are performed on an Intel Core-i5 laptop (2.50 GHz, 8 GB RAM). Following [61, 62], we use quadratic costs: 
+
+fi(zi) = γiz2 
+
+> i
+
++ βizi + αi, (63) with parameters in Table 1. For the unpenalized quadratics, v0 = min i γi =0.03 and u0 = max i γi = 0 .04. Whenever the smooth penalty is used, the the-orem must instead use the global composite constant specified in Remark 6. 
+
+> Table 1: Power cost parameters for different energy node types [61, 62].
+
+Type αi ($/h) βi ($/MWh) γi ($/MW 2h) A 561 2.0 0.04 B 310 3.0 0.03 C 78 4.0 0.035 D 561 4.0 0.03 E 78 2.5 0.04 
+
+5.1. Effect of the Momentum Coefficient 
+
+We consider the delay-free case (¯ τ = 0) with n = 40 energy nodes (8 per type) over a sparse Erd˝ os-R´ enyi (ER) graph with 15% link probability and random symmetric weights. The topology is redrawn every 100 iterations. The smooth penalty (12) is used with mi = 10, Mi = 110, σ = 2, κ = 2. Demand is D = 2000 MW with di = 50 for all nodes, η = 0 .05, and ρ =0.0078. Because this experiment redraws the topology, it is not a validation of the static-graph Theorem 1. It is retained as an empirical topology-variation study. The previous step -size “verification,” which used u0 = 0 .04 while omitting the smooth-penalty curvature and the other theorem coefficients, has been removed. Fig. 2 shows results for μ = 0 , 0.25 , 0.5, 0.75. Larger μ yields faster decay of the cost residual. The weighted average 1
+
+> n
+
+Pni=1 bizi(k) remains constant, verifying anytime equality feasibility (Lemma 9). The momentum variables 
+
+wi(k) decay toward zero. These are empirical curves: in particular, μ =0.75 > 1/√3 cannot satisfy the sufficient condition (48). Proposition 2, rather than the robust theorem, explains the acceleration mechanism in the static unquantized quadratic baseline. 25 Figure 2: Effect of momentum μ on convergence ( n = 40, delay-free). Top-left: cost resid-ual for μ = 0 , 0.25 , 0.5, 0.75. Others: power allocations zi(k) showing constant weighted average (anytime feasibility), and momentum variables wi(k) converging to zero. 
+
+26 0 10 20 30 40 50 60 iteration k           
+
+> 10 15
+> 10 13
+> 10 11
+> 10 9
+> 10 7
+> 10 5
+> 10 3
+> 10 1
+> normalized  Q1/2 (z(k) z ) 2
+> Proposition 2 on a fixed sparse quadratic network
+> observed heavy-ball exact modal bound (asymptotic rHB = 0.563) observed zero-momentum exact modal bound ( rGD = 0.855)
+
+Figure 3: Observed heavy-ball and zero-momentum errors on a fixed sparse quadratic network. Dashed curves are exact zero-initial-momentum worst-mode recurrence bounds computed from the actual positive spectrum of Q1/2LQ 1/2; the displayed rHB is an asymp-totic root-modulus factor, and the heavy-ball bound retains the polynomial factor caused by repeated roots at the two extreme modes. 
+
+5.2. Spectral-Rate Validation on a Fixed Sparse Graph 
+
+To test the quantitative prediction in Proposition 2, we add a static, delay-free, unquantized quadratic benchmark. It uses n = 40, B = I, the five quadratic cost types in Table 1 repeated eight times, and one connected weighted ER graph with link probability 0 .15, random seed 260826, and edge weights sampled uniformly from [0 .5, 1.5]. The resulting graph has 125 edges. For its actual Q and L,
+
+θmin = 0 .0877407 , θmax = 1 .119718 , κ = 12 .7617 .
+
+Equations (21)-(22) therefore give ( ηHB , μ HB ) = (2 .18062 , 0.316505) and rHB =0.562588. The optimal zero-momentum values are ηGD = 1 .65637 and rGD =0.854669. At ( ηHB , μ HB ), the discriminant in (19) is zero at both θmin and 
+
+θmax (to floating-point precision), so the extreme-mode responses can contain a factor linear in k. Accordingly, Fig. 3 does not use a bare rk 
+
+> HB
+
+upper bound: its dashed heavy-ball curve is the exact zero-initial-momentum worst-mode recurrence bound over the actual positive spectrum, including the repeated-root polynomial factor, while rHB labels only the asymptotic root modulus. The observed curves remain below the exact modal bounds and display the predicted acceleration. This experiment validates Proposition 2; it is sepa-rate from the delayed quantized certificate in Section 5.6. 27 0 500 1000 1500 2000 iteration k               
+
+> 10 4
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> normalized residual  normalized cost gap signed-gradient disagreement
+> 0500 1000 1500 2000 iteration k
+> 10 16
+> 10 15
+> 10 14
+> 10 13
+> 10 12
+> |bTz(k) D|
+> Mixed signed instance: 12 generators, 8 batteries, = 0.01
+
+Figure 4: Empirical mixed signed validation with 12 generators ( bi = +1) and 8 batteries (bi = −1) on a fixed sparse graph. Left: normalized cost gap and signed-gradient disagree-ment. Right: numerical error in the conserved coupling equality b⊤z(k) = D. The gradual increase in the equality-error trace remains at floating-point scale and reflects accumulated roundoff in an algebraically cancelling update, not loss of the conservation invariant. 
+
+5.3. Mixed Generator-Battery Signed Validation 
+
+To exercise the signing matrix numerically, we add a fixed delay-free quantized instance with n1 = 12 generator nodes, n2 = 8 battery nodes, and B = diag( 112 , −18). The connected weighted ER graph has 20 nodes, 36 edges, link probability 0 .20, and random seed 260827. We use strongly convex quadratic costs, zi(0) = 40, D = b⊤z(0) = 160, ( η, μ, ρ ) = (0 .05 , 0.40 , 0.01), and 2000 iterations. Fig. 4 shows the cost gap and signed-gradient disagree-ment decreasing while the signed equality is conserved: the final cost gap is 4.7621 × 10 −3, the final signed-gradient disagreement is 4 .0625 × 10 −2, and the maximum numerical error in b⊤z(k) = D is 4 .21 × 10 −12 . At k = 2000, the quantized signed gradients agree to machine precision and the momen-tum vanishes. Taking R = F (z(0)) − F (z⋆) = 273 .7169 gives GR = 12 .4751 and ∆ ρ = 0 .12538, whereas the observed maximum pairwise signed-gradient spread is 0 .02394. Thus, the terminal numerical equilibrium satisfies the bound in Proposition 4; its nonzero disagreement plateau is consistent with Remark 10. This is an equilibrium-bound check and empirical sign-pattern validation, not an additional Theorem 1 certificate, but unlike the generator-only studies it directly exercises both occurrences of B in (17). 
+
+5.4. Effect of the Quantization Resolution 
+
+All parameters, including the topology redrawn every 100 iterations, are as in Section 5.1, with μ = 0 .5 and ρ = 116 , 164 , 1128 , 1256 . Accordingly, this is 28 Figure 5: Cost residual under different log-scale quantization levels ρ.
+
+also an empirical switching-topology study outside Theorem 1. Fig. 5 shows stable behavior for all levels, with finer quantization yielding smaller steady-state residuals. The O(δ2 
+
+> ρ
+
+) scaling of (50) motivates this comparison, but the switching-topology curves are not used as theorem validation. Fig. 6 compares log-scale and uniform quantization [63] at ρ = 0 .0156; uniform quantization produces a substantially larger residual due to its dead-zone. 
+
+5.5. Comparison with Existing Methods 
+
+We compare Algorithm 1 ( μ = 0 .9) against: linear [25], accelerated [64] (α = 0 .2, β = 0 .9), single-bit [65], fixed-time [39] ( ζ = 0 .25), and saturated [32] ( δ = 1). Each comparison method uses the parameter values from its original reference and was not retuned for this instance. Under these stated settings, Fig. 7 shows that Algorithm 1 exhibits the fastest residual decay. The figure therefore compares the stated settings rather than the best achiev-able performance of each method. Table 2 reports comparable wall-clock times. This is a delay-free empirical comparison; μ = 0 .9 is outside Theo-rem 1, and no claim is made that the comparison methods or the broader literature cannot handle delays. Proposition 2 does permit any μ < 1, includ-ing 0 .9, for a sufficiently small step size in the static delay-free unquantized quadratic baseline; the present switching/quantized comparison nevertheless remains empirical. Recent delay-robust alternatives are discussed in Sec-tion 1. We do not present a direct numerical comparison with the continuous-time scattering and frequency-control schemes in [49, 50], because their plant 29 Figure 6: Comparison of uniform [63] and log-scale quantization at ρ = 0 .0156. 
+
+models, state variables, and delay guarantees differ materially; constructing a common benchmark would require an additional modeling study. 
+
+> Table 2: Wall-clock time (5000 iterations) for different DERMS algorithms.
+
+Algorithm Run Time Algorithm Run Time Linear [25] 0.742 s Accelerated [64] 0.797 s Single-bit [65] 0.791 s Fixed-time [39] 1.147 s Saturated [32] 0.926 s This work 0.747 s 
+
+5.6. Corrected Delayed Certificate 
+
+The previously submitted parameters ( μ, η τ , ρ ) = (0 .4, 0.03 , 0.0156) were incorrectly described as certified and have been withdrawn. We instead use a static complete graph of n = 25 generator nodes with Aij = 1 /n , the five cost types in Table 1 repeated five times, mi = 10, Mi = 110, ( σ, κ ) = (2 , 2), D =1000 MW, and zi(0) = 40. The paired edge delays are sampled in {0, 1, 2}.Equation (13) gives u < 0.55, so v = 0 .03 and u = 0 .55 are valid global com-posite constants. The penalized optimizer lies in [27 .46 , 49 .03] MW, strictly inside [10 , 110]; thus this certificate isolates the delayed smooth-composite theorem and is not presented as an active-box test. We take R = 5 V(0), rather than the zero-margin choice R = V(0), to certify a nontrivial initial-ization neighborhood. Table 3 reports every design and derived constant. In particular, eβ1 = 3 .8125 × 10 −3, eβ2 = 2 .74773 × 10 −1, and eβ3 = 2 .4447 × 10 −2
+
+30 Figure 7: Cost residual comparison with existing DERMS methods. 
+
+are positive, while ερ = 1 .8355 × 10 −4 < κ V R = 8 .2643 × 10 −3 closes the invariant-sublevel check. The proof auxiliaries were retuned by a deter-ministic bounded search that minimized ερ/κ V subject to positive descent coefficients and self-consistency. These auxiliaries enter only the analysis: changing them changes the certified bound, not Algorithm 1 or its numerical trajectory. Among near-minimizers, we selected the rounded interior point in Table 3 while retaining a finite-N bound below 3 .1 at N = 6000. This avoids replacing an asymptotically weak certificate with a finite-horizon one. The resulting certified steady-state Lyapunov level is 
+
+ερ/κ V = 7 .3555 < V(0) = 66 .2355 ,
+
+whereas the untuned auxiliary values gave 198 .18. The theorem now guaran-tees an improvement from the reported initialization, not merely non-escape from Ω R.In Fig. 8, at state index k = 6000, the cost gaps are 1 .6142 × 10 −2 for 
+
+μ = 0 .09 and 3 .3180 × 10 −2 for μ = 0, providing a within-region momentum comparison. The center panel plots the theorem’s actual finite-N ergodic bound, not a cost-gap surrogate. At horizon N = 6000, the bound is 2 .9437, compared with an observed running residual of 1 .0572. Equality feasibility is preserved to floating-point precision. For the auxiliary values in Table 3, condition (48) becomes eβ2 = 2 .1 − 19 .5μ − 8.67 μ2 > 0, so the actual ceiling from this coefficient is μ < 0.10298; the reported μ = 0 .09 is about 13% below that ceiling. 31 Table 3: Complete numerical certificate for Theorem 1.                                                                   
+
+> Implemented problem and algorithm parameters
+> n25 λ2=λn1dmax 0.96
+> v0.03 u0.55 ¯τ2
+> ρ10 −4ητ0.0095 μ0.09
+> Proof auxiliaries (analysis only)
+> ωw4.2 ωH0.12 (ϵ, γ, ξ )(39 ,2,0.125)
+> Derived certificate quantities
+> ψ⋆5.922131 V(0) 66.235485 R= 5 V(0) 331.177425
+> GR121.496737 CH9.292800 Cp,ρ 0.0141717
+> C×,ρ 0.00369055 Cg,ρ 0.00354293 AF152.777778
+> κV2.49543 ×10 −5eβ10.00381247 eβ20.274773
+> eβ30.0244471 ερ0.000183553 κVR0.00826431 certificate satisfied μ= 0 baseline satisfied ερ/min ieβi0.0481453
+> ερ/κ V7.35554 finite-Nbound ( N= 6000) 2.94371 ρmax 0.00067091
+
+For the fixed Table 3 auxiliaries and R = 5 V(0), solving ερ(ρ) = κV R
+
+gives the explicit certified ceiling ρmax = 6 .7091 × 10 −4. Thus the theorem-certified resolution remains more than an order of magnitude finer than the empirical ρ = 1 /64 used in Section 5.4. Increasing R cannot manufacture certification: since G2
+
+> R
+
+/R → 4u2/v , both ερ and κV R scale linearly in R
+
+to leading order, and the fixed-auxiliary ceiling saturates at 7 .0528 × 10 −4
+
+as R → ∞ . A separate deterministic search over the same auxiliary box, with μ = 0 and the same finite-N guard, reaches only ρmax = 9 .1920 ×
+
+10 −4. Thus even favorable retuning remains at the 10 −3 scale, and the large gap to 1 /64 is structural rather than evidence of an unsearched certificate. Condition (53) is fundamentally a restriction on the quantization resolution and proof auxiliaries, not a consequence of choosing a loose initialization sublevel. 
+
+5.7. Delayed Stress Test Beyond Theorem Assumptions 
+
+We now turn to a delayed stress test beyond the theorem assumptions. We test with n = 25 nodes, ER graph with 20% link probability, non-smooth penalty (11) with mi = 10, Mi = 110, σ = 3, D = 1000 MW, 
+
+di = 40, μ = 0 .8, ητ = 0 .15, ρ = 0 .0312, and symmetric delays with bounds ¯τ = 2 , 5, 10 , 16. No theorem step-size bound is reported for this stress test. It uses the nonsmooth hinge penalty and μ = 0 .8 > 1/√3, so Assumption 1 and condi-tion (48) fail regardless of the chosen ητ . The earlier partial check of only eβ1
+
+and eβ3 was therefore invalid and has been removed. 32 0 2000 4000 6000 iteration k                       
+
+> 10 1
+> 10 0
+> 10 1
+> 10 2
+> F(z(k))  F(z )
+> certified = 0.09
+> certified = 0
+> 02000 4000 6000 iteration k
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 10 4
+> average  + w 2 + H observed running average finite-Ntheorem bound
+> 02000 4000 6000 iteration k
+> 10 16
+> 10 15
+> 10 14
+> 10 13
+> 10 12
+> 10 11
+> |1Tz(k) D|
+> = 0.09
+> = 0
+> Retuned theorem certificate: = 0.0095, = 0.09, = 2, = 10 4
+
+Figure 8: Retuned theorem-certified delayed experiment. Left: composite-cost gaps for the certified μ = 0 .09 dynamics and a separately verified μ = 0 baseline. Center: running average of Φ + ∥w∥2 + H and its finite-N bound [ V(0) /N + ερ]/ min i eβi. Right: equality-feasibility errors; their gradual increase remains at floating-point scale and reflects accu-mulated roundoff in algebraically cancelling updates, not loss of the conservation invariant. Parameters and coefficients are in Table 3. 
+
+Interpretation of the delayed experiments. For the representative ¯ τ = 10 run, anytime equality feasibility (Lemma 9) is illustrated by the constant weighted average in the top-right panel of Fig. 10; the lemma establishes the conservation identity for every reported paired symmetric-delay bound. These curves are only an empirical robustness study beyond the theorem assumptions. Convergence for ¯ τ ∈ { 2, 5, 10 } and divergence for ¯ τ = 16 are observations, not evidence that the sufficient theorem boundary has been crossed by a certified amount. 
+
+5.8. Nonquadratic Smooth Costs 
+
+To illustrate that the method is not limited to quadratic costs, we test smooth strongly convex original local objectives of the form 
+
+f 0
+
+i (zi) = aiz2
+
+i + ci log(1 + ezi ) + bizi, ai > 0, c i ≥ 0.
+
+The unpenalized Hessian satisfies 2ai ≤ ∂2
+
+zi f 0
+
+i (zi) = 2 ai + ci
+
+ezi
+
+(1 + ezi )2 ≤ 2ai + ci
+
+4 ,
+
+so v = min i ai = 0.03 and the unpenalized upper constant is at most 
+
+u0 = max i(ai + ci/8) = 0 .1025. The dynamics, however, use the compos-ite objective bfi = f 0
+
+i + f σi . With Mi − mi = 100, ( σ, κ ) = (2 , 2), and (13), a valid global composite constant is 
+
+u ≤ u0 + σκ 
+
+8 + σκ 
+
+2 e−κ(Mi−mi)/2< 0.61 .
+
+33 0.005 0.010 0.015 0.020 0.025 step size      
+
+> 0.000 0.025 0.050 0.075 0.100 0.125 0.150 0.175 momentum
+> Sufficient region: 1,2,3> 0
+> reported certificate Figure 9: Sufficient ( ητ, μ ) region for the fixed auxiliary parameters in Table 3; the red point is the reported certificate.
+
+We use n = 40 nodes with parameters drawn from the ranges ai ∈ [0 .03 , 0.04], 
+
+ci ∈ [0 , 0.5], bi ∈ [2 , 4], the smooth penalty (12) with mi = 10, Mi = 110, 
+
+σ = 2, κ = 2, D = 2000 MW, η = 0 .04, ρ = 0 .0078, and μ = 0 .5. Fig. 11 shows that the μ = 0 .5 run reaches the common residual floor sooner than the μ = 0 run. This is evidence only of an empirical transient benefit beyond the quadratic benchmark. 
+
+5.9. Discussion and Limitations 
+
+Only Section 5.6 is claimed as a direct numerical certificate for Theorem 1; it reports all constants, satisfies the invariant-sublevel test, and compares cer-tified μ = 0 .09 and μ = 0 cases. The other figures are empirical sensitivity, comparison, or stress studies. They illustrate equality conservation, tran-sient acceleration, the signed generator-battery mechanism, and the effect of quantization, but their high momentum values, switching graphs, or nons-mooth penalties place them outside one or more sufficient assumptions. The complete graph and very small ρ = 10 −4 were chosen to keep the certifi-cate transparent and tractable; this example does not demonstrate a sparse certified network or coarse quantization. Certification on sparse graphs is more conservative because AF grows as λ2 decreases. The certificate itself uses generator nodes only, so B = I, but Section 5.3 now supplies a separate fixed sparse experiment with 12 generators and 8 batteries that directly exer-cises B = diag(+1 , −1) and verifies signed equality conservation numerically. Extending the fully certified benchmark to a mixed signed sparse instance 34 Figure 10: Delayed stress test ( n = 25, ητ = 0 .15). Top-left: cost residuals for ¯ τ ∈{2, 5, 10 , 16 }. Top-right: allocation states for ¯ τ = 10, with constant weighted average. Bottom: momentum variables for ¯ τ = 10. The nonsmooth penalty and μ = 0 .8 place these runs outside Theorem 1. 
+
+remains future work. The theorem therefore supplies a guaranteed but con-servative robust region: the empirical studies tolerate coarser quantization, larger momentum, larger step sizes, and switching or sparse graphs, but those observations are not promoted to guarantees. This separation avoids using successful simulations as a substitute for the theorem conditions. 
+
+6. Concluding Remarks and Future Directions 
+
+This paper establishes exact per-iteration conservation of the coupling equality for a distributed signed-gradient method operating jointly with paired delays, fixed logarithmic quantization, and heavy-ball momentum. The asso-ciated discrete-time quantizer-plus-delay recursion is a hybrid system whose continuous states are driven by discrete quantizer-cell and delay selections. 35 Figure 11: Cost residual for nonquadratic smooth strongly convex costs with μ = 0 (dashed) and μ = 0 .5 (solid). In this empirical run, momentum improves the transient and both curves approach the same residual floor. 
+
+Its self-contained Lyapunov-Krasovskii practical-stability theorem applies on a static connected graph under bounded symmetric delays. The proof explicitly separates smooth delayed-gradient variation from discontinuous quantization error, treating the latter as an additive disturbance inside the Krasovskii functional, and uses an invariant-sublevel certificate rather than an assumed compact orbit. Equality feasibility is preserved at every iter-ation; finite smooth penalties, however, do not guarantee per-iterate box feasibility. Quantized equilibria within the certified sublevel have an explicit 
+
+O(ρ2) gap relative to the smooth penalized optimizer, and exact conver-gence to that optimizer is recovered for ρ = 0. Proposition 2 gives an exact momentum-acceleration characterization for the quadratic baseline; the fixed sparse-graph experiment confirms its modal recurrence and asymptotic rate, and the mixed generator-battery experiment directly exercises the signed dynamics. These conservation and discontinuous-disturbance arguments are the main reusable contributions beyond the particular DERMS instance. Several directions remain for future work: 
+
+Optimal momentum selection. The admissible ( ητ , μ ) region defined by conditions (47)-(49) is sufficient but likely conservative. The quadratic delay-free optimum is given by (21); identifying μ∗(ητ , ¯τ , ρ ) for nonlinear delayed quantized dynamics remains open. 
+
+Asymmetric delays. Anytime feasibility is proved under symmetric delays (τij = τji ). Extending to fully asymmetric delays via pairwise exchange buffers or conservation mechanisms is an important open problem. 36 Uniform connectivity. The practical-stability proof currently requires a static connected graph. A windowed Lyapunov argument and a delay model compatible with changing edges would be needed for B-connectivity. 
+
+Scalability and nonlinear costs. Systematic experiments on large-scale networks and nonlinear cost models would further validate practical applica-bility. 
+
+Directed graphs. The feasibility proof relies on undirected communication. Extending via push-sum or push-pull mechanisms [41, 42] while preserving anytime feasibility remains open. 
+
+References 
+
+[1] L. Strezoski, Distributed energy resource management systems-DERMS: State of the art and how to move forward, Wiley Interdisciplinary Re-views: Energy and Environment 12 (1) (2023) e460. [2] C. Iweh, S. Gyamfi, E. Tanyi, E. Effah-Donyina, Distributed generation and renewable energy integration into the grid: Prerequisites, push fac-tors, practical options, issues and merits, Energies 14 (17) (2021) 5375. [3] M. Doostmohammadian, A. Aghasi, M. Pirani, E. Nekouei, H. Zarrabi, R. Keypour, A. I. Rikos, K. H. Johansson, Survey of distributed algo-rithms for resource allocation over multi-agent systems, Annual Reviews in Control 59 (2025) 100983. [4] D. P. Vidyarthi, B. K. Sarker, A. K. Tripathi, L. T. Yang, Scheduling in distributed computing systems: Analysis, design and models, Springer Science & Business Media, 2008. [5] M. Doostmohammadian, Z. R. Gabidullina, H. R. Rabiee, Machine learning and CPU (central processing unit) scheduling co-optimization over a network of computing centres, Engineering Applications of Arti-ficial Intelligence 163 (2026) 113018. [6] G. Mancino-Ball, Y. Xu, J. Chen, A decentralized primal-dual frame-work for non-convex smooth consensus optimization, IEEE Transactions on Signal Processing 71 (2023) 525–538. [7] F. Garin, L. Schenato, A survey on distributed estimation and control applications using linear consensus algorithms, in: Networked control systems, Springer, 2010, pp. 75–107. 37 [8] Y. Jiang, B. Niu, G. Zong, X. Zhao, P. Zhao, Distributed adaptive secure consensus tracking control for asynchronous switching nonlinear MASs under sensor attacks and actuator faults, IEEE Transactions on Automation Science and Engineering 21 (3) (2023) 3253–3263. [9] M. Zholbaryssov, C. N. Hadjicostis, A. D. Dominguez-Garcia, Privacy-preserving distributed coordination of distributed energy resources, in: 59th IEEE Conference on Decision and Control (CDC), IEEE, 2020, pp. 4689–4696. [10] G. Zhang, S. Zhang, W. Zhang, Z. Shen, L. Wang, Distributed energy management for multiple data centers with renewable resources and en-ergy storages, IEEE Transactions on Cloud Computing 10 (4) (2020) 2469–2480. [11] Q. Li, Y. Liao, K. Wu, L. Zhang, J. Lin, M. Chen, J. M. Guerrero, D. Abbott, Parallel and distributed optimization method with constraint decomposition for energy management of microgrids, IEEE Transactions on Smart Grid 12 (6) (2021) 4627–4640. [12] D. Tahmasebi, M. Sheikh, M. Dabbaghjamanesh, T. Jin, A. Kavousi-Fard, M. Karimi, A security-preserving framework for sustainable dis-tributed energy transition: Case of smart city, Renewable Energy Focus 51 (2024) 100631. [13] T. Yang, X. Yi, J. Wu, Y. Yuan, D. Wu, Z. Meng, Y. Hong, H. Wang, Z. Lin, K. H. Johansson, A survey of distributed optimization, Annual Reviews in Control 47 (2019) 278–305. [14] A. Nedi´ c, J. Liu, Distributed optimization for control, Annual Review of Control, Robotics, and Autonomous Systems 1 (2018) 77–103. [15] N. Amjady, H. Nasiri-Rad, Economic dispatch using an efficient real-coded genetic algorithm, IET generation, transmission & distribution 3 (3) (2009) 266–278. [16] S. Kar, G. Hug, J. Mohammadi, J. Moura, Distributed state estimation and energy management in smart grids: A consensus + innovations approach, IEEE Journal of selected topics in signal processing 8 (6) (2014) 1022–1038. 38 [17] H. K. Nunna, S. Doolla, Multiagent-based distributed-energy-resource management for intelligent microgrids, IEEE Transactions on Industrial Electronics 60 (4) (2012) 1678–1687. [18] S. Kar, G. Hug, Distributed robust economic dispatch in power sys-tems: A consensus+ innovations approach, in: IEEE Power and Energy Society General Meeting, IEEE, 2012, pp. 1–8. [19] H. Golmohamadi, R. Keypour, B. Bak-Jensen, J. R. Pillai, A multi-agent based optimization of residential and industrial demand response aggregators, International Journal of Electrical Power & Energy Systems 107 (2019) 472–485. [20] G. Xu, Y. Zhang, J. Sun, G. Chen, C. Wu, Enable microgrid energy management: A graph based aggregative game approach, IEEE Trans-actions on Network Science and Engineering 11 (5) (2024) 5099–5113. [21] Q. Yang, H. Wang, T. Wang, S. Zhang, X. Wu, H. Wang, Blockchain-based decentralized energy management platform for residential dis-tributed energy resources in a virtual power plant, Applied Energy 294 (2021) 117026. [22] N. Mostafa, H. S. M. Ramadan, O. Elfarouk, Renewable energy manage-ment in smart grids by using big data analytics and machine learning, Machine Learning with Applications 9 (2022) 100363. [23] R. P. Kumar, G. Karthikeyan, A multi-objective optimization solution for distributed generation energy management in microgrids with hybrid energy sources and battery storage system, Journal of Energy Storage 75 (2024) 109702. [24] M. Doostmohammadian, Distributed energy resource management: All-time resource-demand feasibility, delay-tolerance, nonlinearity, and be-yond, IEEE Control Systems Letters 7 (2023) 3423–3428. [25] A. Cherukuri, J. Cortes, Distributed generator coordination for initial-ization and anytime optimization in economic dispatch, IEEE Transac-tions on Control of Network Systems 2 (3) (2015) 226–237. 39 [26] A. Cherukuri, J. Cortes, Initialization-free distributed coordination for economic dispatch under varying loads and generator commitment, Au-tomatica 74 (2016) 183–193. [27] M. Lian, Z. Guo, S. Wen, T. Huang, Distributed adaptive algorithm for resource allocation problem over weight-unbalanced graphs, IEEE Transactions on Network Science and Engineering 11 (1) (2023) 416– 426. [28] S. Zhu, T. Ding, C. Chen, M. Chow, X. Guan, DEED-ADMM: A scal-able distributed algorithm for economic dispatch in multi-energy sys-tems with energy storage, IEEE Transactions on Automation Science and Engineering 22 (2025) 11431–11443. [29] L. Sun, D. Ding, H. Dong, X. Yi, Distributed economic dispatch of mi-crogrids based on ADMM algorithms with encryption-decryption rules, IEEE Transactions on Automation Science and Engineering 22 (2025) 8427–8438. [30] G. Liu, T. B. Ollis, M. F. Ferrari, A. Sundararajan, Y. Chen, Dis-tributed energy management for networked microgrids embedded mod-ern distribution system using ADMM algorithm, IEEE Access 11 (2023) 102589–102604. [31] B. Han, Y. Zahraoui, M. Mubin, S. Mekhilef, T. Korotko, O. Alsham-mari, Distributed optimal storage strategy in the ADMM-based peer-to-peer energy trading considering degradation cost, Journal of Energy Storage 96 (2024) 112651. [32] M. Doostmohammadian, H. R. Rabiee, Distributed automatic genera-tion control subject to ramp-rate-limits: Anytime feasibility and uniform network-connectivity, Digital Signal Processing 168 (2026) 105576. [33] C. Bai, Q. Li, W. Zhou, B. Li, X. Yin, Y. Tan, Weighted matrix based distributed optimization method for economic dispatch of microgrids via multi-step gradient descent, Energy Reports 8 (2022) 177–187. [34] A. A. Saric, U. A. Khan, A. M. Stankovic, A distributed knowledge method for multi-agent power flow analysis based on consensus algo-rithms, International Journal of Electrical Power & Energy Systems 162 (2024) 110212. 40 [35] R. Xin, U. A. Khan, Distributed heavy-ball: A generalization and accel-eration of first-order methods with gradient tracking, IEEE Transactions on Automatic Control 65 (6) (2019) 2627–2633. [36] Z. Jin, C. Ahn, J. Li, Momentum-based distributed continuous-time nonconvex optimization of nonlinear multi-agent systems via timescale separation, IEEE Transactions on Network Science and Engineering 10 (2) (2022) 980–989. [37] L. Zheng, H. Li, J. Li, Z. Wang, Q. Lu, Y. Shi, H. Wang, T. Dong, L. Ji, D. Xia, A distributed nesterov-like gradient tracking algorithm for composite constrained optimization, IEEE Transactions on Signal and Information Processing over Networks 9 (2023) 60–73. [38] M. Doostmohammadian, A. Aghasi, Accelerated distributed allocation, IEEE Signal Processing Letters 31 (2024) 651–655. [39] L. Liu, G. Yang, Distributed fixed-time optimal resource management for microgrids, IEEE Transactions on Automation Science and Engi-neering 20 (1) (2023) 404–412. [40] L. Shan, K. Yamane, T. Ono, T. Kawamura, W. Wu, Z. Hu, Q. Wang, Y. Wen, Distributed energy resource management system with improved convergence, Applied Energy 371 (2024) 123566. [41] A. Nedi´ c, A. Olshevsky, Distributed optimization over time-varying di-rected graphs, IEEE Transactions on Automatic Control 60 (3) (2015) 601–615. [42] S. Pu, W. Shi, J. Xu, A. Nedi´ c, Push-pull gradient methods for dis-tributed optimization in networks, IEEE Transactions on Automatic Control 66 (1) (2021) 1–16. [43] N. Michelusi, G. Scutari, C. Lee, Finite-bit quantization for distributed algorithms with linear convergence, IEEE Transactions on Information Theory 68 (11) (2022) 7254–7280. [44] X. Shi, C. Sun, C. Mu, Distributed economic dispatch algorithm with quantized communication mechanism, IEEE Transactions on Automa-tion Science and Engineering 22 (2025) 8618–8629. 41 [45] O. A. Hanna, Y. H. Ezzeldin, C. Fragouli, S. Diggavi, Quantization of distributed data for learning, IEEE Journal on Selected Areas in Information Theory 2 (3) (2021) 987–1001. [46] M. Doostmohammadian, M. I. Qureshi, M. H. Khalesi, H. R. Rabiee, U. A. Khan, Log-scale quantization in distributed first-order methods: Gradient-based learning from distributed data, IEEE Transactions on Automation Science and Engineering 22 (2025) 10948–10959. [47] N. K. Kalantari, S. M. Ahadi, A logarithmic quantization index modu-lation for perceptually better data hiding, IEEE Transactions on Image Processing 19 (6) (2010) 1504–1517. [48] M. Doostmohammadian, S. Pequito, Logarithmically quantized dis-tributed optimization over dynamic multi-agent networks, IEEE Control Systems Letters 8 (2024) 2433–2438. [49] X. Shi, Y. Su, D. Huang, X. Lou, Distributed optimization algorithm for the economic dispatch problem over delayed communication network, IEEE Transactions on Signal and Information Processing over Networks 11 (2025) 1332–1343. [50] M. Li, J. Watson, I. Lestas, Distributed optimal secondary frequency control in power networks with delay-independent stability, IEEE Trans-actions on Automatic Control 69 (6) (2024) 3748–3763. [51] M. Mahmoodi, P. Shamsi, B. Fahimi, Economic dispatch of a hybrid microgrid with distributed energy storage, IEEE Transactions on Smart Grid 6 (6) (2015) 2607–2614. [52] D. P. Bertsekas, Necessary and sufficient conditions for a penalty method to be exact, Mathematical programming 9 (1) (1975) 87–99. [53] X. Wu, S. Magnusson, M. Johansson, A new family of feasible methods for distributed resource allocation, in: IEEE Conference on Decision and Control, 2021, pp. 3355–3360. [54] X. Shi, D. Huang, C. Sun, A distributed penalty-like function approach for the nonconvex constrained optimization problem, IEEE Signal Pro-cessing Letters 32 (2025) 1316–1320. 42 [55] B. T. Polyak, Some methods of speeding up the convergence of iteration methods, USSR Computational Mathematics and Mathematical Physics 4 (5) (1964) 1–17. [56] S. Boyd, L. Vandenberghe, Convex Optimization, Cambridge University Press, New York, NY, USA, 2004. [57] R. Olfati-Saber, J. A. Fax, R. M. Murray, Consensus and cooperation in networked multi-agent systems, IEEE Proceedings 95 (1) (2007) 215– 233. [58] M. I. Qureshi, U. A. Khan, Distributed saddle point problems for strongly concave-convex functions, IEEE Transactions on Signal and Information Processing over Networks 9 (2023) 679–690. [59] M. I. Qureshi, R. Xin, S. Kar, U. A. Khan, S-ADDOPT: Decentralized stochastic first-order optimization over directed graphs, IEEE Control Systems Letters 5 (3) (2020) 953–958. [60] J. Li, H. Su, Implicit tracking-based distributed constraint-coupled op-timization, IEEE Transactions on Control of Network Systems 10 (1) (2022) 479–490. [61] A. J. Wood, B. F. Wollenberg, G. B. Shebl´ e, Power generation, opera-tion, and control, John Wiley & Sons, 2013. [62] S. Yang, S. Tan, J. Xu, Consensus based approach for economic dispatch problem in a smart grid, IEEE Transactions on Power Systems 28 (4) (2013) 4416–4426. [63] A. I. Rikos, A. Grammenos, E. Kalyvianaki, C. N. Hadjicostis, T. Char-alambous, K. H. Johansson, Distributed optimization for quadratic cost functions with quantized communication and finite-time convergence, IEEE Transactions on Control of Network Systems 12 (1) (2025) 930– 942. [64] F. Guo, G. Li, C. Wen, L. Wang, Z. Meng, An accelerated distributed gradient-based algorithm for constrained optimization with application to economic dispatch in a large-scale power system, IEEE Transactions on Systems, Man, and Cybernetics: Systems 51 (4) (2019) 2041–2053. 43 [65] M. Doostmohammadian, Single-bit consensus with finite-time conver-gence: Theory and applications, IEEE Transactions on Aerospace and Electronic Systems 56 (4) (2020) 3332–3338. 44

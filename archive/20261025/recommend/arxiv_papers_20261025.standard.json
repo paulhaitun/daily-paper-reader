@@ -1,0 +1,826 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-25T21:20:05.064236+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 30,
+    "deep_cap": 7,
+    "deep_selected": 7,
+    "quick_candidates": 33,
+    "quick_skim_target": 12,
+    "quick_selected": 12
+  },
+  "deep_dive": [
+    {
+      "id": "2610.25376v1",
+      "source": "arxiv",
+      "title": "TILDE: Teacher-in-the-Loop Distillation from Embodied Foundation Models",
+      "abstract": "Large-scale action pretraining equips Embodied Foundation Models (EFMs) with strong manipulation capabilities, with particular strengths in generalization and closed-loop robustness, but reproducing such pretraining requires substantial robot data and computation. To transfer these capabilities from pretrained EFMs to policies without action pretraining, we introduce TILDE (Teacher-In-the-Loop Distillation from EFMs), which synergizes on-policy distillation at student-induced states with learning from teacher-executed recovery trajectories. We further propose AutoDAgger, an autonomous data aggregation pipeline in which a robotic reward model is utilized to monitor task progress and trigger teacher intervention, thereby collecting recovery experience without human monitoring or manual control. AutoDAgger accelerates recovery-trajectory collection by more than $2\\times$ compared with the human-in-the-loop method. By unifying learning from demonstrations, on-policy teacher supervision, and teacher's corrective behavior, TILDE improves task performance by up to $4.1\\times$ over behavior cloning across three real-world tasks and supports effective cross-architecture distillation.",
+      "authors": [
+        "Yuxiang Lu",
+        "Yantong Liu",
+        "Jinghua Hou",
+        "Xueli Sun",
+        "Ruihua Han",
+        "Zhe Liu",
+        "Hengshuang Zhao"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "published": "2026-10-18T16:26:20+00:00",
+      "link": "https://arxiv.org/pdf/2610.25376v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "distillation from embodied foundation models for robot manipulation policies",
+      "llm_evidence_cn": "面向机器人操作策略的具身基础模型蒸馏",
+      "llm_evidence": "面向机器人操作策略的具身基础模型蒸馏",
+      "canonical_evidence": "面向机器人操作策略的具身基础模型蒸馏",
+      "llm_tldr_en": "Reproducing action-pretrained embodied foundation models is costly, so TILDE distills them into policies without action pretraining via on-policy distillation plus teacher recovery trajectories and an AutoDAgger data pipeline.",
+      "llm_tldr_cn": "大规模动作预训练赋予具身基础模型强操作能力，但复现该预训练需要大量机器人与算力。本文提出TILDE，在学生诱导状态进行在策略蒸馏，并结合教师执行的恢复轨迹学习；同时提出AutoDAgger，用机器人奖励模型监控任务进度并触发教师干预以自动采集恢复经验。实验表明该方法无需动作预训练即可把具身基础模型的泛化与闭环鲁棒性迁移到学生策略。",
+      "llm_tldr": "大规模动作预训练赋予具身基础模型强操作能力，但复现该预训练需要大量机器人与算力。本文提出TILDE，在学生诱导状态进行在策略蒸馏，并结合教师执行的恢复轨迹学习；同时提出AutoDAgger，用机器人奖励模型监控任务进度并触发教师干预以自动采集恢复经验。实验表明该方法无需动作预训练即可把具身基础模型的泛化与闭环鲁棒性迁移到学生策略。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find articles about embodied intelligence, embodied agents, and robot learning.",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.28514v1",
+      "source": "arxiv",
+      "title": "Diverse Schedules for Makespan Minimization on Unrelated Machines",
+      "abstract": "We study makespan minimization on unrelated machines with the additional goal of constructing diverse schedules: Instead of outputting a single schedule, we seek a collection of schedules with provable makespan guarantees and substantially different job assignments. Committing to a single schedule in advance may be undesirable. Processing times may be uncertain, and constraints or domain knowledge may emerge later, so $k$ schedules of similar quality offer meaningful alternatives. We measure pairwise diversity by the weighted Hamming distance between job assignments and study the two standard objectives in the diverse-solutions literature: max-sum diversity, which maximizes the total pairwise distance between schedules, and max-min diversity, which maximizes the smallest pairwise distance.   For the max-sum objective, we show that optimal diversity can be achieved in polynomial time without sacrificing the classic makespan approximation factor. For every feasible makespan target $T$, we can compute $k$ schedules of makespan at most $2T$ whose max-sum diversity is optimal among all $k$ schedules of makespan at most $T$. Therefore, we match the classic factor-$2$ makespan guarantee of Lenstra, Shmoys, and Tardos (Math. Prog., 1990) and preserve optimal diversity.   For the max-min objective, we show that the diversity problem is inherently harder. Namely, we show that, even without makespan constraints, deciding whether three schedules of given pairwise diversity exist is NP-hard. We complete this with two complementary bicriteria approximation algorithms for every fixed $k$ and $\\varepsilon \\in (0,1)$. The first preserves almost all of the optimal max-min diversity with makespan at most $(3\\lceil12/\\varepsilon\\rceil+1)T$. The second keeps the makespan arbitrarily close to the classic $2$ guarantee while achieving a $\\frac{1}{2}(1-\\varepsilon)$ fraction of the optimal max-min diversity.",
+      "authors": [
+        "Sebastian Bruchhold",
+        "Matthias Mnich",
+        "Karolina Tammemaa",
+        "Morten Weber",
+        "Michalis Xefteris",
+        "Bart Zondervan"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS"
+      ],
+      "published": "2026-10-20T16:53:42+00:00",
+      "link": "https://arxiv.org/pdf/2610.28514v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "diverse job schedules for makespan minimization on unrelated machines",
+      "llm_evidence_cn": "无关并行机上多样化作业调度与最大完工时间最小化",
+      "llm_evidence": "无关并行机上多样化作业调度与最大完工时间最小化",
+      "canonical_evidence": "无关并行机上多样化作业调度与最大完工时间最小化",
+      "llm_tldr_en": "Studies makespan minimization on unrelated machines while producing a collection of provably good yet substantially different schedules, with approximation guarantees for max-sum and max-min diversity.",
+      "llm_tldr_cn": "在无关并行机上最小化最大完工时间时，仅输出单一调度方案难以应对处理时间不确定与后续约束变化。作者研究多样化调度问题，以加权汉明距离度量作业分配差异，同时优化makespan并构造k个质量相近但差异显著的调度。论文针对最大和与最大最小两类多样性目标给出可证明的近似保证，为不确定性下的作业调度提供了备选方案集。",
+      "llm_tldr": "在无关并行机上最小化最大完工时间时，仅输出单一调度方案难以应对处理时间不确定与后续约束变化。作者研究多样化调度问题，以加权汉明距离度量作业分配差异，同时优化makespan并构造k个质量相近但差异显著的调度。论文针对最大和与最大最小两类多样性目标给出可证明的近似保证，为不确定性下的作业调度提供了备选方案集。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "job scheduling algorithms and optimization methods",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.29337v1",
+      "source": "arxiv",
+      "title": "Workflow-Aware Communication and Computation Scheduling for Mobile Edge AI Agents",
+      "abstract": "AI agents are increasingly deployed in mobile edge environments to autonomously handle diverse tasks through multi-step workflows. Unlike conventional dependency-aware tasks with predefined dependency structures, agent workflows are dynamically generated based on intermediate execution results. To minimize the weighted sum of job completion latencies, this paper models partially revealed agent workflows using dynamic workflow graphs and formulates an online scheduling problem that jointly optimizes computation placement, wireless resource block allocation, and edge computing resource allocation. To address the uncertainty of future workflow evolution, we first transform the weighted completion time objective into an equivalent per-slot holding cost and characterize the optimal policy through a Bellman equation. We then construct a tractable look-ahead cost-to-go surrogate based on the revealed workflow and the estimated remaining latencies of active jobs. The proposed scheduling algorithm leverages the surrogate to determine computation placement and uses the resulting operation criticality to allocate wireless and edge computing resources online. Simulation results show that the proposed algorithm outperforms the benchmark schemes across diverse scenarios.",
+      "authors": [
+        "Xingqiu He",
+        "Chaoqun You",
+        "Feng Wang",
+        "Zihan Chen",
+        "Shuai Wang",
+        "Jihong Park"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-10-21T07:34:58+00:00",
+      "link": "https://arxiv.org/pdf/2610.29337v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "online scheduling of computation placement and edge resource allocation for agent workflows",
+      "llm_evidence_cn": "面向智能体工作流的计算放置与边缘资源在线调度",
+      "llm_evidence": "面向智能体工作流的计算放置与边缘资源在线调度",
+      "canonical_evidence": "面向智能体工作流的计算放置与边缘资源在线调度",
+      "llm_tldr_en": "Models partially revealed agent workflows as dynamic graphs and formulates an online scheduling problem jointly optimizing computation placement, wireless resource blocks, and edge computing allocation to minimize weighted job completion latency.",
+      "llm_tldr_cn": "移动边缘环境中的AI智能体以多步工作流执行任务，其依赖结构随中间结果动态生成，传统静态依赖调度难以适用。作者用动态工作流图刻画部分可观测的智能体工作流，并将加权完成时延目标转化为等价的逐时隙问题，构建在线调度模型联合优化计算放置、无线资源块与边缘算力分配。该工作面向计算与通信资源的联合调度。其为实时分布式系统中的动态任务调度提供了可用在线方法。",
+      "llm_tldr": "移动边缘环境中的AI智能体以多步工作流执行任务，其依赖结构随中间结果动态生成，传统静态依赖调度难以适用。作者用动态工作流图刻画部分可观测的智能体工作流，并将加权完成时延目标转化为等价的逐时隙问题，构建在线调度模型联合优化计算放置、无线资源块与边缘算力分配。该工作面向计算与通信资源的联合调度。其为实时分布式系统中的动态任务调度提供了可用在线方法。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.25874v1",
+      "source": "arxiv",
+      "title": "Vision-Language-Delta-Action: Learning Compact Deltas as Actionable Transition Interfaces for Robotic Manipulation",
+      "abstract": "Robotic manipulation is not merely observation-to-action generation, but the realization of task-specified state changes in the physical world. Existing vision-language-action (VLA) methods directly learn observation-to-action mappings, imposing a substantial learning burden due to the gap between semantic understanding and action execution. Although world-action models (WAMs) improve control through future prediction, modeling complete future states wastes capacity on static appearance and action-irrelevant changes. We propose Vision-Language-Delta-Action (VLDA), a paradigm that reformulates full future prediction as compact actionable transition modeling. Its core is a compact Delta variable that captures latent world-state changes, serving as an interface between vision-language understanding and action generation. VLDA learns Delta through a unified objective composed of the Local Transition Filter (LT-Filter) and Global Transition Anchor (GT-Anchor). LT-Filter captures task-relevant manipulation-centric changes while suppressing static reconstruction biases. GT-Anchor provides coarse future-level regularization to preserve the overall direction of state changes. Delta-Driven Action Refinement (DDAR) further grounds Delta in the action manifold and injects it as a structured seed to guide action denoising. We implement VLDA within LoongForge, an open-source training framework for large-scale foundation and embodied models, using its modular and distributed infrastructure for unified two-stage optimization. Experiments show that VLDA improves long-horizon consistency, robustness, and generalization, validating actionable Delta as an alternative to direct action prediction and full future-state modeling.",
+      "authors": [
+        "Lingsen Zhang",
+        "Wei Li",
+        "Jie He",
+        "Henghua Zhang",
+        "Kai Mo",
+        "Shiyong Li",
+        "Yanpeng Wang",
+        "Rui Shao"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-10-19T06:35:26+00:00",
+      "link": "https://arxiv.org/pdf/2610.25874v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "world-action models with compact future-state deltas for manipulation",
+      "llm_evidence_cn": "以紧凑状态增量进行未来预测的世界-动作模型",
+      "llm_evidence": "以紧凑状态增量进行未来预测的世界-动作模型",
+      "canonical_evidence": "以紧凑状态增量进行未来预测的世界-动作模型",
+      "llm_tldr_en": "Reformulates full future-state prediction in vision-language-action models as compact actionable transition modeling via a Delta variable, reducing learning burden and improving robotic manipulation control.",
+      "llm_tldr_cn": "机器人操作的目标是实现任务指定的物理状态变化，而现有视觉-语言-动作方法直接学习观测到动作的映射，语义理解与动作执行之间的鸿沟带来沉重学习负担。作者提出VLDA范式，把完整的未来预测改写为紧凑的可操作状态转移建模，用增量变量刻画任务相关的关键变化。该设计减少了在静态外观与无关变化上的建模开销，从而提升控制效果。其贡献在于为具身智能体的世界模型与动作生成提供更高效的接口。",
+      "llm_tldr": "机器人操作的目标是实现任务指定的物理状态变化，而现有视觉-语言-动作方法直接学习观测到动作的映射，语义理解与动作执行之间的鸿沟带来沉重学习负担。作者提出VLDA范式，把完整的未来预测改写为紧凑的可操作状态转移建模，用增量变量刻画任务相关的关键变化。该设计减少了在静态外观与无关变化上的建模开销，从而提升控制效果。其贡献在于为具身智能体的世界模型与动作生成提供更高效的接口。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on world models that support embodied prediction, planning, and decision making",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.26577v1",
+      "source": "arxiv",
+      "title": "SafeWall: A Risk-Aware Job Walltime Recommendation for HPC Scheduling",
+      "abstract": "In high-performance computing (HPC), users must submit resource requirements for their jobs, with user-supplied walltime being a critical parameter. However, these estimates are notoriously inaccurate, as users tend to overestimate walltime to prevent the scheduler from terminating their jobs prematurely. While existing work on learning-based walltime prediction primarily focuses on maximizing prediction accuracy, such predictions are inherently risky for walltime recommendations. Specifically, underestimation leads to job termination before completion, resulting in lost progress and wasted resources. In this study, we present SafeWall, a novel recommendation method that adjusts walltime predictions by incorporating an explicit, nonnegative safety buffer to mitigate underestimation risk. The core of our approach is a risk-aware buffer that dynamically calibrates safety margins based on individual user's historical behavior. When user data is limited, the system employs statistical shrinkage to align these margins with a global baseline, ensuring robustness. This yields a lightweight mechanism that optimizes the trade-off between prediction accuracy and termination risk. SafeWall is modular and applicable to various learning-based prediction models. We evaluate SafeWall using five public workload traces, including the full-lifetime job log from the 4,392-node Theta machine at the Argonne Leadership Computing Facility. Across all traces, SafeWall substantially reduces underestimation risk compared to the unbuffered base predictors, while preserving competitive accuracy. The source code is publicly available at https://github.com/SPEAR-UIC/JSSPP26-SafeWall.",
+      "authors": [
+        "Kanglin Xu",
+        "Michael Papka",
+        "Zhiling Lan"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-10-19T15:27:28+00:00",
+      "link": "https://arxiv.org/pdf/2610.26577v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "risk-aware job walltime recommendation for HPC scheduling",
+      "llm_evidence_cn": "面向高性能计算调度的风险感知作业时长推荐",
+      "llm_evidence": "面向高性能计算调度的风险感知作业时长推荐",
+      "canonical_evidence": "面向高性能计算调度的风险感知作业时长推荐",
+      "llm_tldr_en": "Presents SafeWall, which adjusts learned HPC job walltime predictions with an explicit nonnegative safety buffer to avoid costly underestimation, improving job scheduling reliability.",
+      "llm_tldr_cn": "高性能计算中用户需提交作业运行时长，但估计普遍不准且倾向高估，而基于学习的预测若低估会导致作业被提前终止、浪费资源。作者提出SafeWall推荐方法，在预测值上加入显式非负安全缓冲，把预测准确性问题转化为风险控制问题。该方法在保证安全的同时减少保守估计带来的资源浪费。其贡献在于为作业调度提供风险感知的时长推荐机制。",
+      "llm_tldr": "高性能计算中用户需提交作业运行时长，但估计普遍不准且倾向高估，而基于学习的预测若低估会导致作业被提前终止、浪费资源。作者提出SafeWall推荐方法，在预测值上加入显式非负安全缓冲，把预测准确性问题转化为风险控制问题。该方法在保证安全的同时减少保守估计带来的资源浪费。其贡献在于为作业调度提供风险感知的时长推荐机制。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "job scheduling algorithms and optimization methods",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.06006v1",
+      "source": "arxiv",
+      "title": "Learning While Scheduling Jobs under Context-Dependent Service Rates: An Anytime Rate-Optimal Algorithm",
+      "abstract": "We study contextual queueing bandits, where a learner schedules jobs while learning unknown service rates modeled by logistic functions of job-server features. Performance is measured by queue length regret, the expected excess queue length at round $t$ relative to an oracle that knows the service rates. Existing decaying-regret guarantees either have a suboptimal decay rate or require a known fixed horizon. They also assume context-wise slack and a strictly positive minimum eigenvalue of the feature covariance. In this paper, we propose WISE (Widest Interval Selection with Elimination), achieving rate-optimal $\\widetilde{\\mathcal O}(t^{-1/2})$ queue length regret at every sufficiently large time without knowing the horizon. We assume capacity slack, meaning that expected incoming workload under best-server service is below service capacity, and impose no covariance lower bound. Our analysis uses a workload potential measuring the expected service attempts needed by waiting jobs on their best servers. Its drift on nonempty rounds combines a negative term ensured by capacity slack with errors from suboptimal service choices. Then an elliptical potential count bounds how often WISE selects wide confidence intervals, thereby limiting the number of rounds with large service errors. We also sharpen the arrival-rate dependence of an existing lower bound and make its dependence on feature dimension and server count explicit. We prove another lower bound that quantifies the increase in regret as the normalized capacity slack decreases; to our knowledge, this is the first such lower bound for CQB. Simulations show small regret even when context-wise slack fails.",
+      "authors": [
+        "Seoungbin Bae",
+        "Dabeen Lee"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-05T09:02:51+00:00",
+      "link": "https://arxiv.org/pdf/2610.06006v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "online job scheduling with learning of context-dependent service rates",
+      "llm_evidence_cn": "在调度作业的同时学习上下文相关服务速率",
+      "llm_evidence": "在调度作业的同时学习上下文相关服务速率",
+      "canonical_evidence": "在调度作业的同时学习上下文相关服务速率",
+      "llm_tldr_en": "Contextual queueing bandits require scheduling jobs while learning unknown service rates from features. This paper proposes WISE, achieving rate-optimal queue-length regret at every sufficiently large time without knowing the horizon.",
+      "llm_tldr_cn": "在上下文排队bandit中，学习器需在调度作业的同时学习由特征逻辑函数刻画的服务速率，而现有递减遗憾保证要么速率次优，要么需要已知固定时间范围。本文提出WISE算法，采用最宽区间选择与淘汰机制。该算法在无需已知时间范围的情况下，于任意足够大的时刻达到速率最优的队列长度遗憾。结果放宽了此前对上下文松弛与特征协方差正定的假设，提升了在线调度学习的实用性。",
+      "llm_tldr": "在上下文排队bandit中，学习器需在调度作业的同时学习由特征逻辑函数刻画的服务速率，而现有递减遗憾保证要么速率次优，要么需要已知固定时间范围。本文提出WISE算法，采用最宽区间选择与淘汰机制。该算法在无需已知时间范围的情况下，于任意足够大的时刻达到速率最优的队列长度遗憾。结果放宽了此前对上下文松弛与特征协方差正定的假设，提升了在线调度学习的实用性。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "job scheduling algorithms and optimization methods",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.06006v1"
+    },
+    {
+      "id": "2610.06212v1",
+      "source": "arxiv",
+      "title": "Serve Now or Improve Later? Scheduling Self-Evolution in Online Agent Systems",
+      "abstract": "Online agents can improve future service by constructing reusable tools, guidance, or model states, but this work competes with current requests for the same GPUs. Exploiting idle compute for self-evolution faces a fundamental systems constraint: benefits arrive only after an artifact is published and used, while pausing evolution leaves service capacity waiting for memory release and runtime recovery. An investment worth completing may therefore be worth postponing. We present LearnSched, a state-aware scheduler that brings the reuse window of a capability and the timely return of compute into a common investment model. LearnSched incorporates candidate progress, checkpoint overhead, and the current recovery path into action values. Under the same information and capacity constraints, it uses one-step counterfactual rollout to choose progress, checkpointing, or waiting relative to a fully costed window policy. We characterize handoff costs through independent A100 component measurements and evaluate action selection in 1920 paired finite-model scenarios. When cold recovery is expensive, waiting for longer execution windows can improve net value by avoiding handoffs; in evaluated warm-recovery scenarios, the strong window policy already achieves the same value. Retaining recoverable state can shorten capacity return and reduce the need for complex evolution scheduling.",
+      "authors": [
+        "Yangbo Wei",
+        "Junhong Qian",
+        "Zhen Huang",
+        "Zhenyu Su",
+        "Qifan Wang",
+        "Shaoqiang Lu",
+        "Rumin Zhang",
+        "Chen Wu",
+        "Lei He"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-10-05T12:22:40+00:00",
+      "link": "https://arxiv.org/pdf/2610.06212v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "State-aware scheduler for compute allocation in online agent systems",
+      "llm_evidence_cn": "在线智能体系统中算力分配的状态感知调度器",
+      "llm_evidence": "在线智能体系统中算力分配的状态感知调度器",
+      "canonical_evidence": "在线智能体系统中算力分配的状态感知调度器",
+      "llm_tldr_en": "Presents LearnSched, a state-aware scheduler that treats self-evolution of online agents as an investment and balances reuse windows against timely return of GPU compute.",
+      "llm_tldr_cn": "针对在线智能体可利用空闲GPU自进化以提升未来服务、但自进化与当前请求争用算力且收益滞后的问题，论文提出LearnSched状态感知调度器。该方法将能力复用窗口与算力及时回收纳入统一投资模型，并把候选进度、检查点开销和恢复路径纳入动作价值。调度器在服务当前请求与投入自进化之间进行权衡，决定何时服务、何时改进。工作将自进化视为可调度投资，为在线智能体系统的算力资源分配提供了系统化框架。",
+      "llm_tldr": "针对在线智能体可利用空闲GPU自进化以提升未来服务、但自进化与当前请求争用算力且收益滞后的问题，论文提出LearnSched状态感知调度器。该方法将能力复用窗口与算力及时回收纳入统一投资模型，并把候选进度、检查点开销和恢复路径纳入动作价值。调度器在服务当前请求与投入自进化之间进行权衡，决定何时服务、何时改进。工作将自进化视为可调度投资，为在线智能体系统的算力资源分配提供了系统化框架。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.06212v1"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2610.06306v1",
+      "source": "arxiv",
+      "title": "Inspect Robots: Evaluating the Capabilities and Safety of Embodied AI",
+      "abstract": "General purpose language models are increasingly able to control robotic hardware. Understanding the capabilities and safety of these models when embodied is therefore increasingly important for understanding their societal impact and risks. To this end, we introduce Inspect Robots, a modular, open-source framework for developing and running evaluations of embodied agents. Inspect Robots pairs customizable, reusable abstractions for specifying physical evaluations and analyzing their results with infrastructure that automates evaluation setup, execution and termination. We demonstrate Inspect Robots by using it to evaluate the capabilities and safety of six policies based on frontier language models. Inspect Robots has seen significant early uptake, receiving nearly 100,000 downloads in the three months since its release.",
+      "authors": [
+        "Christopher Leet",
+        "Achu Menon",
+        "Sravanthi Machcha",
+        "Sabrina Zou",
+        "Aayushya Patel",
+        "Aditya Kumar Singh",
+        "Anish Kr Singh",
+        "Galaba Vamsi",
+        "Javin Ahuja",
+        "Sai Asish Yamani",
+        "Tushar Anand",
+        "Vedang Alle",
+        "Zihan Jack Zhang",
+        "Tzu Kit Chan",
+        "Jay Chooi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-05T13:29:24+00:00",
+      "link": "https://arxiv.org/pdf/2610.06306v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Open-source framework for evaluating embodied AI capabilities and safety",
+      "llm_evidence_cn": "评估具身人工智能能力与安全性的开源框架",
+      "llm_evidence": "评估具身人工智能能力与安全性的开源框架",
+      "canonical_evidence": "评估具身人工智能能力与安全性的开源框架",
+      "llm_tldr_en": "Introduces Inspect Robots, a modular open-source framework for evaluating embodied agents, and demonstrates it on six language-model policies to assess capabilities and safety.",
+      "llm_tldr_cn": "针对通用语言模型开始控制机器人硬件后其具身能力与安全风险难以系统评估的问题，论文提出Inspect Robots模块化开源框架，提供可复用的物理评估抽象和自动化执行基础设施。该框架支持指定评估任务、自动运行与终止，并分析具身智能体的能力与安全表现。作者用其评测六个基于前沿语言模型的策略，验证了框架的可用性并获得早期采用。工作为具身智能体的标准化能力与安全评测提供了工具基础。",
+      "llm_tldr": "针对通用语言模型开始控制机器人硬件后其具身能力与安全风险难以系统评估的问题，论文提出Inspect Robots模块化开源框架，提供可复用的物理评估抽象和自动化执行基础设施。该框架支持指定评估任务、自动运行与终止，并分析具身智能体的能力与安全表现。作者用其评测六个基于前沿语言模型的策略，验证了框架的可用性并获得早期采用。工作为具身智能体的标准化能力与安全评测提供了工具基础。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find articles about embodied intelligence, embodied agents, and robot learning.",
+      "matched_requirement_id": "req-9",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.06306v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.26160v1",
+      "source": "arxiv",
+      "title": "Holistic Buoyancy-Driven Cloud Native Resource Management",
+      "abstract": "Efficient resource management is a challenge in multi-tenant cloud environments as workloads compete for shared resources such as last-level cache and memory bandwidth, whose congestion can change dynamically as workload composition and resource demands evolve. Existing resource management approaches often rely on static resource requirements or prior workload profiling, limiting their ability to respond to changing resource contention as required in the cloud. In this paper, we leverage workload buoyancy, a runtime framework for capturing workload sensitivity to individual resources and application-level performance, to enable adaptive scheduling and resource management. We propose a holistic approach that incorporates buoyancy into workload scheduling, node-local resource allocation, and workload rescheduling throughout the workload lifecycle. We implement our approach as a Kubernetes-native prototype and evaluate it on a multi-node cluster using diverse cloud workloads under varying levels of resource contention. In a high-congestion scenario, our approach increases the percentage of workloads satisfying their SLOs from 7.74% to 87.8% on average compared with the Kubernetes baseline, while reducing resource congestion, the severity of SLO violations, and cluster fragmentation using limited rescheduling.",
+      "authors": [
+        "Oliver Larsson",
+        "Thijs Metsch",
+        "Cristian Klein",
+        "Erik Elmroth"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-10-19T10:50:49+00:00",
+      "link": "https://arxiv.org/pdf/2610.26160v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "adaptive workload scheduling and resource management in multi-tenant cloud",
+      "llm_evidence_cn": "多租户云环境中的自适应工作负载调度与资源管理",
+      "llm_evidence": "多租户云环境中的自适应工作负载调度与资源管理",
+      "canonical_evidence": "多租户云环境中的自适应工作负载调度与资源管理",
+      "llm_tldr_en": "Addresses dynamic resource contention in multi-tenant clouds by using runtime workload buoyancy to drive adaptive scheduling and node-local resource management instead of static profiling.",
+      "llm_tldr_cn": "多租户云中工作负载竞争末级缓存与内存带宽等共享资源，且拥塞随负载构成动态变化，静态资源需求与预分析难以应对。作者利用运行时浮力框架刻画工作负载对各类资源与应用性能的敏感度，将浮力纳入工作负载调度与节点内资源管理，形成整体自适应方案。该工作提升了云环境对动态资源竞争的响应能力。",
+      "llm_tldr": "多租户云中工作负载竞争末级缓存与内存带宽等共享资源，且拥塞随负载构成动态变化，静态资源需求与预分析难以应对。作者利用运行时浮力框架刻画工作负载对各类资源与应用性能的敏感度，将浮力纳入工作负载调度与节点内资源管理，形成整体自适应方案。该工作提升了云环境对动态资源竞争的响应能力。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.24421v1",
+      "source": "arxiv",
+      "title": "Adding Heavy-Ball Momentum to Distributed Constrained Optimization for Energy Resource Management Subject to Time-Delays and Quantization",
+      "abstract": "This paper studies a hybrid discrete-time signed gradient-consensus method with heavy-ball momentum, paired communication delays, and fixed logarithmic quantization. The method preserves the aggregate supply-demand equality at every iteration. For a static connected undirected graph and bounded delays, a Lyapunov-Krasovskii analysis establishes practical stability by isolating the discontinuous quantization error as an additive disturbance and closing a computable invariant-sublevel argument. The resulting ergodic residual bound is quadratic in the quantization resolution, and exact convergence to the smooth penalized equality-constrained optimizer is recovered in the unquantized case. For delay-free unquantized quadratic costs, an exact modal analysis identifies the heavy-ball stability region and optimal parameters, with the predicted rate validated on a fixed sparse network. A reproducible delayed experiment reports all constants and a certificate whose guaranteed steady-state level lies below the reported initialization. A separate mixed generator-battery experiment exercises the signed update directly. Finite smooth penalties approximate, but do not generally enforce, the local box constraints exactly.",
+      "authors": [
+        "Mohammadreza Doostmohammadian",
+        "Sergio Pequito"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY",
+        "cs.DC",
+        "cs.MA",
+        "math.DS",
+        "math.OC"
+      ],
+      "published": "2026-10-17T03:37:32+00:00",
+      "link": "https://arxiv.org/pdf/2610.24421v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:ev-forecast"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "distributed constrained optimization for energy resource management",
+      "llm_evidence_cn": "面向能源资源管理的分布式约束优化",
+      "llm_evidence": "面向能源资源管理的分布式约束优化",
+      "canonical_evidence": "面向能源资源管理的分布式约束优化",
+      "llm_tldr_en": "Adds heavy-ball momentum to distributed signed gradient-consensus optimization for energy resource management with delays and quantization, with Lyapunov stability bounds.",
+      "llm_tldr_cn": "分布式能源资源管理需在通信时延与量化误差下维持供需平衡。作者在离散时间符号梯度一致性方法中引入重球动量，并结合固定对数量化，利用Lyapunov-Krasovskii分析将量化误差视为加性扰动以建立实用稳定性。所得遍历残差界与量化分辨率呈二次关系，无量化时可精确收敛到带惩罚的等式约束最优解。该结果为分布式能源协调提供了鲁棒优化工具。",
+      "llm_tldr": "分布式能源资源管理需在通信时延与量化误差下维持供需平衡。作者在离散时间符号梯度一致性方法中引入重球动量，并结合固定对数量化，利用Lyapunov-Krasovskii分析将量化误差视为加性扰动以建立实用稳定性。所得遍历残差界与量化分辨率呈二次关系，无量化时可精确收敛到带惩罚的等式约束最优解。该结果为分布式能源协调提供了鲁棒优化工具。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.07382v1",
+      "source": "arxiv",
+      "title": "Toward Trustworthy Physical AI for Human Interaction",
+      "abstract": "Robots are entering human spaces faster than we can establish when they deserve trust. We propose a framework for trustworthy physical AI that integrates Safety, Behavioral Intelligibility, and Perceptual Alignment across embodiment, control, cognition, and design. Trustworthiness emerges from aligning physical capabilities, observable behavior, and expectations people form during interaction.",
+      "authors": [
+        "Niccolò Pagliarani",
+        "Maximilian Stölzle",
+        "Cosima du Pasquier",
+        "Jeff Lui",
+        "Andrew Sabelhaus",
+        "Cecilia Laschi",
+        "Gentiane Venture",
+        "Daniela Rus",
+        "Matteo Cianchetti"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-05T20:53:59+00:00",
+      "link": "https://arxiv.org/pdf/2610.07382v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "framework for trustworthy physical AI spanning embodiment, control and cognition",
+      "llm_evidence_cn": "涵盖具身、控制与认知的可信物理智能框架",
+      "llm_evidence": "涵盖具身、控制与认知的可信物理智能框架",
+      "canonical_evidence": "涵盖具身、控制与认知的可信物理智能框架",
+      "llm_tldr_en": "Robots enter human spaces faster than trust criteria exist. This paper proposes a framework for trustworthy physical AI integrating safety, behavioral intelligibility and perceptual alignment across embodiment, control, cognition and design.",
+      "llm_tldr_cn": "机器人进入人类生活空间的速度快于我们判断其是否值得信任的能力，缺乏系统的可信性标准。本文提出面向可信物理人工智能的框架，在具身、控制、认知与设计四个层面整合安全性、行为可理解性与感知对齐三个维度。框架认为可信性源于物理能力、可观察行为与人所形成期望之间的对齐。该工作为具身智能系统的可信部署提供了概念性指导。",
+      "llm_tldr": "机器人进入人类生活空间的速度快于我们判断其是否值得信任的能力，缺乏系统的可信性标准。本文提出面向可信物理人工智能的框架，在具身、控制、认知与设计四个层面整合安全性、行为可理解性与感知对齐三个维度。框架认为可信性源于物理能力、可观察行为与人所形成期望之间的对齐。该工作为具身智能系统的可信部署提供了概念性指导。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied intelligence and physically grounded intelligent systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.07382v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.28392v1",
+      "source": "arxiv",
+      "title": "Budgeted Admission from Timestamped Capacity Records in Shared Clusters",
+      "abstract": "A cluster admission gate can receive a capacity record that no longer matches current schedulability. We study one exogenous binary schedulability unit under a bound on the joint probability of admission and unavailability. For a symmetric Markov state, we derive the stationary admission frontier for a fixed observation delay and apply finite likelihood allocation to a delay-tagged delivered record. A one-sided exact binomial endpoint calibrates each fitted policy, and exact enumeration confirms the per-policy confidence target in every tested parameter cell. A separate deterministic guard charges every unresolved admission against the realized allowance and bounds unavailable-state admissions at every prefix under truthful outcome feedback. An executable admission procedure composes the allocation and guard. The controlled system binds source sampling, NATS delivery, randomized admission, Kubernetes objects, and API-derived outcomes in one append-only record. Independent audit finds no missing event, identity mismatch, or state mismatch in the completed functional block. A separate CPU request-accounting check preserves Job and Pod identity across an unschedulable-to-complete transition.",
+      "authors": [
+        "Andrew Bond",
+        "Syed Izhan Khilji"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "math.PR"
+      ],
+      "published": "2026-10-20T15:40:22+00:00",
+      "link": "https://arxiv.org/pdf/2610.28392v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "cluster admission and resource scheduling",
+      "llm_evidence_cn": "集群准入与资源调度",
+      "llm_evidence": "集群准入与资源调度",
+      "canonical_evidence": "集群准入与资源调度",
+      "llm_tldr_en": "Studies budgeted admission from timestamped capacity records in shared clusters, derives stationary admission frontiers, and calibrates policies to bound admission and unavailability risk for resource scheduling.",
+      "llm_tldr_cn": "针对共享集群准入控制中容量记录过期导致可调度性失配的问题，论文研究带时间戳容量记录下的预算化准入策略。作者基于马尔可夫状态推导平稳准入边界，并用二项端点校准策略置信度。结果在多种参数单元中验证准入与不可用联合概率约束，为集群资源调度提供保守且可执行的准入控制方法。",
+      "llm_tldr": "针对共享集群准入控制中容量记录过期导致可调度性失配的问题，论文研究带时间戳容量记录下的预算化准入策略。作者基于马尔可夫状态推导平稳准入边界，并用二项端点校准策略置信度。结果在多种参数单元中验证准入与不可用联合概率约束，为集群资源调度提供保守且可执行的准入控制方法。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "resource scheduling and allocation for computing and robotic systems",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.25544v1",
+      "source": "arxiv",
+      "title": "Reinforcement learning on the EPRI AI-ccelerating Unit Commitment benchmark: diagnosing over-commitment and guiding MILP with learned policies",
+      "abstract": "Reinforcement learning (RL) is increasingly proposed as a fast solver for unit commitment (UC), but standalone agents remain far more expensive than mixed-integer linear programming (MILP). In the first study of RL on the 51-generator, 72-hour benchmark of the Electric Power Research Institute (EPRI) AI-ccelerating Unit Commitment competition, we trace this gap to the agents' own exploration, close most of it, and show that the resulting policy can accelerate an exact solver. In every configuration tested, Proximal Policy Optimisation (PPO) and an action-branching Deep Q-Network (DQN) trained from scratch committed about twice the units of a thermal-only MILP optimum, at 39-64% higher cost, whereas a merit-order rule came within 1.6-7% (10-24% when unserved energy is priced). When each unit's decision is sampled independently, spare units insure against random de-commitments. Consistent with this, injecting exploration noise during fine-tuning enlarged a lean policy's fleet, a reward without shaping terms did not remove the over-commitment, and under their training noise the agents outperformed the rule subjected to comparable noise. Imitating the MILP solutions and fine-tuning conservatively brought PPO within 2.6% of the optimum, and these policies had the lowest penalised cost of any evaluated (about 5%). Fixing the fine-tuned policy's confident decisions made the MILP 3.8-8.5 times faster within 0.10-0.25% of the best solution, with a smaller worst case than an imitation-only policy fixing as many variables (1.1% against 8.9%). Because dispatch method and benchmark scope alone shift the reported optimality ratio by up to 3.6% and 9%, we propose a reporting protocol.",
+      "authors": [
+        "Maharani Devira Pramita",
+        "Aidan O'Sullivan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-10-18T21:31:24+00:00",
+      "link": "https://arxiv.org/pdf/2610.25544v1",
+      "tags": [
+        "keyword:ev-forecast",
+        "query:ev-forecast"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RL-guided MILP for unit commitment scheduling",
+      "llm_evidence_cn": "强化学习引导机组组合调度与MILP",
+      "llm_evidence": "强化学习引导机组组合调度与MILP",
+      "canonical_evidence": "强化学习引导机组组合调度与MILP",
+      "llm_tldr_en": "Studies RL for unit commitment on the EPRI benchmark, diagnoses over-commitment, and shows learned policies can guide MILP to close the cost gap and accelerate exact scheduling optimization.",
+      "llm_tldr_cn": "针对强化学习求解机组组合时独立策略成本高且易过度开机的问题，本文在EPRI 51机72小时基准上系统评估PPO与DQN，并分析探索造成的机组过度承诺。作者提出用学习策略引导精确MILP求解，缩小与最优解的差距。实验表明策略可加速精确求解器，为学习型调度优化与传统优化结合提供参考。",
+      "llm_tldr": "针对强化学习求解机组组合时独立策略成本高且易过度开机的问题，本文在EPRI 51机72小时基准上系统评估PPO与DQN，并分析探索造成的机组过度承诺。作者提出用学习策略引导精确MILP求解，缩小与最优解的差距。实验表明策略可加速精确求解器，为学习型调度优化与传统优化结合提供参考。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "job scheduling algorithms and optimization methods",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.10409v1",
+      "source": "arxiv",
+      "title": "RobotWorld: Benchmarking Multimodal Agents for Robot Use Across Diverse Tasks and Embodiments",
+      "abstract": "General-purpose agents increasingly write code, use tools, and complete complex digital tasks, raising the question of how far these capabilities carry into the physical world. To investigate this, we introduce RobotWorld, a challenging simulation testbed for robot use: turning instructions and observations into physical task execution through robot interfaces. Its 84 tasks span manipulation, mobile manipulation, locomotion, driving, and aerial control, with explicit interaction budgets and executable success checks. By analysing task outcomes alongside execution traces, we identify both the capabilities that transfer and the gaps that prevent reliable completion. Furthermore, we find that current agents can construct sophisticated perception and control workflows, including image segmentation, camera calibration, spatial estimation, and dynamics-based computation. These capabilities, however, do not consistently compose into successful behaviour: agents lose task-relevant object states despite reaching commanded poses, fail to correct ineffective actions, recover too late, or mistake unfinished tasks for completion. This uneven transfer also differs across models: Astra succeeds more often on spatial and constrained-contact goals, whereas Opus 5.5 succeeds more often on continuous-balance and timed-interaction goals. By linking these outcomes to execution behaviour, RobotWorld provides both a rigorous proving ground and an empirical account of the remaining capability gaps, thereby establishing concrete targets for training and designing more reliable physical-world agents.",
+      "authors": [
+        "Zhiqin Yang",
+        "Chenxin Li",
+        "Xiaomeng Hu",
+        "Yibin Liu",
+        "Weidong Huang",
+        "Jiankai Sun",
+        "Haitao Li",
+        "Zijian Wu",
+        "Yuzhi Huang",
+        "Fanding Huang",
+        "Hanwen Sun",
+        "Jiashun Liu",
+        "Jingqi Tong",
+        "Mingxin Huang",
+        "Shaoli Hu",
+        "Shijue Huang",
+        "Tianyi Bai",
+        "Xinyuan Wang",
+        "Yunlong Lin",
+        "Zhengyang Tang",
+        "Zhexin Zhang",
+        "Zhuo Chen",
+        "Xierui Song",
+        "Juntao Dai",
+        "Boyuan Chen",
+        "Jiaming Ji",
+        "Fangneng Zhan",
+        "Mengkang Hu",
+        "Wei Xue",
+        "Yonggang Zhang",
+        "Han Hu",
+        "Tsung-Yi Ho",
+        "Yike Guo"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "published": "2026-10-07T16:55:24+00:00",
+      "link": "https://arxiv.org/pdf/2610.10409v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "simulation testbed benchmarking multimodal agents executing physical robot tasks",
+      "llm_evidence_cn": "评测多模态智能体执行物理机器人任务的仿真测试平台",
+      "llm_evidence": "评测多模态智能体执行物理机器人任务的仿真测试平台",
+      "canonical_evidence": "评测多模态智能体执行物理机器人任务的仿真测试平台",
+      "llm_tldr_en": "RobotWorld is a simulation testbed of 84 physical robot tasks that measures how far general-purpose multimodal agents transfer from digital tool use to real embodied control.",
+      "llm_tldr_cn": "通用智能体擅长写代码与数字任务，但其能力能否迁移到物理世界仍不清楚。作者构建RobotWorld仿真测试平台，将指令与观测通过机器人接口转化为操作、移动、驾驶与飞行等84项物理任务，并设置交互预算与可执行成功判定。通过分析任务结果与执行轨迹，研究揭示了可迁移的能力与阻碍可靠完成的差距。该基准为评估具身智能体的物理任务执行提供了统一测试环境。",
+      "llm_tldr": "通用智能体擅长写代码与数字任务，但其能力能否迁移到物理世界仍不清楚。作者构建RobotWorld仿真测试平台，将指令与观测通过机器人接口转化为操作、移动、驾驶与飞行等84项物理任务，并设置交互预算与可执行成功判定。通过分析任务结果与执行轨迹，研究揭示了可迁移的能力与阻碍可靠完成的差距。该基准为评估具身智能体的物理任务执行提供了统一测试环境。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find articles about embodied artificial intelligence systems that perceive, reason, plan, and act in physical environments.",
+      "matched_requirement_id": "req-7",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.10409v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.29588v1",
+      "source": "arxiv",
+      "title": "SatCraft: Agentic Optimization of Scheduling Policies for Satellite-Cellular Edge Services",
+      "abstract": "Mobile edge services can combine local computation with satellite and cellular access to deliver time-sensitive results in areas with intermittent terrestrial coverage. Meeting their deadlines and quality requirements calls for joint computation and transmission scheduling that accounts for task dependencies, changing link capacity, and shared resource budgets. However, optimizing resource allocations or tuning parameters within a fixed policy structure offers limited scope to correct failures rooted in the scheduling logic. We propose SatCraft, a framework in which a large language model (LLM) agent uses execution feedback to revise the code of joint scheduling policies. Each revision undergoes policy checks and complete-run evaluation to assess its validity, runtime, and effects on service completion. Because policy performance varies with access conditions, SatCraft retains valid alternatives in a policy library and selects one for each episode using initial access observations and the known resource configuration. Experiments using Starlink and cellular measurement data show that SatCraft improves cumulative completed-service value by 3.61%-16.89% over baselines, including recent state-of-the-art scheduling methods ADPRL, EdgeOPT, and TF-DDRL. It achieves the highest completed-service value in all four resource profiles and averages 25.02 ms per scheduling call. These results demonstrate how LLM-guided policy optimization can improve complete service delivery under the computing, communication, and quality constraints of satellite-cellular networks.",
+      "authors": [
+        "Pengcheng Luo",
+        "Dengke Deng",
+        "Zenghui Zhang",
+        "Genke Yang",
+        "Jian Chu"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-10-21T11:29:37+00:00",
+      "link": "https://arxiv.org/pdf/2610.29588v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM agent optimizes joint scheduling policies for edge services",
+      "llm_evidence_cn": "LLM智能体优化边缘服务的联合调度策略",
+      "llm_evidence": "LLM智能体优化边缘服务的联合调度策略",
+      "canonical_evidence": "LLM智能体优化边缘服务的联合调度策略",
+      "llm_tldr_en": "SatCraft lets an LLM agent rewrite joint scheduling policy code for satellite-cellular edge services using execution feedback, with policy checks and full-run evaluation.",
+      "llm_tldr_cn": "移动边缘服务需联合计算与传输调度以满足时延与质量要求，但仅在固定策略结构内调参难以纠正调度逻辑本身的缺陷。作者提出SatCraft，让大语言模型智能体依据执行反馈直接改写联合调度策略代码，每次修改都经过策略检查与完整运行评估。该框架将调度策略优化转化为代码级迭代改进，展示了LLM智能体自动优化调度逻辑的可行性。",
+      "llm_tldr": "移动边缘服务需联合计算与传输调度以满足时延与质量要求，但仅在固定策略结构内调参难以纠正调度逻辑本身的缺陷。作者提出SatCraft，让大语言模型智能体依据执行反馈直接改写联合调度策略代码，每次修改都经过策略检查与完整运行评估。该框架将调度策略优化转化为代码级迭代改进，展示了LLM智能体自动优化调度逻辑的可行性。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "scheduling algorithms for distributed and real-time systems",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.25585v1",
+      "source": "arxiv",
+      "title": "Adaptive Bendpoint Formation in Octopus-Inspired Soft Continuum Arms",
+      "abstract": "Octopuses exhibit a powerful form of embodied intelligence from a highly adaptable soft body. One key mechanism is the ability to instantiate bending points at any location along the arm, which enables performant and dexterous behaviours. Taking inspiration from the octopus for its dexterity, this study focuses on changing the curvature of a tendon-actuated arm by adaptively changing the anchoring end-point along the arm. An array of inflatable shells is integrated into the arm, where inflating a shell causes an increase in friction at the location, jamming the tendon and creating a temporary new anchoring point. The novel soft actuator does not break the continuity of the arm between the actuated segment and the loose segment. Experiments show that the actuated segment has a non-constant bell-shaped curvature which is comparable to that of a real octopus arm during a reaching motion. Compared to conventional single-tendon continuum manipulators, the proposed design offers an expanded workspace and enhanced dexterity through the ability to independently shape different regions of the arm through selective curvature tuning. At the same time, it avoids the mechanical complexity typically associated with multi-segment, multi-actuator systems.",
+      "authors": [
+        "Jessica Gumowski",
+        "Julian Finn",
+        "Krishna Manaswi Digumarti",
+        "David Howard"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-10-18T23:29:49+00:00",
+      "link": "https://arxiv.org/pdf/2610.25585v1",
+      "tags": [
+        "keyword:embodied-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "octopus-inspired soft continuum arm exploiting embodied intelligence for dexterous bending",
+      "llm_evidence_cn": "受章鱼启发的软体连续臂利用具身智能实现灵巧弯曲",
+      "llm_evidence": "受章鱼启发的软体连续臂利用具身智能实现灵巧弯曲",
+      "canonical_evidence": "受章鱼启发的软体连续臂利用具身智能实现灵巧弯曲",
+      "llm_tldr_en": "Inspired by octopus embodied intelligence, the paper designs a tendon-actuated soft arm with inflatable shells that adaptively create bendpoints for dexterous motion.",
+      "llm_tldr_cn": "章鱼凭借高度可适应的软体展现出强大的具身智能，其关键机制是可在臂上任意位置形成弯曲点。本文设计一种腱驱动软体连续臂，沿臂集成可充气壳体阵列，充气时增大摩擦以卡住腱并形成临时锚点，从而自适应改变曲率而不破坏臂的连续性。实验展示了该软体执行器在灵巧弯曲行为上的表现。研究体现了以身体形态与物理结构承载智能的具身智能思想。",
+      "llm_tldr": "章鱼凭借高度可适应的软体展现出强大的具身智能，其关键机制是可在臂上任意位置形成弯曲点。本文设计一种腱驱动软体连续臂，沿臂集成可充气壳体阵列，充气时增大摩擦以卡住腱并形成临时锚点，从而自适应改变曲率而不破坏臂的连续性。实验展示了该软体执行器在灵巧弯曲行为上的表现。研究体现了以身体形态与物理结构承载智能的具身智能思想。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "research on embodied intelligence and physically grounded intelligent systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.10962v1",
+      "source": "arxiv",
+      "title": "iAm.md: Robot Skill Self-Assessment through Agentic Introspection for Unknown Open-Vocabulary Domains",
+      "abstract": "Agentic AI based on Large Language Model generalization capabilities offers a wide range of potential applications, including planning for embodied tasks. For example, embodied agents based on Foundation models can generate plausible plans in autonomous robotics scenarios. Due to limited context windows or hallucinatory phenomena in the next-token prediction formulation, behaviors may be generated without establishing whether the deployed robot and the observed environment actually support the requested operation, in what we call a \"grounding failure\". Thanks to the recent improvements in reasoning capabilities of foundation models, autonomous robot behavior generation problem can be formulated as a code generation problem. We present iAm.md, a Markdown standard and generation framework, that allows anchoring this process in complementary forms of deployment evidence. Through open-vocabulary semantic mapping, we combine local vision-language detections and object segmentation and refer them to persistent object records in this intermediate standardized representation, allowing agentic introspection. We then study this new technique on a simulated TIAGo, on navigation-and-manipulation tasks, showing how this standardized representation jointly supports skill self-assessment and executable task generalization.",
+      "authors": [
+        "Vincenzo Guarino",
+        "Emanuele Musumeci",
+        "Vincenzo Suriani",
+        "Daniele Nardi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-10-07T22:28:28+00:00",
+      "link": "https://arxiv.org/pdf/2610.10962v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "query:embodied-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "robot skill self-assessment and grounding for embodied planning via agentic introspection",
+      "llm_evidence_cn": "通过智能体内省实现机器人技能自评估与具身规划落地",
+      "llm_evidence": "通过智能体内省实现机器人技能自评估与具身规划落地",
+      "canonical_evidence": "通过智能体内省实现机器人技能自评估与具身规划落地",
+      "llm_tldr_en": "iAm.md lets robots self-assess skills through agentic introspection, formulating behavior generation as code generation to avoid grounding failures in unknown open-vocabulary domains.",
+      "llm_tldr_cn": "基于基础模型的具身智能体虽能生成看似合理的计划，却常因上下文有限或幻觉而出现落地失败，即未确认机器人本体与环境是否支持该操作。作者提出iAm.md，将自主机器人行为生成建模为代码生成问题，通过智能体内省对机器人技能进行自评估，判断在未知开放词汇域中哪些操作可被真实执行。该方法提升了计划与物理可行性的对齐程度。其贡献在于为具身规划提供了可验证的落地机制。",
+      "llm_tldr": "基于基础模型的具身智能体虽能生成看似合理的计划，却常因上下文有限或幻觉而出现落地失败，即未确认机器人本体与环境是否支持该操作。作者提出iAm.md，将自主机器人行为生成建模为代码生成问题，通过智能体内省对机器人技能进行自评估，判断在未知开放词汇域中哪些操作可被真实执行。该方法提升了计划与物理可行性的对齐程度。其贡献在于为具身规划提供了可验证的落地机制。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+      "matched_requirement_id": "req-8",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.10962v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.29677v1",
+      "source": "arxiv",
+      "title": "Toward Recursive Self-Improvement in Physical AI",
+      "abstract": "Recursive self-improvement (RSI) describes a system that improves not only its behavior but also the process by which it improves. Recent digital agents test this idea by rewriting their own code and checking each version with executable tests. Bringing these mechanisms into the physical world requires learning from partial observations through costly trials, while accounting for changing operating conditions and potentially irreversible consequences. We position RSI within robot learning and trace pathways from improving robot capabilities to improving the processes that generate them. We examine how physical experience can strengthen these improvement mechanisms and when the resulting gains can support further self-improvement of the mechanisms themselves. Gains carry forward only when feedback addresses remaining learning needs, the receiving component can use the change, its value survives changes in tasks or hardware, and continued practice remains safe and affordable. Existing studies, concentrated in manipulation, support behavioral improvement, benefits to later learning, and procedure improvement. Some systems also change the improver's knowledge or tools, but the physical studies reviewed here have yet to isolate gains attributable to recursion. We synthesize these findings into evaluation principles and research directions for machines that, trial by trial, safely improve the way they improve.",
+      "authors": [
+        "Meng Luo",
+        "Zechen Bai",
+        "Shanqing Xu",
+        "Yanlin Li",
+        "Kaixin Li",
+        "Mengchen Qian",
+        "Weifeng Lu",
+        "Ran Zhang",
+        "Yingtian Zou",
+        "Ziyang Luo",
+        "Wei Chen",
+        "Hongzhan Lin"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-10-21T12:54:50+00:00",
+      "link": "https://arxiv.org/pdf/2610.29677v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "recursive self-improvement in robot learning and physical AI",
+      "llm_evidence_cn": "机器人学习与物理智能中的递归自我改进",
+      "llm_evidence": "机器人学习与物理智能中的递归自我改进",
+      "canonical_evidence": "机器人学习与物理智能中的递归自我改进",
+      "llm_tldr_en": "Positions recursive self-improvement in robot learning, examining how physical experience from partial observations and costly trials can improve both robot capabilities and the improvement processes themselves.",
+      "llm_tldr_cn": "数字智能体已能通过改写代码并执行测试实现递归自我改进，但迁移到物理世界需在部分观测和昂贵试错中学习，还要应对工况变化与不可逆后果。本文将递归自我改进定位于机器人学习，梳理从提升机器人能力到提升生成能力之过程的多条路径。文章分析了物理经验如何强化改进机制，以及何时收益可支持机制自身的进一步自我改进。其贡献在于为具身智能体的持续自主学习提供概念框架与研究议程。",
+      "llm_tldr": "数字智能体已能通过改写代码并执行测试实现递归自我改进，但迁移到物理世界需在部分观测和昂贵试错中学习，还要应对工况变化与不可逆后果。本文将递归自我改进定位于机器人学习，梳理从提升机器人能力到提升生成能力之过程的多条路径。文章分析了物理经验如何强化改进机制，以及何时收益可支持机制自身的进一步自我改进。其贡献在于为具身智能体的持续自主学习提供概念框架与研究议程。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "Find research on robot learning and embodied agents that connect perception, planning, and control for real world tasks.",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.26497v1",
+      "source": "arxiv",
+      "title": "Capacitated Line Aggregation with Maximum Delay",
+      "abstract": "We study capacitated line aggregation with per-batch maximum delay. Requests arrive over time at locations on a rooted half-line and are served in instantaneous batches of at most $k$ requests. Each batch pays the distance to its farthest request plus the waiting time of its oldest request. The objective is to minimize the total cost.   We give a deterministic online algorithm with competitive ratio $36+12\\sqrt3$. The algorithm uses a Next Fit idea along paths of nested time intervals: it assigns a new group to an existing batch when a path-load test permits, and opens a new batch otherwise. The path load controls both capacity and the cost of opening new batches. Randomizing the common scale improves the expected competitive ratio to $(18+6\\sqrt3)/\\ln2$ against an oblivious adversary. Both guarantees extend to arbitrary indivisible request sizes.   We also study capacitated LAD in the learning-augmented model. Advice revealed at its service times allows $(1+ε)$-consistency against every complete feasible advice schedule and $O(ε^{-2})$-robustness. The analysis charges repeated switches to successive decreases in the remaining advice cost.",
+      "authors": [
+        "Runtian Ren",
+        "Shengcai Liu"
+      ],
+      "primary_category": "cs.DS",
+      "categories": [
+        "cs.DS"
+      ],
+      "published": "2026-10-19T14:34:58+00:00",
+      "link": "https://arxiv.org/pdf/2610.26497v1",
+      "tags": [
+        "keyword:embodied-ai",
+        "keyword:ev-forecast",
+        "query:embodied-ai",
+        "query:ev-forecast"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "online batching algorithm for capacitated line aggregation with delay",
+      "llm_evidence_cn": "带延迟约束的容量线路聚合在线批处理算法",
+      "llm_evidence": "带延迟约束的容量线路聚合在线批处理算法",
+      "canonical_evidence": "带延迟约束的容量线路聚合在线批处理算法",
+      "llm_tldr_en": "Studies capacitated line aggregation with per-batch maximum delay, giving a deterministic online algorithm with competitive ratio 36+12sqrt3 based on a Next Fit idea over nested time intervals.",
+      "llm_tldr_cn": "论文研究请求随时间到达、需以容量受限批次服务的线路聚合问题，每批需支付到最远请求的距离与最老请求的等待时间。作者基于嵌套时间区间路径上的Next Fit思想设计确定性在线算法，当路径负载测试通过时并入已有批次，否则开新批。该算法取得36+12√3的竞争比，随机化共同尺度后可改善期望竞争比。其结果为带延迟的在线批处理与聚合调度提供理论保证。",
+      "llm_tldr": "论文研究请求随时间到达、需以容量受限批次服务的线路聚合问题，每批需支付到最远请求的距离与最老请求的等待时间。作者基于嵌套时间区间路径上的Next Fit思想设计确定性在线算法，当路径负载测试通过时并入已有批次，否则开新批。该算法取得36+12√3的竞争比，随机化共同尺度后可改善期望竞争比。其结果为带延迟的在线批处理与聚合调度提供理论保证。",
+      "llm_tags": [
+        "query:embodied-ai"
+      ],
+      "matched_query_tag": "query:embodied-ai",
+      "matched_query_text": "job scheduling algorithms and optimization methods",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

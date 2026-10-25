@@ -1,0 +1,451 @@
+Title: Budgeted Admission from Timestamped Capacity Records in Shared Clusters
+
+URL Source: https://arxiv.org/pdf/2610.28392v1
+
+Published Time: Wed, 21 Oct 2026 01:40:53 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Budgeted Admission from Timestamped Capacity Records in Shared Clusters 
+
+Andrew Bond 
+
+Department of Computer Engineering San Jose State University 
+
+San Jose, CA, USA andrew.bond@sjsu.edu 
+
+Syed Izhan Khilji 
+
+Distributed Systems Group TU Wien 
+
+Vienna, Austria ikhilji@dsg.tuwien.ac.at 
+
+Abstract —A cluster admission gate can receive a capacity record that no longer matches current schedulability. We study one exogenous binary schedulability unit under a bound on the joint probability of admission and unavailability. For a symmetric Markov state, we derive the stationary admission frontier for a fixed observation delay and apply finite likelihood allocation to a delay-tagged delivered record. A one-sided exact binomial endpoint calibrates each fitted policy, and exact enumeration con-firms the per-policy confidence target in every tested parameter cell. A separate deterministic guard charges every unresolved admission against the realized allowance and bounds unavailable-state admissions at every prefix under truthful outcome feedback. An executable admission procedure composes the allocation and guard. The controlled system binds source sampling, NATS delivery, randomized admission, Kubernetes objects, and API-derived outcomes in one append-only record. Independent audit finds no missing event, identity mismatch, or state mismatch in the completed functional block. A separate CPU request-accounting check preserves Job and Pod identity across an unschedulable-to-complete transition. 
+
+I. I NTRODUCTION 
+
+Shared clusters often receive discretionary Jobs from users who do not control placement. A guest-side gate can suppress an offer before it reaches Kubernetes, but the gate may rely on a capacity record sampled by a separate source and delivered over a networked control path. Stale allocable-capacity views also arise in provider-side cloud admission [1]. We study the guest-side decision, where sample time, delivery time, decision time, and scheduler outcome are distinct events. We represent the target as one exogenous binary schedu-lability unit. A positive action offers one Job. Available-state admission counts offers made while the unit is available, while unavailable-state admission consumes a prescribed probability budget. Both quantities are joint probabilities over the action and the current state. They are not conditional rates among admitted Jobs. The action does not affect the modeled state. Three claims require different evidence. A known stationary model defines a population optimum within the stationary policy class. A policy fitted from finite transitions requires a confidence statement for that fitted policy. A realized run whose outcomes arrive late requires an accounting rule that remains valid before every label has been received. None of these statements implies the other two. Collision-constrained opportunistic access studies the corre-sponding likelihood allocation for Markov on-off state, aged observations, and randomized decisions [2], [3], [4]. We specialize that decision basis to one timestamped schedula-bility record, combine it with finite-sample calibration and unresolved-outcome accounting, and connect each admission to its source sample, NATS record, Kubernetes objects, and API-derived outcome. We make three contributions.  
+
+> •
+
+We specify the event contract from a timestamped capac-ity sample to an API-derived outcome. For the symmetric one-unit Markov model, we give a closed-form stationary fixed-delay benchmark and the finite-cell ordering for a memoryless policy that consumes one delay-tagged delivered record.  
+
+> •
+
+We calibrate each fitted fixed-delay policy with a one-sided exact binomial endpoint [5]. The resulting per-policy statement holds with the prescribed confidence over calibration data under the stated model. A separate prefix guard charges every unresolved admission as un-available and bounds every realized prefix for arbitrary binary state and proposal sequences with truthful feed-back. We give an executable procedure that composes the finite-cell allocation and guard.  
+
+> •
+
+We implement the event contract in a controlled NATS and Kubernetes path with timestamped records, Jobs, and API-derived Job and Pod outcomes. The functional audit recomputes policy decisions, prefix accounting, object identity, and outcome agreement from recorded events. A separate repeated check verifies an identity-preserving Kubernetes transition under CPU request accounting. The next section defines the record and outcome contract shared by the analytical model and the controlled integration study. II. R ECORD CONTRACT AND SYSTEM SCOPE 
+
+A. Admission boundary 
+
+The guest gate decides whether to offer one Job to the host scheduler. It does not place the Job, reserve capacity, or preempt another tenant. The analytical state represents one exogenous schedulability unit. The controlled integration arXiv:2610.28392v1 [cs.DC] 20 Oct 2026 study realizes that state through one run-owned scheduling taint. This signal provides a known binary state for evaluating the admission path. It does not represent physical device occupancy or cluster throughput. 
+
+B. Timestamped capacity record 
+
+At decision epoch t, the policy consumes a record contain-ing a source identifier, the sampled bit Xt−At , its logical age 
+
+At, a source timestamp, a receive timestamp, and a decision timestamp. The logical age counts state transitions and selects the conditional law used by the policy. The wall-clock interval from source sampling to the decision is recorded as source-to-decision elapsed time. It is analyzed separately from logical age. NATS request reply and leaf connections transport messages across clients and NATS systems [6], [7]. These mechanisms carry a record but do not establish when its source state was sampled. Transport elapsed time therefore cannot substitute for record age. A Kubernetes resourceVersion identifies the object version returned by a read [8]. The analysis treats this identifier as opaque and never as a clock. 
+
+C. Outcome record 
+
+Only a positive admission creates a Job. The controlled harness releases an outcome label only after the required Job and Pod conditions hold and the recorded object identifiers and decision nonce match their predeclared values. Verified completion maps to an available-state label. Scheduling rejec-tion caused by the run-owned taint maps to an unavailable-state label. Any other terminal state, timeout, API failure, or identifier mismatch invalidates the experimental attempt. The stochastic model treats the capacity process as exogenous. The prefix theorem requires every released binary label to be truthful under this contract. III. M ODEL AND EXACT FRONTIER 
+
+The stationary capacity process is indexed by t ∈ Z. Its state is Xt ∈ { 0, 1}, where one denotes an available unit. The action is Mt ∈ { 0, 1}. We restrict the frontier below to stationary randomized policies. We define their one-epoch joint probabilities 
+
+g = Pr( Mt = 1 , X t = 1) and ρ = Pr( Mt = 1 , X t = 0) .
+
+(1) The controller maximizes available-state admission g subject to ρ ≤ ϵ, where 0 ≤ ϵ ≤ 1/2. The quantity ρ is not the conditional probability of an unavailable state given admission. The state follows the symmetric Markov kernel Pr( Xt+1 =1 − i | Xt = i) = p for i ∈ {0, 1} and p ∈ [0 , 1/2] .Its marginal is uniform. This condition selects the uniform stationary mixture at p = 0 , where the chain is not irreducible. The action does not affect the state. At epoch t, a stationary randomized policy may use the state history available through t−D and independent randomization. The fixed observation delay D is a nonnegative integer. Let 
+
+Yt = Xt−D . The probability of disagreement is 
+
+qD = Pr( Xt̸ = Yt) = 1 − (1 − 2p)D
+
+2 . (2) The Markov property gives conditional independence of Xt
+
+and the older history given Yt. Any history-dependent policy induces an effective pair θi = Pr( Mt = 1 | Yt = i) with the same (g, ρ ). Hence an optimum can be chosen to depend only on Yt.
+
+Theorem 1 (Fixed-delay stationary frontier) . For 0 < q D <
+
+1/2, the optimum over the stated stationary policy class first assigns admission probability to the observation Yt = 1 . Its action probabilities are 
+
+(θ1, θ 0) = 
+
+(
+
+(2 ϵ/q D , 0) , 0 ≤ ϵ ≤ qD /2,
+
+(1 , (2 ϵ − qD )/(1 − qD )) , qD /2 < ϵ ≤ 1/2.
+
+(3) 
+
+The resulting frontier is 
+
+g⋆(ϵ, D ) = 
+
+
+
+ϵ(1 − qD )/q D , ϵ ≤ qD /2,
+
+(1 − qD )/2 + qD
+
+1 − qD
+
+(ϵ − qD /2) , ϵ > q D /2.
+
+(4) 
+
+Proof. Stationarity and symmetry give 
+
+g = 12 [(1 − qD )θ1 + qD θ0], (5) 
+
+ρ = 12 [qD θ1 + (1 − qD )θ0]. (6) The available-state to unavailable-state mass ratio is (1 −
+
+qD )/q D after Yt = 1 and its reciprocal after Yt = 0 . The first ratio is larger. The two-variable linear program increases 
+
+θ1 until it reaches one, then increases θ0. Direct substitution gives (3) and (4). This frontier is the closed-form two-cell specialization of the established collision-constrained likelihood allocation re-viewed in Section VII. When qD = 0, the minimal-budget boundary optimum 
+
+(θ1, θ 0) = (1 , 0) obtains g = 1/2 with ρ = 0. When 
+
+qD = 1 /2, the observation is uninformative and g⋆ = ϵ. The formula in (4) extends continuously to this boundary. 
+
+Theorem 2 (Finite observation likelihood ratio rule) . Let 
+
+Ot be any observation in a finite alphabet O. Define vo =Pr( Ot = o, X t = 1) and wo = Pr( Ot = o, X t = 0) .Among policies based on Ot, an optimum fully admits every cell with wo = 0 < v o. It then admits positive-cost cells in nonincreasing order of vo/w o until the budget is exhausted or every cell with vo > 0 is fully admitted. When the ratios are distinct, at most one positive-cost cell is partially admitted. Equal-ratio boundary cells may share the randomized mass. A cell with vo = 0 need not be admitted. If wo = vo = 0 , its action has no effect. Proof. The policy solves 
+
+max 
+
+> 0≤θo≤1
+
+X
+
+> o∈O
+
+voθo subject to X
+
+> o∈O
+
+woθo ≤ ϵ. (7) Consider two positive-cost cells with ratios ri > r j , where 
+
+θi < 1 and θj > 0. Moving a sufficiently small unavailable-state mass from cell j to cell i changes available-state mass by that amount times ri − rj > 0. An optimum therefore has no such inversion. Zero-cost and tied cells give the stated boundary cases. If every cell with positive available-state mass is fully admitted before the constraint binds, the remaining budget may stay unused. The ratio ordering in Theorem 2 is the finite-observation admission specialization of the randomized likelihood ratio rule of Neyman and Pearson [9]. The Markov assumption supplies the joint masses in closed form and makes one delayed bit sufficient. A finite-context model could instead estimate these masses without assuming Markov dynamics. 
+
+Corollary 1 (Delivered-record allocation) . Let the delivered-record delay At have finite support A ⊂ Z≥0, with πa =Pr( At = a) > 0 for a ∈ A . Assume that At is independent of the capacity process. Consider memoryless policies whose only state input is Ot = (At, X t−At ). For p ∈ (0 , 1/2) ,an optimum in this class may be chosen to admit observed-available cells from smaller delay to larger delay. If budget remains after these cells, it admits positive-delay observed-unavailable cells from larger delay to smaller delay. At most one positive-cost boundary cell needs randomization. Admis-sion in a zero-delay observed-unavailable cell never increases available-state admission and may be omitted. Proof. For qa = [1 − (1 − 2p)a]/2, the available-state and unavailable-state masses of an observed-available cell are 
+
+πa(1 − qa)/2 and πaqa/2. Their ratio is (1 − qa)/q a. The corresponding ratio after an observed-unavailable sample is 
+
+qa/(1 − qa). For positive delay, the first ratio exceeds one and decreases with delay. The second is below one and increases with delay. Theorem 2 gives the stated order. At zero delay, the observed-available cell has zero unavailable-state mass and is admitted first. The observed-unavailable cell has zero available-state mass. Fixed D is the special case in which every delivered record has age D. A timestamp lets the controller select the appropriate delivered-record cell for each decision. This result does not optimize a controller that retains past deliveries. A past delivery can contain a newer state sample than the current record. The delay-hidden controller sees the delivered bit but not its record delay. Under the independence assumption, its disagreement probability is 
+
+¯q = X
+
+> a∈A
+
+πaqa. (8) Substituting ¯q into Theorem 1 gives the optimum among memoryless policies based only on that bit. This controller is the delay-hidden comparison used in Section VI. At p = 0, every observed state is exact, so admitting observed-available cells and rejecting observed-unavailable cells is optimal at every delay. At p = 1 /2, the zero-delay sample remains exact and all positive-delay cells have equal ratio one. The monotone delay ordering need not hold when record delay depends on the capacity process. For 0 < q D < 1/2, a record-independent randomized policy admits with probability 2ϵ and obtains gind = ϵ. The largest vertical difference from (4) occurs at ϵ = qD /2 and equals 
+
+max 
+
+> 0≤ϵ≤1/2
+
+[g⋆(ϵ, D ) − ϵ] = 1 − 2qD
+
+2 = (1 − 2p)D
+
+2 . (9) For 0 < q D < 1/2, the difference increases with ϵ on the first branch and decreases on the second branch, so its maximum occurs at the branch point. At a specified budget, the increase is g⋆(ϵ, D ) − ϵ. Equation (9) instead maximizes that increase over all admissible budgets. 
+
+Corollary 2. For fixed p ∈ (0 , 1/2) , the delayed-state frontier converges to the record-independent frontier as D increases. 
+
+The corollary follows because qD converges to 1/2 and both branches of (4) converge to ϵ. A non-Markov process can remain predictable from longer histories even when one delayed bit contains little information about the current state. IV. C ALIBRATION AND PREFIX PROTECTION 
+
+A. Exact finite-sample calibration 
+
+The transition indicators Ii = 1{Xi̸ = Xi−1} are inde-pendent Bernoulli variables under the symmetric chain. Let 
+
+K = Pni=1 Ii. Then K ∼ Binomial( n, p ) for an integer 
+
+n ≥ 1. The direct controller uses bp = min {1/2, K/n } in (2) and (3). An underestimate can make the fitted policy infeasible. For 0 < δ < 1, let U (K) be the one-sided Clopper Pearson endpoint [5]. Its projection to the model interval is 
+
+p+(K) = 
+
+(
+
+min  12 , B −11−δ (K + 1 , n − K) , K < n,  
+
+> 12
+
+, K = n, (10) where B−1 
+
+> u
+
+(a, b ) is the u quantile of a Beta distribution. Let 
+
+q+ 
+
+> D
+
+= [1 − (1 − 2p+)D ]/2. The calibrated controller substitutes 
+
+q+ 
+
+> D
+
+into (3) and uses the exact-record boundary policy when 
+
+q+ 
+
+> D
+
+= 0 .
+
+Theorem 3 (Population budget after calibration) . Fix an integer n ≥ 1, an integer D ≥ 0, 0 ≤ ϵ ≤ 1/2, and 
+
+0 < δ < 1. For every p ∈ [0 , 1/2] , form K from n chain transitions and apply the calibrated policy to an independent stationary evaluation chain with the same p. Then 
+
+Pr 
+
+> p,K
+
+
+
+Pr  
+
+> p
+
+(Mt = 1 , X t = 0 | K) ≤ ϵ
+
+
+
+≥ 1 − δ. (11) 
+
+Proof. The unprojected endpoint has Pr K (p ≤ U ) ≥ 1 − δ.Since p ≤ 1/2, projection preserves this event. Equation (2) is nondecreasing in p, so coverage gives qD ≤ q+ 
+
+> D
+
+. If q+ 
+
+> D
+
+= 0 ,coverage implies qD = 0 and the exact-record boundary policy has ρ = 0 . Otherwise, unavailable-state mass on the first policy branch equals ϵq D /q + 
+
+> D
+
+. On the second branch it is affine and nondecreasing in qD , and equals ϵ at qD = q+ 
+
+> D
+
+. The boundary 0.0 0.1 0.2 0.3 0.4 0.5                                     
+
+> unavailable-state admission ρ
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> available-state admission  gg⋆− 0.10 = 0.210
+> branch point ε=qD/2 = 0.122
+> (a) Exact feasible set with p= 0.1 and D= 3
+> achievable pairs optimal frontier record-independent policy
+> 12345678910 11 12
+> observation delay Din epochs
+> 0.1 0.2 0.3 0.4
+> transition probability  p
+> (b) Exact increase over record-independent admission at ε= 0.10
+> qD/2 = ε
+> integration cells
+> 0.0000 0.0468 0.0936 0.1405 0.1873 0.2341 0.2809 0.3278 0.3746
+> g ⋆ (ε, D) −  εFig. 1. Exact quantities from the symmetric Markov model. Panel a shows the feasible pairs and complete upper frontier for p= 0 .10 and D= 3 . The orange segment gives the increase over record-independent admission at ϵ= 0 .10 . Panel b evaluates that increase over integer observation delays and transition probabilities. The white curve joins the exact branch points at those integers. The outlined cells identify the fixed delays used in the controlled integration study. Both panels are analytical evaluations of the model.
+
+policy at q+ 
+
+> D
+
+= 1 /2 uses the continuous extension of (3). Every case is feasible on the covered event. Theorem 3 covers the population joint probability of one fitted stationary policy. Evaluation uses a fresh stationary run or a disjoint future segment with transition increments that do not overlap the n calibration increments. The result neither bounds a finite empirical fraction nor gives simultaneous coverage over a parameter sweep. 
+
+B. Deterministic prefix guard 
+
+We next bound realized unavailable-state admissions at every finite prefix. Let t ≥ 1. Define Ct = 1 − Xt, H0 = 0 ,and 
+
+Ht =
+
+> t
+
+X
+
+> s=1
+
+MsCs (12) as the realized unavailable-state admission count. Let Bt be a binary base proposal. Before action t, let Rt and Ut partition the prior admission indices {s < t | Ms = 1 }. The set Rt
+
+contains admissions with truthful resolved outcomes. The set 
+
+Ut contains admissions whose outcomes remain unresolved. The controller-visible worst-case counter is 
+
+Wt = X
+
+> s∈Rt
+
+Cs + |Ut|. (13) Every unresolved admission is charged as unavailable. Let 
+
+Lt = ⌊ϵt ⌋. When Bt = 1 and Wt + 1 ≤ Lt, the guard sets 
+
+Mt = 1 . In every other case it sets Mt = 0 . Truthful outcomes may arrive late, out of order, or not at all. A missing outcome remains charged. 
+
+Theorem 4 (Pathwise prefix budget) . For every binary state sequence, every binary proposal sequence, and every feedback schedule whose reported outcomes are truthful, the guard satisfies 
+
+Ht ≤ ⌊ ϵt ⌋ for every t. (14) 
+
+Proof. The empty history has W1 = 0 ≤ L1. Suppose the pre-action invariant Wt ≤ Lt holds. The unavailable-state count through t is at most Wt +Mt. If Mt = 1 , the guard gives Wt +
+
+Mt ≤ Lt. If Mt = 0 , the pre-action invariant gives the same inequality. Charging an admitted action as unresolved makes the post-action worst-case counter Wt + Mt. Resolving an old outcome replaces one charged admission by its truthful zero or one label and cannot increase the counter. Hence Wt+1 ≤
+
+Wt + Mt ≤ Lt ≤ Lt+1 . Induction proves both the counter invariant and (14). 
+
+Theorem 5 (Pointwise maximal prefix guard) . Fix a pre-action history at epoch t and a proposal Bt = 1 . Among binary pass-through wrappers evaluated at that same history, passing the proposal is safe for prefix t under every binary completion of Ut and the current outcome if and only if 
+
+Wt + 1 ≤ Lt. The guard is therefore pointwise maximally permissive for the stated information and completion class. Proof. If Wt + 1 ≤ Lt, the current prefix count is at most 
+
+Wt + 1 ≤ Lt for every completion. Theorem 4 covers later prefixes under the same guard. If the inequality fails, assign the unavailable label to every unresolved admission and to the current action. The current count is then Wt + 1 > L t. Any wrapper that admits violates the bound on this completion. Algorithm 1 composes the finite-cell allocation with the pre-fix guard. The first phase implements Theorem 2. A calibrated fixed-delay policy obtains its cell masses from p+ in (10). The second phase does not trust those fitted masses. Its prefix bound follows from Theorem 4 for any proposal sequence when the released binary labels are truthful. The supplementary model represents binary traces with FIFO outcome resolution and zero charge at rejected epochs. The Go library uses the same integer allowance but resolves feedback by action identifier. It serializes counter updates, Algorithm 1 Timestamped-record admission with prefix pro-tection                                                                                      
+
+> Form finite cells owith joint masses (vo, w o)
+> Set θo←0for every cell and set r←ϵ
+> Set θo←1for every cell with wo= 0 < v o
+> Order cells with vo>0and wo>0by decreasing vo/w o
+> for each ordered positive-cost cell odo
+> θo←min {1, r/w o}
+> r←r−woθo
+> end for
+> Set confirmed count C←0and unresolved set U←∅
+> for decision epochs t= 1 ,2, . . . do for each verified label (s, c s)released before decision tdo
+> U←U\ { s}
+> C←C+cs
+> end for
+> Validate and read ot= ( At, X t−At)
+> Draw Ztuniformly and set Bt←1{Zt< θ ot}
+> Wt←C+|U|
+> Mt←1{Bt= 1 and Wt+ 1 ≤ ⌊ ϵt ⌋}
+> if Mt= 1 then
+> Offer one Job and add its decision identifier to U
+> end if
+> Append the record, draw, decision, counter, and released labels
+> end for
+
+rejects fixed-width overflow, and records every release for independent recomputation. The pathwise theorem applies when the counter inequalities hold and every released label satisfies the outcome contract in Section II. V. I NSTRUMENTED ADMISSION PATH 
+
+A. Controlled integration harness 
+
+The functional check uses a controlled harness. It exercises NATS delivery, the timestamped-record policy, guard deci-sions, Kubernetes Job creation, scheduling, completion, and outcome accounting. The completed guarded treatments have zero allowance and create no Job. Kubernetes outcomes in this block therefore come from the unguarded treatments. The har-ness calls the Kubernetes client directly, so its measurements concern this controlled path rather than the general request bridge. One runner controls a dedicated single-node development cluster. Namespaced objects are isolated in an experiment namespace. The Node taint is cluster-scoped. At each log-ical epoch the runner applies or removes one run-specific value under a dedicated NoSchedule taint key. After a 100 ms settling interval, the runner reads the Node through the API, records the returned taint state, UID, and opaque 
+
+resourceVersion , then assigns a local sample timestamp immediately after that read [10], [8], [11]. The analysis never parses resourceVersion or treats it as a clock. After each API read, the runner stores the current sample in a local record buffer. For a treatment with logical age At, it selects the entry whose trace index is t−At and publishes that selected entry to the policy subject. NATS therefore carries an intentionally old timestamped record. The age At is injected by trace-index selection and is neither produced nor estimated from transport latency. Distinct NATS connections publish and consume this policy-facing record. The delivery contains the source identifier, sampled state, logical record age in epochs, source time, publish time, and receive time. The policy records its admission probability, common random draw, proposal, and decision time. Logical record age and source-to-decision elapsed time remain separate quantities. A positive action creates a Kubernetes Job. Its Pod uses a hostname nodeSelector for the selected node and has no toleration for the experiment taint. The taint therefore prevents scheduling in the controlled unavailable state [10]. The runner holds that state until it records Job completion or a taint-caused scheduling rejection, then deletes the Job before the next state transition. The outcome classifier reads the Job and Pod API objects together with the predeclared taint identity and a decision-specific nonce. Both accepted outcomes require the exact Job annotation, Job UID, Pod UID, and Pod owner reference. A verified completion also requires a true Complete Job con-dition, a true PodScheduled condition, container exit code zero, and a Kubernetes-populated termination message [12], [13], [14]. The harness accepts that message only when it equals the predeclared nonce. A controlled unavailability outcome requires PodScheduled to be false with reason 
+
+Unschedulable . The classifier then reads the Node again and requires the same Node UID, a true Ready condition, a schedulable Node, the run-owned NoSchedule taint, the expected hostname selector, and no matching Pod toleration. Kubernetes condition text is retained for diagnosis but never determines the outcome. Any API failure, timeout, terminal Job failure, nonzero exit, identity mismatch, or other unclas-sified outcome aborts the classifier and invalidates the run. The classifier obtains each admitted action outcome before the next capacity transition. For a guarded admission, the controller releases that API-derived label after a prescribed three-epoch hold. Labels due at the same epoch are released newest first, including any labels released during the final flush. The completed four-epoch treatments did not admit a guarded Job and therefore did not exercise this delayed guarded-feedback transition. The pathwise result covers every truthful release order. Infrastructure failures instead invalidate the run under the classifier rules above. All treatments in the functional block use the same state sequence, record delays, offered requests, and random draws. The block is used for path coverage rather than policy effect estimation. The append-only writer flushes and synchronizes each JSON record and refuses to overwrite an existing file. The analyzer independently recomputes the policy probability, proposal, guard state, deterministic identifiers, event ordering, and prefix allowance. It checks the recorded Kubernetes UIDs and computes MtXt and Mt(1 − Xt) from the current state. Job completion and taint rejection separately verify that the controlled state produced the intended Kubernetes behavior. 
+
+B. Repository request gate 
+
+The repository also contains a serialized gate for a general NATS request bridge. It rejects missing or denied observations before Job creation and publishes the same status to the canonical subject and reply inbox. The controlled experiment guest admission Kubernetes authority                 
+
+> authority boundary timestamped NATS record truthful outcome label
+> logical age Ddecision epochs feedback hold h= 3 decision epochs
+> horizontal position shows wall-clock event order only
+> source ID time and state selected ID logical age probability draw and decision Job UID object version Job, Pod, Node outcome evidence release epoch and counter
+> audit ledger
+> Capacity read
+> Xt−Dand source time
+> Record selected
+> logical age D
+> Admission decision
+> policy and pre fi x guard
+> Job o ff er
+> crosses to host
+> Scheduler outcome
+> Job, Pod, and live Node
+> Feedback release
+> truthful label at t+h
+> 123456
+
+Fig. 2. Controlled event contract. The upper and lower lanes separate guest admission from host scheduler authority. Numbered events follow wall-clock order. The brackets define logical record age and the injected controller-visible feedback hold in decision epochs. They do not represent transport latency. Ledger fields bind the source record, decision, Kubernetes objects, outcome label, and counter update. 
+
+calls the Kubernetes client directly and does not measure this bridge. VI. E VALUATION 
+
+A. Evidence roles 
+
+The evaluation separates calculation from execution evi-dence. The analytical figures evaluate the stated probability model. The calibration sweep sums the complete finite-sample distribution. A controlled functional block checks the record-to-outcome implementation path but is not used to estimate policy effects. A separate repeated check tests a Kubernetes capacity transition driven by CPU request accounting. 
+
+B. Controlled functional path 
+
+The functional block uses the controlled state process with 
+
+p = 0 .10 and ϵ = 0 .10 . It exercises record-independent, fixed-delay, delay-hidden, delay-tagged, and calibrated policies with and without the prefix guard. Fixed record ages are one, three, and six decision epochs. Variable ages use the same three values. Each of the 16 treatments executes four evaluation decisions on one shared state path. The resulting 64 decisions are a functional coverage record rather than an independent-unit performance study. We therefore report event integrity and local path timing but no policy effect estimate. For every guarded treatment, the allowance ⌊ϵt ⌋ is zero at all four decisions. The 32 guarded decisions therefore produce no action or delayed outcome release. All positive actions in this block come from unguarded treatments. The independent audit found all 64 policy deliveries and all 64 decisions. Twenty-six positive actions produced 26 classified Kubernetes outcomes. Twelve Jobs completed in the controlled available state and 14 Pods were unschedulable under the run-owned taint. There was no missing delivery, outcome, or API result. The audit found no identifier, record-age, state-to-outcome, or event-order mismatch. Recomputed guard decisions and prefix allowances matched the record. Zero prefix excess follows from zero guarded actions and is not a positive-action guard test. NATS publish-to-receive time had median 1.593 ms and type-seven empirical 95th percentile 2.554 ms. These local timings describe the exercised port forward and are not multi-host latency measurements. 
+
+C. Kubernetes request accounting check 
+
+We also tested one capacity transition produced by Kuber-netes CPU request accounting [15]. A locally frozen protocol ran 32 sequential cycles on one Ready untainted node. Ex-isting Pods requested 960 mCPU from 18000 mCPU allocat-able. A sleeping holder requested 17015 mCPU and left 25 mCPU, so a 50 mCPU target did not fit. Kubernetes reported 
+
+PodScheduled=False with reason Unschedulable 
+
+and message Insufficient cpu in every cycle. After verified holder deletion, the same Job UID and the same Pod UID completed in all 32 cycles. Every completion had exit code zero and the exact termination nonce. The background request inventory returned to its initial identities and request total. Holder deletion to observed completion had median 3.573 s and range 2.967 to 3.625 s. This interval includes scheduling, container startup, execution, API obser-vation, and polling. The sleeping holder generated no synthetic CPU work. The check concerns request accounting and object lifecycle, not CPU utilization, throughput, or interference. 
+
+D. Exact calibration sweep 
+
+The functional path evaluates one calibrated operat-ing point. We separately compute the calibration distri-bution without Monte Carlo sampling. The sweep uses 
+
+p ∈ {0.005 , 0.01 , 0.02 , 0.05 , 0.1, 0.2, 0.35 , 0.49 }, D ∈{1, 3, 8, 12 }, ϵ ∈ { 0.02 , 0.05 , 0.1, 0.2}, and seven calibration sizes from 50 to 5,000. Each size has 128 parameter cells. We compare the direct estimate, a matched one-sided Hoeffding endpoint, and (10) with δ = 0 .01 .At n = 2000 , the direct rule has a largest violation prob-ability of 0.4916. The Hoeffding endpoint reduces this value to 0.00126. The exact endpoint gives 0.00986 and remains below 0.01 at every tested calibration size. At n = 2000 ,the median ratio of expected calibrated admission to oracle admission is 0.9745 for the Hoeffding endpoint and 0.9927 for the exact endpoint. The corresponding tenth percentiles are TABLE I AUDITED EXECUTION EVIDENCE . T HE FUNCTIONAL BLOCK CHECKS EVERY RECORD AND DECISION TOGETHER WITH THE UNGUARDED KUBERNETES OUTCOME PATH . I TS GUARDED ARMS COVER ZERO -ALLOWANCE DECISIONS ONLY . T HE CPU REQUEST CHECK REPEATS ONE IDENTITY -PRESERVING SCHEDULER TRANSITION ON THE SAME NODE .
+
+Check Result 
+
+Controlled functional path 
+
+Evaluation decisions and delivered records 64 and 64 Positive actions and classified outcomes 26 and 26 Completed and controlled-unschedulable outcomes 12 and 14 Guarded decisions, actions, and delayed releases 32, 0, and 0 Missing delivery, outcome, and API result 0, 0, and 0 Identifier, record-age, state, and timing mismatch 0, 0, 0, and 0 Maximum guarded prefix excess 0 under zero allowance NATS publish-to-receive time 1.593 ms median and 2.554 ms empirical p95 
+
+CPU request-accounting lifecycle check 
+
+Allocatable, baseline, holder, residual, and target request 18000, 960, 17015, 25, and 50 mCPU 
+
+Insufficient cpu observed 32 of 32 cycles Same Job UID and Pod UID completed 32 of 32 cycles Background request inventory and nonce verified 32 of 32 cycles Failed cycle 0Holder deletion to observed completion 3.573 s median and 2.967 to 3.625 s range 10 2 10 3
+
+Calibration transitions 
+
+> 10 −3
+> 10 −2
+> 10 −1
+> 10 0
+> Largest  Pr K (ρ > ε)
+
+δ
+
+Exact infeasibility probability over the tested grid  
+
+> 10 210 3
+
+Calibration transitions 
+
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Median  K[g]/ g ⋆
+
+Cost of fi nite-sample protection   
+
+> Direct plug-in Hoe ff ding upper bound Exact binomial upper bound
+
+Fig. 3. Exact finite-sample calculation over the tested parameter grid. The left panel reports the largest probability that a fitted population policy violates its budget. The right panel reports the median ratio between expected calibrated-policy admission and oracle admission. Expectation is taken over the exact binomial calibration distribution within each cell. The direct rule can exceed one because an infeasible fitted policy can exceed the feasible oracle. 
+
+0.5041 and 0.8265. The exact endpoint retains more admission while meeting the per-policy confidence target throughout the tested grid. 
+
+E. Reproducibility checks 
+
+The functional JSONL record is append only. The audit binds its digest and independently recomputes record selec-tion, policy probability, proposal, counter transition, prefix allowance, object identity, event order, and state-to-outcome agreement. The CPU request analyzer checks exact Job, Pod, holder, Node, image, nonce, and request-inventory identities across every cycle. It rejects a changed scheduler cause, object replacement, request arithmetic error, background inventory change, timeout, or image drift. Automated checks cover policy arithmetic, the exact end-point, finite-cell ordering, the serialized request gate, the outcome classifier, the prefix counter, event-path auditing, request accounting, and deterministic figure generation. No incomplete randomized-block artifact contributes to a reported number or figure. VII. R ELATED WORK 
+
+Cloud admission and scheduling. Kerveros performs provider-side cloud admission from allocable VM counts and documents stale cached views and optimistic concurrency [1]. Borg represents operator-side cluster scheduling [16], while KUBEDIRECT reduces Kubernetes API exchange during burst provisioning [17]. Our gate acts on the guest side before one Job offer. It neither packs resources nor replaces the scheduler. 
+
+Delayed state decisions. Delayed network state has long been studied in Markov control and wireless schedul-ing [18], [19]. Delayed queue admission also predates this work [20], [21]. The direct mathematical antecedent is collision-constrained access with aged or erroneous Markov observations [2], [3], [4]. Li et al. derive memoryless access under tight collision constraints. Our fixed-delay result is the one-unit closed form after converting conditional collision probability to joint unavailable-state mass. The action does not change the modeled state and the objective is not queue stability. 
+
+Record age and calibration. Age of information is the time since generation of the newest delivered update [22]. We use the generation time and logical age of the record consumed by one decision. That record need not be the newest retained update. Clopper and Pearson give exact binomial confidence limits [5]. Learn then Test gives finite-sample risk calibration for general predictive algorithms through multiple testing [23]. Our construction controls one fitted policy under the symmetric-chain model and gives no simultaneous sweep guarantee. 
+
+Delayed outcome protection. Runtime shields enforce modeled safety properties [24]. Delay-resilient shields have been synthesized for delayed input observations [25]. Our guard instead receives an outcome after the action. It keeps every unresolved admitted outcome charged and bounds a cumulative binary prefix. Its maximality statement is pointwise for one pre-action counter under arbitrary binary completions. 
+
+Kubernetes event evidence. Sieve and Kivi test Kubernetes controller observations and event interleavings [26], [27]. Our evidence does not verify Kubernetes. It checks identity, order, and outcome agreement for one admission path from the recorded client view. VIII. L IMITATIONS 
+
+The analytical frontier applies to one exogenous symmetric binary Markov unit and stationary policies. It does not estab-lish optimality for asymmetric, multilevel, nonstationary, or action-dependent capacity. The calibration theorem addition-ally requires independent Bernoulli transition indicators. If the transition model is wrong, its population confidence statement need not hold. The variable-delay result covers memoryless policies that consume only the current delivered pair. A controller that retains prior deliveries can have a newer sample than the record currently delivered. The experiment samples delivered-record delays independently. This distribution need not be the age process seen by a receiver that always retains its freshest update. The ordering also requires record delay to be independent of the capacity process. The deterministic prefix guard requires no stochastic state model, but it can reject available-state actions. An unresolved admission consumes allowance until a truthful binary label is released. The pathwise result concerns an abstract binary counter and truthful labels. It does not establish correctness of the Go runtime, NATS, Kubernetes, or the correspondence between an API condition and physical capacity. The integration experiment controls schedulability through one NoSchedule taint on one Docker Desktop node. It includes no incumbent work, physical accelerator occupancy, queue competition, multi-unit placement, or multi-tenant pro-duction load. A Pod held pending by the taint represents a controlled unavailable-state action. It is not evidence of physical interference or a tenant policy violation. The functional block has four decisions per treatment on one shared path. It tests event coverage and audit consistency but cannot estimate policy effects, long-run admission, or retained admission under the prefix guard. Its guarded arms have zero allowance at every tested decision. No guarded Job or delayed guarded-feedback transition is exercised. Capacity advances in logical decision epochs after the cur-rent action outcome has been recorded. Treatments that create more Jobs therefore take more wall time. The reported g and 
+
+ρ values are per decision epoch rather than cluster throughput. The NATS broker is reached through a local Kubernetes port forward, so the study does not estimate multi-host transport latency. The separate CPU request-accounting check uses a sleeping holder Pod on the same node. It verifies one pending-to-complete lifecycle transition under Kubernetes request ac-counting. It does not exercise NATS, an admission policy, or the prefix guard. The holder generates no synthetic CPU work, so the check does not measure utilization, interference, or physical load. The audit verifies identifier equality and event order as ob-served by one client. It treats resourceVersion as opaque and does not infer a global Kubernetes event order from object versions, creation timestamps, or condition transition timestamps [8]. IX. C ONCLUSION 
+
+Timestamped capacity records make observation delay an explicit policy input. For one symmetric binary Markov unit, the stationary fixed-delay frontier gives an exact matched-budget benchmark. With finite transition data, a one-sided binomial endpoint gives the stated population confidence for each fitted policy under the model. A separate prefix guard bounds unavailable-state admissions at every prefix while truthful outcomes remain unresolved. The admission algo-rithm composes the finite-cell allocation with this guard. The completed functional block audits every delivered record and decision. Its unguarded positive actions connect the source sample, randomized decision, Job, Pod, and verified outcome with no audited mismatch. Its guarded arms cover only zero-allowance decisions. The repeated CPU request-accounting check preserves Job and Pod identity across the tested sched-uler transition. Evaluation on uncontrolled multi-node capacity will require a capacity label independent of the admission action and validation against a stated operational objective. REFERENCES [1] S. M. Sajal, L. Marshall, B. Li, S. Zhou, A. Pan, K. Mellou, D. Narayanan, T. Zhu, D. Dion, T. Moscibroda, and I. Menache, “Kerveros: Efficient and scalable cloud admission control,” in 17th USENIX Symposium on Operating Systems Design and Implementation .Boston, MA: USENIX Association, Jul. 2023, pp. 209–226. [Online]. Available: https://www.usenix.org/conference/osdi23/presentation/sajal [2] Q. Zhao, S. Geirhofer, L. Tong, and B. M. Sadler, “Opportunistic spectrum access via periodic channel sensing,” IEEE Transactions on Signal Processing , vol. 56, no. 2, pp. 785–796, 2008. [3] Y. Chen, Q. Zhao, and A. Swami, “Joint design and separation principle for opportunistic spectrum access in the presence of sensing errors,” 
+
+IEEE Transactions on Information Theory , vol. 54, no. 5, pp. 2053– 2071, 2008. [4] X. Li, Q. Zhao, X. Guan, and L. Tong, “Optimal cognitive access of Markovian channels under tight collision constraints,” IEEE Journal on Selected Areas in Communications , vol. 29, no. 4, pp. 746–756, 2011. [5] C. J. Clopper and E. S. Pearson, “The use of confidence or fiducial limits illustrated in the case of the binomial,” Biometrika , vol. 26, no. 4, pp. 404–413, 1934. [6] NATS Authors, “Request-reply,” https://docs.nats.io/nats-concepts/ core-nats/reqreply, accessed July 2026. [7] ——, “Leaf nodes,” https://docs.nats.io/running-a-nats-service/ configuration/leafnodes, accessed July 2026. [8] The Kubernetes Authors, “Kubernetes API concepts,” https://v1-34.docs. kubernetes.io/docs/reference/using-api/api-concepts/, 2025, kubernetes v1.34 documentation, accessed July 2026. [9] J. Neyman and E. S. Pearson, “On the problem of the most efficient tests of statistical hypotheses,” Philosophical Transactions of the Royal Society of London. Series A , vol. 231, no. 694–706, pp. 289–337, 1933. [10] The Kubernetes Authors, “Taints and tolerations,” https://v1-34.docs. kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/, 2025, kubernetes v1.34 documentation, accessed July 2026. [11] ——, “Object names and IDs,” https://v1-34.docs.kubernetes.io/ docs/concepts/overview/working-with-objects/names/, 2025, kubernetes v1.34 documentation, accessed July 2026. [12] ——, “Jobs,” https://v1-34.docs.kubernetes.io/docs/concepts/workloads/ controllers/job/, 2025, kubernetes v1.34 documentation, accessed July 2026. [13] ——, “Pod lifecycle,” https://v1-34.docs.kubernetes.io/docs/concepts/ workloads/pods/pod-lifecycle/, 2025, kubernetes v1.34 documentation, accessed July 2026. [14] ——, “Determine the reason for pod failure,” https: //v1-34.docs.kubernetes.io/docs/tasks/debug/debug-application/ determine-reason-pod-failure/, 2024, kubernetes v1.34 documentation, accessed July 2026. [15] ——, “Resource management for pods and containers,” https://v1-34.docs.kubernetes.io/docs/concepts/configuration/ manage-resources-containers/, 2026, kubernetes v1.34 documentation, accessed July 2026. [16] A. Verma, L. Pedrosa, M. R. Korupolu, D. Oppenheimer, E. Tune, and J. Wilkes, “Large-scale cluster management at Google with Borg,” in 
+
+Proceedings of the Tenth European Conference on Computer Systems ,2015, pp. 1–17. [17] S. Qi, Z. Zhang, X. Liu, and X. Jin, “KUBEDIRECT: Unleashing the full power of the cluster manager for serverless computing,” in 23rd USENIX Symposium on Networked Systems Design and Implementation . USENIX Association, 2026, pp. 1341–1357. [Online]. Available: https://www.usenix.org/conference/nsdi26/presentation/qi [18] D. M. Brooks and C. T. Leondes, “Technical note—Markov decision processes with state-information lag,” Operations Research , vol. 20, no. 4, pp. 904–907, 1972. [19] L. Ying and S. Shakkottai, “On throughput optimality with delayed network-state information,” IEEE Transactions on Information Theory ,vol. 57, no. 8, pp. 5116–5132, Aug. 2011. [Online]. Available: https://doi.org/10.1109/TIT.2011.2158879 [20] J. Kuri and A. Kumar, “Optimal control of arrivals to queues with delayed queue length information,” IEEE Transactions on Automatic Control , vol. 40, no. 8, pp. 1444–1450, Aug. 1995. [Online]. Available: https://doi.org/10.1109/9.402238 [21] E. Altman and S. Stidham, Jr., “Optimality of monotonic policies for two-action markovian decision processes, with applications to control of queues with delayed information,” Queueing Systems ,vol. 21, no. 3–4, pp. 267–291, Sep. 1995. [Online]. Available: https://doi.org/10.1007/BF01149165 [22] R. D. Yates, Y. Sun, D. R. Brown, III, S. K. Kaul, E. Modiano, and S. Ulukus, “Age of information: An introduction and survey,” IEEE Journal on Selected Areas in Communications , vol. 39, no. 5, pp. 1183– 1210, 2021. [23] A. N. Angelopoulos, S. Bates, E. J. Cand` es, M. I. Jordan, and L. Lei, “Learn then test: Calibrating predictive algorithms to achieve risk control,” The Annals of Applied Statistics , vol. 19, no. 2, pp. 1641–1662, 2025. [Online]. Available: https://doi.org/10.1214/24-AOAS1998 [24] R. Bloem, B. K¨ onighofer, R. K¨ onighofer, and C. Wang, “Shield synthe-sis: Runtime enforcement for reactive systems,” in Tools and Algorithms for the Construction and Analysis of Systems , ser. Lecture Notes in Computer Science, vol. 9035, 2015, pp. 533–548. [25] F. Cano C´ ordoba, A. Palmisano, M. Fr¨ anzle, R. Bloem, and B. K¨ onighofer, “Safety shielding under delayed observation,” 
+
+Proceedings of the International Conference on Automated Planning and Scheduling , vol. 33, no. 1, pp. 80–85, 2023. [Online]. Available: https://ojs.aaai.org/index.php/ICAPS/article/view/27181 [26] X. Sun, W. Luo, J. T. Gu, A. Ganesan, R. Alagappan, M. Gasch, L. Suresh, and T. Xu, “Automatic reliability testing for cluster management controllers,” in 16th USENIX Symposium on Operating Systems Design and Implementation . USENIX Association, 2022, pp. 143–159. [Online]. Available: https://www.usenix.org/conference/ osdi22/presentation/sun [27] B. Liu, G. Lim, R. Beckett, and P. B. Godfrey, “Kivi: Verification for cluster management,” in 2024 USENIX Annual Technical Conference .USENIX Association, 2024, pp. 509–527. [Online]. Available: https://www.usenix.org/conference/atc24/presentation/liu-bingzhe

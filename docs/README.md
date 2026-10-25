@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-24</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-25</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 19 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>7</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>12</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-24 22:09:24 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-25 21:25:25 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今天精读了19篇中的7篇，重点聚焦具身智能与机器人系统。最值得看的是递归自改进的机器人协作智能体操作系统 InstAgent（9.0/10），以及面向长程机器人 VLA 模型的自演化终身记忆综述（9.0/10）。普通读者可先读这两篇高分精读，再按兴趣浏览环境生成与实时调度方向的速读论文。</p>
+<p>今天共筛选19篇论文，精读7篇、速读12篇，重点聚焦具身智能模型蒸馏与调度优化两个方向。</p>
+<p>最值得看的是两篇9分精读：《TILDE》提出“教师参与循环”的具身基础模型蒸馏，《Diverse Schedules for Makespan Minimization on Unrelated Machines》研究无关并行机上的多样化调度；速读中《Inspect Robots》《RobotWorld》等8分工作集中在具身AI的评测与安全。</p>
+<p>建议普通读者先读这两篇9分精读把握方法主线，再从8分速读里按兴趣挑评测类文章浏览即可。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -81,7 +83,7 @@
     <strong class="dpr-home-dashboard-count">7 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="InstAgent: A Recursively Self-Improving Agent Operating System for Heterogeneous Robot Collaboration">InstAgent: A Recursively Self-Improving Agent Operating System for Heterogeneous Robot Collaboration</span></li><li><span class="dpr-home-dashboard-paper-title" title="From Sliding Windows to Self-evolving Lifelong Memory: A Dual-perspective Survey of Memory Paradigms for Long-Horizon Robotics VLA Models">From Sliding Windows to Self-evolving Lifelong Memory: A Dual-perspective Survey of Memory Paradigms for Long-Horizon Robotics VLA Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="Structured Latent Dynamics for Long-Horizon Embodied World Models">Structured Latent Dynamics for Long-Horizon Embodied World Models</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="TILDE: Teacher-in-the-Loop Distillation from Embodied Foundation Models">TILDE: Teacher-in-the-Loop Distillation from Embodied Foundation Models</span></li><li><span class="dpr-home-dashboard-paper-title" title="Diverse Schedules for Makespan Minimization on Unrelated Machines">Diverse Schedules for Makespan Minimization on Unrelated Machines</span></li><li><span class="dpr-home-dashboard-paper-title" title="Workflow-Aware Communication and Computation Scheduling for Mobile Edge AI Agents">Workflow-Aware Communication and Computation Scheduling for Mobile Edge AI Agents</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>7</strong></span></div>
 </section>
@@ -94,7 +96,7 @@
     <strong class="dpr-home-dashboard-count">12 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="EnvDreamer: Large-Scale Multimodal-to-Environment Generation for Embodied AI">EnvDreamer: Large-Scale Multimodal-to-Environment Generation for Embodied AI</span></li><li><span class="dpr-home-dashboard-paper-title" title="Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice">Awkernel: RTOS Bridging DAG Scheduling Theory and Component-Oriented Real-Time Systems Practice</span></li><li><span class="dpr-home-dashboard-paper-title" title="Optimal Dynamic Resource Allocation for Multicore Real-time Systems">Optimal Dynamic Resource Allocation for Multicore Real-time Systems</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Inspect Robots: Evaluating the Capabilities and Safety of Embodied AI">Inspect Robots: Evaluating the Capabilities and Safety of Embodied AI</span></li><li><span class="dpr-home-dashboard-paper-title" title="Toward Trustworthy Physical AI for Human Interaction">Toward Trustworthy Physical AI for Human Interaction</span></li><li><span class="dpr-home-dashboard-paper-title" title="RobotWorld: Benchmarking Multimodal Agents for Robot Use Across Diverse Tasks and Embodiments">RobotWorld: Benchmarking Multimodal Agents for Robot Use Across Diverse Tasks and Embodiments</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">embodied-ai <strong>12</strong></span></div>
 </section>

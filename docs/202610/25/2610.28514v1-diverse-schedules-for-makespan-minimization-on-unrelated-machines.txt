@@ -1,0 +1,3251 @@
+Title: Diverse Schedules for Makespan Minimization on Unrelated Machines
+
+URL Source: https://arxiv.org/pdf/2610.28514v1
+
+Published Time: Wed, 21 Oct 2026 01:48:29 GMT
+
+Number of Pages: 40
+
+Markdown Content:
+# Diverse Schedules for Makespan Minimization on Unrelated Machines ∗
+
+Sebastian Bruchhold †1, Matthias Mnich 2, Karolina Tammemaa 2, Morten Weber ‡3,Michalis Xefteris §3, and Bart Zondervan ¶3
+
+> 1
+
+Goethe University Frankfurt, Institute of Computer Science, Frankfurt am Main, Germany 
+
+Bruchhold@em.uni-frankfurt.de 
+
+> 2
+
+Hamburg University of Technology, Institute for Algorithms and Complexity, Hamburg, Germany 
+
+{matthias.mnich, karolina.tammemaa}@tuhh.de 
+
+> 3
+
+University of Bremen, Faculty of Mathematics and Computer Science, Germany 
+
+{moweber, xefteris, bart}@uni-bremen.de 
+
+October 20, 2026 
+
+Abstract 
+
+We study makespan minimization on unrelated machines with the additional goal of constructing diverse schedules: Instead of outputting a single schedule, we seek a collection of schedules with provable makespan guarantees and substantially different job assignments. This setting is motivated by practical applications in which committing to a single schedule in advance may be undesirable. Processing times may be uncertain, and additional constraints or domain knowledge may become available only later, so providing a set of k schedules of similar quality gives the scheduler meaningful alternatives. We measure pairwise diversity by the weighted Hamming distance between job assignments and study the two standard objectives in the diverse-solutions literature: max-sum diversity, which maximizes the total pairwise distance between schedules, and max-min diversity, which maximizes the smallest pairwise distance. For the max-sum objective, we show that optimal diversity can be achieved in polynomial time without sacrificing the classic makespan approximation factor. For every feasible makespan target T , we can compute k schedules of makespan at most 2 T whose max-sum diversity is optimal among all k schedules of makespan at most T . Therefore, we match the classic factor-2 makespan guarantee of Lenstra, Shmoys, and Tardos ( Math. Prog. , 1990) and preserve optimal diversity. For the max-min objective, we show that the diversity problem is inherently harder. Namely, we show that, even without makespan constraints, deciding whether three schedules of given pairwise diversity exist is NP -hard. We complete this with two complementary bicriteria approximation algorithms for every fixed k and ε ∈ (0 , 1). The first preserves almost all of the optimal max-min diversity with makespan at most (3 ⌈12 /ε ⌉ + 1) T . The second keeps the makespan arbitrarily close to the classic 2 guarantee while achieving a 12 (1 − ε)fraction of the optimal max-min diversity. 
+
+> ∗
+
+This collaboration originated at the Bremen–Hamburg Workshop in Bremen in 2025. We thank the organizers for providing an environment that fostered this collaboration. 
+
+> †
+
+This work was done while Sebastian Bruchhold was funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany’s Excellence Strategy – The Berlin Mathematics Research Center MATH+ (EXC-2046/1, EXC-2046/2, project ID: 390685689). 
+
+> ‡
+
+Funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany’s Excellence Strategy – EXC 3036 The Martian Mindset – project number 533607631. 
+
+> §
+
+Supported by a Humboldt Research Fellowship for Postdoctoral Researchers. 
+
+> ¶
+
+Supported by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation), project num-ber 547924951. 
+
+1arXiv:2610.28514v1 [cs.DS] 20 Oct 2026 1 Introduction 
+
+Makespan minimization on unrelated machines is one of the most classic problems in scheduling. Given a set M of m machines and a set J of n jobs, where each job j ∈ J has a machine-dependent processing time pij on machine i ∈ M , one seeks an assignment, or schedule, σ : J → M that minimizes the makespan : for a schedule σ, the load of machine i is Li(σ) = P  
+
+> j∈J:σ(j)= i
+
+pij , and the makespan is Cmax (σ) = max i∈M Li(σ). The problem is denoted by R∥Cmax [13] and is well-known to be NP -hard. This hardness motivated the design of approximation algorithms, which compute in polynomial time a schedule σ whose makespan is within a factor α of the optimum. One of the most classic approximation algorithms in scheduling is the factor-2 approximation for R∥Cmax due to [23]. Moreover, the same work shows that the problem is hard to approximate within any factor strictly smaller than 32 , unless P = NP [23]. Since its conception in 1990, no approximation factor strictly below 2 has been obtained for general unrelated machines. Our main research question is whether one can retain such a guarantee when the output is required to contain not just one schedule, but several substantially different schedules. Our motivation arises from settings in which committing to a single schedule in advance is undesirable. Processing times may be known only approximately, while additional constraints or application-specific information may become available only after candidate schedules have been computed. We therefore seek to preserve flexibility at the optimization stage by producing multiple schedules that are substantially different from one another. Such diversity enables a decision maker to incorporate information that was unavailable or unmodeled during optimization when selecting a final schedule. In this sense, diverse solution sets provide a natural mechanism for increasing robustness to uncertainty and unmodeled constraints. This point of view is consistent with the broader diverse-solutions paradigm in combinatorial optimization. A growing body of work studies how to compute multiple solutions that are not only good with respect to the original objective, but also far apart according to an appropriate distance measure [2, 9, 15]. A similar perspective also arises in patient admission scheduling, where evolutionary diversity optimization has been used to compute diverse sets of high-quality schedules that provide alternatives under imperfect modeling [24]. In this paper, we measure diversity at the level of job assignments: two schedules are far apart when many important jobs are assigned to different machines. For example, a decision maker may later learn that certain job–machine assignments are desirable or undesirable and then choose the candidate schedule that best matches these preferences. Optimizing this diversity creates a specific difficulty for unrelated-machine scheduling. Each schedule must satisfy its own load constraints, but the diversity objective couples all schedules through job assignments. A change in one schedule may improve its distance from some schedules, decrease its distance from others, and at the same time violate a machine-load constraint. Thus, diversity has to be built into the scheduling problem itself. We study the following bicriteria problem. Given a makespan target T and an integer k, the goal is to compute k schedules with makespan close to T and large job-assignment diversity. Our results separate the two standard diversity objectives: max-sum diversity maximizes the total pairwise distance in the collection, while max-min diversity maximizes the smallest pairwise distance. For max-sum diversity, we retain the classic factor-2 makespan guarantee and achieve the optimal diversity among k schedules of makespan at most T . For max-min diversity, we show that the problem is computationally harder and design two complementary bicriteria algorithms. 2m1m2σ1σ2σ3Figure 1: Three schedules σ1, σ2, and σ3 of seven jobs on two machines m1 and m2. Jobs of the same color have the same processing time. All diversity weights are equal to 1. Then, the diversity of σ1 and σ2 is d(σ1, σ 2) = 3, the diversity of σ2 and σ3 is d(σ2, σ 3) = 4, and the diversity of σ1 and σ3 is d(σ1, σ 3) = 3. Thus, dmin (σ1, σ 2, σ 3) = 3, while dΣ(σ1, σ 2, σ 3) = 10. 
+
+1.1 Our contributions 
+
+We first formalize the diversity measure used throughout the paper. For two schedules σa and σb,we define their pairwise diversity as the weighted Hamming distance 
+
+d(σa, σ b) = X
+
+> j∈J
+
+wj 1[σa(j)̸ = σb(j)] ,
+
+where 1[·] is the indicator function and wj ≥ 0 is the diversity weight (or weight for short) of job j, measuring the importance of scheduling j diversely. Note that, since the diversity depends only on whether assignments differ, the machines are treated as labeled. For k schedules, we follow the diverse-solutions literature and consider max-sum and max-min diversity [14, 15]. The max-sum and max-min objectives maximize, respectively, the total pairwise diversity and the minimum pairwise diversity, and are defined by 
+
+dΣ(σ1, . . . , σ k) = X
+
+> 1≤a<b ≤k
+
+d(σa, σ b) and dmin (σ1, . . . , σ k) = min  
+
+> 1≤a<b ≤k
+
+d(σa, σ b) .
+
+The max-sum objective measures the total spread of the collection of schedules, and an optimal solution might include identical schedules or consist of a few well-separated clusters of nearly identical schedules. To counter such behavior, the max-min objective is stricter and requires every pair of schedules to be far apart. An example for both objectives is depicted in Figure 1. Diverse scheduling has two competing objectives, makespan and diversity, and our results approximate their Pareto tradeoff. We state the guarantees for a makespan target T , but they also admit the dual view of fixing a diversity target and minimizing the required makespan. Given a target makespan T , all our guarantees compare the diversity of the output schedules with the best diversity attainable by k schedules of makespan at most the original target T ,even though the output schedules may have larger makespan (see the discussion at the end of Section 2). Our results are summarized in Table 1. 
+
+Max-sum diversity. Our first result is proved in Section 4. We begin in Section 4.1 by introducing a natural labeled k-tuple LP formulation, in which each of the k schedules has a label and each variable assigns a job to a k-tuple of machines. This formulation can be viewed as a special case of the k-sided placement problem of [19], and already gives optimal max-sum diversity with makespan ( k +1) T in polynomial time for fixed k. Our main result significantly improves the makespan guarantee and matches the best-known factor-2 approximation for R∥Cmax [23], while preserving exact max-sum diversity and running in time polynomial in the input size and k. To do this, we rewrite the max-sum objective in terms of multiplicities. Occurrence-count arguments for weighted Hamming distance have already appeared in the diverse-solutions literature [15]. In our work, however, multiplicities count job–machine assignments with unrelated processing 3times, so they must satisfy load constraints and be decomposed into actual schedules. We formulate a multiplicity LP in Section 4.3. It tracks how many schedules assign each job to each machine, uses ranked copies to linearize the same-machine penalty, and keeps aggregate load constraints over the k schedules. We round this LP by iterative relaxation [22] in Section 4.4, obtaining integral multiplicities with a small aggregate-load violation. The remaining challenge is that this formulation controls only the aggregate load over all k schedules, and an arbitrary realization of the rounded multiplicities could concentrate several large jobs in the same schedule. In Section 4.5, we address this by decomposing the rounded multiplicities into labeled schedules, adapting the slot construction by Shmoys and Tardos [27] and combining it with bipartite edge coloring. The resulting decomposition, together with an averaging argument that exploits the multiplicity structure, yields the per-schedule makespan guarantee 2 T .
+
+Theorem 4 (Informal). One can obtain k schedules of makespan at most 2T with optimal max-sum diversity, in time polynomial in the input size and in k.
+
+Max-min diversity. We next turn to max-min diversity. Unlike max-sum diversity, this objective must guarantee diversity for every pair of schedules. Thus, the multiplicity view is no longer enough: we need to know which pairs of schedules differ on each job. This obstruction is not only an artifact of our approach. Lemma 2 in Appendix C.5 shows that, given a diversity value Q, it is NP -hard to decide whether there exist three schedules with max-min diversity at least Q, even when the makespan constraint is ignored. For fixed k, we therefore give two complementary algorithms, one that preserves almost all of the optimum diversity, and one that keeps the makespan close to the factor-2 guarantee for R∥Cmax .
+
+Near-optimal max-min diversity. In Section 5.1, we give our first algorithm for max-min diversity. It keeps the labeled k-tuple LP and aims for near-optimal diversity. Assume that the diversity target is known through guessing. For every pair of schedules, we guess the largest positive contributors to their pairwise distance (called heavy contributors ), together with their full k-tuple assignments. After guessing the diversity target and heavy contributors for each pair of schedules, the algorithm solves a residual k-tuple LP and iteratively rounds it. For each remaining job, we restrict the allowed tuples to use at most O(1 /ε ) distinct machines. The main technical step is to prove that the residual LP remains feasible despite this restriction. The proof proceeds by contradiction, considering an LP point (a fractional assignment of jobs to k-tuple of machines) that minimizes the sum of squared diversity shortfalls subject to the job and load constraints. Here, a pair’s shortfall is the amount by which its diversity falls below its target, or zero if the target is met. If some diversity target is unmet, we construct a point y satisfying the job and load constraints. The crucial idea is that, to construct y, the simultaneous pairwise diversity requirements can be reduced to a single weighted diversity target, using pairwise shortfalls as weights. Meeting this weighted target ensures that moving slightly toward y decreases the sum of squared shortfalls, contradicting minimality. We then round the residual LP by iterative relaxation. 
+
+Theorem 8 (Informal). For fixed k ≥ 2 and ε ∈ (0 , 1) , one can obtain k schedules of makespan at most (3 ⌈12 /ε ⌉ + 1) T with (1 − ε)-approximate max-min diversity, in polynomial time. 
+
+In Appendix C.2, we also give an alternative algorithm achieving the same diversity guarantee with makespan at most (2 k+1+ ε)T . Its run time is polynomial for fixed k and ε. This alternative bound can improve the makespan guarantee when k is small. 4Objective Diversity guarantee Makespan guarantee Run time Max-sum OPT Σ                             
+
+> k(T)2TPolynomial time (Theorem 4)
+> Max-min
+> (1 −ε)OPT min
+> k(T)(3 ⌈12 /ε ⌉+ 1) TPolynomial time for fixed k, ε
+> (Theorem 8) (1 −ε)OPT min
+> k(T)(2 k+ 1 + ε)T(Theorem 13)
+> 12(1 −ε)OPT min
+> k(T)(2 + ε)T(Theorem 12)
+
+Table 1: Summary of our main guarantees. OPT Σ 
+
+> k
+
+(T ) denotes the optimum max-sum diversity, and OPT min  
+
+> k
+
+(T ) the optimum max-min diversity, among k schedules of makespan at most T .
+
+Low-makespan max-min diversity. In Section 5.2, we design our second algorithm for max-min diversity. Here we keep the makespan close to the factor-2 guarantee for R∥Cmax . The algorithm builds the schedules sequentially. Using a metric argument, we show that at each step there exists a schedule from an optimal family that is at distance at least half the optimal max-min diversity from every schedule selected so far. Thus, adding the next schedule becomes an unrelated-machine assignment problem with load upper bounds and one covering lower bound for each previously constructed schedule. Related LPs appear in school-assignment-type problems [25]. We round this LP by first guessing heavy contributors and then applying iterative relaxation inspired by the rounding approach of Korupolu et al. [19]. 
+
+Theorem 12 (Informal). For fixed k ≥ 2 and ε ∈ (0 , 1) , one can obtain k schedules of makespan at most (2 + ε)T with 12 (1 − ε)-approximate max-min diversity, in polynomial time. 
+
+1.2 Related work 
+
+There is a long history of works that study combinatorial optimization problems with the goal of finding multiple “diverse” solutions: For example, Krarup [20] introduced the Peripatetic Salesman problem, where multiple edge-disjoint Hamilton cycles in a graph need to be found that have minimum weight in sum. Erkut et al. [8] survey problems where facility locations need to be computed that are maximally far apart. Kuo et al. [21] consider the Maximum Diversity problem, where a number of elements from a given set need to be selected such that the sum of their pairwise diversity coefficients is maximized, and show it to be NP -hard. The computational intractability that is common for these diversity problems (see, e.g., by Hanaka et al. [15]) has motivated approaches via parameterized algorithms as well as approaches via approximation algorithms. With a focus on the former approaches, Fellows and Rosamond [9] recently introduced the 
+
+Diverse X paradigm. Here, X can be any algorithmic problem and the proposal is to study “diverse” versions of X, possibly with varying diversity measures, with the number of desired solutions as a parameter. To give only a few examples, results of the study of parameterized algorithms for diverse problems encompass a framework for low-treewidth graphs [2], a framework using odd sieving [7], and an algorithmic meta-theorem using cliquewidth [5]. As Fellows and Rosamond [9] also point out, in applied settings, optimality is not so essential. In line with this motivation, there is a growing body of literature on approximately solving diverse problems, including multiple frameworks [1, 10, 11, 15], and on selecting approximately diverse subsets of a given set [3]. While these have yielded approximation algorithms for diverse versions of, for example, Shortest Path [11], Interval Scheduling [15], Knapsack [10], and 
+
+Interval Vertex Deletion [1], the diverse version of makespan minimization on unrelated machines has not been studied. To our knowledge, prior work on diverse scheduling problems thus far covers variants of Diverse Interval Scheduling [15], including Diverse Job 
+
+5Selection [14], and heuristics for hybrid flow-shop scheduling [12]. In Interval Scheduling ,a maximum-cardinality subset of non-overlapping intervals needs to be selected from a given set of intervals, and so the problem differs substantially from makespan minimization on unrelated machines. G¨ oren and Pierreval [12] propose a heuristic framework for diverse scheduling and evaluate it on hybrid flow-shop makespan instances, without worst-case guarantees. Our algorithms for unrelated machines provide approximation guarantees for both makespan and diversity. 
+
+# 2 Preliminaries 
+
+We study nonpreemptive scheduling of jobs on unrelated machines. Let M be a set of m machines and J a set of n jobs. Each job j ∈ J has machine-dependent processing time pij ∈ Q≥0 on machine i ∈ M and diversity weight wj ∈ Q≥0. A schedule σ : J → M assigns each job to one machine. The load of machine i in schedule σ is Li(σ) = P  
+
+> j∈J:σ(j)= i
+
+pij , and the makespan is Cmax (σ) = max i∈M Li(σ). We write [ k] = {1, . . . , k }.For machine-dependent load targets Ti, we restrict each job j to its set of eligible machines Γ( j) = {i ∈ M | pij ≤ Ti}. No schedule respecting these load targets can assign j to a machine outside of Γ( j). For a fixed makespan target T , this becomes Γ( j) = {i ∈ M | pij ≤ T }. This restriction is used in the algorithmic parts of the paper. We also call a makespan target T
+
+feasible if there exists at least one schedule σ with Cmax (σ) ≤ T .The pairwise diversity d defined in the introduction is a weighted Hamming distance with nonnegative weights. If some weights are zero, it is formally a pseudometric. In any case, it satisfies the triangle inequality. Indeed, for each job j, the indicator 1[σ1(j)̸ = σ3(j)] is at most 
+
+1[σ1(j)̸ = σ2(j)] + 1[σ2(j)̸ = σ3(j)], and summing with weights wj ≥ 0 gives the claim. For a makespan target T , we define OPT Σ 
+
+> k
+
+(T ) = max 
+
+n
+
+dΣ(π1, . . . , π k) Cmax (πa) ≤ T ∀a ∈ [k]
+
+o
+
+.
+
+Analogously, we define OPT min  
+
+> k
+
+(T ) for the max-min diversity. Let d◦, where ◦ ∈ { Σ, min }, denote the corresponding diversity objective and let OPT ◦
+
+> k
+
+(T )denote the optimum value of this objective among k schedules of makespan at most T . We call an algorithm an ( α, β )-bicriteria approximation for the chosen diversity objective if, given a target makespan T , it returns k schedules σ1, . . . , σ k such that Cmax (σa) ≤ αT for every a ∈ [k]and d◦(σ1, . . . , σ k) ≥ βOPT ◦
+
+> k
+
+(T ). Throughout the paper we write x+ = max {x, 0} for a real number x.
+
+Comparison benchmark. All bicriteria guarantees in this paper compare the diversity of the output schedules to the optimum diversity achievable by k schedules of makespan at most the original target T . Thus, if an algorithm computes schedules of makespan at most αT , the diversity benchmark for the chosen objective remains OPT ◦
+
+> k
+
+(T ), rather than OPT ◦
+
+> k
+
+(αT ). 
+
+# 3 Hardness 
+
+Since makespan minimization is NP -hard even when producing a single schedule, it is not surprising that hardness persists when producing multiple diverse schedules. However, we prove that producing multiple diverse schedules is hard even in settings where the makespan target is essentially irrelevant. In Section 3.1, we show that computing two schedules of makespan at most T with optimal diversity at target T is NP -hard even when finding non-diverse schedules of makespan at most T
+
+6is trivial. The same hardness applies to both max-sum and max-min diversity, since for k = 2 the two objectives coincide. In Section 3.2, we show that computing three schedules of optimal max-min diversity is 
+
+NP -hard even in the absence of a makespan target. Further, we observe that the related problem of selecting k maximally diverse schedules from a given set of schedules is W[1]-hard with respect to k, for both max-sum and max-min diversity. 
+
+3.1 Hardness at a fixed makespan target 
+
+We give a simple reduction showing that optimizing diversity at a fixed makespan target is 
+
+NP -hard. Our hardness result holds even when all diversity weights are equal to 1 and every job is eligible on only two machines. Each job has the same processing time on both eligible machines, and so we establish hardness even in the restricted-assignment machine model (the graph-balancing machine model [6] on stars, in fact). Moreover, finding two distinct feasible schedules of makespan at most the target is trivial for the instances produced by the reduction. Thus, the hardness comes from the diversity objective. 
+
+Lemma 1. Given a makespan target T and a diversity value Q, it is NP -hard to decide whether there exist two schedules σ1, σ 2 such that Cmax (σ1), C max (σ2) ≤ T and d(σ1, σ 2) ≥ Q. The same hardness applies to both max-sum and max-min diversity, since for k = 2 the two objectives coincide. 
+
+The reduction is from Partition and establishes weak NP -hardness; see Appendix A for the proof. 
+
+3.2 Further hardness results 
+
+We give an additional hardness result specifically for max-min diversity. In particular, for this objective, producing three maximally diverse schedules is NP -hard even without a makespan constraint. 
+
+Lemma 2. Given a diversity value Q, it is NP -hard to decide whether there exist three schedules 
+
+σ1, σ 2, σ 3 such that dmin (σ1, σ 2, σ 3) ≥ Q, even if the makespan constraint is ignored. 
+
+The reduction is again from Partition and establishes weak NP -hardness. We refer to Appendix C.5 for the details. Note that this result separates max-min diversity from max-sum diversity in terms of hardness. This is because max-sum diversity for three schedules without makespan constraints can be formulated as a linear objective subject to assignment constraints and thus solved in polynomial time. Also, even when a set of schedules is already given , deciding whether a sufficiently diverse fixed-size subset exists is hard for both max-sum and max-min diversity: With an observation similar to that of Hanaka et al. [15, Observation 2], the problem of selecting a size-k subset of maximum diversity from a given set of schedules can be shown to be W[1]-hard with respect to k by a reduction from Set Packing , even with unit jobs on two machines. Intuitively, the input set of schedules can omit easy solutions, making the problem hard. 
+
+# 4 Max-sum diversity 
+
+In this section, we present our bicriteria approximation algorithm for max-sum diversity. We begin in Section 4.1 with the natural labeled k-tuple formulation, which keeps track of the machine chosen by each job in each of the k schedules and yields a ( k + 1)-makespan guarantee with 7optimal diversity. Our main result, in Section 4.2, shows that this labeled view is unnecessarily detailed: the max-sum diversity objective depends only on the multiplicities with which each job is assigned to each machine across the k schedules, not on which schedule makes each assignment. We exploit this observation through a multiplicity LP, introduced in Section 4.3, which decides only how many of the schedules assign each job to each machine. The LP uses ranked copies to linearize the convex same-machine penalty and keeps only aggregate-load constraints summed over all schedules. In Section 4.4, we round this LP by iterative rounding, obtaining integral multiplicities with a small aggregate-load violation. Finally, in Section 4.5, we decompose the multiplicities into k schedules using a slot construction, bipartite edge coloring, and an averaging argument to bound the load of each output schedule. Together, these steps yield k
+
+schedules of makespan at most 2 T whose max-sum diversity is at least OPT Σ 
+
+> k
+
+(T ). 
+
+4.1 Warm-up: the labeled k-tuple linear program 
+
+A natural first formulation for the problem keeps the labels of the k schedules explicit. Concretely, we introduce for every job j ∈ J and every tuple i = ( i1, . . . , i k) ∈ Γ( j)k a variable zj 
+
+> i
+
+that equals 1 if and only if for every schedule a job j is assigned to machine ia.For a job j and a tuple i = ( i1, . . . , i k), let μji (i) = |{ a ∈ [k] | ia = i}| be the number of schedules in which the tuple assigns job j to machine i. Two schedules a < b contribute wj
+
+to the diversity of job j exactly when ia̸ = ib, so the contribution of tuple i to the total diversity is wj
+
+ k
+
+> 2
+
+ − P
+
+> i∈Γ( j)
+
+ μji (i)2
+
+
+
+. Here,  μji (i)2
+
+ counts the number of schedule pairs both using machine i.Since wj
+
+ k
+
+> 2
+
+ is a constant, maximizing total diversity is equivalent to minimizing the same-machine penalty ϕj 
+
+> i
+
+= wj
+
+P
+
+> i∈Γ( j)
+
+ μji (i)2
+
+. This gives a minimization integer program with objec-tive P
+
+> j∈J
+
+P 
+
+> i∈Γ( j)k
+
+ϕj 
+
+> i
+
+zj 
+
+> i
+
+subject to assignment constraints P 
+
+> i∈Γ( j)k
+
+zj 
+
+> i
+
+= 1 for every job j ∈ J,and load constraints P
+
+> j∈J
+
+P   
+
+> i∈Γ( j)k:ia=i
+
+pij zj 
+
+> i
+
+≤ T for every machine i ∈ M and schedule a ∈ [k]. This formulation is a special case of the minimization k-sided placement problem ( Min kSP ), the k sides are the k schedules, the nodes on each side are copies of the machines, and a tuple (i1, . . . , i k) specifies the placement of one job on all k sides. We recall Min kSP in Appendix B.1. Korupolu, Meyerson, Rajaraman, and Tagiku [19] showed that Min kSP admits a polynomial-time algorithm preserving the optimal linear cost while increasing every capacity by a factor of k + 1. 1 Instantiating this with cost ϕj 
+
+> i
+
+and capacities T gives the following guarantee, whose proof is given in Appendix B. 
+
+Corollary 3 (Labeled k-tuple guarantee) . Fix k ∈ N≥2. There is a polynomial-time algorithm that, for every feasible makespan target T , computes k schedules σ1, . . . , σ k, each with makespan at most (k + 1) T and with dΣ(σ1, . . . , σ k) ≥ OPT Σ 
+
+> k
+
+(T ).
+
+This baseline guarantee has two limitations. First, the makespan guarantee ( k + 1) T grows with the number k of schedules. Second, the formulation can have Ω( nm k) variables, so it is polynomial only for constant k. We now show that max-sum diversity has additional structure that lets us avoid the labeled formulation.            
+
+> 1Korupolu, Meyerson, Rajaraman, and Tagiku note, based on a personal communication, that the Lov´ asz Local Lemma framework of Harris and Srinivasan for generalized scheduling problems [16, 17] applies to Min kSP ,yielding an O(log k/ log log k)-capacity approximation. This would improve the makespan bound of this labeled
+> k-tuple baseline from k+ 1 to O(log k/ log log k).
+
+84.2 Exact max-sum diversity with 2-approximate makespan 
+
+Let pmax = max {pij | j ∈ J, i ∈ Γ( j)} be the largest processing requirement. Since every eligible pair satisfies pij ≤ T , we have pmax ≤ T . We now state our main result for max-sum diversity. 
+
+Theorem 4 (Exact max-sum diversity with makespan 2 T ). There is an algorithm that, for every k ∈ N≥2 and every feasible target T , in polynomial time in the input size and in k,computes schedules σ1, . . . , σ k each with makespan at most T + pmax ≤ 2T and with diversity 
+
+dΣ(σ1, . . . , σ k) ≥ OPT Σ 
+
+> k
+
+(T ).
+
+This improves on the labeled k-tuple formulation in two ways. The makespan decreases from (k + 1) T to T + pmax ≤ 2T , which is independent of k. Moreover, the algorithm has polynomial run time even when k is part of the input. Both gains come from the same observation: the sum of diversities depends only on the multiplicities with which each job is assigned to each machine, not on which schedule makes each assignment. The proof has three steps. First, we express the sum of diversities using only unlabeled multiplicities. Second, we optimize and round these multiplicities using a multiplicity LP. Finally, we decompose the rounded multiplicities into k schedules by a slot-coloring argument. 
+
+4.3 The multiplicity linear program 
+
+Max-sum diversity does not depend on the labels of the schedules: it suffices to know, for every job j and machine i, how many of the k schedules assign j to i. For schedules σ1, . . . , σ k, we let μij = |{ a ∈ [k] | σa(j) = i}| count the schedules assigning j to i, so that P 
+
+> i∈Γ( j)
+
+μij = k.Among the  k
+
+> 2
+
+ pairs of schedules, exactly P
+
+> i∈Γ( j)
+
+ μij 
+
+> 2
+
+ place j on the same machine. Therefore, job j contributes wj
+
+   k
+
+> 2
+
+ − P
+
+> i∈Γ( j)
+
+ μij 
+
+> 2
+
+ to the total diversity, and summing over all jobs gives 
+
+dΣ(σ1, . . . , σ k) = 
+
+ k
+
+> 2
+
+ P  
+
+> j∈J
+
+wj
+
+
+
+− P 
+
+> j∈J
+
+wj
+
+P
+
+> i∈Γ( j)
+
+ μij 
+
+> 2
+
+. We write Q0 =  k
+
+> 2
+
+ P  
+
+> j∈J
+
+wj . For the multiplicity vector μ = ( μij )j∈J,i ∈Γ( j), we define the same-machine penalty by Φ( μ) = P 
+
+> j∈J
+
+wj
+
+P
+
+> i∈Γ( j)
+
+ μij 
+
+> 2
+
+. We obtain dΣ(σ1, . . . , σ k) = Q0 − Φ( μ). Since Q0 is independent of the schedules to compute, maximizing the sum of diversities is equivalent to minimizing the same-machine penalty Φ( μ). If a job j is assigned to the same machine in multiple schedules, we think of these as 
+
+copies of j, and the sth copy of j is said to have rank s ∈ [k]. To linearize Φ, we use the identity  μij 
+
+> 2
+
+ = Pμij 
+
+> s=1
+
+(s − 1). Thus, the sth copy of job j on a fixed machine contributes penalty cost ( s − 1) wj . For every eligible pair ( i, j ) and every rank s ∈ [k], we introduce a binary variable yijs representing selection of the sth copy of job j on machine i. We relax the binary constraints to obtain the multiplicity LP: minimize X
+
+> j∈J
+
+wj
+
+X
+
+> i∈Γ( j)
+
+X
+
+> s∈[k]
+
+(s − 1) yijs (Mult-LP) subject to X
+
+> i∈Γ( j)
+
+X
+
+> s∈[k]
+
+yijs = k ∀j ∈ J, 
+
+X 
+
+> j∈J:i∈Γ( j)
+
+X
+
+> s∈[k]
+
+pij yijs ≤ kT ∀i ∈ M, 
+
+0 ≤ yijs ≤ 1 ∀j ∈ J, i ∈ Γ( j), s ∈ [k] .
+
+Note that, for fixed multiplicities, the cheapest ranks 1 , . . . , μ ij preserve all loads and minimize the rank objective. Let Zmult denote the optimal value of (Mult-LP). We prove the following lemma in Appendix B. 9Lemma 5. The multiplicity LP (Mult-LP) is a relaxation of the max-sum problem at makespan target T . In particular, Zmult ≤ Q0 − OPT Σ 
+
+> k
+
+(T ).
+
+4.4 Rounding the multiplicity linear program 
+
+We iteratively round (Mult-LP). At each step, we fix integral variables. If no such variable exists, the extreme-point structure yields a machine-load constraint with total remaining slack at most one, which we drop. This gives integral multiplicities with an aggregate load bound, which we later decompose into schedules in Section 4.5. The proof of the following lemma is deferred to Appendix B. 
+
+Lemma 6 (Multiplicity rounding) . There is a polynomial-time algorithm that computes Y ∈{0, 1}m×n×k such that P
+
+> i∈Γ( j)
+
+P 
+
+> s∈[k]
+
+Yijs = k for every j ∈ J, P
+
+> j∈J:i∈Γ( j)
+
+P 
+
+> s∈[k]
+
+pij Yijs ≤
+
+kT + pmax for every i ∈ M , and P 
+
+> j∈J
+
+wj
+
+P
+
+> i∈Γ( j)
+
+P
+
+> s∈[k]
+
+(s − 1) Yijs ≤ Zmult .
+
+We now define the rounded multiplicities μij = P 
+
+> s∈[k]
+
+Yijs . By Lemma 6, P 
+
+> i∈Γ( j)
+
+μij = k
+
+for every job j ∈ J. Each machine i ∈ M has load Li = P 
+
+> j∈J
+
+pij μij = P
+
+> j∈J
+
+P 
+
+> s∈[k]
+
+pij Yijs ≤
+
+kT + pmax .It remains to relate the penalty Φ( μ) to the rounded objective. For a fixed eligible pair ( i, j ), the μij ranks selected by Y need not be the lowest ranks 1 , 2, . . . , μ ij . Replacing them by the cheapest μij ranks preserves the multiplicities, all load constraints, and can only decrease the rank objective. Therefore, Φ( μ) = X
+
+> j∈J
+
+wj
+
+X
+
+> i∈Γ( j)
+
+μij 
+
+2
+
+
+
+≤ X
+
+> j∈J
+
+wj
+
+X
+
+> i∈Γ( j)
+
+X
+
+> s∈[k]
+
+(s − 1) Yijs ≤ Zmult . (1) 
+
+4.5 Decomposing multiplicities into schedules 
+
+We now turn the integer multiplicities μij into k schedules. We build a bipartite multigraph between jobs and so-called “machine slots”, properly edge-color it to obtain the schedules, and use an averaging argument over slots to bound the makespan of each schedule. For every eligible pair ( i, j ) with μij > 0, we create μij copies of the pair ( i, j ), each of processing time pij . For each machine i, we sort all copies involving i in nonincreasing order of processing time and cut this list into consecutive slots of k copies each, with the last slot possibly smaller. The ordering is inspired by the slot construction in the generalized-assignment rounding of Shmoys and Tardos [27]. In our setting, the slots are used to decompose integral multiplicities into k schedules via edge coloring, and the resulting load bound exploits this additional structure. We construct a bipartite multigraph H with a vertex for each job on the left and a vertex for each machine slot on the right, adding one edge between job j and a slot of machine i for every copy of ( i, j ) in that slot. Each job j has degree P 
+
+> i∈Γ( j)
+
+μij = k, and each machine slot has degree at most k, as a slot holds at most k copies, so H has maximum degree k.By K˝ onig’s edge-coloring theorem, H admits a proper k-edge-coloring [18, 26] computable in polynomial time. Each color defines one schedule. If an edge of color a ∈ [k] is incident to job j and a slot of machine i, then we set σa(j) = i. Since the coloring is proper and every job has degree exactly k, each job has exactly one edge of each color, so every σa schedules all jobs. Moreover, for every pair ( i, j ), there are exactly μij edges from job j to slots of machine i, and hence exactly μij colors assign j to i. Thus, job j is scheduled on machine i in exactly μij of the schedules. Therefore, σ1, . . . , σ k realize the multiplicities μ. Figure 2 illustrates the slot construction and the edge-coloring for one machine. We now bound the makespan of the constructed schedules. 10 j1  
+
+> j2
+> j3
+> jobs slots of machine i
+> Slot 1 Slot 2 Slot 3 (i, j 1)(i, j 1)(i, j 2)(i, j 2)(i, j 2)(i, j 3)(i, j 3)
+
+Figure 2: Slot construction for k = 3 and a fixed machine i. The left vertices are jobs, the right vertices are the slots of machine i, and each copy ( i, j ) becomes one edge from job j to the slot containing it. The edge colors correspond to three schedules σ1, σ 2, σ 3. Only the edges incident to slots of machine i are shown. In the full multigraph, the omitted incident edges of j1 and j3
+
+go to slots of other machines. 
+
+Lemma 7 (Slot decomposition) . For every machine i ∈ M and color a ∈ [k], the load of machine i in schedule σa is at most Li(σa) ≤ 1
+
+> k
+
+
+
+Li(σ1) + · · · + Li(σk)
+
+
+
++  1 − 1
+
+> k
+
+ pmax .Proof. Fix a machine i ∈ M and a color a ∈ [k]. If i has no slots, then the load is zero and the claim holds, so let its slots be 1 , . . . , ℓ in the sorted order. For slot u ∈ [ℓ], let Pu be the total processing time of its copies and set Fu = Pu/k . This is the average processing time of the copies in slot u, except possibly for the last slot ℓ. For every color b ∈ [k], we define pbu as the processing time of the copy selected by color b from slot u, or 0 if it selects none. This is well-defined, because the coloring is proper, so each color selects at most one copy per slot. By the sorting, every copy in slot u has processing time at least as large as every copy in slot u + 1. Each full slot u < ℓ holds exactly k copies. Since the coloring is proper and uses k colors, every color appears exactly once at such a slot. For the fixed color a we have Pu = pau + P 
+
+> b̸=a
+
+pbu 
+
+with pbu ≥ pa(u+1) by the slot order. Thus Pu ≥ pau + ( k − 1) pa(u+1) . It follows that Fu = 
+
+> 1
+> k
+
+· Pu ≥ 1 
+
+> k
+
+· pau +  1 − 1
+
+> k
+
+ pa(u+1) . Moreover, for the last slot we have Fℓ ≥ 1 
+
+> k
+
+· paℓ . Summing these inequalities gives Pℓu=1 Fu ≥ 1 
+
+> k
+
+· pa1 + Pℓu=2 pau . This implies that P 
+
+> u∈[ℓ]
+
+pau ≤  P  
+
+> u∈[ℓ]
+
+Fu
+
+ +(1 − 1/k )pa1. Recall that Li = P 
+
+> j∈J
+
+pij μij = P 
+
+> b∈[k]
+
+Li(σb), since the schedules realize the multiplicities. Thus, P 
+
+> u∈[ℓ]
+
+Fu = Li/k is the average load on machine i over all schedules. Moreover, we have pa1 ≤ pmax . Thus, the load of machine i on schedule σa is 
+
+Li(σa) = 
+
+> ℓ
+
+X
+
+> u=1
+
+pau ≤
+
+> ℓ
+
+X
+
+> u=1
+
+Fu
+
+!
+
++
+
+
+
+1 − 1
+
+k
+
+
+
+pa1 ≤ Li
+
+k +
+
+
+
+1 − 1
+
+k
+
+
+
+pmax .
+
+4.6 Proof of Theorem 4 
+
+Proof. By Lemma 6, the rounded multiplicities have aggregate load at most kT + pmax on every machine. Furthermore, by Lemma 7, every output schedule σa satisfies, for every machine i ∈ M ,the load bound 
+
+Li(σa) = X
+
+> j∈J:σa(j)= i
+
+pij ≤ Li
+
+k +
+
+
+
+1 − 1
+
+k
+
+
+
+pmax ≤ kT + pmax 
+
+k + k − 1
+
+k pmax = T + pmax .
+
+In particular, this implies that Cmax (σa) ≤ T + pmax ≤ 2T for every schedule a ∈ [k]. The decomposition preserves the multiplicities μij . Hence, dΣ(σ1, . . . , σ k) = Q0 − Φ( μ). Using (1) and Lemma 5, we conclude that dΣ(σ1, . . . , σ k) ≥ Q0 − Zmult ≥ OPT Σ 
+
+> k
+
+(T ). 11 5 Max-min diversity 
+
+The diversity contribution of each job in the max-sum objective from the preceding section depends only on how often it is assigned to each machine across the k schedules, not on the labels of the schedules. Hence, we optimized aggregate multiplicities and recovered the labeled schedules only at the end. In contrast, for max-min diversity we must guarantee diversity for every pair of schedules. Thus, we must know which pairs of schedules differ on each job. The max-min objective is computationally harder than the max-sum objective because, given a diversity target Q, it is already NP -hard to decide whether there exist three schedules with 
+
+dmin (σ1, σ 2, σ 3) ≥ Q, even when dropping the makespan constraints (Lemma 2, see Appendix C.5). Therefore, in this section, we give two complementary bicriteria approximation algorithms for max-min diversity. First, in Section 5.1, we achieve near-optimal diversity. For fixed k and ε > 0, our labeled 
+
+k-tuple algorithm achieves a (1 − ε)-approximation to the optimum max-min diversity at the original target T , while increasing the makespan of the computed schedules to at most (3 ⌈12 /ε ⌉ + 1) T . After guessing the diversity target and heavy contributors to the diversity for each pair of schedules, the algorithm solves a residual k-tuple LP and iteratively rounds it. For each remaining job, we restrict the allowed tuples to use at most O(1 /ε ) distinct machines, and count the processing time of the job once on each machine used by its tuple. The main technical step is to prove that the residual LP remains feasible despite this restriction. Second, in Section 5.2, we achieve the classic factor-2 makespan guarantee approximately. The main idea is to build the schedules sequentially. Given the schedules already constructed, we view the construction of the next schedule as an unrelated-machine assignment problem with covering constraints, one per previously constructed schedule, each requiring the new schedule to be sufficiently diverse from it. For every fixed k ∈ N and ε > 0, we round this assignment problem and combine it with a metric argument to obtain schedules of makespan at most (2+ ε)T
+
+and a 12 (1 − ε)-approximation to the optimum max-min diversity. 
+
+5.1 Near-optimal max-min diversity 
+
+We first give an algorithm that obtains near-optimal max-min diversity. The details and full proofs of this subsection are given in Appendix C.1. 
+
+Theorem 8 (Near-optimal max-min diversity) . Fix k ∈ N≥2 and ε ∈ (0 , 1) . There is a deter-ministic algorithm that, for every feasible makespan target T , computes schedules σ1, . . . , σ k such that Cmax (σa) ≤ (3 ⌈12 /ε ⌉ + 1) T , for every a ∈ [k], and dmin (σ1, . . . , σ k) ≥ (1 − ε)OPT min  
+
+> k
+
+(T ).The algorithm runs in time (nm k)O(k4/ε ) · | I|O(1) , where |I| is the input encoding length. 
+
+We start from the natural labeled k-tuple LP. For each job j and tuple i = ( i1, . . . , i k) ∈ Γ( j)k,we introduce a variable zj 
+
+> i
+
+that indicates whether job j is placed on machine ia in schedule a
+
+for all a ∈ [k]. Together, the tuples assigned to the jobs encode k labeled schedules. For a pair 1 ≤ a < b ≤ k, let qa,b  
+
+> i,j
+
+= wj 1[ia̸ = ib]; this is the contribution of job j to the diversity of pair ( a, b ) when the tuple i places j on different machines in coordinates a and b. The diversity of pair ( a, b ) is therefore the linear expression P
+
+> j∈J
+
+P 
+
+> i∈Γ( j)k
+
+qa,b  
+
+> i,j
+
+zj 
+
+> i
+
+. Thus, requiring minimum pairwise diversity at least Q can be expressed by  k
+
+> 2
+
+ linear covering constraints. Set ε0 = ε/ 3, r =  k
+
+> 2
+
+, h =
+
+l 2rε0
+
+m
+
+, and t =
+
+l 4
+
+> ε0
+
+m
+
+. We first guess the largest contributors to each pairwise diversity, so that the contributions remaining in the LP are small enough to control the rounding loss. For a guessed diversity target Q > 0, our algorithm guesses, for every pair of schedules, the h jobs that are the largest positive diversity contributors in an optimal solution, 12 or all positive contributors if there are fewer than h, together with their assigned tuples. We discard guesses that are inconsistent or whose fixed jobs already violate a makespan constraint. For a fixed remaining guess, let G be the set of guessed jobs and let τ (j) = ( τ1(j), . . . , τ k(j)) be the guessed tuple for each j ∈ G. Define 
+
+Qfix  
+
+> a,b
+
+= X
+
+> j∈G
+
+wj 1[τa(j)̸ = τb(j)] and Qres  
+
+> a,b
+
+= ( Q − Qfix 
+
+> a,b
+
+)+ .
+
+A pair is active when Qres  
+
+> a,b
+
+> 0, and inactive otherwise. The guessed tuples are fixed; they add at most T to the load of each machine in each schedule. The residual LP assigns tuples only to jobs in J \ G. For each such job j, we keep only eligible tuples whose contribution to every active pair is at most Q/h . To obtain a makespan bound independent of k, we further restrict these tuples to use at most t distinct machines. Then, let Aj denote the set of eligible tuples, so 
+
+Aj =
+
+n
+
+i ∈ Γ( j)k |S(i)| ≤ t, qa,b  
+
+> i,j
+
+≤ Q/h for every active pair ( a, b )
+
+o
+
+.
+
+For tuple i = ( i1, . . . , i k) denote with S(i) the set of different machines that appear in i, so 
+
+S(i) = {i1, . . . , i k}. Note that |S(i)| can be less than k. We define the following residual k-tuple LP: X
+
+> i∈Aj
+
+zj 
+
+> i
+
+= 1 ∀j ∈ J \ G, 
+
+X
+
+> j∈J\G
+
+X  
+
+> i∈Aj:i∈S(i)
+
+pij zj 
+
+> i
+
+≤ tT ∀i ∈ M, 
+
+X
+
+> j∈J\G
+
+X
+
+> i∈Aj
+
+qa,b  
+
+> i,j
+
+zj 
+
+> i
+
+≥ (1 − ε0)Qres  
+
+> a,b
+
+∀ active ( a, b ),zj 
+
+> i
+
+≥ 0 ∀j ∈ J \ G, i ∈ Aj .
+
+(Res-Tuple-LP) The second constraint counts pij once whenever machine i appears in the tuple, regardless of how many coordinates use it. This charged load bounds the load on i in every schedule. The guessed jobs are handled separately and add at most T to the load on each machine in each schedule. The main technical step is showing that (Res-Tuple-LP) is feasible. 
+
+Lemma 9 (Feasibility after guessing) . Suppose that schedules π1, . . . , π k have makespan at most T and pairwise diversity at least Q. For the correct heavy-contributor guess from these schedules, (Res-Tuple-LP) is feasible. Proof sketch. We refer to π1, . . . , π k as the reference family . If t ≥ k, then the tuples of the reference family directly establish feasibility. Otherwise, we reduce the simultaneous diversity requirements to a single weighted objective. Let P be the nonempty polytope of nonnegative points satisfying the job and load (but not necessarily the diversity) constraints of (Res-Tuple-LP). Write ba,b = (1 − ε0)Qres  
+
+> a,b
+
+for the diversity target of pair ( a, b ) and da,b (z) for its residual diversity at z. Choose z ∈ P minimizing Φ( z) = X
+
+> a<b
+
+ (ba,b − da,b (z)) +2 .
+
+If Φ( z) = 0, the lemma follows. Otherwise, give each pair weight λa,b = ( ba,b − da,b (z)) +. We will construct y ∈ P such that 
+
+X
+
+> a<b
+
+λa,b da,b (y) ≥ X
+
+> a<b
+
+λa,b ba,b . (2) 13 Although y does not need to meet every target individually, this inequality ensures that a sufficiently small move from z toward y decreases Φ, contradicting the minimality of z.The construction obtains this weighted diversity while controlling load. Let the unguessed 
+
+light jobs be L = {j ∈ J \ G | wj ≤ Q/h }. For the correct guess, these jobs retain enough diversity in the reference schedules to meet every active residual target. Define 
+
+D = X
+
+> a<b
+
+λa,b 
+
+X
+
+> j∈L
+
+wj 1[πa(j)̸ = πb(j)] .
+
+Thus, D is the reference family’s pairwise diversity on the light jobs, aggregated with pair weights λa,b . We refer to this as weighted diversity . We greedily select a common collection of t schedules from {π1, . . . , π k}, starting with π1, to determine the available machines for each light job. Consider the complete graph on the k schedule labels with edge weights λa,b . For each light job, a coloring using its available machines as colors determines its tuple: endpoints with different colors correspond to schedules that differ on that job. An optimal coloring (that is, with maximum total weight on dichromatic edges) therefore maximizes the job’s weighted diversity. Each greedy step selects a reference schedule maximizing the total increase in this quantity over all light jobs. Every other unguessed job j receives its constant-π1(j) tuple. Every resulting tuple belongs to Aj . Moreover, every used job–machine pair occurs in at least one of the t reference schedules, so the charged load of each machine is at most tT .After t greedy selections, the resulting point y has weighted diversity at least (1 − ε0)D. Since 
+
+D ≥ P 
+
+> a<b
+
+λa,b Qres 
+
+> a,b
+
+, this proves (2) and yields the required contradiction. Having now established that the correct heavy-contributor guess makes (Res-Tuple-LP) feasible, we show next that we can round such a feasible LP to assign the unguessed jobs. 
+
+Lemma 10 (Rounding after guessing) . A deterministic polynomial-time algorithm exists that iteratively rounds feasible solutions of (Res-Tuple-LP) such that exactly one tuple is assigned to each unguessed job, every machine has unguessed-job load at most 3tT in every resulting schedule, and the unguessed jobs contribute diversity at least (1 − ε0)Qres  
+
+> a,b
+
+− ε0Q to every active pair (a, b ).
+
+We use iterative rounding, ensuring that every iteration deletes at least one variable or drops a constraint. In particular, in an extreme-point solution with strictly fractional variables, we drop the load constraint of machine i if P   
+
+> j, i:i∈S(i)
+
+pij (1 − zj 
+
+> i
+
+) ≤ 2tT , or we drop the diversity constraint of an active pair ( a, b ) if P 
+
+> j, i
+
+qa,b  
+
+> i,j
+
+zj 
+
+> i
+
+≤ ε0Q.
+
+5.2 A (2 + ε)-makespan approximation for max-min diversity 
+
+In this section, we construct k schedules whose makespan is close to the target T while having bounded minimum pairwise diversity. In particular, for constant k and ε, our algorithm computes k schedules of makespan at most (2 + ε)T and minimum pairwise diversity at least  
+
+> 12
+
+(1 −ε)OPT min  
+
+> k
+
+(T ). The makespan factor matches, up to ε, the best-known factor 2 for makespan minimization on unrelated machines [23], which has resisted improvement for over three decades. We construct the schedules sequentially. Suppose that schedules σ1, . . . , σ r have already been constructed, and consider adding a new schedule σ. As before, the crucial observation is that the diversity of σ from each previous schedule is a linear function of the assignment of σ. Indeed, define coefficients qaij = wj · 1[i̸ = σa(j)] representing the contribution of job j
+
+to the diversity with respect to σa, when schedule σ places j on machine i while schedule σa
+
+places it on a machine different from i. Summing over the jobs recovers exactly the pairwise diversity: d(σ, σ a) = P 
+
+> j∈J
+
+qaσ(j), j . Consequently, for a target diversity Q, the new schedule σ
+
+14 has diversity at least Q from every previously constructed schedule if and only if for all a ∈ [r]we have P 
+
+> j∈J
+
+qaσ(j), j ≥ Q.Requiring σ to be far from all r previous schedules is thus captured by r covering con-straints, one per previous schedule. Together with the makespan bound, finding such a σ
+
+is an unrelated-machine scheduling problem with makespan and covering constraints. We isolate this assignment problem and solve it in full generality, treating the covering contribu-tions as arbitrary coefficients qaij ∈ Q≥0 rather than specific diversity coefficients. As before, let Γ( j) = {i ∈ M | pij ≤ Ti} be the set of eligible machines for job j ∈ J. In particular, a machine i with pij > T i cannot run j without violating its makespan target, so we restrict the assignment variables to xij with i ∈ Γ( j). Assigning each job to a single eligible machine while meeting all makespan and covering targets is captured by the following LP, whose integral solutions are exactly the feasible assignments: 
+
+X
+
+> i∈Γ( j)
+
+xij = 1 ∀j ∈ J, (Cov-LP) 
+
+X 
+
+> j:i∈Γ( j)
+
+pij xij ≤ Ti ∀i ∈ M, 
+
+X
+
+> j∈J
+
+X
+
+> i∈Γ( j)
+
+qaij xij ≥ Qa ∀a ∈ [r],xij ≥ 0 ∀j ∈ J, i ∈ Γ( j) .
+
+The makespan constraints upper bound the load of each machine, while the r covering constraints lower bound the total contribution collected. The main tool for establishing our bicriteria approximation for max-min diversity is the following proposition which we prove in Appendix C.3 by combining a guessing argument with iterative rounding. 
+
+Proposition 11. Fix r ∈ N0 and ε ∈ (0 , 1) . If (Cov-LP) admits an integral feasible solution, then an integral assignment X can be computed in time (nm )O(r2/ε 2) · | I|O(1) , where |I| is the input encoding length, satisfying P 
+
+> i∈Γ( j)
+
+Xij = 1 for all j ∈ J, P 
+
+> j∈J:i∈Γ( j)
+
+pij Xij ≤ (2 + ε)Ti
+
+for all i ∈ M , and P
+
+> j∈J
+
+P 
+
+> i∈Γ( j)
+
+qaij Xij ≥ (1 − ε)Qa for all a ∈ [r].
+
+We now return to the (2 + ε, 12 (1 − ε))-bicriteria approximation for max-min diversity. We construct k schedules sequentially by applying Proposition 11 exactly k times. For a diversity threshold Q ≤ OPT min  
+
+> k
+
+(T ), using a metric argument we show that at each step there exists a schedule of makespan at most T and diversity at least 12 Q from each previously constructed schedule. 
+
+Theorem 12 (Low-makespan max-min diversity) . Fix k ∈ N≥2 and ε ∈ (0 , 1) . There is an algorithm that, for every feasible makespan target T , computes schedules σ1, . . . , σ k such that 
+
+Cmax (σa) ≤ (2+ ε)T for every a ∈ [k] and dmin (σ1, . . . , σ k) ≥ 12 (1 −ε)OPT min  
+
+> k
+
+(T ). The algorithm runs in time (nm )O(k2/ε 2) · | I|O(1) , where |I| is the input encoding length. Proof sketch. We first prove a threshold statement. Set ε0 = ε/ 3, fix a diversity threshold Q ≤
+
+OPT min  
+
+> k
+
+(T ), and suppose for now that such a value Q is given. We compute k schedules of makespan at most (2 + ε0)T and max-min diversity at least 12 (1 − ε0)Q. We construct the schedules sequentially by applying Proposition 11 exactly k times. In the first application, there are no covering constraints. Suppose that schedules σ1, . . . , σ r−1 have already been constructed. Assume that each of them has makespan at most (2 + ε0)T and that every pair among them has diversity at least 12 (1 − ε0)Q.Let π1, . . . , π k be an optimal solution, so Cmax (πa) ≤ T for every a ∈ [k] and d(πa, π a′ ) ≥
+
+OPT min  
+
+> k
+
+(T ) ≥ Q for every distinct a, a ′ ∈ [k]. We claim that one of these schedules is at distance at 15 least Q/ 2 from every previously constructed schedule. Suppose not. Then for every a ∈ [k], there exists some b(a) ∈ [r − 1] such that d(πa, σ b(a)) < 12 Q. Since r − 1 < k , the pigeonhole principle implies that two distinct optimum schedules πa and πa′ are mapped to the same constructed schedule σb. By the triangle inequality, we get d(πa, π a′ ) ≤ d(πa, σ b) + d(σb, π a′ ) < 12 Q + 12 Q = Q.This contradicts d(πa, π a′ ) ≥ OPT min  
+
+> k
+
+(T ) ≥ Q. Therefore, there exists a ∈ [k] such that 
+
+d(πa, σ b) ≥ 12 Q for every b ∈ [r − 1]. Fix such a schedule πa. The schedule πa has makespan at most T and diversity at least 12 Q
+
+from each of σ1, . . . , σ r−1. It is therefore an integral feasible solution of (Cov-LP) with makespan targets Ti = T for all machines i and covering targets 12 Q, one covering constraint for each previously constructed schedule. Applying Proposition 11 with parameter ε0 gives a schedule σr
+
+with Cmax (σr) ≤ (2 + ε0)T and, for all b ∈ [r − 1], we get d(σb, σ r) ≥ (1 − ε0) · 12 Q = 12 (1 − ε0)Q.Thus σ1, . . . , σ r satisfy the same invariant. After k steps, this proves the threshold statement for every Q ≤ OPT min  
+
+> k
+
+(T ). In Appendix C.4, we complete the proof by guessing Q geometrically and absorbing the loss through the choice ε0 = ε/ 3. This gives the stated 12 (1 − ε)OPT min  
+
+> k
+
+(T )guarantee and run time bound. 
+
+# 6 Future work 
+
+In this work, we studied bicriteria approximation algorithms for scheduling on unrelated machines under the max-sum and max-min diversity objectives. The main open question that remains is whether max-min diversity admits a polynomial-time algorithm with constant approximation guarantees for both makespan and diversity when k is part of the input. Further, future work can go beyond the standard notions of max-sum and max-min diversity. For example, schedules could instead be compared using coverage diversity , absolute-difference diversity , or 
+
+Venn diversity [4, 5]. Although unrelated machines generalize models such as restricted assignment, related ma-chines, and identical machines, from a practical perspective, other notions of diversity may be of interest especially for identical machines. In this special case, our notion of diversity can consider two schedules maximally diverse even when only the labels of machines differ but the two schedules partition the jobs in the same way. Thus, it is of interest to study notions of diversity that are invariant under machine relabeling. 
+
+AI acknowledgment. Generative AI models (GPT-6 Astra and GPT-6.1 Sol) were used to search the literature, check proofs, and draft figures. GPT-6 Astra developed the algorithm and proof of Theorem 8 for near-optimal max-min diversity with a makespan approximation factor independent of k, using as input the authors’ existing result in Theorem 13, which guarantees makespan at most (2 k + 1 + ε)T . The authors take full responsibility for all content of the paper. 
+
+# References 
+
+[1] P. Austrin, I. O. Bercea, M. Goswami, N. Limaye, and A. Srinivasan. Algorithms for the Diverse-k-SAT problem: The geometry of satisfying assignments. In Proc. ICALP 2025 ,volume 334 of Leibniz Int. Proc. Informatics , pages 14:1–14:17, 2025. [2] J. Baste, M. R. Fellows, L. Jaffke, T. Masaˇ r´ ık, M. de Oliveira Oliveira, G. Philip, and F. A. Rosamond. Diversity of solutions: An exploration through the lens of fixed-parameter tractability theory. Artificial Intelligence , 303:103644, 2022. 16 [3] A. Cevallos, F. Eisenbrand, and R. Zenklusen. Local search for max-sum diversification. In 
+
+Proc. SODA 2017 , pages 130–142, 2017. [4] M. de Berg, A. L´ opez Mart´ ınez, and F. Spieksma. Finding diverse solutions in combinatorial problems with a distributive lattice structure. In Proc. ISAAC 2025 , volume 359 of Leibniz Int. Proc. Informatics , pages 11:1–11:19, 2025. [5] K. Drabik and T. Masaˇ r´ ık. Finding diverse solutions parameterized by cliquewidth. In 
+
+Proc. AAAI 2026 , volume 40, pages 36864–36872, 2026. [6] T. Ebenlendr, M. Krc´ al, and J. Sgall. Graph balancing: A special case of scheduling unrelated parallel machines. Algorithmica , 68(1):62–80, 2014. [7] E. Eiben, T. Koana, and M. Wahlstr¨ om. Determinantal sieving. In Proc. SODA 2024 ,pages 377–423, 2024. [8] E. Erkut and S. Neuman. Analytical models for locating undesirable facilities. European Journal of Operational Research , 40(3):275–291, 1989. [9] M. R. Fellows and F. Rosamond. The DIVERSE X paradigm. In Algorithmic Enumeration: Output-sensitive, Input-Sensitive, Parameterized, Approximative (Dagstuhl Seminar 18421) .Schloss Dagstuhl – Leibniz-Zentrum f¨ ur Informatik, 2019. [10] W. G´ alvez, M. Goswami, A. Merino, G. Park, M.-T. Tsai, and V. Verdugo. A framework for the design of efficient diversification algorithms to NP-hard problems, 2025. URL 
+
+https://arxiv.org/abs/2501.12261 .[11] J. Gao, M. Goswami, C. S. Karthik, M.-T. Tsai, S.-Y. Tsai, and H.-T. Yang. Obtaining approximately optimal and diverse solutions via dispersion. In Proc. LATIN 2022 , volume 13568 of Lecture Notes Comput. Sci. , pages 222–239, 2022. [12] S. G¨ oren and H. Pierreval. Taking advantage of a diverse set of efficient production schedules: A two-step approach for scheduling with side concerns. Computers & Operations Research ,40(8):1979–1990, 2013. [13] R. L. Graham, E. L. Lawler, J. K. Lenstra, and A. H. G. Rinnooy Kan. Optimization and approximation in deterministic sequencing and scheduling: a survey. Annals of Discrete Mathematics , 5:287–326, 1979. [14] T. Hanaka, Y. Kobayashi, K. Kurita, and Y. Otachi. Finding diverse trees, paths, and more. In Proc. AAAI 2021 , volume 35, pages 3778–3786, 2021. [15] T. Hanaka, M. Kiyomi, Y. Kobayashi, Y. Kobayashi, K. Kurita, and Y. Otachi. A framework to design approximation algorithms for finding diverse solutions in combinatorial problems. In Proc. AAAI 2023 , volume 37, pages 3968–3976, 2023. [16] D. G. Harris and A. Srinivasan. Constraint satisfaction, packet routing, and the L´ ovasz local lemma. In Proc. STOC 2013 , pages 685–694, 2013. [17] D. G. Harris and A. Srinivasan. The Moser–Tardos framework with partial resampling. 
+
+Journal of the ACM , 66(5), 2019. [18] D. K˝ onig. Graphok ´ es alkalmaz´ asuk a determin´ ansok ´ es a halmazok elm´ elet´ ere. Mathematikai ´es Term´ eszettudom´ anyi ´Ertes´ ıt˝ o, 34:104–119, 1916. In Hungarian. 17 [19] M. Korupolu, A. Meyerson, R. Rajaraman, and B. Tagiku. Coupled and k-sided placements: generalizing generalized assignment. Mathematical Programming , 154(1–2):493–514, 2015. [20] J. Krarup. The peripatetic salesman and some related unsolved problems. In Combinatorial Programming: Methods and Applications , pages 173–178, 1975. [21] C.-C. Kuo, F. Glover, and K. S. Dhir. Analyzing and modeling the maximum diversity problem by zero-one programming. Decision Sciences , 24(6):1171–1185, 1993. [22] L. C. Lau, R. Ravi, and M. Singh. Iterative methods in combinatorial optimization , volume 46 of Cambridge Texts in Applied Mathematics . Cambridge University Press, 2011. [23] J. K. Lenstra, D. B. Shmoys, and ´E. Tardos. Approximation algorithms for scheduling unrelated parallel machines. Mathematical Programming , 46(1–3):259–271, 1990. [24] A. Nikfarjam, A. Moosavi, A. Neumann, and F. Neumann. Computing high-quality solutions for the patient admission scheduling problem using evolutionary diversity optimisation. In 
+
+Proc. PPSN 2022 , pages 250–264, 2022. [25] Santhini K. A., K. Munagala, M. Nasre, and G. S. Sankar. Group fairness and multi-criteria optimization in school assignment. In Proc. FORC 2025 , volume 329 of Leibniz Int. Proc. Informatics , pages 20:1–20:20, 2025. [26] A. Schrijver. Combinatorial Optimization: Polyhedra and Efficiency , volume 24 of Algorithms and Combinatorics . Springer, Berlin, Heidelberg, 2003. [27] D. B. Shmoys and ´E. Tardos. An approximation algorithm for the generalized assignment problem. Mathematical Programming , 62(1–3):461–474, 1993. 18 A Hardness at a fixed makespan target 
+
+Lemma 1. Given a makespan target T and a diversity value Q, it is NP -hard to decide whether there exist two schedules σ1, σ 2 such that Cmax (σ1), C max (σ2) ≤ T and d(σ1, σ 2) ≥ Q. The same hardness applies to both max-sum and max-min diversity, since for k = 2 the two objectives coincide. Proof. We reduce from Partition . Let a1, . . . , a n be positive integers with total sum 2 B, and also assume without loss of generality that aj ≤ B for every j. We create one job j for each aj ,so the set of all jobs is J = [ n]. There is one machine m⋆ and, for every job j, one private dummy machine dj . We set pj = aj and define pm⋆j = pdj j = pj and pij = B + 1 for every other machine i. Thus, at makespan target B, job j is eligible exactly on m⋆ and dj . All diversity weights are equal to 1. We set the makespan target to T = B and the target diversity to Q = n.If the Partition instance has a set S ⊆ J with P 
+
+> j∈S
+
+aj = B, then we define two schedules as follows. In the first schedule, assign the jobs of S to m⋆ and all other jobs to their private dummy machines. In the second schedule, we assign the jobs of J \ S to m⋆ and the jobs of S to their private dummy machines. Both schedules have makespan B and every job is assigned to different machines in the two schedules. Hence d(σ1, σ 2) = n.Conversely, suppose that there are two schedules σ1, σ 2 of makespan at most B and pairwise diversity d(σ1, σ 2) ≥ n. Since all weights are 1, the maximum possible diversity is n, so every job must be assigned to different machines in the two schedules. Each job has only two eligible machines, m⋆ and dj , and therefore exactly one of the two schedules assigns j to m⋆.Let S = {j ∈ J | σ1(j) = m⋆}. From the two makespan bounds we get 
+
+X
+
+> j∈S
+
+aj ≤ B and X
+
+> j / ∈S
+
+aj ≤ B . 
+
+Since the total size is 2 B, both inequalities are tight and S is a feasible partition. Finally, finding two distinct schedules of makespan at most T is trivial in the reduction. Choose any job j0 (which has pj0 = aj0 ≤ B = T by assumption) and create two distinct schedules in the following way: Assign all jobs to their private dummy machines in the first schedule, and assign only j0 to m⋆ in the second schedule while assigning all other jobs to their private dummy machines. Both schedules have makespan at most T .Note that the reduction shows hardness even in the graph-balancing machine model [6] (where each eligible set is represented by an edge between two machines), on stars in particular. 
+
+# B Max-sum diversity proofs 
+
+B.1 Minimization k-sided placement 
+
+For completeness, we recall the minimization k-sided placement problem ( Min kSP ) [19]. There are k sides S1, . . . , S k, each consisting of capacitated nodes. Each job must be assigned to one 
+
+k-tuple e = ( u1, . . . , u k), where ua ∈ Sa for every side a ∈ [k]. For each job j and tuple e,the input specifies a cost fj (e) and a demand vector dj (e) ∈ Rk
+
+> ≥0
+
+. If job j is assigned to 
+
+e = ( u1, . . . , u k), then it incurs cost fj (e) and consumes the ath coordinate of dj (e) from the capacity of node ua, for every a ∈ [k]. The goal is to assign every job to one tuple so as to minimize the total cost, while respecting all node capacities. In our application, side a corresponds to schedule a, the nodes on each side are copies of the machines, and job j may only use tuples ( i1, . . . , i k) ∈ Γ( j)k. Assigning job j to 19 tuple i = ( i1, . . . , i k) consumes demand piaj on machine ia of side a. The cost of the tuple is 
+
+fj (i) = wj
+
+X
+
+> i∈M
+
+μji (i)2
+
+
+
+,
+
+where μji (i) = |{ a ∈ [k] | ia = i}| .
+
+Corollary 3 (Labeled k-tuple guarantee) . Fix k ∈ N≥2. There is a polynomial-time algorithm that, for every feasible makespan target T , computes k schedules σ1, . . . , σ k, each with makespan at most (k + 1) T and with dΣ(σ1, . . . , σ k) ≥ OPT Σ 
+
+> k
+
+(T ).Proof. Let Q0 =  k
+
+> 2
+
+ P  
+
+> j∈J
+
+wj . Note that any integral tuple assignment has total diversity exactly Q0 minus its total penalty P 
+
+> j∈J
+
+ϕj
+
+> i(j)
+
+. Any k schedules of makespan at most T define a feasible k-sided placement of capacity T , and conversely. In particular, an optimal solution attaining OPT Σ 
+
+> k
+
+(T ) has penalty Q0 − OPT Σ 
+
+> k
+
+(T ), so the minimum penalty at capacity T is at most Q0 − OPT Σ 
+
+> k
+
+(T ). Applying the ( k + 1)-capacity algorithm for Min kSP yields an integral tuple assignment whose penalty is at most this minimum penalty and whose capacities are at most ( k + 1) T .Translating the tuple assignment back into k schedules gives makespan at most ( k + 1) T and total diversity at least OPT Σ 
+
+> k
+
+(T ). 
+
+The multiplicity linear program. Lemma 5. The multiplicity LP (Mult-LP) is a relaxation of the max-sum problem at makespan target T . In particular, Zmult ≤ Q0 − OPT Σ 
+
+> k
+
+(T ).Proof. Let π1, . . . , π k be any k schedules of makespan at most T and set μij = |{ a ∈ [k] |
+
+πa(j) = i}| . Define yijs = 1 for 1 ≤ s ≤ μij and yijs = 0 otherwise. We check that y is feasible for (Mult-LP). For every job j ∈ J, P 
+
+> i,s
+
+yijs = P 
+
+> i∈Γ( j)
+
+μij = k. Furthermore, for every machine i ∈ M ,
+
+X 
+
+> j∈J:i∈Γ( j)
+
+X
+
+> s∈[k]
+
+pij yijs = X 
+
+> j∈J:i∈Γ( j)
+
+pij μij = X
+
+> a∈[k]
+
+X 
+
+> j∈J:πa(j)= i
+
+pij ≤ kT .
+
+The last inequality holds because each schedule has load at most T on machine i. Since y places copies in the lowest ranks, its objective value is 
+
+X
+
+> j∈J
+
+wj
+
+X
+
+> i∈Γ( j)
+> μij
+
+X
+
+> s=1
+
+(s − 1) = X
+
+> j∈J
+
+wj
+
+X
+
+> i∈Γ( j)
+
+μij 
+
+2
+
+
+
+= Φ( μ) .
+
+Taking π1, . . . , π k to be an optimal family for max-sum diversity with makespan at most T
+
+implies Zmult ≤ Φ( μ) = Q0 − OPT Σ 
+
+> k
+
+(T ). 
+
+Rounding the multiplicity linear program. Lemma 6 (Multiplicity rounding) . There is a polynomial-time algorithm that computes Y ∈{0, 1}m×n×k such that P
+
+> i∈Γ( j)
+
+P 
+
+> s∈[k]
+
+Yijs = k for every j ∈ J, P
+
+> j∈J:i∈Γ( j)
+
+P 
+
+> s∈[k]
+
+pij Yijs ≤
+
+kT + pmax for every i ∈ M , and P 
+
+> j∈J
+
+wj
+
+P
+
+> i∈Γ( j)
+
+P
+
+> s∈[k]
+
+(s − 1) Yijs ≤ Zmult .
+
+20 Proof. We prove this using iterative relaxation. The cost of variable yijs is ( s − 1) wj . Moreover, the processing requirement of variable yijs is pij ≤ pmax .During the algorithm, each variable is either already fixed to 0 or 1, or is still present. A job j
+
+is active if it still has present variables. Furthermore, a machine i is active if its load constraint has not been dropped. Denote the active jobs by J′ and the active machines by M ′. For an active job j ∈ J′, let bj be the number of remaining ranked copies that must still be selected for job j. Initially, bj = k. For an active machine i ∈ M ′, let T res  
+
+> i
+
+be its residual capacity. Initially, 
+
+T res  
+
+> i
+
+= kT . We write E for the set of tuples ( i, j, s ) such that the variable yijs is still present. Moreover, we denote by δ(j) the set of tuples with present variables containing job j and by δ(i)those containing machine i.At every iteration, we compute an optimal extreme-point solution y of the following residual LP: minimize X
+
+> (i,j,s )∈E
+
+(s − 1) wj yijs 
+
+subject to X
+
+> (i,j,s )∈δ(j)
+
+yijs = bj ∀j ∈ J′,
+
+X
+
+> (i,j,s )∈δ(i)
+
+pij yijs ≤ T res  
+
+> i
+
+∀i ∈ M ′,
+
+0 ≤ yijs ≤ 1 ∀(i, j, s ) ∈ E . 
+
+We apply the following rules to iteratively relax the LP. If yijs = 0, then we remove the variable. If yijs = 1, then we fix this variable to 1 (removing yijs from the residual LP), decrease bj by one, and if machine i is active, then decrease T res  
+
+> i
+
+by pij . Once bj = 0, all remaining variables of job j are fixed to 0, and job j becomes inactive. It remains to specify what to do when every remaining variable is strictly fractional. Suppose that every present variable satisfies 0 < y ijs < 1. Since no variable bound is tight, the extreme point is determined by |E| linearly independent tight constraints among the active job equalities and the tight active machine constraints. In particular, this implies |E| ≤ | J′| + |M ′|.Each active job j satisfies P 
+
+> (i,j,s )∈δ(j)
+
+yijs = bj ≥ 1, hence 
+
+X
+
+> (i,j,s )∈E
+
+yijs = X
+
+> j∈J′
+
+bj ≥ | J′| .
+
+Combining these two inequalities gives P 
+
+> (i,j,s )∈E
+
+(1 − yijs ) ≤ | M ′|. For an active machine i, we define ∆ i(y) = |δ(i)| − P 
+
+> (i,j,s )∈δ(i)
+
+yijs = P
+
+> (i,j,s )∈δ(i)
+
+(1 − yijs ). Summing over active machine constraints implies 
+
+X 
+
+> i∈M′
+
+∆i(y) ≤ X
+
+> (i,j,s )∈E
+
+(1 − yijs ) ≤ | M ′| .
+
+Moreover, M ′ is nonempty. Indeed, if M ′ = ∅, then |E| ≤ | J′|. Since all variables are strictly fractional, we have P 
+
+> (i,j,s )∈E
+
+yijs < |E|, while P 
+
+> (i,j,s )∈E
+
+yijs = P 
+
+> j∈J′
+
+bj ≥ | J′|, a contradiction. Thus some active machine i ∈ M ′ satisfies ∆ i(y) ≤ 1. We drop this machine constraint. The algorithm terminates because every iteration either fixes at least one variable or drops one machine constraint. We now prove the load guarantee. Consider a machine i ∈ M . If its constraint is never dropped, then its final aggregate load is at most its initial capacity kT . Otherwise, consider the moment its constraint is dropped and let S = δ(i) be its present variables then. Let T fix  
+
+> i
+
+be the 21 load already fixed on machine i, so that T fix  
+
+> i
+
++ T res  
+
+> i
+
+= kT , and recall that P 
+
+> (i,j,s )∈S
+
+pij yijs ≤ T res 
+
+> i
+
+and ∆ i(y) = P 
+
+> (i,j,s )∈S
+
+(1 − yijs ) ≤ 1. Let Yijs ∈ { 0, 1} be the final value of each variable. Then 
+
+X
+
+> (i,j,s )∈S
+
+pij Yijs ≤ X
+
+> (i,j,s )∈S
+
+pij yijs + X
+
+> (i,j,s )∈S
+
+pij (Yijs − yijs )+
+
+≤ T res  
+
+> i
+
++ pmax 
+
+X
+
+> (i,j,s )∈S
+
+(Yijs − yijs )+ ≤ T res  
+
+> i
+
++ pmax 
+
+X
+
+> (i,j,s )∈S
+
+(1 − yijs )= T res  
+
+> i
+
++ pmax ∆i(y) ≤ T res  
+
+> i
+
++ pmax .
+
+Hence the final load on machine i is at most T fix  
+
+> i
+
++ T res  
+
+> i
+
++ pmax = kT + pmax .Finally, we maintain the invariant that the fixed cost plus the residual LP optimum is at most Zmult . Fixing a variable that is integral in the current optimal extreme point preserves this invariant, and dropping a machine constraint can only decrease the optimum value of the residual LP. Therefore, the final integral solution Y has cost at most Zmult .
+
+# C Max-min diversity proofs 
+
+C.1 Near-optimal max-min diversity 
+
+Feasibility after guessing. Lemma 9 (Feasibility after guessing) . Suppose that schedules π1, . . . , π k have makespan at most T and pairwise diversity at least Q. For the correct heavy-contributor guess from these schedules, (Res-Tuple-LP) is feasible. Proof. The argument has two parts: construct a feasible assignment that performs well for the weights given by the current diversity shortfalls, then use it to decrease their sum of squares unless every target is met. 
+
+Light jobs suffice. Let L = {j ∈ J \ G | wj ≤ Q/h }. An unguessed job outside L cannot contribute to an active pair in the reference family. If it did, the h largest contributors to that pair would each have weight greater than Q/h , making Qfix  
+
+> a,b
+
+> Q , contrary to the pair being active. If there were fewer than h contributors, all would have been guessed. Subtracting the guessed contribution from the reference diversity gives 
+
+X
+
+> j∈L
+
+wj 1[πa(j)̸ = πb(j)] ≥ Q − Qfix  
+
+> a,b
+
+= Qres  
+
+> a,b
+
+for every active pair ( a, b ) .
+
+Measure the unmet targets. Let P be the set of nonnegative points satisfying only the job and load constraints of (Res-Tuple-LP). It is nonempty: for each unguessed job j choose the constant tuple ( π1(j), . . . , π 1(j)), setting its variable to one and the others to zero. This tuple is in Aj : its machine is eligible because pπ1(j),j ≤ T , it uses one machine, and every diversity coefficient is zero. The job equalities hold, and the charged load on each machine is at most its load in π1, hence, at most T ≤ tT .For every pair ( a, b ), denote its target and supplied residual diversity by 
+
+ba,b = (1 − ε0)Qres 
+
+> a,b
+
+, da,b (z) = X
+
+> j / ∈G
+
+X
+
+> i∈Aj
+
+qa,b  
+
+> i,j
+
+zj 
+
+> i
+
+.
+
+Choose z ∈ P minimizing the sum of squared shortfalls Φ( z) = X
+
+> a<b
+
+ (ba,b − da,b (z)) +2 .
+
+22 The minimum exists: linear equalities and non-strict inequalities are preserved under limits, so P is closed; nonnegativity and the job equalities imply that every variable lies in [0 , 1], so it is bounded. In finite dimensions these properties imply compactness. Since P is nonempty and Φ is continuous (a finite sum of squares of positive parts of linear functions), the extreme value theorem guarantees an attained minimum. If Φ( z) = 0, the lemma follows. Otherwise set 
+
+λa,b = ( ba,b − da,b (z)) +, Wλ = X
+
+> a<b
+
+λa,b > 0 .
+
+These weights measure shortfalls of the whole point z, independently of any job, and remain fixed below. Inactive pairs have ba,b = 0 and, hence, λa,b = 0; active pairs whose targets are met also have weight zero. Weighting by λ emphasizes the unmet pairs in proportion to how strongly an increase in their diversity reduces Φ. We construct y ∈ P satisfying 
+
+X
+
+> a<b
+
+λa,b da,b (y) ≥ X
+
+> a<b
+
+λa,b ba,b . (3) The point y need not meet every target individually; this summed weighted guarantee suffices to decrease Φ, as shown at the end. 
+
+Construct an assignment for these weights. We seek an assignment y with large weighted diversity, giving greater importance to pairs with larger shortfalls λa,b . Exchanging finite sums gives 
+
+X
+
+> a<b
+
+λa,b da,b (y) = X
+
+> a<b
+
+X
+
+> j / ∈G
+
+X
+
+> i∈Aj
+
+λa,b yj 
+
+> i
+
+wj 1[ia̸ = ib] = X
+
+> j / ∈G
+
+X
+
+> i∈Aj
+
+yj 
+
+> i
+
+wj
+
+X
+
+> a<b
+
+λa,b 1[ia̸ = ib] .
+
+For an integral point y, exactly one tuple per job has variable value one, and all others have value zero. Assigning job j to different machines in schedules a and b therefore contributes 
+
+wj λa,b to the weighted objective. With only a limited number of distinct machines available for each job, we seek tuples separating pairs of large total weight. Consider the complete graph on schedule indices [ k], with edge weight λa,b on pair ( a, b ). For a light job j with ℓ distinct eligible machines available, let each color correspond to one of these machines. Coloring vertex a with the color of machine i means assigning job j to machine i in schedule a. Thus the job’s weighted contribution is wj times the total weight of edges whose endpoints have different colors. For ℓ ≥ 1, define the maximum such cut weight , achievable by ℓ
+
+colors, as 
+
+gℓ = max 
+
+> c:[ k]→[ℓ]
+
+X
+
+> a<b
+
+λa,b 1[c(a)̸ = c(b)] .
+
+A coloring attaining gℓ gives weighted contribution wj gℓ. The edge weights are the same for every job, and 
+
+g1 = 0 , gℓ+1 ≥ gℓ, gℓ = Wλ for ℓ ≥ k . 
+
+We choose the available machines by selecting for all jobs one common collection of t reference schedules among π1, . . . , π k. Restricting each job to machines used by these schedules will allow us to bound each machine’s LP load by tT . At each stage, define 
+
+Sj = {πa(j) | πa has been selected }, ℓj = |Sj |, F = X
+
+> j∈L
+
+wj gℓj .
+
+Here Sj is the set of available machines for job j, and F is the total weighted diversity attainable by choosing a coloring separately for each light job using its machines in Sj .23 Initially select π1, so that ℓj = 1 and F = 0. Adding πa increases ℓj by one exactly when 
+
+πa(j) /∈ Sj . Its gain in F is therefore ∆a = X  
+
+> j∈L:πa(j)/∈Sj
+
+wj
+
+ gℓj +1 − gℓj
+
+ .
+
+Greedily add t − 1 reference schedules, each maximizing ∆ a, and update the sets Sj after each addition. Thus each step chooses one schedule based on its combined gain over all light jobs. Repetitions are allowed; selecting an already chosen schedule gives zero gain. We will show that the resulting F is large enough to satisfy (3). For each j ∈ L, choose a coloring attaining gℓj and map its distinct colors to distinct machines in Sj . The machine corresponding to the color of vertex a becomes the ath entry of the tuple for job j. For j / ∈ G ∪ L, use the constant tuple ( π1(j), . . . , π 1(j)). Denote the chosen tuple by ij ,and set its variable in y to one and all other variables for that job to zero. Each tuple uses at most t eligible machines. Among unguessed jobs, its diversity coefficients are zero outside L, and at most wj ≤ Q/h inside L. Thus every chosen tuple belongs to Aj , and the job constraints hold. To verify the load constraints, list the selected schedules as ρ1, . . . , ρ t, including repetitions, with ρ1 = π1. Every used job–machine pair occurs in at least one selected schedule: for light jobs this follows from the definition of Sj , and for the other unguessed jobs from their constant-π1(j)tuples. Hence 
+
+1[i ∈ S(ij )] ≤
+
+> t
+
+X
+
+> s=1
+
+1[ρs(j) = i] .
+
+The left side counts machine i once if the tuple uses it; the right side counts the selected schedules assigning job j to i. Multiplying by pij ≥ 0 and summing over unguessed jobs verifies the load constraint of (Res-Tuple-LP): 
+
+X
+
+> j / ∈G
+
+X  
+
+> i∈Aj:i∈S(i)
+
+pij yj 
+
+> i
+
+= X
+
+> j / ∈G
+
+pij 1[i ∈ S(ij )] 
+
+≤ X
+
+> j / ∈G
+
+pij 
+
+> t
+
+X
+
+> s=1
+
+1[ρs(j) = i]
+
+!
+
+=
+
+> t
+
+X
+
+> s=1
+
+X 
+
+> j / ∈G:ρs(j)= i
+
+pij 
+
+≤
+
+> t
+
+X
+
+> s=1
+
+T = tT .
+
+The first equality uses that y selects exactly ij for each job j. The final inequality follows because each inner sum is at most the load of all jobs on machine i in ρs, hence, at most T . Consequently, 
+
+y ∈ P . The light jobs contribute wj gℓj each, while the other unguessed jobs contribute zero, so 
+
+X
+
+> a<b
+
+λa,b da,b (y) = X
+
+> j∈L
+
+wj gℓj = F .
+
+Bound the greedy gain. Let Fs denote the value of F after selecting s reference schedules. We compare Fs with the reference family’s weighted diversity on the light jobs. For j ∈ L, define 
+
+Dj = X
+
+> a<b
+
+λa,b 1[πa(j)̸ = πb(j)] , D = X
+
+> j∈L
+
+wj Dj .
+
+24 Here Dj is the cut weight of the reference coloring for job j, and wj Dj is its contribution to weighted diversity. In contrast, gℓj is the maximum cut weight attainable with at most ℓj colors. The light-job bound gives D ≥ P 
+
+> a<b
+
+λa,b Qres  
+
+> a,b
+
+> 0, since every positive-weight pair is active. Our goal is to show that, after t selections, Ft ≥ (1 − ε0)D. This implies 
+
+X
+
+> a<b
+
+λa,b da,b (y) = Ft ≥ (1 − ε0)D ≥ X
+
+> a<b
+
+λa,b (1 − ε0)Qres  
+
+> a,b
+
+= X
+
+> a<b
+
+λa,b ba,b ,
+
+as required by (3). Fix a step 1 ≤ s < t . In the following argument, Sj , ℓj , ∆ a, and the quantities uj and ej
+
+defined below refer to their values after s selections. In particular, Fs = P 
+
+> j∈L
+
+wj gℓj . To bound the gain from adding another reference schedule, we measure the weighted degree at vertices whose reference machines are not yet in Sj . Let deg( a) = X
+
+> b<a
+
+λb,a + X
+
+> b>a
+
+λa,b , X
+
+> a
+
+deg( a) = 2 Wλ, uj =
+
+P  
+
+> a:πa(j)/∈Sj
+
+deg( a)2Wλ
+
+.
+
+Thus uj is the fraction of total weighted degree at vertices whose reference colors must change when restricting the coloring to machines in Sj .To upper-bound the remaining deficit D − Fs, we lower-bound the increase Fs+1 − Fs at each greedy step. Since the coefficients deg( a)/(2 Wλ) are nonnegative and sum to one, the largest gain is at least their weighted average: max  
+
+> a
+
+∆a ≥ X
+
+> a
+
+deg( a)2Wλ
+
+∆a
+
+= X
+
+> a
+
+deg( a)2Wλ
+
+X  
+
+> j∈L:πa(j)/∈Sj
+
+wj (gℓj +1 − gℓj )= X
+
+> j∈L
+
+wj (gℓj +1 − gℓj )
+
+ X  
+
+> a:πa(j)/∈Sj
+
+deg( a)2Wλ
+
+
+
+= X
+
+> j∈L
+
+wj uj (gℓj +1 − gℓj ) .
+
+Let ej = ( Dj − gℓj )+ measure the positive deficit relative to the reference coloring for job j.We will show that, for Dj > 0, 
+
+uj (gℓj +1 − gℓj ) ≥ e2
+
+> j
+
+4Dj
+
+.
+
+For this, we establish two recoloring bounds: 
+
+gℓ+1 − gℓ ≥ Wλ − gℓ
+
+2ℓ , gℓj ≥ Dj − 2Wλuj
+
+ℓj
+
+. (4) For the first, an optimal ℓ-coloring has total internal edge weight Wλ − gℓ. One color class has internal weight at least ( Wλ − gℓ)/ℓ , allowing empty classes. Split that class into two parts maximizing the weight between them. Each vertex has at least as much incident weight across the split as within its part, since otherwise moving it improves the split. Summing over vertices counts each edge twice, so at least half the class’s internal weight crosses the split. Giving one part a new color cuts this weight without losing any previously cut edge, proving the first bound. For the second bound, start with the reference colors πa(j). Keep vertices whose colors belong to Sj fixed, and recolor the others using colors in Sj to maximize the cut weight. For 25 each recolored vertex a, the incident weights to the ℓj color classes sum to deg( a), so some class has incident weight at most deg( a)/ℓ j . If its current color class had greater incident weight, moving a to a least-weight class would increase the cut weight, contradicting optimality. Thus each recolored vertex has at most deg( a)/ℓ j incident weight to vertices of its own color. Every originally cut edge that is lost must touch a recolored vertex, since two fixed endpoints retain their different colors. At that recolored vertex, the lost edge now joins vertices of the same color. Summing the preceding bounds therefore gives 
+
+Dj − gℓj ≤ 1
+
+ℓj
+
+X 
+
+> a:πa(j)/∈Sj
+
+deg( a) = 2Wλuj
+
+ℓj
+
+.
+
+The reference cut weight is Dj , and newly cut edges have nonnegative weight. As the resulting coloring uses at most ℓj colors, it proves the second bound. The second bound implies uj ≥
+
+ℓj ej /(2 Wλ). Combining the bounds in (4) gives, for Dj > 0, 
+
+uj (gℓj +1 − gℓj ) ≥ ej (Wλ − gℓj )4Wλ
+
+≥ e2
+
+> j
+
+4Dj
+
+.
+
+For the last inequality, when ej > 0, use Dj ≤ Wλ to get ( Wλ −gℓj )/W λ ≥ (Dj −gℓj )/D j = ej /D j .When ej = 0, the bound is immediate; Dj = 0 also implies ej = 0. Consequently, whenever Fs < D ,
+
+Fs+1 − Fs = max  
+
+> a
+
+∆a ≥ X
+
+> j∈L
+
+wj uj (gℓj +1 − gℓj ) ≥ 14
+
+X  
+
+> j∈L:Dj>0
+
+wj e2
+
+> j
+
+Dj
+
+= 14D
+
+ X  
+
+> j∈L:Dj>0
+
+wj Dj
+
+ X  
+
+> j∈L:Dj>0
+
+wj e2
+
+> j
+
+Dj
+
+
+
+≥ 14D
+
+ X  
+
+> j∈L:Dj>0
+
+pwj Dj
+
+s
+
+wj e2
+
+> j
+
+Dj
+
+
+
+> 2
+
+= (P 
+
+> j∈L
+
+wj ej )2
+
+4D ≥ (D − Fs)2
+
+4D . (5) The third inequality follows from the Cauchy–Schwarz inequality 
+
+P 
+
+> j
+
+aj bj
+
+2
+
+≤
+
+P 
+
+> j
+
+a2
+
+> j
+
+  P 
+
+> j
+
+b2
+
+> j
+
+
+
+.The last inequality uses P 
+
+> j
+
+wj ej ≥ P 
+
+> j
+
+wj (Dj − gℓj ) = D − Fs > 0. Initially F1 = 0, and Fs never decreases. While δs = ( D − Fs)/D > 0, (5) gives δs+1 ≤
+
+δs − δ2 
+
+> s
+
+/4. If the new deficit remains positive, then 1
+
+δs+1 
+
+≥ 1
+
+δs(1 − δs/4) = 1
+
+δs
+
++ 14(1 − δs/4) ≥ 1
+
+δs
+
++ 14 .
+
+Since initially δ1 = 1, after t − 1 additions, we have Ft ≥ D or 1 
+
+> δt
+
+≥ 1 + t−14 = t+3 4 . In the latter case, D−Ft 
+
+> D
+
+= δt ≤ 4 
+
+> t+3
+
+≤ ε0. Thus, in either case, Ft ≥ (1 − ε0)D ≥ P 
+
+> a<b
+
+λa,b ba,b , which proves (3). 
+
+Average to reduce the shortfall. Set va,b = da,b (y) − da,b (z). By (3), 
+
+X
+
+> a<b
+
+λa,b va,b ≥ X
+
+> a<b
+
+λa,b (ba,b − da,b (z)) = X
+
+> a<b
+
+λ2 
+
+> a,b
+
+= Φ( z) > 0 .
+
+For 0 < θ ≤ 1, form the convex combination zθ = (1 − θ)z + θy , meaning ( zθ)j 
+
+> i
+
+= (1 − θ)zj 
+
+> i
+
++ θy j
+
+> i
+
+coordinatewise. It lies in P because linear constraints and nonnegativity are preserved by convex 26 combinations, and da,b (zθ) = da,b (z) + θv a,b . The inequality (( x − s)+)2 ≤ (x+)2 − 2sx + + s2,applied with x = ba,b − da,b (z) and s = θv a,b , gives Φ( zθ) ≤ Φ( z) − 2θ X
+
+> a<b
+
+λa,b va,b + θ2 X
+
+> a<b
+
+v2 
+
+> a,b
+
+≤ Φ( z) − 2θΦ( z) + θ2 X
+
+> a<b
+
+v2
+
+> a,b
+
+,
+
+using (3) in the last step. Since P 
+
+> a<b
+
+λa,b va,b > 0, we have that P 
+
+> a<b
+
+v2 
+
+> a,b
+
+> 0. By taking 
+
+θ = min {1, Φ( z)/ P 
+
+> a<b
+
+v2
+
+> a,b
+
+} > 0, we get θ P 
+
+> a<b
+
+v2 
+
+> a,b
+
+≤ Φ( z). Then Φ( zθ) ≤ (1 − θ)Φ( z) < Φ( z), contradicting minimality. Consequently Φ( z) = 0, so every diversity target is met, and z satisfies (Res-Tuple-LP). 
+
+Rounding the residual LP. Lemma 10 (Rounding after guessing) . A deterministic polynomial-time algorithm exists that iteratively rounds feasible solutions of (Res-Tuple-LP) such that exactly one tuple is assigned to each unguessed job, every machine has unguessed-job load at most 3tT in every resulting schedule, and the unguessed jobs contribute diversity at least (1 − ε0)Qres  
+
+> a,b
+
+− ε0Q to every active pair (a, b ).Proof. Assume that (Res-Tuple-LP) is feasible. We use iterative rounding as long as there are unassigned unguessed jobs, maintaining feasibility throughout. Each iteration has the following steps: First, we remove every diversity constraint whose current residual right-hand side is non-positive. Second, we compute an extreme-point solution of the resulting LP. Third, we fix variables that were assigned integrally in the extreme-point solution: If zj 
+
+> i
+
+= 0, then we delete the variable from the LP. If zj 
+
+> i
+
+= 1, then we commit to assigning unguessed job j to tuple i by deleting j with all its variables and updating the load constraints and the diversity constraints accordingly. Specifically, for every machine i ∈ S(i), we subtract pij from the remaining load budget of the machine, and we subtract qa,b  
+
+> i,j
+
+from the remaining diversity target of each active pair ( a, b ). We end the iteration if at least one variable is deleted. Finally, if no variable was fixed, we drop either a load constraint or a diversity constraint: To this end, define ∆i(z) = P   
+
+> j, i:i∈S(i)
+
+pij (1 − zj 
+
+> i
+
+) and Va,b (z) = P 
+
+> j, i
+
+qa,b  
+
+> i,j
+
+zj 
+
+> i
+
+. We drop the load constraint of some machine i if ∆ i(z) ≤ 2tT . Otherwise, we drop the diversity constraint of an active pair ( a, b ) if 
+
+Va,b (z) ≤ ε0Q. This completes one iteration. We show that, in every iteration where no variable is fixed, one constraint is dropped necessarily. Consider an iteration where the remaining variables E̸ = ∅ are all assigned fractional values strictly between 0 and 1 in the extreme-point solution. Consequently, none of the variable constraints zj 
+
+> i
+
+≥ 0 are tight. We use J′ to denote the set of remaining jobs, and we use R′
+
+to denote the set of remaining load and diversity constraints. Then, by the rank lemma, the number |E| of (non-zero) variables is equal to the maximum number of linearly independent tight constraints, which is at most |J′| + |R′|. Further, for each job j ∈ J′, there are at least two variables, since zj 
+
+> i
+
+< 1 for every tuple i. Hence, 2 |J′| ≤ | E|. Combined with |E| ≤ | J′| + |R′|,this gives |E| ≤ 2|R′|. As E̸ = ∅, we then get that R′̸ = ∅. We now argue that one constraint from R′ will be dropped. If T = 0, every eligible processing time is zero, so any remaining load constraint has ∆ i(z) = 0 and can be dropped. If no load constraint remains, then |J′| ≤ | R′| ≤ r,and every remaining diversity constraint satisfies 
+
+Va,b (z) ≤ Qh
+
+X
+
+> (j, i)∈E
+
+zj 
+
+> i
+
+= Qh |J′| ≤ Qr h ≤ ε0Q
+
+2 .
+
+Since R′̸ = ∅, a diversity constraint can then be dropped. Henceforth assume T > 0, and define 
+
+β = 2 tT / (ε0Q). It suffices to show that ∆ i(z) ≤ 2tT for some machine i with remaining load 27 constraint or that βV a,b (z) ≤ 2tT for some active pair ( a, b ) with remaining diversity constraint. We show this using two bounds. In the following sums, machines and pairs range only over constraints in R′.First, we need the bound 
+
+X
+
+> i
+
+∆i(z) ≤ T X
+
+> i
+
+X  
+
+> j, i:i∈S(i)
+
+(1 − zj 
+
+> i
+
+) ≤ tT X
+
+> j, i
+
+(1 − zj 
+
+> i
+
+) = tT (|E| − | J′|), (6) where we used that pij ≤ T , that |S(i)| ≤ t, and that P 
+
+> j, i
+
+zj 
+
+> i
+
+= |J′|.Second, we need the bound 
+
+β X
+
+> (a,b )
+
+Va,b (z) ≤ β(Q/h ) X
+
+> (a,b )
+
+X
+
+> j, i
+
+zj 
+
+> i
+
+≤ β(Q/h )r X
+
+> j, i
+
+zj 
+
+> i
+
+≤ tT X
+
+> j, i
+
+zj 
+
+> i
+
+= tT |J′|, (7) where we used that qa,b  
+
+> i,j
+
+≤ Q/h , that there are at most r active pairs, that β(Q/h )r ≤ tT , and that P 
+
+> j, i
+
+zj 
+
+> i
+
+= |J′|.Combining (6) and (7), we obtain 
+
+X
+
+> i
+
+∆i(z) + β X
+
+> (a,b )
+
+Va,b (z) ≤ tT (|E| − | J′|) + tT |J′| = tT |E| ≤ 2tT |R′| . (8) Since the two sums in (8) have |R′| terms in total, at least one of these terms must then lead to a constraint being dropped. It remains to bound the machine loads and the diversity after rounding. Consider a machine i
+
+when its load constraint is dropped. Let Bi be its charged load from previously fixed unguessed-job tuples, and let Ei = {(j, i) ∈ E | i ∈ S(i)} at that moment. The load constraint gives 
+
+Bi + P 
+
+> (j, i)∈Ei
+
+pij zj 
+
+> i
+
+≤ tT . Writing ˆ zj 
+
+> i
+
+for each remaining variable’s final integral value, we obtain 
+
+Bi + X
+
+> (j, i)∈Ei
+
+pij ˆzj 
+
+> i
+
+≤ Bi + X
+
+> (j, i)∈Ei
+
+pij zj 
+
+> i
+
++ ∆ i(z) ≤ tT + 2 tT = 3 tT, 
+
+because ˆ zj 
+
+> i
+
+− zj 
+
+> i
+
+≤ 1 − zj 
+
+> i
+
+. This charged load bounds the load in every schedule. A machine whose load constraint is never dropped has charged load at most tT .To bound the diversity after rounding, first consider a constraint removed because its current residual right-hand side is non-positive. The fixed unguessed jobs already meet its original target (1 − ε0)Qres 
+
+> a,b
+
+. Otherwise, when a diversity constraint is dropped, its remaining fractional diversity is at most ε0Q. The unguessed jobs fixed before that moment therefore contribute at least (1 − ε0)Qres  
+
+> a,b
+
+− ε0Q. A diversity constraint retained until all jobs are assigned is satisfied, and later assignments cannot decrease diversity. Since every iteration deletes a variable or drops a load/diversity constraint, the number of iterations is at most nm k + m + r. Thus, the overall run time is polynomial in the size of the LP. 
+
+Guessing the diversity target and the heavy contributors. Theorem 8 (Near-optimal max-min diversity) . Fix k ∈ N≥2 and ε ∈ (0 , 1) . There is a deter-ministic algorithm that, for every feasible makespan target T , computes schedules σ1, . . . , σ k such that Cmax (σa) ≤ (3 ⌈12 /ε ⌉ + 1) T , for every a ∈ [k], and dmin (σ1, . . . , σ k) ≥ (1 − ε)OPT min  
+
+> k
+
+(T ).The algorithm runs in time (nm k)O(k4/ε ) · | I|O(1) , where |I| is the input encoding length. 
+
+28 Proof. We start by guessing the diversity target to use. To this end, define Q∗ = OPT min  
+
+> k
+
+(T )and ε0 = ε/ 3. First, compute a baseline family of schedules using Theorem 4; every schedule has makespan at most 2 T . Let W = P 
+
+> j
+
+wj . If W = 0, return this baseline family. Otherwise, let wmin = min {wj | wj > 0}. Enumerate diversity targets Q = W/ (1 + ε0)ℓ for ℓ = 0 , 1, . . . ,including and stopping at the first value with Q ≤ wmin . The baseline family covers the case where Q∗ = 0. For the analysis of Q∗ > 0, we have wmin ≤ Q∗ ≤ W , so some enumerated value bQ satisfies bQ ≤ Q∗ < (1 + ε0) bQ.For each enumerated value of Q, we guess the heavy contributors. Specifically, for every pair ( a, b ) with 1 ≤ a < b ≤ k, we guess the h = ⌈2r/ε 0⌉ jobs with the largest positive contribution to the diversity of schedules a and b, and we guess the k-tuple of machines to which each of these jobs is assigned in the k schedules. Should there be fewer than h jobs that positively contribute to the diversity of a and b, then we guess all of them, again together with their k-tuples. We discard inconsistent guesses and guesses whose fixed jobs violate a makespan constraint, as described in Section 5.1. For each remaining guess, we set up (Res-Tuple-LP) and discard the guess if this LP is infeasible. Otherwise, we apply Lemma 10 and combine the rounded assignment with the guessed tuples. We return a family of maximum actual max-min diversity among these candidates and the baseline family. Among our guesses will be bQ and its correct heavy-contributor guess. Then, by Lemma 9, we know that (Res-Tuple-LP) is feasible. From Lemma 10, we thus obtain an assignment of the unguessed jobs with unguessed-job load at most 3 tT per machine, where t = ⌈4/ε 0⌉,and diversity at least (1 − ε0)Qres  
+
+> a,b
+
+− ε0 bQ from unguessed jobs, for every active pair ( a, b ). Adding these unguessed jobs to the heavy-contributor guess then gives makespan at most 3tT + T = (3 t + 1) T = (3 ⌈12 /ε ⌉ + 1) T . For each active pair, the diversity is at least (1 − ε0)Qres  
+
+> a,b
+
+− ε0 bQ + Qfix  
+
+> a,b
+
+≥ (1 − ε0)( bQ − Qfix 
+
+> a,b
+
+) − ε0 bQ + Qfix  
+
+> a,b
+
+≥ (1 − 2ε0) bQ . 
+
+Inactive pairs already receive at least bQ from guessed jobs. Since (1 + ε0) bQ > Q ∗, this gives diversity at least 1−2ε0 
+
+> 1+ ε0
+
+Q∗ ≥ (1 − 3ε0)Q∗ = (1 − ε)Q∗.The run time is dominated by guessing the heavy contributors and their k-tuples: As 
+
+h = O(k2/ϵ ), the number of these guesses is in ( nm k)O((k
+
+> 2
+
+)h) = ( nm k)O(k4/ε ). This gives the promised run time of ( nm k)O(k4/ε ) · | I|O(1) .
+
+C.2 Near-optimal max-min diversity with a 2k + 1 + ε makespan factor 
+
+In this subsection, we give an alternative algorithm that achieves near-optimal max-min diversity with makespan at most (2 k + 1 + ε)T . For small fixed k, this improves the dependence on ε
+
+compared with the O(1 /ε ) makespan guarantee in Section 5.1. The algorithm guesses a diversity target and the largest contributors to each pairwise distance, together with their assignments in all k schedules. After fixing these assignments and removing large residual contributors, it rounds the residual labeled k-tuple LP by iterative rounding, using scaled diversity coefficients to control both the load increase and the diversity loss. 
+
+Theorem 13 (Near-optimal max-min diversity) . Fix k ∈ N≥2 and ε ∈ (0 , 1) . There is an algorithm that, for every feasible makespan target T , computes schedules σ1, . . . , σ k such that 
+
+Cmax (σa) ≤ (2 k + 1 + ε)T , for every a ∈ [k], and dmin (σ1, . . . , σ k) ≥ (1 − ε)OPT min  
+
+> k
+
+(T ). The algorithm runs in time (nm k)O(k5/ε 2) · | I|O(1) , where |I| is the input encoding length. 
+
+We start from the natural labeled k-tuple LP. For each job j and tuple i = ( i1, . . . , i k) ∈ Γ( j)k,we introduce a variable zj 
+
+> i
+
+that indicates whether job j is placed on machine ia in schedule a,for all a ∈ [k]. Together, the tuples assigned to the jobs encode k labeled schedules. For a 29 pair 1 ≤ a < b ≤ k, let qa,b  
+
+> i,j
+
+= wj 1[ia̸ = ib]; this is the contribution of job j to the diversity of pair ( a, b ) when the tuple i places j on different machines in coordinates a and b. The key insight is that the diversity of pair ( a, b ) is the linear function P
+
+> j∈J
+
+P 
+
+> i∈Γ( j)k
+
+qa,b  
+
+> i,j
+
+zj 
+
+> i
+
+. Thus, requiring the minimum diversity of the k schedules to be at least Q can be expressed by  k
+
+> 2
+
+ linear covering constraints. Hence, we obtain the following labeled k-tuple LP: 
+
+X
+
+> i∈Γ( j)k
+
+zj 
+
+> i
+
+= 1 ∀j ∈ J, (Tuple-LP) 
+
+X
+
+> j∈J
+
+X  
+
+> i∈Γ( j)k:ia=i
+
+pij zj 
+
+> i
+
+≤ T ∀a ∈ [k], i ∈ M, 
+
+X
+
+> j∈J
+
+X
+
+> i∈Γ( j)k
+
+qa,b  
+
+> i,j
+
+zj 
+
+> i
+
+≥ Q ∀1 ≤ a < b ≤ k, zj 
+
+> i
+
+≥ 0 ∀j ∈ J, i ∈ Γ( j)k .
+
+Fix Q > 0 and schedules π1, . . . , π k of makespan at most T such that d(πa, π b) ≥ Q for every 1 ≤ a < b ≤ k. Let ε0 ∈ (0 , 1), and set 
+
+γ = ε0
+
+2k and h =
+
+& 2(1 + γ) k
+
+> 2
+
+
+
+γε 0
+
+'
+
+.
+
+Guessing the heavy contributors. For every pair ( a, b ), the correct guess selects the h
+
+largest positive contributors to d(πa, π b), or all positive contributors if there are fewer than h,together with their full k-tuples in π1, . . . , π k. Let G be the set of guessed jobs. For each j ∈ G,let τ (j) = ( τ1(j), . . . , τ k(j)) be the guessed k-tuple, where τa(j) is the guessed machine of j in schedule a. For the correct guess, τa(j) = πa(j) for every j ∈ G and a ∈ [k]. We define 
+
+T fix  
+
+> a,i
+
+= X
+
+> j∈Gτa(j)= i
+
+pij , T res  
+
+> a,i
+
+= T − T fix  
+
+> a,i
+
+,
+
+and 
+
+Qfix  
+
+> a,b
+
+= X
+
+> j∈G
+
+wj 1[τa(j)̸ = τb(j)] , Qres  
+
+> a,b
+
+=
+
+
+
+Q − Qfix 
+
+> a,b
+
++
+
+.
+
+We say that pair ( a, b ) is active when Qres  
+
+> a,b
+
+> 0. For every unguessed job j, we start with all tuples in Γ( j)k and delete every tuple i with qa,b  
+
+> i,j
+
+> Q/h for some active pair ( a, b ). Let Aj be the remaining tuples. The residual k-tuple LP is obtained from (Tuple-LP) by restricting to jobs J \ G, replacing Γ( j)k by Aj , replacing the load targets by T res  
+
+> a,i
+
+, and imposing diversity targets Qres  
+
+> a,b
+
+for all active pairs. 
+
+Lemma 14 (Removing high-contribution pairs is safe) . No tuple used by π1, . . . , π k is deleted. Therefore, the residual k-tuple LP is feasible, and every remaining tuple satisfies qa,b  
+
+> i,j
+
+≤ Q/h for every active pair (a, b ).Proof. Suppose that the tuple of an unguessed job j used by π1, . . . , π k is deleted for an active pair ( a, b ). Then qa,b  
+
+> i,j
+
+> Q/h . If fewer than h jobs contribute positively to d(πa, π b), all of them were guessed, including j, a contradiction. Otherwise, the h guessed contributors for this pair each have contribution at least qa,b  
+
+> i,j
+
+> Q/h , so their total contribution is larger than Q.This gives Qfix  
+
+> a,b
+
+> Q , contradicting that ( a, b ) is active. Thus no tuple used by π1, . . . , π k is deleted, and restricting these schedules to the unguessed jobs makes the LP feasible. The bounded-coefficient property holds by construction. 30 Rounding the residual LP. For the following rounding analysis, we assume T > 0. We now round the feasible residual LP produced by the correct guess. It has tuple sets Aj , load targets T res  
+
+> a,i
+
+, and active diversity targets Qres 
+
+> a,b
+
+. Furthermore, we define constants 
+
+β = γkT h 
+
+ k
+
+> 2
+
+Q , Λ = (1 + γ)kT .
+
+The iterative relaxation keeps the true, unscaled load and diversity constraints. We only use scaling to measure the mass of diversity constraints. The scaled coefficient of zj 
+
+> i
+
+in diversity constraint ( a, b ) is βq a,b  
+
+> i,j
+
+. The scaled mass of a constraint is the sum of its remaining coefficients, with diversity coefficients multiplied by β and load coefficients unchanged. Since every tuple is eligible, a tuple variable has total load mass at most kT . Since qa,b  
+
+> i,j
+
+≤ Q/h 
+
+for every active pair, its total scaled diversity mass is at most  k
+
+> 2
+
+β Qh = γkT . Thus every variable has total scaled mass over all remaining load constraints and active diversity constraints at most Λ. 
+
+Lemma 15 (Small-mass constraint) . If the current residual LP has at least one variable and an extreme point with no integral variable, then some remaining load constraint or active diversity constraint has remaining scaled coefficient mass at most 2Λ .Proof. Let E be the set of remaining tuple variables, let J′ be the set of active jobs, and R′ be the set of remaining load constraints and active diversity constraints. Since no variable bound is tight, the extreme point is determined by the active job equalities and the tight remaining load or active diversity constraints, so |E| ≤ | J′| + |R′|. Every active job has right-hand side 1, and all its remaining variables are non-integral, so it has at least two remaining tuple variables. Hence |J′| ≤ | E|/2, and thus |R′| ≥ | E|/2. Since the total scaled mass over all constraints in R′ is at most Λ |E|, the pigeonhole principle implies that some constraint in R′ has mass at most 2Λ. 
+
+Lemma 16 (Rounding after guessing) . For the correct heavy-contributor guess, the residual 
+
+k-tuple LP is feasible and can be rounded in polynomial time for fixed k and ε0 to schedules 
+
+σ1, . . . , σ k such that Cmax (σa) ≤ (2 k + 1 + ε0)T for every a ∈ [k], and d(σa, σ b) ≥ (1 − ε0)Q for every 1 ≤ a < b ≤ k.Proof. By Lemma 14, the residual k-tuple LP is feasible and all remaining diversity coefficients are at most Q/h for active pairs. At each iteration, we compute an extreme-point solution of the current residual LP. If a variable has value 0, we remove it. If a variable has value 1, we fix the corresponding tuple, update all residual right-hand sides, set the other variables of that job to 0, and remove the job. If an active diversity constraint has non-positive residual right-hand side, we remove it. If all remaining variables are fractional, we apply Lemma 15 and drop a remaining load constraint or active diversity constraint of scaled mass at most 2Λ. Since job equalities are never dropped, the final solution selects exactly one tuple per unguessed job. Together with the guessed tuples, this gives complete schedules. Consider a load constraint ( a, i ). If it is never dropped, the final integral solution satisfies its residual target. If it is dropped, consider the moment when it is dropped. The current fractional solution satisfies the residual load bound, and the total remaining load mass in this constraint is at most 2Λ. Hence, after the constraint is dropped, the additional load that can still be assigned to ( a, i ) is at most 2Λ. Adding the guessed load, we get that the final load is at most 
+
+T fix  
+
+> a,i
+
++ T res  
+
+> a,i
+
++ 2Λ = T + 2(1 + γ)kT = (2 k + 1 + ε0)T .
+
+31 Now consider a pair ( a, b ). If it is inactive, then Qfix  
+
+> a,b
+
+≥ Q, so the final diversity is already at least Q. If it is active and its constraint is never dropped, or if it is removed because its residual target is non-positive, then the residual target is met. If it is dropped with positive residual target, the remaining scaled mass is at most 2Λ. Hence the unscaled diversity that we can lose after the constraint is dropped is at most 2Λ 
+
+β = 2(1 + γ)kT γkT h/ ( k
+
+> 2
+
+Q) = 2(1 + γ) k
+
+> 2
+
+Qγh ≤ ε0Q . 
+
+Thus every active pair has final diversity at least Qfix  
+
+> a,b
+
++ Qres  
+
+> a,b
+
+− ε0Q ≥ (1 − ε0)Q.The run time of the rounding step is polynomial for fixed k and ε0, because the LP has O(nm k)variables and each iteration fixes a variable, removes a job, or drops a constraint. 
+
+Guessing the diversity target and proof of Theorem 13. 
+
+Proof of Theorem 13. If T = 0, we replace every positive processing time by 2 and use makespan target 1. This preserves the eligible pairs and the feasible schedules, so the diversity optimum is unchanged. The rounding procedure assigns jobs only to eligible machines; hence every output schedule has makespan 0 in the original instance. We may therefore assume T > 0. Let Q∗ = OPT min  
+
+> k
+
+(T ) and set ε0 = ε/ 3. We always try the value Q = 0 and retain the resulting k schedules as an initial candidate family, called the baseline family. For this run, we ignore the diversity constraints and apply the same iterative rounding with only load constraints. Since each tuple has total load mass at most kT , the same counting argument gives schedules of makespan at most (2 k + 1) T .Let W = P 
+
+> j
+
+wj . If W = 0, return the baseline family. Otherwise, let wmin = min {wj | wj > 0}.Enumerate Q = W/ (1 + ε0)ℓ for ℓ = 0 , 1, . . . , including and stopping at the first value with 
+
+Q ≤ wmin . The baseline covers Q∗ = 0. If Q∗ > 0, then wmin ≤ Q∗ ≤ W , so some value bQ
+
+satisfies 
+
+bQ ≤ Q∗ < (1 + ε0) bQ . (9) For a fixed guessed value Q > 0, we enumerate for every pair ( a, b ) up to h jobs together with their full k-tuples. We discard guesses that are inconsistent or whose fixed jobs already violate a makespan constraint. For each remaining candidate, we form the residual LP, discard the candidate if this LP is infeasible, and otherwise apply the same iterative-rounding procedure. The number of candidates is ( nm k)O((k
+
+> 2
+
+)h).For the guessed value Q = bQ, consider the candidate that agrees with a set of optimal schedules with max-min diversity Q∗. Since bQ ≤ Q∗, these schedules have pairwise diversity at least bQ, and Lemma 16 applies. Thus we obtain schedules of makespan at most (2 k + 1 + ε0)T
+
+and pairwise diversity at least (1 − ε0) bQ.Using Q = bQ and (9), we have that 
+
+dmin (σ1, . . . , σ k) ≥ (1 − ε0) bQ ≥ 1 − ε0
+
+1 + ε0
+
+Q∗ ≥ (1 − ε)Q∗.
+
+Moreover, the makespan is at most (2 k + 1 + ε0)T ≤ (2 k + 1 + ε)T .Since h = O
+
+ k3
+
+> ε20
+
+
+
+= O
+
+ k3
+
+> ε2
+
+
+
+, the enumeration takes time 
+
+ nm kO
+
+ (k
+
+> 2
+
+)h
+
+
+
+=  nm kO
+
+ k5/ε 2
+
+
+
+.
+
+32 Each rounding run is polynomial in the size of the k-tuple LP, and the geometric search contributes only a polynomial factor in the input encoding length |I|. Therefore the total run time is ( nm k)O(k5/ε 2) · | I|O(1) . Returning a solution of maximum actual max-min diversity over all guesses and the baseline family yields the theorem. 
+
+C.3 Unrelated-machine scheduling with covering constraints 
+
+Guessing the heavy jobs. Let τ denote an (unknown) integral feasible solution of (Cov-LP), which exists by assumption, and fix 0 < ε < 1. We say a job j is heavy for constraint a if it is among the h jobs of largest positive contribution qaτ (j), j under τ , where 
+
+h =
+
+ 2(1 + ε) rε2
+
+
+
+.
+
+The assignment τ is unknown, hence the algorithm cannot identify the heavy jobs directly. Instead, we enumerate all possible choices. For each constraint a ∈ [r] we guess up to h jobs together with their assigned machines. We call such a guessed partial assignment a candidate .We immediately discard candidates that assign one job to multiple different machines or whose guessed jobs already violate a makespan target. For each constraint, the number of possible guesses is at most Pmin {h,n }
+
+> ℓ=0
+
+ nℓ
+
+mℓ ≤ (n + 1)( nm )h. Thus the total number of candidates is at most 
+
+ (n + 1)( nm )hr = ( nm )O(rh ) = ( nm )O(r2/ε 2).
+
+Among these candidates is the one that, for every constraint a ∈ [r], assigns the heavy contributors of a to their machines under τ , or all positively contributing jobs if there are fewer than h of them. We fix this candidate for the remainder of the analysis. This candidate does not need to reconstruct τ on the other jobs. It only fixes the heaviest contributors of τ , which is precisely the property that bounds the rounding loss. For this fixed candidate, let G be the set of guessed jobs, where j is placed on guessed machine τ (j). We initialize the residual makespan targets and residual covering targets as 
+
+T res  
+
+> i
+
+= Ti − X  
+
+> j∈G:τ(j)= i
+
+pij and Qres  
+
+> a
+
+=
+
+
+
+Qa − X
+
+> j∈G
+
+qaτ (j), j 
+
++
+
+.
+
+By the discard rule, T res  
+
+> i
+
+≥ 0 for every machine i. The residual makespan and covering targets are updated as the iterative rounding assigns more jobs. A constraint with Qres  
+
+> a
+
+= 0 is already covered by G and is discarded from the residual LP. Furthermore, let A = {a ∈ [r] | Qres  
+
+> a
+
+> 0} be the remaining active covering constraints. The residual LP has a variable xij for each unguessed job j and machine i ∈ Γ( j), assignment constraints P 
+
+> i∈Γ( j)
+
+xij = 1, capacities P 
+
+> j
+
+pij xij ≤ T res  
+
+> i
+
+,and active targets P
+
+> j
+
+P 
+
+> i
+
+qaij xij ≥ Qres  
+
+> a
+
+for a ∈ A . Restricting τ to the unguessed jobs gives a feasible integral point, so the residual LP is feasible. We now show that in the residual LP we can safely remove every variable xij whose contribution qaij is large relative to the target Qa of some active constraint a ∈ A , namely 
+
+qaij > Q a/h . We show that after removing these high-contribution variables, the restriction of τ
+
+to the unguessed jobs remains feasible for the residual LP. 
+
+Lemma 17 (Removing high-contribution pairs is safe) . Delete from the residual LP every variable xij with qaij > Q a/h for some active a ∈ A . Then no assignment pair used by τ is deleted. Consequently the residual LP remains feasible, witnessed by τ restricted to the unguessed jobs, and every surviving variable satisfies qaij ≤ Qa/h for all a ∈ A .
+
+33 Proof. Suppose that there is an active covering constraint a ∈ A and an unguessed job j̸ ∈ G
+
+such that τ (j) = i⋆ and qai⋆j > Q a/h . We show that this is impossible by deriving a contradiction. If τ uses fewer than h jobs with positive contribution to covering constraint a, then the candidate guesses all of them, including j, a contradiction. Hence, τ uses at least h jobs with positive contribution to covering constraint a. The candidate guesses the h largest positive contributors for constraint a under τ . Since the unguessed assignment pair ( i⋆, j ) has contribution qai⋆j > Q a/h ,each guessed contributor has contribution at least qai⋆j . Together they therefore contribute more than h(Qa/h ) = Qa to constraint a. It follows that P 
+
+> j′∈G
+
+qaτ (j′), j ′ > Q a, hence Qres  
+
+> a
+
+= 0, contradicting that a is active. Therefore no pair of τ is deleted, so τ restricted to the unguessed jobs remains feasible, and the surviving variables are exactly those with qaij ≤ Qa/h for every active a ∈ A .For an arbitrary candidate, if the resulting residual LP is infeasible, we discard the candidate. Otherwise, we run the iterative-rounding procedure described below. 
+
+Iterative rounding. After removing the variables corresponding to high-contribution pairs, the algorithm rounds the residual LP by iterative relaxation. We maintain a fractional extreme point x of the current residual LP and repeatedly apply one of the relaxation rules below. We recompute an extreme point of the updated LP after each relaxation. Throughout, we write E
+
+for the set of pairs ( i, j ) such that the variable xij is part of the residual LP. Moreover, for a machine i, we write d(i) for the number of unassigned jobs that still have i as an eligible machine, i.e., the number of remaining variables xij . A job is assigned once its variable is fixed to 1, at which point the residual capacity T res  
+
+> i
+
+is decreased by the load of this job, and each residual covering target Qres  
+
+> a
+
+becomes ( Qres  
+
+> a
+
+− qaij )+.The rules are as follows. If a variable xij is equal to 0, it is removed from the LP. If a variable xij is equal to 1, then job j is assigned to machine i, and we update T res  
+
+> i
+
+and the Qres 
+
+> a
+
+accordingly and remove the variables corresponding to j. If an active constraint a is covered by the assigned jobs, that is, Qres  
+
+> a
+
+= 0, then we remove it from A and the LP. Finally, if some machine i has d(i) ≤ 1 + ε + P 
+
+> j
+
+xij , then we remove the makespan constraint of machine i from the LP. This last rule is inspired by the iterative rounding procedure of Korupolu, Meyerson, Rajaraman, and Tagiku [19]. Each rule strictly decreases the number of variables or constraints, so the process terminates. Next we show that once none of these rules applies, the remaining number of variables is small, and since all jobs have low contribution to the covering constraints, completing the remaining assignment can lose at most an ε fraction of each covering target. 
+
+Lemma 18. Let x be an extreme point of the residual LP at which none of the rules above apply. Then |E| ≤ 2(1+ ε) 
+
+> ε
+
+· r.Proof. If E = ∅, the claim is immediate. We therefore assume E̸ = ∅. Let M ′ be the set of machines still having a makespan constraint and let J′ be the set of unassigned jobs. We denote by M ′′ = M \ M ′ the machines whose makespan constraint has been dropped. Every remaining variable satisfies 0 < x ij < 1, because the first two rules do not apply. Moreover, since the last rule does not apply, we have d(i) > 1 + ε + P 
+
+> j
+
+xij for every machine i ∈ M ′, where the sum is over the unassigned jobs with a variable on i.34 Each remaining variable is counted by exactly one machine, so P 
+
+> i∈M
+
+d(i) = |E|. Using the degree bound for M ′ and P 
+
+> i∈M
+
+xij = 1 yields 
+
+|E| = X 
+
+> i∈M′
+
+d(i) + X 
+
+> i∈M′′
+
+d(i) > (1 + ε)|M ′| + X 
+
+> i∈M′
+
+X
+
+> j∈J′: ( i,j )∈E
+
+xij + X 
+
+> i∈M′′
+
+X
+
+> j∈J′: ( i,j )∈E
+
+xij 
+
+= (1 + ε)|M ′| + X
+
+> j∈J′
+
+X 
+
+> i∈M: ( i,j )∈E
+
+xij = (1 + ε)|M ′| + |J′| . (10) All remaining variables are strictly fractional, so no variable-bound constraint is tight. Thus, the extreme point is determined by linearly independent tight constraints among the assignment constraints, the remaining makespan constraints, and the active covering constraints. There are at most |J′| assignment constraints, at most |M ′| remaining makespan constraints, and at most r active covering constraints, hence 
+
+|E| ≤ | J′| + |M ′| + r . (11) Moreover, each unassigned job is split over at least two machines, because it has 0 < x ij < 1and P 
+
+> i
+
+xij = 1, so it accounts for at least two variables, hence |E| ≥ 2|J′|. If M ′ = ∅, then (11) and |J′| ≤ | E|/2 imply |E| ≤ | E|/2 + r, and hence |E| ≤ 2r ≤ 2(1+ ε) 
+
+> ε
+
+r. Thus, we may assume M ′̸ = ∅. We combine (10), (11) and |J′| ≤ 12 |E| to obtain 
+
+|E| ≤ | J′| + |M ′| + r < |J′| + |E| − | J′|
+
+1 + ε + r = ε
+
+1 + ε · | J′| + 11 + ε · | E| + r
+
+≤ ε
+
+2(1 + ε) · | E| + 11 + ε · | E| + r . 
+
+Rearranging yields ε 
+
+> 2(1+ ε)
+
+· | E| ≤ r, that is, |E| ≤ 2(1+ ε) 
+
+> ε
+
+· r.Thus, when none of the rounding rules apply, the process ends with at most |E| ≤ 2(1+ ε) 
+
+> ε
+
+r
+
+variables still fractional. Crucially, the covering constraints no longer matter, because each surviving variable contributes at most Qa/h to any active constraint a ∈ A , and hence by the choice of h, the total fractional contribution is at most εQ a. This means that any assignment of the remaining fractional variables loses at most a fraction ε of each covering target. We discard the remaining covering constraints. The residual assignment LP now only has assignment and makespan constraints, and the surviving fractional solution is a feasible point. Rounding this LP the same way as Shmoys and Tardos [27] did assigns each remaining job to an eligible machine and increases the load on every machine whose makespan constraint remains by at most the largest processing time of a remaining job eligible on that machine, which is at most its target. We show in Lemma 20 that the resulting load stays within (2 + ε)Ti on each machine. Before turning to the makespan, we first prove that the covering guarantee holds for any assignment of the remaining variables. 
+
+Lemma 19 (Covering guarantee) . When the iterative rounding terminates, dropping all re-maining active covering constraints and completing the assignment yields for every a ∈ [r]
+
+that 
+
+X
+
+> j∈J
+
+X
+
+> i∈Γ( j)
+
+qaij Xij ≥ (1 − ε)Qa .
+
+Proof. Fix a constraint a ∈ [r]. If a was discarded during the rounding or inactive from the start, then Qres  
+
+> a
+
+= 0, meaning the guessed and assigned jobs already contribute the full target Qa,hence the bound holds. So suppose a is still active when the rounding terminates. 35 By Lemma 17 every surviving variable satisfies qaij ≤ Qa/h . Hence, using the bound of Lemma 18, the contribution to a carried by the remaining fractional variables is 
+
+X
+
+> (i,j )∈E
+
+qaij xij ≤ Qa
+
+h · | E| ≤ Qa
+
+h · 2(1 + ε)
+
+ε · r ≤ Qa · ε2
+
+2(1 + ε) r · 2(1 + ε) rε = ε · Qa .
+
+Therefore the fractional variables carry at most εQ a of constraint a, and dropping them decreases the covering value by at most this much. The guessed and assigned jobs supply the remaining target Qa − Qres  
+
+> a
+
+, and the fractional solution is at least Qres  
+
+> a
+
+before rounding, so after discarding the fractional contribution the integral assignment collects at least (Qa − Qres  
+
+> a
+
+) + ( Qres  
+
+> a
+
+− εQ a) = (1 − ε)Qa .
+
+Completing the assignment of the remaining fractional jobs only adds contribution, so the bound is preserved. It remains to bound the makespan. The residual capacity T res  
+
+> i
+
+tracks the budget left on machine i. Initially T res  
+
+> i
+
+is equal to Ti minus the guessed load, and it decreases by pij whenever a job is assigned to machine i. Thus, as long as the makespan constraint of machine i remains present, the assigned load charged to i never exceeds Ti, and the increase over the fractional load present when this constraint is dropped is bounded in Lemma 20 by at most (1 + ε)Ti.
+
+Lemma 20 (Makespan guarantee) . The final assignment X ∈ { 0, 1}m×n satisfies 
+
+X 
+
+> j:i∈Γ( j)
+
+pij Xij ≤ (2 + ε)Ti
+
+for every machine i ∈ M .Proof. Fix a machine i. The makespan constraint of machine i is either dropped before all rounding rules have been applied or not. First suppose that machine i is dropped, and let x
+
+be the fractional solution at the moment it is dropped from the residual LP. Then there are at most d(i) ≤ 1 + ε + P 
+
+> j
+
+xij jobs with a variable to machine i. The jobs already assigned to machine i have load equal to Ti − T res  
+
+> i
+
+. Furthermore, P 
+
+> j
+
+pij xij ≤ T res  
+
+> i
+
+. All variables considered here are eligible on machine i, so pij ≤ Ti. Hence, the increase in load on machine i after rounding these jobs is bounded by 
+
+X
+
+> j
+
+pij (1 − xij ) ≤ Ti
+
+
+
+d(i) − X
+
+> j
+
+xij 
+
+
+
+≤ (1 + ε)Ti .
+
+Thus, the total load on machine i for the final integral assignment is at most the load of the jobs already assigned to i at the moment that the makespan constraint is dropped, plus the load of the fractional jobs at that moment, plus the potential increase of the fractional jobs when they are rounded up, that is, (Ti − T res  
+
+> i
+
+) + T res  
+
+> i
+
++ (1 + ε)Ti = (2 + ε)Ti .
+
+In the second case, the makespan constraint of machine i is never dropped. Let x be the final fractional solution at the moment that none of the rounding rules apply. Then, as mentioned in Lemma 19, we can drop all covering constraints and are left with a generalized assignment problem. We can round the job assignments using the rounding technique of Shmoys and Tardos [27], violating the remaining makespan constraint on machine i by at most the largest processing time of a remaining job eligible on i. This largest processing time is at most Ti.Hence, the total load on machine i is at most ( Ti − T res  
+
+> i
+
+) + T res  
+
+> i
+
++ Ti = 2 Ti.36 Proof of Proposition 11. We now assemble the preceding lemmas into a proof of Proposi-tion 11. 
+
+Proposition 11. Fix r ∈ N0 and ε ∈ (0 , 1) . If (Cov-LP) admits an integral feasible solution, then an integral assignment X can be computed in time (nm )O(r2/ε 2) · | I|O(1) , where |I| is the input encoding length, satisfying P 
+
+> i∈Γ( j)
+
+Xij = 1 for all j ∈ J, P 
+
+> j∈J:i∈Γ( j)
+
+pij Xij ≤ (2 + ε)Ti
+
+for all i ∈ M , and P
+
+> j∈J
+
+P 
+
+> i∈Γ( j)
+
+qaij Xij ≥ (1 − ε)Qa for all a ∈ [r].Proof of Proposition 11. If r = 0, there are no covering constraints, and the claim directly follows from the generalized-assignment rounding of Shmoys and Tardos [27], which already yields makespan at most 2 Ti. We therefore assume r ≥ 1 and run the algorithm described above. The algorithm enumerates all candidates and, for each one that is not discarded, performs the iterative rounding and outputs an integral assignment. It returns an assignment satisfying the makespan and covering bounds. To prove correctness it therefore suffices to exhibit one candidate whose run produces such an assignment. Let G⋆ be the candidate that, for each constraint a ∈ [r], selects the heavy contributors of a together with their machines under τ .Since G⋆ agrees with the feasible assignment τ , it is consistent and its fixed load on every machine is at most Ti, so it is not discarded. Consider the run on G⋆. By Lemma 17, deleting the high-contribution variables keeps the residual LP feasible, witnessed by τ restricted to the unguessed jobs, and leaves every surviving contribution below Qa/h . The iterative rounding terminates, and by Lemma 18 we have |E| ≤ 2(1+ ε) 
+
+> ε
+
+r. Discarding the remaining covering constraints and completing the assignment, Lemma 19 gives P
+
+> j
+
+P 
+
+> i
+
+qaij Xij ≥ (1 − ε)Qa for every a ∈ [r], and Lemma 20 gives P 
+
+> j
+
+pij Xij ≤ (2 + ε)Ti for every machine i. Since each job is assigned to exactly one eligible machine, we also have P 
+
+> i∈Γ( j)
+
+Xij = 1 for every job j. Hence the run on G⋆ produces an assignment meeting the makespan and covering bounds. It remains to bound the run time. There are at most ( nm )O(rh ) = ( nm )O(r2/ε 2) candidates. For each candidate the iterative rounding performs polynomially many steps, each recomputing an extreme point by solving a linear program of polynomial size, and assigning the remaining variables also takes polynomial time. The total run time is therefore ( nm )O(r2/ε 2) · | I|O(1) .
+
+C.4 Low-makespan max-min diversity 
+
+We are now ready to give the full proof of Theorem 12. 
+
+Theorem 12 (Low-makespan max-min diversity) . Fix k ∈ N≥2 and ε ∈ (0 , 1) . There is an algorithm that, for every feasible makespan target T , computes schedules σ1, . . . , σ k such that 
+
+Cmax (σa) ≤ (2+ ε)T for every a ∈ [k] and dmin (σ1, . . . , σ k) ≥ 12 (1 −ε)OPT min  
+
+> k
+
+(T ). The algorithm runs in time (nm )O(k2/ε 2) · | I|O(1) , where |I| is the input encoding length. Proof. Set ε0 = ε/ 3. We first prove a threshold statement. Fix a value Q ≤ OPT min  
+
+> k
+
+(T ). We show that, given such a threshold Q, one can compute k schedules of makespan at most (2 + ε0)T
+
+and max-min diversity at least 12 (1 − ε0)Q.The algorithm constructs the schedules one by one. After schedules σ1, . . . , σ r have been constructed, we maintain that each of them has makespan at most (2 + ε0)T and that every pair among them has diversity at least 12 (1 − ε0)Q.For the first schedule, we apply Proposition 11 with no covering constraints and makespan targets Ti = T for all machines i. Since T is feasible, the corresponding LP has an integral feasible solution. Thus, we obtain a schedule σ1 with Cmax (σ1) ≤ (2 + ε0)T .Now suppose that 1 < r ≤ k and that schedules σ1, . . . , σ r−1 have already been constructed. Let π1, . . . , π k be an optimal solution for OPT min  
+
+> k
+
+(T ). Thus, Cmax (πa) ≤ T for every a ∈ [k], 37 and d(πa, π a′ ) ≥ OPT min  
+
+> k
+
+(T ) ≥ Q for every distinct a, a ′ ∈ [k]. We claim that there exists a ∈ [k]such that 
+
+d(πa, σ b) ≥ 12 Q ∀b ∈ [r − 1] .
+
+Suppose not. Then for every a ∈ [k], there exists some b(a) ∈ [r − 1] such that 
+
+d(πa, σ b(a)) < 12 Q . 
+
+Since r − 1 < k , the pigeonhole principle implies that two distinct optimal schedules πa and πa′
+
+are mapped to the same constructed schedule σb. By the triangle inequality, 
+
+d(πa, π a′ ) ≤ d(πa, σ b) + d(σb, π a′ ) < 12 Q + 12 Q = Q . 
+
+This contradicts d(πa, π a′ ) ≥ OPT min  
+
+> k
+
+(T ) ≥ Q. Hence, such a schedule πa exists. Fix such a schedule πa. The schedule πa has makespan at most T and diversity at least 12 Q
+
+from each of σ1, . . . , σ r−1. For each previously constructed schedule σb, define covering coefficients 
+
+qbij = wj 1[i̸ = σb(j)] .
+
+Then πa is an integral feasible solution of (Cov-LP) with makespan targets Ti = T for all machines i and covering targets 12 Q, one covering constraint for each previously constructed schedule. Applying Proposition 11 with parameter ε0 gives a schedule σr with Cmax (σr) ≤
+
+(2 + ε0)T and, for every b ∈ [r − 1], 
+
+d(σb, σ r) ≥ (1 − ε0) · 12 Q = 12 (1 − ε0)Q . 
+
+Thus, after adding σr, all constructed schedules still satisfy the same makespan and pairwise-diversity guarantees. By induction, after k steps we obtain k schedules of makespan at most (2 + ε0)T and max-min diversity at least 12 (1 − ε0)Q. This proves the threshold statement. It remains to remove the assumption that a suitable threshold Q is known. Let Q∗ =OPT min  
+
+> k
+
+(T ). We always run the threshold algorithm with Q = 0 and retain its output as a baseline family. Let W = P 
+
+> j∈J
+
+wj . If W = 0, return this family. Otherwise, let wmin = min {wj | wj > 0}.Enumerate Q = W/ (1 + ε0)ℓ for ℓ = 0 , 1, . . . , including and stopping at the first value with 
+
+Q ≤ wmin . The baseline covers Q∗ = 0. If Q∗ > 0, then wmin ≤ Q∗ ≤ W , so one guessed threshold bQ satisfies 
+
+bQ ≤ Q∗ < (1 + ε0) bQ . 
+
+We run the threshold algorithm for every guessed threshold. Runs that do not return k schedules satisfying the required makespan and pairwise-diversity bounds for the guessed threshold are discarded. Among the remaining outputs and the baseline family, we return a family with maximum actual max-min diversity. For the guessed threshold bQ, the threshold statement applies. Therefore, one of the runs returns schedules of makespan at most (2 + ε0)T ≤ (2 + ε)T and max-min diversity at least 12 (1 − ε0) bQ ≥ 12 · 1 − ε0
+
+1 + ε0
+
+Q∗ ≥ 12 (1 − ε)Q∗ = 12 (1 − ε)OPT min  
+
+> k
+
+(T ) .
+
+The second inequality follows from ε0 = ε/ 3 and ε ∈ (0 , 1). Finally, we bound the run time. For a fixed threshold, the sequential construction in-vokes Proposition 11 exactly k times. Each invocation has at most k − 1 covering constraints and uses parameter ε0. Therefore, each threshold run takes time ( nm )O(k2/ε 2) · | I|O(1) . The number of guessed thresholds is O
+
+
+
+1 + 1 
+
+> ε
+
+log Wwmin 
+
+
+
+, which is absorbed in the stated bound. Hence the total run time is ( nm )O(k2/ε 2) · | I|O(1) .38 C.5 Hardness for max-min diversity 
+
+We prove the hardness result using two machines and all processing times equal to 0. Thus, every schedule has makespan 0, and only the diversity requirement matters. 
+
+Lemma 2. Given a diversity value Q, it is NP -hard to decide whether there exist three schedules 
+
+σ1, σ 2, σ 3 such that dmin (σ1, σ 2, σ 3) ≥ Q, even if the makespan constraint is ignored. Proof. We reduce from Partition . Let a1, . . . , a n be an instance of Partition with Pnj=1 aj = 2 B.Without loss of generality, we assume that 0 < a j ≤ B for every j.For each aj , we create a job j of weight wj = aj . We also create one additional dummy job d
+
+of weight wd = B. Thus, the total weight of all jobs is 3 B.We use exactly two machines, M = {1, 2}. Every job, including the dummy job, may be assigned to either machine, and we set pij = 0 for every machine i and job j. Consequently, every assignment is a feasible schedule with makespan 0. We set the diversity value Q equal to 2 B. We show that the Partition instance is a “yes”-instance if and only if there exist three feasible schedules σ1, σ 2, σ 3 such that 
+
+d(σa, σ b) ≥ 2B, ∀1 ≤ a < b ≤ 3 .
+
+First suppose that the Partition instance is a “yes”-instance. Then there exists a set 
+
+S ⊆ { 1, . . . , n } such that P 
+
+> j∈S
+
+aj = B. Let S = {1, . . . , n } \ S. Since Pnj=1 aj = 2 B, we also have that P 
+
+> j∈S
+
+aj = B. We define three schedules σ1, σ 2, σ 3 as follows. For the dummy job, set 
+
+σ1(d) = 1 , σ2(d) = 1 , σ3(d) = 2 .
+
+For each job j ∈ S set 
+
+σ1(j) = 1 , σ2(j) = 2 , σ3(j) = 2 .
+
+For each job j ∈ S set 
+
+σ1(j) = 2 , σ2(j) = 1 , σ3(j) = 2 .
+
+The three groups S, S, and {d} each have total weight B, and each pair of schedules differs on exactly two of them. Hence, 
+
+d(σ1, σ 2) = 2 B, d(σ1, σ 3) = 2 B, d(σ2, σ 3) = 2 B . 
+
+Therefore, the constructed instance admits three feasible schedules with minimum pairwise diversity at least 2 B.Conversely, suppose there exist three schedules σ1, σ 2, σ 3 such that 
+
+d(σa, σ b) ≥ 2B, ∀1 ≤ a < b ≤ 3 .
+
+Since there are only two machines, for each job either all three schedules assign it to the same machine, or exactly one schedule assigns it to a different machine from the other two. Let G0 be the set of jobs on which all three schedules agree. For i ∈ { 1, 2, 3}, let Gi be the set of jobs for which σi is the unique schedule that differs from the other two. Define 
+
+Wi = X
+
+> j∈Gi
+
+wj , i ∈ { 0, 1, 2, 3} .
+
+39 Then 
+
+W0 + W1 + W2 + W3 = 3 B . 
+
+Jobs in G0 do not contribute any positive pairwise diversity. A job in G1 contributes to the two pairwise diversities involving σ1, and analogously for G2 and G3. Therefore, 
+
+d(σ1, σ 2) = W1 + W2, d(σ1, σ 3) = W1 + W3, d(σ2, σ 3) = W2 + W3 .
+
+Since all three pairwise diversities are at least 2 B, summing the three inequalities gives 2( W1 + W2 + W3) ≥ 6B . 
+
+On the other hand, W1 + W2 + W3 ≤ W0 + W1 + W2 + W3 = 3 B. So W1 + W2 + W3 = 3 B and thus W0 = 0 and all three pairwise diversities are exactly 2 B. Hence, 
+
+W1 + W2 = 2 B, W1 + W3 = 2 B, W2 + W3 = 2 B . 
+
+Solving this set of equations gives W1 = W2 = W3 = B.Consequently, the jobs are partitioned into three groups G1, G 2, G 3, each of total weight B.The dummy job has weight exactly B, so the group containing the dummy job contains no other jobs. The remaining two groups contain only the original wj = aj jobs and each group has total weight B. Therefore, they define a partition of a1, . . . , a n.Thus the Partition instance is a “yes”-instance if and only if the constructed instance admits three feasible schedules with minimum pairwise diversity at least 2 B. Consequently, the decision version of the k = 3 max-min diversity problem is NP -hard. 40

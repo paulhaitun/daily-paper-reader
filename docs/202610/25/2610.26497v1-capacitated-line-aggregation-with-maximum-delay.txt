@@ -1,0 +1,1484 @@
+Title: Capacitated Line Aggregation with Maximum Delay
+
+URL Source: https://arxiv.org/pdf/2610.26497v1
+
+Published Time: Tue, 20 Oct 2026 02:58:25 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+# Capacitated Line Aggregation with Maximum Delay 
+
+## Runtian Ren, Shengcai Liu Guangdong Provincial Key Laboratory of Brain-Inspired Intelligent Computation, Department of Computer Science and Engineering, Southern University of Science and Technology, Shenzhen 518055, China liusc3@sustech.edu.cn 
+
+Abstract 
+
+We study capacitated line aggregation with per-batch maximum delay. Requests arrive over time at locations on a rooted half-line and are served in instantaneous batches of at most k
+
+requests. Each batch pays the distance to its farthest request plus the waiting time of its oldest request. The objective is to minimize the total cost. We give a deterministic online algorithm with competitive ratio 36 + 12 √3. The algorithm uses a Next Fit idea along paths of nested time intervals: it assigns a new group to an existing batch when a path-load test permits, and opens a new batch otherwise. The path load controls both capacity and the cost of opening new batches. Randomizing the common scale improves the expected competitive ratio to (18 + 6 √3) / ln 2 against an oblivious adversary. Both guarantees extend to arbitrary indivisible request sizes. We also study capacitated LAD in the learning-augmented model. Advice revealed at its service times allows (1+ ε)-consistency against every complete feasible advice schedule and O(ε−2)-robustness. The analysis charges repeated switches to successive decreases in the remaining advice cost. arXiv:2610.26497v1 [cs.DS] 19 Oct 2026 1 Introduction 
+
+Sending an acknowledgment, replenishing several types of goods, and serving requests along a common route all allow several requests to share one service cost. Waiting for more requests can reduce that cost, but also delays the requests already present. This tradeoff has been studied in TCP acknowledgment [12, 33, 18], joint replenishment (JRP) [1, 15, 16, 10, 5], and control-message aggregation [19, 8, 6]. Multi-level aggregation (MLA) extends these problems to rooted trees, with algorithms for additive waiting costs and deadlines [3, 4, 9, 2, 28, 22] and a stochastic-arrival variant [27]. Under per-batch maximum delay , each service pays its service cost plus the waiting time of its oldest request, and the objective sums these costs over all services. Lu et al. [26] study this objective for uncapacitated multi-level aggregation on rooted trees. They obtain optimal competitive ratios of 2 deterministically and e/ (e − 1) against an oblivious adversary. We study what happens when a capacity constraint is added, focusing on line aggregation with delay (LAD). In capacitated LAD, requests arrive at locations on a rooted half-line. Each service completes at most k pending requests and pays the distance to the farthest one, together with their maximum waiting time. Besides choosing when to serve, the algorithm must choose which requests to serve together. Even on a line, these decisions are closely coupled: a distant request can pay for serving nearby requests, but each nearby request occupies a place that a later request might use. Under additive delay, every pending request contributes to the waiting cost. Under maximum delay, younger requests can join a batch without increasing its waiting cost. This sharing is useful only while the requests fit. If an uncapacitated service is split into several feasible batches, several of them may contain old requests, and each batch pays its own maximum waiting time. Conversely, serving each distance class independently avoids this splitting decision but loses opportunities to share waiting across classes. For LAD, this gives a logarithmic competitive ratio; see Section 3.1 for the algorithm and a matching lower-bound instance. For LAD, we avoid this logarithmic loss by combining requests across distance classes and obtain a constant-competitive online algorithm. The algorithm assigns requests to future batches through nested time intervals. Its admission rule controls both the capacity of a batch and the cost of opening a new batch when admission fails. Thus capacity does not force the logarithmic loss incurred by independent distance classes. 
+
+Our contributions. We obtain the following main results in this paper. • For LAD, we give a deterministic online algorithm with competitive ratio 36 + 12 √3 < 56 .785 for capacity k. For radii on a fixed scaled dyadic grid, the competitive ratio is 18 + 6 √3. A random common scale offset gives an expected competitive ratio of (18 + 6 √3) / ln 2 < 40 .962 against an oblivious adversary. Both guarantees extend to arbitrary indivisible request sizes, as described in Section 3.9. • We also study capacitated LAD in the learning-augmented model. An algorithm receives advice only when a proposed service is due. We combine this advice with any deterministic R-competitive baseline. For 0 < ε ≤ 1, the resulting algorithm is (1+ ε)-consistent against every complete feasible advice stream and (32 /ε 2 + 72 /ε + 36) R-robust. Our LAD baseline gives O(ε−2)-robustness. At a single location, LAD reduces to capacitated TCP acknowledgment, whose optimal deter-ministic competitive ratio is two. This special case also gives a randomized lower bound of e/ (e − 1) on competitive ratios uniform in capacity. Appendix A gives the fixed-location algorithm and both lower-bound arguments. 1Our techniques. Our algorithms address two difficulties: assigning requests to future batches and switching between schedules that have served different requests. • A constant-competitive algorithm. We use Next Fit along paths of nested time intervals. Apath-load test accounts for group sizes and interval lengths, ensuring capacity and paying for new batches when admission fails. Next Fit prevents descendants from repeatedly charging the same ancestor. Section 3.2 develops the rule and its additive charges through a worked example. • Online advice. Switching schedules requires clearing requests that the new schedule may already have served. We separate the service and waiting costs of this clearance. Baseline budgets control service costs; successive decreases in the remaining advice cost pay waiting charges across switches without repeatedly charging an entire advice batch. 
+
+## 1.1 Related work 
+
+Aggregation with additive waiting and maximum delay. TCP acknowledgment, JRP, control-message aggregation, and MLA have been studied with additive waiting costs and deadlines [12, 18, 10, 5, 6, 3, 4, 9, 2, 28, 22]. Our direct predecessor is the work of Lu et al. [26] on uncapacitated aggregation with per-batch maximum delay. They show that an offline optimum serves consecutive arrival blocks. This yields a polynomial-time offline dynamic program, which also sets the deadlines of their online algorithm. With capacity, such a block may not fit in one service, and splitting it can charge the same waiting period to several batches. Lu et al. [24] extend the maximum-delay framework to monotone subadditive service costs. With exact batch optimization, they obtain optimal competitive ratios of 2 deterministically and 
+
+e/ (e − 1) randomly against an oblivious adversary. Their framework requires every request set to be realizable by one service. In LAD, f (Q) = max r∈Q xr remains subadditive, but the union of two capacity-feasible batches need not fit in one service. Treating their partition as a single service would omit the separate maximum-delay charges, so this framework does not directly apply. 
+
+Capacitated batching and capacity transfer. Lu et al. [23] study bin packing with per-bin maximum delay and arbitrary positive item sizes. This is the single-location special case of our size extension, with unit service cost. They obtain an expected competitive ratio of approximately 2.418 against an oblivious adversary in the ideal random-real model. Our setting allows requests at different distances to share a service. Offline capacitated LAD with deadlines is captured by Nonner’s capacitated max-batching model [30]. A request with window [ ar, b r] and radius xr corresponds to an interval of weight xr. A feasible batch contains at most k intervals with a common intersection and costs their maximum weight. The problem is strongly NP-hard already for k = 3 and admits a PTAS for every fixed k.For proper interval graphs, Correa and Megow [11] give a PTAS with arbitrary capacity. These results concern deadline feasibility and service cost, rather than per-batch maximum delay. A different connection concerns adding capacity to an uncapacitated schedule. Tour-partitioning bounds combine an uncapacitated service cost with a demand-weighted root-distance lower bound [7, 36]. Fukunaga et al. [14] use a reduction from capacitated to uncapacitated periodic inventory routing, where costs include inventory holding. For aggregation, splitting a service at its original time preserves additive waiting costs and deadline feasibility. Applying the partitioning bounds and a volume lower bound therefore increases the competitive ratio by only an additive constant; we give the derivation in Appendix C. This argument does not extend to maximum delay, since each resulting batch pays its own maximum waiting time. 2Dynamic bin packing and busy-time scheduling. MinUsageTime dynamic bin packing and busy-time scheduling group items or jobs under capacity constraints and charge the total time for which bins or machines are used [20, 17, 21, 35, 32, 13, 34, 29, 31]. There is a temporal resemblance to our objective: the maximum waiting time of a batch is the length of the union of its requests’ waiting intervals. In LAD, however, these intervals all end at a common service time chosen by the algorithm. Capacity bounds the total number of requests in the batch. In dynamic bin packing, departures free capacity that later arrivals can reuse. Thus the shared busy-time interpretation does not by itself transfer algorithms or lower bounds to LAD, which also charges a distance-dependent service cost. 
+
+Learning-augmented LAD. Lu et al. [25] study uncapacitated LAD with additive waiting costs, including deterministic and randomized learning-augmented algorithms using online suggestions of service lengths. We follow their consistency benchmark of any feasible advised schedule. With capacity, our advice also specifies which requests a service completes. It is revealed only at the proposed service time. Our analysis must account for requests that remain pending when the algorithm switches schedules, even if the schedule it starts following has already served them. Section 4 gives the switching rule and the residual-advice argument that controls these costs. 
+
+Organization. Section 2 introduces the model. Section 3 develops the constant-competitive LAD algorithm, from the failure of independent distance classes to the Next Fit construction, its analysis, and the arbitrary-size extension. Section 4 gives the online-advice algorithm and its consistency and robustness analysis. The appendices contain the fixed-location results, the baseline upper bound, capacity transfer, and supporting proofs for advice and arbitrary request sizes. 
+
+# 2 Preliminaries 
+
+In LAD, each request r has an arrival time ar ≥ 0 and a distance xr ≥ 0 from the origin on a rooted half-line, both revealed at arrival. We call xr its radius. Requests remain distinct even when they arrive at the same location and time. The capacity is a known integer k ≥ 1. A service ( Q, t )completes a nonempty set Q of at most k pending requests at time t. Its service and total costs are 
+
+f (Q) = max  
+
+> r∈Q
+
+xr, c(Q, t ) = f (Q) + max  
+
+> r∈Q
+
+(t − ar). (2.1) The objective is to minimize the sum of these costs. Each request must be served exactly once. Services are instantaneous, and several separately paid batches may be served at the same time. Capacity is shared across all locations in a batch; a completed batch cannot accept later requests. At one location, LAD is capacitated TCP acknowledgment. Inputs are finite, but their number of requests and end time are not announced. All arrivals at a timestamp are revealed before services at that time. An online algorithm uses only the revealed history and must eventually serve every request. We write ALG( I) for its total cost on input 
+
+I and OPT( I) for the minimum cost of a feasible offline schedule. A deterministic algorithm is 
+
+R-competitive if ALG( I) ≤ R OPT( I) for every input, with no additive constant. Unless stated otherwise, we assume k ≥ 2 and positive radii: for k = 1, immediate singleton service is optimal, and zero-radius requests can always be served immediately for free. Section 3.9 extends the model to arbitrary indivisible request sizes. 33 An O(1) -competitive algorithm for LAD 
+
+In the uncapacitated algorithm of Lu et al. [26], a dynamic program sets a deadline for the current pending block, which is then served in one batch. Its analysis uses the fact that batches with overlapping arrival spans can be merged without increasing cost. Capacity changes both steps: a pending block may contain more than k requests, and merging may be infeasible. Splitting a block at its deadline can repeat its maximum delay across several batches; serving only part of it leaves old requests for later services. Neither modification inherits the original cost bound. Before developing the new algorithm, we examine the loss incurred by serving distance classes independently. The instance below shows that capacity alone does not explain this loss: all its requests fit in one batch, but the algorithm fails to share their waiting costs. 
+
+## 3.1 Why independent distance classes lose a logarithmic factor 
+
+The dyadic-class algorithm first rounds each positive radius upward to a power of two. At each rounded radius x, it independently runs the full-or-age algorithm with setup x: whenever at least k
+
+requests are pending, it serves the k oldest; otherwise, it serves all pending requests when the oldest reaches age x. Full batches take priority over the age rule; classes never share a service. Algorithm 1 states this baseline. 
+
+Algorithm 1 The independent-class LAD baseline 
+
+Require: Capacity k 
+
+> 1:
+
+Serve zero-radius requests immediately for free.  
+
+> 2:
+
+Assign every other request r to its rounded radius yr = 2 ⌈log 2 xr ⌉. 
+
+> 3:
+
+At each rounded radius y, run FullOrAge (k, y ) from Algorithm 5.  
+
+> 4:
+
+Execute the resulting services independently; do not merge groups. 
+
+Proposition 3.1. For k ≥ 2, the independent-class algorithm is O(log k)-competitive. 
+
+The proof of the upper bound appears in Appendix B. 
+
+A matching lower-bound instance. Let m = ⌊log 2(k + 1) ⌋ and R = 2 m−1. For each i =0, . . . , m − 1, set xi = 2 i and release one request at radius xi at each time 2 jx i, where j =0, . . . , R/x i − 1. The total number of requests is 
+
+> m−1∑
+> i=0
+
+Rxi
+
+= 2 m − 1 ≤ k. 
+
+At radius xi, every request reaches age xi before the next request in its class arrives. The algorithm therefore serves it alone at time (2 j + 1) xi, paying 2 xi. Each class contributes 2 R, so ALG = 2 mR .Offline can serve all requests in one batch at the last arrival time 2 R − 2. This batch respects capacity, has maximum radius R and maximum waiting time 2 R − 2, and costs 3 R − 2. Consequently, ALG OPT ≥ 2mR 
+
+3R − 2 ≥ 2m
+
+3 = Ω(log k).
+
+Thus the logarithmic bound is tight for this algorithm. The loss occurs even though all requests in the entire input fit in one batch: independent class timers repeatedly pay waiting costs that a shared batch pays only once. 43.2 The main idea: Next Fit along nested intervals 
+
+We therefore control which groups can join a future batch while they wait. The challenge is to retain sharing across distances without making small groups wait too long for a distant request. Counting requests alone ensures that a batch fits, but does not pay for groups that must be served separately. Our path load accounts for both group size and waiting time scale. A failed admission test opens a new batch and provides a charge for its cost. Later groups inside that batch’s interval try to join it, rather than returning to its ancestors: this is the Next Fit idea along nested intervals. We explain the rule and its analysis through an example before giving the formal proofs. 
+
+Giving a group a time scale. For this explanation, suppose radii are powers of two. For each radius y, collect the requests arriving in [ b − y, b ), where b is a multiple of y. At time b, this group is completely known. Serve full batches of k requests immediately and retain the remainder as a single group, called a cohort . A full batch costs at most 2 y: its service cost is y and its maximum delay is at most y. These batches are paid for by the volume lower bound OPT ≥ 1
+
+k
+
+> ∑
+> r
+
+radius( r).
+
+Indeed, a batch’s largest radius is at least the sum of its requests’ radii divided by k.Give the remaining cohort the home interval [b, b + y). It could be served at the right endpoint for cost at most 3 y. The home intervals are nested or disjoint, which provides a way to combine different radii: a cohort may instead join the future batch of a containing interval. We call an interval selected to open a batch a root , and call that root the owner of the cohorts assigned to it. Its batch is served at its right endpoint. Larger intervals are processed first when their left endpoints coincide. Thus a containing root is already known when a cohort decides whether to join it. Assignments and service times are never revised. 
+
+Why count load rather than requests? Suppose a root has interval length R. A cohort of 
+
+M requests with home length y reserves M R/k units of area under this interval. Spread this area uniformly over its own home. Its load there is 
+
+M R ky = Mk · Ry .
+
+The first factor is the fraction of capacity used; the second compares the owner’s time scale with the cohort’s own time scale. A short home therefore contributes more load than a long home with the same number of requests. We allow the assignment only if the total load stays at most one throughout the new home. The total area is then at most R. Since every assigned request contributes area R/k , at most k requests can be assigned to this root. When the test fails, the cohort opens its own root. Later cohorts inside this new interval test admission to the new root, rather than returning to its ancestors. This is the Next Fit idea along each path of nested intervals. Disjoint subintervals can still use the earlier root. This distinction will be essential when we account for the cost of rejected cohorts. Section 3.6 shows that trying older roots first can destroy the certificate used to compare these costs with offline batches. 
+
+A worked example. Let k = 8. Two requests of radius 8 arrive at time 0; two of radius 4 arrive at time 4; and at time 8 one request of radius 2 and one of radius 4 arrive. Figure 1 follows all six requests. No full batch is removed in preprocessing. 5At time 8, the radius-8 cohort opens a root with home [8 , 16), and its two requests contribute load 2 /8 = 1 /4. The radius-4 cohort has home [8 , 12) and adds load 2 · 8/(8 · 4) = 1 /2 there. It is accepted. At time 10, the radius-2 request reveals its home [10 , 12). Its prospective load is 8/(8 · 2) = 1 /2, taking the total on this home to 5 /4. It is rejected even though a fifth request would fit in the batch. Instead, it opens a root and is served at time 12, for cost 2 + (12 − 8) = 6. At time 12, the last radius-4 request reveals home [12 , 16). This home is disjoint from [8 , 12), and its load test is only 1 /4 + 1 /4 = 1 /2. It joins the first root. The resulting five-request batch is served at time 16, for cost 8 + (16 − 0) = 24. The algorithm’s total cost is therefore 30.                                    
+
+> (a) Cohort homes and their assigned batches ( k= 8 )
+> root u[8 ,16): two requests of radius 8 accepted two requests of radius 4 one request of radius 4 new root vradius 2 At t= 10: 14+12+12>1. Reject from u; open v.
+> t
+> 810 12 16
+> (b) Final load of the root u
+> 1
+> t
+> load
+> 14+12=3414+14=12
+> 812 16
+
+Total area = 4 · 34 + 4 · 12 = 5 = 88 · (five assigned requests) ≤ 8.
+
+Figure 1: The six-request example from Section 3.2. The radius-8 requests arrive at time 0, the first radius-4 pair at time 4, and the other two requests at time 8. A home starts when its cohort becomes available for assignment, rather than at the requests’ actual arrival. The orange cohort is rejected at time 10 and served at time 12 for cost 6; the five blue requests are served at time 16 for cost 24. A feasible offline batch at time 8 costs 16. Disjoint homes use different portions of the root’s load budget; only accepted cohorts contribute to the plotted load. Offline can serve all six requests at time 8, for cost 8 + 8 = 16. Compared with this feasible solution, the algorithm pays more to fix its groups and service times online. Leaving a capacity slot unused preserves a load budget for subsequent groups. 
+
+What pays for opening another batch? The example has load 3 /4 already present throughout the rejected home [10 , 12). The area under this old load is 3 /2, enough to pay its length 2 within a constant factor. More generally, a failed test means that either the incoming cohort contributes at least 1 /2, or the old load exceeds 1 /2 on its home. In the first case, charge the new root’s length to the requests that created it. In the second, charge it to twice the old load integrated over its home. A root’s actual batch cost is at most three times its length, so it suffices to pay for these lengths. The second charge must not reuse the same area at every smaller scale. This is exactly why we use Next Fit: the first rejected home becomes responsible for later rejections inside it. The homes that charge a fixed parent root are disjoint. A request assigned to that parent therefore pays at most twice its reserved area in total, even if many smaller roots are subsequently opened. Descendants of 6a child use the child’s assigned requests, not the parent’s requests. 
+
+Why are these charges lower bounds on the offline cost? We first charge online roots to requests and then bound these charges inside each feasible offline batch . The second comparison is necessary because a batch may combine requests from different roots without taking whole cohorts. Fix an offline batch whose largest radius is Y and whose arrival span is D. Its cost is at least 
+
+Y + D. Requests with owners of length at most Y have small reserved-area charges, whose sum is controlled by the batch’s capacity. For larger owners, Next Fit gives a unique-owner property :inside each maximal home represented in the batch, all requests owned above that home share the same owner. Its load is at most one, so their area is bounded by the home length. These maximal homes are disjoint and lie in a time interval of length D + 2 Y .The own-cohort charges admit a similar division: maximal roots are controlled by disjoint intervals, and the remaining per-request charges by capacity. Both certificates are therefore bounded by a constant times the offline batch cost. Summing over its partition gives the desired comparison with OPT. The formal analysis below establishes these bounds, optimizes the threshold, and accounts for preprocessing and radius rounding. 
+
+Theorem 3.2. There is a deterministic online algorithm for LAD with capacity k whose competitive ratio is at most 36 + 12 √3 < 56 .785 . For radii on a fixed scaled dyadic grid, the ratio is at most 
+
+C∗ := 18 + 6 √3 < 28 .393 .
+
+These deterministic guarantees hold also for adaptively generated inputs. 
+
+## 3.3 Strict time rounding and local preprocessing 
+
+We write ar for the arrival time of request r and xr > 0 for its radius. Each batch contains at most 
+
+k requests. For a fixed λ > 0, the radius grid is {λ2j : j ∈ Z}. The deterministic algorithm uses 
+
+λ = 1; we keep the scale explicit for the randomized extension. The algorithm rounds xr upward to the smallest grid value yr ≥ xr and gives r the virtual arrival 
+
+br = yr
+
+> (
+
+⌊ar/y r⌋ + 1 ).
+
+Thus 0 < b r − ar ≤ yr. Its home interval is Hr = [ br, b r + yr). Any two home intervals are disjoint or one contains the other. At time b, the full cohort with home [ b, b + y) consists of the requests of rounded radius y that actually arrived in [ b − y, b ). The cohort is therefore known from the strict past. An arrival at time b cannot change it, even when arrivals depend on earlier service decisions. At a cohort’s virtual arrival, the algorithm serves full groups of k requests in a fixed deterministic order. It retains the remaining requests as one residual cohort , if any remain. Thus every preprocessed batch is full, and each residual cohort fits in one batch (line 7 of Algorithm 2). Every preprocessed batch at a home of width y has actual waiting at most y and radius at most 
+
+y. Its cost is at most 2 y, and hence at most 4 y/k times its cardinality. If P denotes the set of preprocessed requests, then ALG pre ≤ 4
+
+k
+
+> ∑
+> r∈P
+
+yr. (3.1) We use the loose factor four so that the same accounting also applies to arbitrary sizes in Appendix E. The bound assigns preprocessing cost to individual requests. Later we combine these charges with those of residual requests inside each offline batch, using their shared capacity constraint. 73.4 The path-load rule 
+
+We write v for a nonempty residual cohort, Iv = [ bv, b v + yv) for its home, and Mv for its cardinality. The algorithm processes homes with the same left endpoint in decreasing order of width. Some homes are selected as roots , each representing one future batch. Every cohort is assigned as a whole to a selected root containing its home. We call that root the cohort’s owner ; these interval roots are distinct from the half-line root at the origin. When cohort v arrives, let u denote its nearest selected strict ancestor, if one exists, and write 
+
+Ru = yu. To decide whether v can join u, the algorithm distributes a load MvRu/(ky v) over Iv. Its integral is MvRu/k , the interval length reserved for these requests. Since earlier homes meeting Iv
+
+contain it, their contributions are constant throughout Iv. Admitting v would give total load 
+
+Lu(v) = ∑   
+
+> walready assigned to uIv⊆Iw
+
+MwRu
+
+ky w
+
++ MvRu
+
+ky v
+
+. (3.2) If u exists and Lu(v) ≤ 1, the algorithm assigns v to u. Otherwise, v becomes a new root and owns its own cohort (lines 14–16 of Algorithm 2). A root u serves all its assigned requests at time bu + Ru.This service time and all earlier assignments remain fixed. All information used in (3.2) is available online. An ancestor home is revealed before its descendants, with the specified order handling equal left endpoints. A newly revealed descendant starts strictly before its ancestor’s right endpoint, and hence its selected ancestor has not served. Homes starting at an endpoint are outside the interval ending there; simultaneous arrivals and due services cause no ambiguity. All tie choices are fixed in advance. Empty cohorts create no events. 
+
+Lemma 3.3. Every root batch is capacity feasible, and its actual cost is at most 3Ru. Every residual request is eventually served exactly once. Proof. We first prove capacity by integrating the load and then bound the waiting time of each assigned request. For the final assignment to root u, define 
+
+fu(t) = ∑  
+
+> wassigned to u
+
+MwRu
+
+ky w
+
+1Iw (t).
+
+Homes containing a fixed point form a chain and are processed in ancestor order. Every accepted cohort checks the existing chain sum plus its own term. The root’s initial term is Mu/k ≤ 1. Once a new selected root appears on the chain, subsequent descendants use that nearer root. Consequently 
+
+fu(t) ≤ 1 almost everywhere. Integration gives 
+
+Ru
+
+k |{ r : r is assigned to u}| =
+
+> ∫
+> Iu
+
+fu(t) dt ≤ Ru,
+
+which proves feasibility without splitting any request. If r has home Iw ⊆ Iu, then yw ≤ Ru and bw ≥ bu. Its actual arrival satisfies ar ≥ bw − yw ≥
+
+bu − Ru. At time bu + Ru, its waiting is at most 2 Ru and its radius is at most Ru. The root batch therefore costs at most 3 Ru. Every residual cohort has one owner with a finite prescribed service time, proving the last claim. Algorithm 2 summarizes the complete event-driven rule. 8Algorithm 2 Path-load aggregation for LAD 
+
+Require: Capacity k; one fixed scale λ > 0; deterministic tie orders Use λ = 1 for the deterministic version; for Corollary 3.7, draw U uniformly from [0 , 1) once and set λ = 2 U . 
+
+> 1:
+
+Initially no requests, cohorts, or selected roots are stored. 
+
+On arrival of request r at ar: 
+
+> 2:
+
+yr ← min {λ2j : λ2j ≥ xr}; br ← yr(⌊ar/y r⌋ + 1)  
+
+> 3:
+
+Store r in the cohort with home [ br, b r + yr). 
+
+At a virtual arrival time b: 
+
+> 4:
+
+for nonempty homes [ b, b + y) in decreasing y do  
+
+> 5:
+
+Q ← the requests stored for this home  
+
+> 6:
+
+while |Q| ≥ k do  
+
+> 7:
+
+Serve the first k requests of Q at b and remove them from Q. 
+
+> 8:
+
+if Q̸ = ∅ then  
+
+> 9:
+
+Create cohort v with Iv = [ b, b + y), yv = y, and Mv = |Q|. 
+
+> 10:
+
+u ← the selected strict ancestor of Iv of minimum width, if any  
+
+> 11:
+
+if u exists then  
+
+> 12:
+
+L ← ∑   
+
+> wassigned to uIv⊆Iw
+
+MwRu
+
+ky w
+
++ MvRu
+
+ky v 
+
+> 13:
+
+if u exists and L ≤ 1 then  
+
+> 14:
+
+Assign the entire cohort v to u. 
+
+> 15:
+
+else  
+
+> 16:
+
+Select v as a root, set Rv = yv, and assign v to itself.  
+
+> 17:
+
+Schedule its service at b + yv.
+
+At the service time bu + Ru of a root u: 
+
+> 18:
+
+Serve all requests assigned to u in one batch; retire u.
+
+## 3.5 Two additive certificates 
+
+A rejected cohort opens another batch, whose cost must be compared with the offline solution. We use two request charges. The first records the load already assigned to an owner; it will pay for rejections caused by that load. The second pays for a new root when its own cohort contributes a large load. Each charge is bounded inside an arbitrary offline batch. Summing over the offline partition bounds the total charge, even when the batches’ arrival spans overlap. We fix any feasible offline partition into batches. Each batch B can be served at its latest arrival, giving minimum cost XB + DB , where 
+
+XB = max  
+
+> r∈B
+
+xr, YB = max  
+
+> r∈B
+
+yr, DB = max  
+
+> r∈B
+
+ar − min  
+
+> r∈B
+
+ar.
+
+We also write αB = |B \ P |/k ∈ [0 , 1] for the fraction of capacity used by residual requests in B.The number of preprocessed requests in B is at most k(1 − αB ). All residual homes represented in 
+
+B lie inside [min B ar, max B ar + 2 YB ]. Thus every disjoint collection of such homes has total length at most DB + 2 YB . This observation compares virtual homes directly with the original arrival span. Each residual request assigned to u receives weight βr = Ru/k ; preprocessed requests receive weight zero. We write W = ∑ 
+
+> r
+
+βr for their total weight. 9Lemma 3.4. For every feasible offline batch B,
+
+> ∑
+> r∈B
+
+βr ≤ DB + (2 + αB )YB .
+
+Proof. Let Q1, . . . , Q m be the inclusion-maximal distinct residual homes represented in B. They are disjoint, with total length at most DB + 2 YB . We split the charge according to whether a request’s owner is contained in its maximal home Qj or strictly contains Qj . The first group is bounded by the number of requests in B; the second will be bounded by integrating load over the disjoint Qj .Owners of the first kind have width at most YB . Each of their requests therefore has weight at most YB /k , and there are at most αB k residual requests in B. Their total weight is at most αB YB .All requests of the second kind within a given Qj have the same owner. To see this, recall that a containing home is processed before its descendants, including when their left endpoints coincide. Every strict ancestor of Qj was therefore known when Qj was processed. Let u be its nearest selected strict ancestor, if one exists. A descendant home can be assigned above Qj only to 
+
+u: any selected root between that home and u would instead become its nearest candidate owner. Assignments are never revised, so roots selected later inside Qj do not change earlier owners. If 
+
+Qj itself is selected, or if u does not exist, the second group is empty. Otherwise, the weight of this group is at most ∫ 
+
+> Qj
+
+fu(t) dt ≤ | Qj |. Indeed, integrating the density of a whole assigned home contained in Qj gives exactly its total β weight; selecting only part of that cohort reduces the weight. Summing over j bounds the second group by DB + 2 YB . Adding the first group’s αB YB
+
+gives DB + (2 + αB )YB , as claimed. An owner may occur in several offline batches. The comparisons remain additive because each batch sums only its own requests’ β weights; the integral bounds these weights without assigning a new charge to the owner each time. For the analysis, we fix θ ∈ (0 , 1). A selected root v is heavy if it has no selected ancestor or, writing u for its parent selected root, if 
+
+MvRu
+
+ky v
+
+≥ θ. 
+
+All other roots are light . Each request in the cohort that created a heavy root v receives weight 
+
+γr = yv/M v; all other requests receive weight zero. Every residual cohort is nonempty, and hence 
+
+Mv > 0. The total γ weight equals the total width of heavy roots. 
+
+Lemma 3.5. For every feasible offline batch B,
+
+> ∑
+> r∈B
+
+γr ≤ DB + (2 + αB /θ )YB .
+
+Proof. We split the represented heavy roots into maximal and nonmaximal ones. Disjoint homes bound the first group; the heavy-root inequality bounds the charge per request in the second. The inclusion-maximal heavy-root homes whose own-cohort requests occur in B are disjoint. Their total length is at most DB + 2 YB , and their represented γ weight is at most this length, even when B
+
+contains only part of a cohort. For a nonmaximal represented heavy root v, some represented heavy ancestor w exists. The parent selected root u of v lies in Iw, and hence Ru ≤ yw ≤ YB . Its heavy inequality gives 
+
+γr = yv
+
+Mv
+
+≤ Ru
+
+kθ ≤ YB
+
+kθ .
+
+There are at most αB k such requests, so the nonmaximal roots contribute at most αB YB /θ . Together with the maximal roots’ contribution DB + 2 YB , this gives the claimed bound. 10 Lemma 3.6. The sum of the widths of light roots is at most W/ (1 − θ).Proof. We charge each light root to the load of its parent over its home. These charges use disjoint intervals for a fixed parent, and different parents use the weights of their own assigned requests. Let 
+
+v denote a light immediate child root of u. Its own prospective term is below θ, but its admission failed. The already assigned ancestor terms therefore sum to more than 1 − θ. Every such term contributes throughout Iv and remains in the final density fu. Thus 
+
+|Iv| ≤ 11 − θ
+
+> ∫
+> Iv
+
+fu(t) dt. 
+
+Immediate child-root intervals of u are disjoint. Summing over light children and parents yields  
+
+> ∑
+> vlight
+
+yv ≤ 11 − θ
+
+> ∑
+> u
+> ∫
+> Iu
+
+fu(t) dt = 11 − θ
+
+> ∑
+> r
+
+βr.
+
+More explicitly, a request r assigned to u pays a light child v of u the amount 
+
+βr
+
+1 − θ
+
+|Hr ∩ Iv||Hr| .
+
+Its total contribution is at most βr/(1 − θ) by disjointness. A grandchild of u uses the requests assigned to its own parent. 
+
+## 3.6 Why Next Fit rather than First Fit? 
+
+The baseline in Section 3.1 loses a logarithmic factor by processing distance classes independently. Our algorithm combines classes, but the choice of owner also matters for its analysis. Consider a 
+
+First Fit variant that keeps the same preprocessing and load test, but tries all selected containing roots in decreasing order of width. It joins the first root that passes the test and opens a new root only if all fail. This rule still preserves capacity. The example below shows that its β weights need not satisfy a constant-factor bound within an arbitrary feasible offline batch. It is not a competitive lower bound for First Fit. 
+
+A three-level example. Let k = 16. At time 8 − ε, release eight requests at each radius 8, 4, and 2, where 0 < ε < 1/4. At virtual time 8, they create roots with homes [8 , 16), [8 , 12), and [8 , 10). Each starts with load 1 /2. Every smaller seed cohort is rejected by all larger roots, since its prospective load is at least one before adding the existing load. Inside Q = [8 , 9), create one request for every home in the following three levels. A request with home [ h, h + y) has radius y and arrives at h − ε.level home width number of homes owner width total β
+
+0 1 1 8 1/21 1/2 2 4 1/22 1/4 4 2 1/2The first request adds load 8 /(16 · 1) = 1 /2 to the largest root, filling its load throughout Q. Each half-width home is therefore rejected there, but adds load 4 /(16 · (1 /2)) = 1 /2 to the next root. The quarter-width homes similarly join the smallest root. Ancestor homes are processed first, so each rejection is already determined when it occurs. Thus requests inside the same maximal home Q use three different owners strictly above Q, violating the unique-owner property in Lemma 3.4. 11 owner u Iu
+
+Iv1 Iv2 
+
+> light children of u
+
+Ig If g is light, its charge uses fv1 , not fu.1 − θ
+
+fu(t)
+
+t
+
+∫
+
+> Iv1
+
+fu
+
+∫
+
+> Iv2
+
+fu
+
+(1 − θ) ∑  
+
+> vlight child of u
+
+|Iv | ≤ ∑
+
+> v
+
+∫
+
+> Iv
+
+fu(t) dt ≤
+
+∫
+
+> Iu
+
+fu(t) dt. 
+
+Figure 2: Why the light-root charge does not repeat down the hierarchy (schematic density). A light child’s own term is below θ, so failed admission certifies fu > 1 − θ throughout its interval. Immediate child-root intervals are disjoint; the shaded areas therefore use disjoint portions of the unique owner’s density. A grandchild has a different parent and uses that parent’s assigned requests. The parameter θ is used only in the analysis. 
+
+An unbounded loss in the certificate. For m ≥ 2, take k = 2 m+1 , b = 2 m, and ε = 2 −m.Release k/ 2 seed requests at each radius 2 m, 2m−1, . . . , 2 at time b − ε. They create m roots starting at b, each with initial load 1 /2. Let B consist of one additional request for each dyadic home in 
+
+Q = [ b, b + 1) at levels ℓ = 0 , . . . , m − 1: 
+
+Hℓ,j = [ b + j2−ℓ, b + ( j + 1)2 −ℓ), j = 0 , . . . , 2ℓ − 1.
+
+Its radius is 2 −ℓ and its arrival is the left endpoint minus ε. No cohort reaches capacity. As in the three-level example, earlier levels fill each larger root on Q, while disjoint homes at level ℓ fill the remaining load 1 /2 of the root of width 2 m−ℓ. Each level contributes 2 ℓ · 2m−ℓ/k = 1 /2 to the certificate. Thus 
+
+|B| = 2 m − 1 < k, YB = 1 , DB = 1 − 2−(m−1) , ∑
+
+> r∈B
+
+βr = m/ 2.
+
+Serving B at its last arrival costs YB + DB < 2, so its β weight exceeds its batch cost by Θ(log k). This is a loss in the batchwise certificate, not a competitive lower bound for First Fit: the full input also contains the seed requests, whose offline cost might support a different global accounting. Next Fit’s unique-owner property prevents this accumulation of area charges across scales. 
+
+## 3.7 Combining preprocessing and residual costs 
+
+Figure 2 illustrates the disjoint areas used in Lemma 3.6. The accounting follows ownership: nested selected roots do not repeatedly use one ancestor’s requests. We combine three charges: preprocessing, heavy roots, and light roots. By Lemmas 3.3–3.6, the last two cost at most 3 ∑ 
+
+> r
+
+γr and 3 W/ (1 − θ), respectively. The factor three comes from the root-batch cost bound 3 Ru. Inside an offline batch B, preprocessing contributes at most 4(1 −αB )YB
+
+by (3.1), while the two certificates bound the residual charges. Keeping αB in this calculation accounts for the capacity shared by preprocessed and residual requests. Substituting the certificate 12 bounds, the total cost is at most the sum over offline batches of 3
+
+> (
+
+1 + 11 − θ
+
+> )
+
+DB +
+
+> [
+
+3
+
+> (
+
+2 + 21 − θ
+
+> )
+
++ 4 + αB 
+
+> (
+
+3
+
+θ + 31 − θ − 4
+
+> )]
+
+YB .
+
+The coefficient of αB is positive. Maximizing over αB ∈ [0 , 1] yields the batchwise comparison ALG ≤ ∑
+
+> B
+> (
+
+A(θ)DB + C(θ)YB
+
+> )
+
+, A(θ) = 3 
+
+> (
+
+1 + 11 − θ
+
+> )
+
+, C(θ) = 3 
+
+> (
+
+2 + 1
+
+θ + 31 − θ
+
+> )
+
+. (3.3) The capacity constraint in this calculation belongs to the offline batch B. Its preprocessed and residual requests occupy disjoint portions of that capacity, although the online algorithm may serve them in different batches. The choice θ = 1 /(1 + √3) minimizes C(θ) and gives 
+
+A(θ) = 6 + √3, C(θ) = C∗ = 18 + 6 √3.
+
+For already scaled-dyadic radii, YB = XB , and hence (3.3) proves the C∗ bound. For arbitrary radii, 
+
+YB < 2XB , proving the 2 C∗ bound of Theorem 3.2. The threshold θ changes only the proof, not any online decision. All comparisons hold for each realized input and each feasible offline partition, which also establishes the claimed adaptive-adversary scope. 
+
+## 3.8 Randomizing the scale 
+
+Corollary 3.7. Against an oblivious adversary, LAD with capacity k admits a randomized online algorithm with expected competitive ratio 
+
+18 + 6 √3ln 2 < 40 .962 .
+
+Proof. The algorithm draws U uniformly from [0 , 1) once, sets λ = 2 U , and uses this scaled dyadic grid for both radii and time. For any fixed x > 0, its rounded radius is 
+
+yU (x) = 2 U +⌈log 2 x−U ⌉, E[yU (x)] = x 
+
+> ∫10
+
+2z dz = x
+
+ln 2 .
+
+We fix an input independent of U and an optimal partition of the original requests. The common monotone rounding map gives YB = yU (XB ). Applying (3.3) to this same partition for every U and taking expectations gives 
+
+E[ALG] ≤ ∑
+
+> B
+> (
+
+(6 + √3) DB + C∗
+
+ln 2 XB
+
+> )
+
+≤ C∗
+
+ln 2 OPT ,
+
+which proves the corollary by linearity of expectation. The expectation uses an input fixed independently of the scale. For adaptive inputs, the deterministic 2 C∗ guarantee still holds for every realized scale. The randomized implementation uses an ideal-real computation model: it samples the common scale exactly and performs arithmetic, comparisons, and rounding on real values exactly. It uses polynomially many such operations. We do not claim a finite-bit implementation of this exact continuous random scale. 13 3.9 Arbitrary request sizes 
+
+We now allow each request to have an indivisible size sr revealed at arrival. A batch of capacity 
+
+K > 0 must satisfy ∑ 
+
+> r∈Q
+
+sr ≤ K, where sr ∈ [0 , K ]. Requests cannot be split, and size affects feasibility only: a batch still pays its service cost plus its maximum waiting time. Zero-size requests may therefore have positive cost. Unit sizes with K = k recover the main model. With xr = 1, 
+
+K = 1, and positive sizes, this is bin packing with per-bin maximum delay [23]; that special case admits smaller competitive constants than the guarantees below for arbitrary radii. 
+
+Corollary 3.8. The deterministic and randomized guarantees of Theorem 3.2 and Corollary 3.7 hold for arbitrary indivisible sizes, including zero sizes. The deterministic algorithm is polynomial-time for rational input. The randomized algorithm uses polynomially many operations in the ideal-real model specified in Section 3. Neither needs a minimum-size assumption. In particular, the deterministic competitive ratio is 36 + 12 √3.
+
+Only preprocessing and the units of path load change. Within each newly revealed cohort, serve requests larger than K/ 2 as singletons. Process the others by Next Fit in a fixed order, closing and serving the current bin when the next request does not fit. Retain the final nonempty bin as the residual cohort, even when its load is exactly K. Every served bin has load greater than K/ 2, so its cost is paid by the size-weighted volume bound, with a constant loss. Let Mv now denote the total size of residual cohort v, rather than its cardinality. Its contribution to the path load of an owner u is MvRu/(Ky v). Integrating this load over the owner’s interval bounds the total assigned size by K. Thus the same admission rule preserves capacity without splitting a cohort or any request. The light-root argument also uses the same path load; the certificates β and γ distribute their weights by size. Appendix E gives the weighted proof, including zero-size requests, and the pseudocode. The algorithm requires no optimum bin packing. 
+
+# 4 Learning-augmented capacitated LAD 
+
+Section 3 gives a constant-competitive algorithm without advice. We now seek to follow a good advised schedule more closely while retaining a worst-case guarantee. We use the online revelation of advice and the consistency benchmark of Lu et al. [25] for additive-delay LAD. With capacity, each suggestion must also specify which requests it serves: at time t, an advice event reveals a service ( Q, t ) and the identities of its already arrived requests. The algorithm sees no future advice events or total advice cost. The provider may know the full input; only when its advice is revealed is restricted. As in [25], consistency 1 + ε means ALG( I) ≤ (1 + ε) cost(ADV) for every complete, capacity-feasible advice stream ADV on I. Robustness R requires ALG( I) ≤ R OPT( I) even for inaccurate advice. Invalid references can be ignored and no physical action may violate capacity. Consistency compares with the supplied feasible schedule, even when it is far from optimal. The new difficulty is accounting for requests left pending when switching between advice and a robust baseline. Under additive delay, waiting costs are charged separately to requests. Under maximum delay, one advice batch may share a waiting cost that the algorithm pays across several batches. Capacity can also force a switch to clear old requests in several services. Charging each clearance to the original advice batch would count its cost repeatedly. We therefore need switching rules that control the pending requests and charges that remain additive across switches. The monitor below gives the following guarantee. 14 Theorem 4.1. For LAD with capacity k, let B denote a deterministic R-competitive online algorithm. For every 0 < ε ≤ 1, there is a deterministic online algorithm satisfying 
+
+ALG( I) ≤ (1 + ε) cost(ADV) , (4.1) ALG( I) ≤ 
+
+> (
+
+32 
+
+ε2 + 72 
+
+ε + 36 
+
+> )
+
+R OPT( I). (4.2) 
+
+The first bound holds for every complete, capacity-feasible advice stream ADV revealed at its service times. The second holds independently of advice quality, including when advice is incomplete. The algorithm needs no future advice partition or total advice cost. For rational input and ε, the overhead is polynomial in the processed input and advice description if B is polynomially simulable. 
+
+With the LAD algorithm from Section 3 as the baseline, robustness is O(ε−2). 
+
+The switching idea. The algorithm simulates the advice and the baseline throughout the input. It measures each schedule by the cost already paid plus lower bounds on the service and waiting costs of its pending requests. Geometrically increasing budgets determine which schedule to follow. Advice is preferred whenever its budget permits; a smaller budget for the baseline limits spending away from advice. At a switch, clearing all old pending requests ensures that the new schedule can serve every request still waiting for the algorithm. The main issue is paying for these clearances while keeping consistency close to one. When leaving advice, the waiting charge is paid by the decrease in its remaining cost after deleting the requests just cleared. Different switches use successive decreases, rather than repeatedly charging an entire advice batch. The baseline budget pays the additional service cost. When returning to advice, the algorithm also clears requests that advice served while the baseline was active; these are charged within the baseline block. This restores the residual-advice comparison at every return. 
+
+## 4.1 Packing costs and virtual schedules 
+
+The algorithm serves radius-zero requests immediately for free and removes them from advice. We therefore assume positive radii below. An input containing only radius-zero requests costs nothing. 
+
+Separate packing costs. For a pending set P at time t, we write wr(t) = t − ar and define 
+
+S(P ) = min 
+
+> Π
+> ∑
+> G∈Π
+
+max  
+
+> r∈G
+
+xr, D(P, t ) = min 
+
+> Π
+> ∑
+> G∈Π
+
+max  
+
+> r∈G
+
+wr(t), (4.3) where each minimum is over partitions into groups of at most k requests. The two minimizing partitions may differ: S ignores waiting, and D ignores distance. Nevertheless, any feasible partition pays at least S(P ) in service cost and D(P, t ) in current waiting cost, so their sum is a lower bound on clearing P . Both values are zero on the empty set. For nonnegative weights vr, sorting them in nonincreasing order and grouping consecutive k requests minimizes the sum of group maxima. Indeed, for every z ≥ 0 any partition has at least ⌈|{ r : vr > z }| /k ⌉ groups of maximum weight greater than z, and the sorted partition attains all these bounds. Integration over z proves optimality. Thus S and D are exactly computable by sorting; they are also monotone under taking subsets. 15 Lemma 4.2. There are polynomial-time procedures that clear P at time t with cost at most 
+
+2(S(P ) + D(P, t )), (4.4) 
+
+and, for any η > 0, with cost at most 
+
+(1 + η)D(P, t ) + (1 + 1 /η )S(P ). (4.5) 
+
+Every output batch has at most k requests. 
+
+The ordinary procedure sorts requests by nonincreasing max {xr, w r(t)} and groups consecutive 
+
+k requests. The biased procedure separates L = {r : xr ≤ ηw r(t)} from its complement, sorting L by nonincreasing age and its complement by nonincreasing radius before packing each separately. We use PackValue for the optimum sorted packing value and Clear for either clearance procedure. Their pseudocode and the proof of Lemma 4.2 appear in Appendix D. 
+
+Two virtual schedules. The algorithm continuously simulates two schedules on the original input: the baseline B and the advice schedule A. A revealed advice proposal is executed in the simulation of A. Neither simulation is restarted at a switch. We call their states virtual , and use 
+
+physical for the services actually executed by our algorithm. Let pX (t) and PX (t) denote the paid cost and pending set of X ∈ { A, B }, respectively. Its score is 
+
+HX (t) = pX (t) + S(PX (t)) + D(PX (t), t ). (4.6) The score includes both the cost already paid by the virtual schedule and lower bounds on the cost of its pending requests. All three terms are available online. For malformed advice, the algorithm discards identifiers outside PA and ignores empty or capacity-infeasible proposals. This leaves feasible advice unchanged. Physical services leave both virtual pending sets unchanged. 
+
+Lemma 4.3. The score HX is nondecreasing. If X is complete and feasible, then HX (t) ≤ CX := cost( X) for all t. Moreover, for any set P of already arrived requests, 
+
+S(P ) ≤ pB (t) + S(PB (t)) ≤ HB (t). (4.7) 
+
+## 4.2 The switching rule 
+
+We set 
+
+η = ε
+
+2 , δ = ε
+
+4(3 + 2 /ε ) . (4.8) At the first positive-radius arrival block J, the algorithm initializes b0 = 2 S(J) and uses the levels 
+
+bn = 2 nb0. The level never decreases. At level b, advice A is eligible when HA < b , and the baseline 
+
+B is eligible when HB < δb . The algorithm prefers A whenever it is eligible. If neither is eligible, it doubles b until one becomes eligible. Initially A is eligible because all requests in J have age zero. The smaller baseline budget limits how much the algorithm spends away from advice. The chosen schedule is called the active source . The algorithm follows each of its services on the requests that are still physically pending, omitting empty restrictions. The other source continues only in simulation. When the active score reaches its cap, the algorithm selects again. A higher level with the same active source requires no clearance. An actual source change first clears all old physical pending requests, using (4.5) for A → B and (4.4) for B → A (lines 17 and 19 of Algorithm 3). The latter clearance includes requests that virtual advice served while B was active. 16 Algorithm 3 Advice monitor: state, scores, and budget selection 
+
+Require: 0 < ε ≤ 1; continuously simulated advice A and baseline B 
+
+> 1:
+
+η ← ε/ 2; δ ← ε/ [4(3 + 2 /ε )]  
+
+> 2:
+
+S(P ) ← PackValue (P, x, k ); D(P, t ) ← PackValue (P, t − a, k ) 
+
+> 3:
+
+For Y ∈ { A, B } maintain its own pending set PY and paid cost pY . 
+
+> 4:
+
+HY (t) ← pY + S(PY ) + D(PY , t ); maintain physical pending P separately.  
+
+> 5:
+
+Serve radius-zero arrivals immediately and remove their identifiers from advice.  
+
+> 6:
+
+At the first positive-radius arrival block J, admit J to all three queues; set b ← 2S(J) and active source X ← A before service events.  
+
+> 7:
+
+function Select (hA, h B , t ) 
+
+> 8:
+
+Xold ← X 
+
+> 9:
+
+while hA ≥ b and hB ≥ δb do  
+
+> 10:
+
+b ← 2b 
+
+> 11:
+
+if hA < b then  
+
+> 12:
+
+X ← A 
+
+> 13:
+
+else  
+
+> 14:
+
+X ← B 
+
+> 15:
+
+if X̸ = Xold then  
+
+> 16:
+
+if Xold = A then  
+
+> 17:
+
+Clear (P, t, biased , η ) 
+
+> 18:
+
+else  
+
+> 19:
+
+Clear (P, t, ordinary , 1) ▷ No cleanup on a same-source level change  
+
+> 20:
+
+Define cap( A) = b and cap( B) = δb .Algorithms 3 and 4 specify budget selection and event processing. At a common timestamp, arrivals precede virtual services in a fixed order, followed by any remaining timer. A discrete event that exhausts the active cap triggers selection using tentative post-event scores, before the event is committed. This prevents a jump from being charged to an exhausted budget. On a source change, clearing the old physical queue restores the pending-set inclusion proved below: new arrivals enter after clearance, and a triggering virtual service is committed without being executed physically. Between events, the active score grows at rate ⌈| PX |/k ⌉, which determines its next cap timer. Eligibility is strict, and hence equality exhausts a cap. Throughout a block the active score is at most its cap; the inequality may be an equality just before a simultaneous event. A block is a maximal interval with the same active source, and may span several levels. Figure 3 summarizes the two kinds of cleanup and the order of operations at a triggering event. 
+
+Lemma 4.4. During an X block, the physical pending set is a subset of PX . Each source change clears all old physical pending before the new block starts. If an arrival causes the change, the new arrivals belong to both virtual pending sets when they enter the new block. Proof. The statement holds initially. An arrival adds the same identifiers to both virtual queues and the physical queue. An active virtual service removes all of its physically pending identifiers. Inactive services do not affect the active queue. At a source change, clearing old physical pending restores the inclusion for either new source; the event rules ensure that a triggering service is not missed by a nonempty new queue: arrivals enter after clearance, and virtual services are committed after selection (lines 4 and 12 of Algorithm 4). This proves the invariant. 17 Algorithm 4 Advice monitor: arrivals, virtual services, and timers 
+
+Require: State from Algorithm 3; arrival events precede services and timers at ties 
+
+Arrival block J at time t, after initialization: 
+
+> 1:
+
+̂ HY ← pY + S(PY ∪ J) + D(PY ∪ J, t ) for Y ∈ { A, B } 
+
+> 2:
+
+if ̂ HX ≥ cap( X) then  
+
+> 3:
+
+Select (̂ HA,̂ HB , t ) ▷ Cleanup sees P , not P ∪ J 
+
+> 4:
+
+Add J to P, P A, P B ; then process the time-t virtual services. 
+
+Virtual service (Y, G, t ), in fixed order at ties:  
+
+> 5:
+
+If Y = A, keep only distinct identifiers of G in PA; discard empty or infeasible proposals. 
+
+> 6:
+
+̂ HY ← pY + c(G, t ) + S(PY \ G) + D(PY \ G, t )
+
+> 7:
+
+̂ HZ ← HZ (t) for the other source Z; Xold ← X 
+
+> 8:
+
+if Y = X and ̂ HY ≥ cap( X) then  
+
+> 9:
+
+Select (̂ HA,̂ HB , t ) ▷ Before committing this virtual service  
+
+> 10:
+
+if Y = Xold and X = Xold then  
+
+> 11:
+
+Serve G ∩ P physically if nonempty; remove it from P . 
+
+> 12:
+
+pY ← pY + c(G, t ); PY ← PY \ G ▷ Always commit the virtual event 
+
+Waiting timer, after arrivals and virtual services at time t: 
+
+> 13:
+
+if HX (t) ≥ cap( X) then  
+
+> 14:
+
+Select (HA(t), H B (t), t )
+
+After each event or selection:  
+
+> 15:
+
+If PX̸ = ∅, set the next cap timer to t + [cap( X) − HX (t)] /⌈| PX |/k ⌉; otherwise cancel it.  
+
+> 16:
+
+Continue both virtual schedules without restarting either one. 
+
+Follow advice AP ⊆ PA
+
+eligible when HA < b 
+
+Follow baseline BP ⊆ PB
+
+eligible when HB < δb 
+
+Clear old pending with biased packing (1 + η)D + (1 + 1 /η )S
+
+Clear all old pending for at most 2( S + D)Include requests already served by virtual advice.    
+
+> Both virtual schedules keep running. Prefer Awhen eligible. If neither is eligible, double b; keeping the same source causes no cleanup.
+
+At a triggering arrival or active service: 
+
+> Tentative post-event scores Select level and source Clear old pending if switching Commit revealed event
+
+Figure 3: The advice combiner separates virtual histories from physical service. Here P is the physical pending set, and the displayed packing costs are evaluated on the old set cleared at a switch. Returning to A removes stale identifiers before following advice again. At a jump, selection uses tentative post-event scores, while cleanup uses pre-event pending. A triggering service is committed virtually but is not replayed physically after a source change. 18 4.3 Residual advice and the waiting charge 
+
+We now fix any complete feasible advice schedule, with original batches ( Gj , T j ). For consistency, we need to pay for followed advice services and for the waiting part of each A → B clearance. Both payments come from deleting physically served requests from the original advice batches. For the set Z of physically served request identifiers, the remaining advice cost is Φ( Z) = ∑
+
+> j
+
+c(Gj \ Z, T j ), c(∅, T j ) = 0 . (4.9) The sum includes original services whose times are already in the past. It is a potential used only in the proof, not a future schedule available to the algorithm. Deleting identifiers cannot increase any summand. Initially Φ( ∅) = CA.
+
+Lemma 4.5. Let FA denote the total cost of physical services following source A. At each A → B
+
+change e, let Pe denote the old physical pending set cleared at time te. Then 
+
+FA + ∑
+
+> e
+
+D(Pe, t e) ≤ CA. (4.10) 
+
+Proof. We show that each followed advice service reduces Φ by its physical cost, and each A → B
+
+clearance reduces Φ by at least the corresponding D value. Since Φ starts at CA and never increases, these decreases can be summed. At a followed advice service ( Gj , T j ), its remaining identifiers Gj \ Z are exactly its physical restriction. Deleting them reduces the jth summand of (4.9) by its actual service cost. For an A → B change at time t, we write P = Pe. By Lemma 4.4, every request in P is still pending in virtual advice. Thus each affected original batch has Tj ≥ t. We write Qj = Gj ∩ P .After deleting P , any surviving identifier in Gj \ Z has release at least t: all earlier arrivals were either served physically before this change or belong to P . New arrivals that trigger the change have release exactly t.If an affected batch remains nonempty, its oldest surviving release therefore advances to at least 
+
+t, reducing its delay cost by at least t − min r∈Qj ar. Its service cost does not increase. If the batch becomes empty, its entire remaining cost is at least the same amount, since Tj ≥ t. The nonempty 
+
+Qj form a capacity-feasible partition of P , and hence the total potential drop is at least D(P, t ). All other physical actions, including B → A cleanup, cause additional nonnegative potential drops. Summing the charged drops proves the lemma. In particular, repeated charges involving one original advice batch use successive decreases of its residual cost, never its original cost again. During a B block, advice may serve a request that remains physically pending. Deleting such an identifier later may affect a past advice batch. We assign no waiting credit to that deletion: the entire physical service is paid by the B-block bound below. Before returning to A, the full cleanup removes all such identifiers and restores the inclusion in Lemma 4.4. Figure 4 shows the waiting credit at one A exit and how credits telescope. 
+
+## 4.4 Consistency and robustness 
+
+We next pay for the service part of each A exit and for complete B blocks. The following budget bounds are proved in Appendix D. Their key property is that a budget level cannot be reused by distinct blocks of the same source. Let E denote the set of A → B changes, and let b+ 
+
+> e
+
+denote the newly selected B level at change 
+
+e. The service-cost certificate gives 
+
+S(Pe) ≤ Hpost  
+
+> B
+
+< δb + 
+
+> e
+
+. (4.11) 19 (a) One advice batch surviving an A → B cleanup 
+
+time 
+
+aold t anew Tj
+
+before delay Tj − aold 
+
+after charged: t − aold extra drop Tj − anew 
+
+anew ≥ t implies delay decrease ≥ t − aold .
+
+(b) Successive deletions use successive potential drops 
+
+Φ( Z0) = CA Φ( Z1) Φ( Z2) · · · ≥ 0
+
+−∆1 −∆2 −∆3
+
+FA + ∑
+
+> e:A→B
+
+D(Pe, t e) ≤ ∑
+
+> ℓ
+
+∆ℓ ≤ CA.
+
+Figure 4: Residual charging pays for elapsed waiting only once. In (a), the original advice batch is served at Tj ≥ t; after all old physical pending requests are deleted, its oldest surviving arrival is at least t. The diagram shows the nonempty-residual case, and service cost can only decrease as well. In (b), the potential retains all original advice batches, including past ones. Deletions in B blocks yield nonnegative drops but no waiting credit; the block budgets pay their physical cost. This uses the post-event baseline state to cover all old requests, even when the triggering event is an arrival or a service. The cleanup itself uses the pre-event physical pending set. For a block J, let bJ denote its last occupied level and FJ the cost of its followed physical services, excluding exit cleanup. If the block ends at a switch, PJ and tJ denote the old pending set and exit time. For a final block without exit cleanup, we use D(PJ , t J ) = 0 below. 
+
+Lemma 4.6. For an A block, 
+
+FJ + (1 + η)D(PJ , t J ) ≤ (1 + η)bJ . (4.12) 
+
+For a B block, the followed services together with its exit cleanup cost at most 2δb J .
+
+Lemma 4.7. At a fixed level there is at most one A block and one B block. The last levels of distinct blocks of the same source are distinct, as are the newly selected levels b+ 
+
+> e
+
+at A → B changes. If advice is complete and feasible, then 
+
+∑
+
+> e∈E
+
+b+ 
+
+> e
+
+≤ 2CA, ∑  
+
+> J:Bblock
+
+bJ ≤ 2CA. (4.13) 
+
+For arbitrary advice, the largest level obeys 
+
+bmax ≤ 2CB /δ, (4.14) 
+
+and the sum of all opened levels is at most 2bmax .Proof of Theorem 4.1. All physical batches are feasible by construction. For consistency, we partition physical cost into followed A services, A → B cleanups, and complete B blocks including their exit cleanups. Lemma 4.5 pays for followed advice services and the waiting part of leaving A. The service part is bounded by (4.11), and Lemma 4.6 pays for complete B blocks. Using the two geometric 20 sums in Lemma 4.7 gives ALG ≤ FA + (1 + η) ∑
+
+> e∈E
+
+D(Pe, t e) + (1 + 1 /η )δ ∑
+
+> e∈E
+
+b+ 
+
+> e
+
++ 2 δ ∑  
+
+> J:Bblock
+
+bJ
+
+≤ [1 + η + 2 δ(3 + 1 /η )]CA = (1 + ε)CA.
+
+The residual-advice bound controls the first two terms by (1 + η)CA. The B-block term includes the cost of requests already served by virtual advice; these require no further advice charge. For robustness, we sum (4.12) over A blocks, bound their additional service-cost cleanup terms by (4.11), and apply the B-block bound. These comparisons use no bound on CA. The last levels of A blocks, the last levels of B blocks, and the newly selected levels at A → B switches each form a sequence without repetition. Bounding each sum by 2 bmax gives ALG ≤ 2[(1 + η) + δ(3 + 1 /η )]bmax ≤ 4 
+
+> [
+
+1 + ηδ + 3 + 1
+
+η
+
+> ]
+
+CB = 
+
+> (
+
+32 
+
+ε2 + 72 
+
+ε + 36 
+
+> )
+
+CB .
+
+Since CB ≤ R OPT( I), this is (4.2). Completion and the polynomial-time implementation are verified in Appendix D. 
+
+## 4.5 A lower bound on robustness 
+
+The dependence on ε is necessary even on inputs that fit in one batch at one location. Since these are also LAD inputs, the following lower bound applies to the general advice problem. 
+
+Theorem 4.8. Fix k ≥ 1 and ε ≥ 0. For maximum delay at one location, suppose a deterministic algorithm is (1 + ε)-consistent against every feasible online-revealed advice stream and R-robust. Already on inputs with at most k requests it must satisfy 
+
+R ≥ 1 + k − 11 + ε(k − 1) . (4.15) 
+
+Consequently, a robustness bound uniform in k must satisfy R ≥ 1 + 1 /ε for ε > 0; at ε = 0 no finite such bound is possible. 
+
+The proof is in Appendix D; the optimal dependence on ε is open. 
+
+# 5 Conclusion and future directions 
+
+The constant competitive ratio for capacitated LAD leaves several questions open. What are the optimal deterministic and randomized competitive ratios? Our bounds show that capacity does not force a logarithmic loss, but a gap remains even against the lower bounds from a single location. For online advice, our robustness is O(ε−2), while the deterministic lower bound is Ω( ε−1) uniformly in capacity. Closing this gap is another natural question. Extending the constant guarantee beyond a line is a further direction. Does capacitated JRP with maximum delay admit a constant competitive ratio or a constant approximation ratio? For rooted-tree MLA, how should the competitive ratio depend on capacity and tree depth? The LAD admission rule uses nested intervals to control both capacity and the cost of opening batches. For branching service costs, requests can share some edges while paying separately for others; an extension must account for both forms of cost sharing. Capacity constraints also merit study in online service and facility-location problems with waiting costs. How does maximum delay interact with capacity that can be reused through an opened facility, rather than assigned to a single instantaneous service? 21 A Capacitated TCP acknowledgment with maximum delay 
+
+The TCP algorithm below handles the single-location special case of LAD and each distance class in Section 3.1. We prove its optimal deterministic competitive ratio of two, followed by the randomized lower bound stated in the introduction. 
+
+## A.1 A 2-competitive algorithm 
+
+For a fixed setup cost w > 0, a batch costs w plus its maximum age. The algorithm keeps pending requests in arrival order. Whenever at least k are pending, it serves the k oldest and repeats if necessary. Otherwise, it serves the entire pending set when its oldest request reaches age w. A full-batch trigger has priority over a simultaneous timer. Every resulting batch costs at most 2 w.Algorithm 5 records this rule. All services occur at the current event time. A stale timer is replaced whenever its buffer changes. 
+
+Algorithm 5 The fixed-location full-or-age rule  
+
+> 1:
+
+function FullOrAge (k, w ) 
+
+> 2:
+
+Maintain an arrival-ordered queue Q. 
+
+> 3:
+
+On an arrival block, append its requests to Q in a fixed tie order.  
+
+> 4:
+
+while |Q| ≥ k do  
+
+> 5:
+
+Serve and remove the first k requests.  
+
+> 6:
+
+After arrival actions, if Q̸ = ∅ and its oldest age is at least w, serve all of Q and empty it.  
+
+> 7:
+
+Otherwise schedule the nonempty queue’s timer at its oldest arrival plus w. 
+
+> 8:
+
+A timer serves the entire nonempty queue. If w = 0, serve arrivals immediately. 
+
+Lemma A.1 (Greedy short prefixes) . For requests at one location, call a batch short if it has at most k members and arrival span at most w. The greedy partition into maximal arrival-ordered short prefixes minimizes the number of short batches, even when nonconsecutive groups are allowed. Proof. Let a denote the earliest arrival, and let G denote the first q = min {k, |{ r : ar ≤ a + w}|} 
+
+requests in arrival order. In any short partition, the batch Q containing the first request has |Q| ≤ q
+
+and all its arrivals in [ a, a + w]. For each request z ∈ Q \ G, we choose a distinct request y ∈ G \ Q and swap z into the batch containing y. There are enough such y because |Q| ≤ | G|. Requests of G precede all displaced requests in arrival order. Thus an inserted z arrives no earlier than the removed y, and no later than a + w. In a receiving batch with original earliest arrival b ≥ a, the new earliest arrival does not decrease, and every inserted arrival is at most a + w ≤ b + w. Its span remains at most w and its cardinality does not increase. We move any remaining requests of G \ Q into Q, deleting them from their old batches. The batch Q has become exactly G, and no additional batch has been created. Empty batches are deleted. We remove G and repeat this exchange on the remaining instance. Induction shows that the greedy partition uses no more batches than the original one. 
+
+Proposition A.2 (TCP upper bound) . For capacity k, full-or-age-w is 2-competitive for TCP. Proof. Its batches are exactly the maximal short prefixes: a prefix ends when it reaches cardinality k
+
+or when the first request’s age reaches w. Boundary arrivals are included before a timer is processed. Let G denote the number of algorithm batches. 22 We consider any offline batch of at most k requests, with arrival span ∆. Its members are divided into greedy prefixes of span at most w, without a cardinality restriction; each piece still has at most k members. If there are h ≥ 2 pieces, consecutive first arrivals differ by more than w,and hence ( h − 1) w < ∆. For h = 1 the bound hw ≤ w + ∆ is immediate. Thus its pieces satisfy 
+
+hw ≤ w + ∆, no larger than that comparison batch’s actual cost. Applying this to all comparison batches gives a feasible short partition with number M satisfying wM ≤ cost(SOL). Lemma A.1 gives G ≤ M . Hence ALG ≤ 2wG ≤ 2 cost(SOL). 
+
+## A.2 A tight deterministic lower bound 
+
+Theorem A.3. For every fixed k ≥ 2, every deterministic algorithm for capacitated TCP acknowl-edgment with maximum delay has competitive ratio at least two. Proof. We fix setup cost c > 0 and an even integer N . The adversary releases the first request at 
+
+a1 = 0. After the algorithm serves request i at ti, request i + 1 arrives at ai+1 = ti + δi, where 
+
+δi > 0. If the algorithm never serves the unique pending request, the adversary ends the input. Otherwise, we write xi = ti − ai and ∆ = ∑ 
+
+> i<N
+
+δi. Every online batch is a singleton, and hence ALG ≥ N c +
+
+> N∑
+> i=1
+
+xi.
+
+We compare the algorithm with two offline schedules. The first serves the pairs (1 , 2) , (3 , 4) , . . . , (N −
+
+1, N ) at their second arrivals. The second serves requests 1 , N singly and serves (2 , 3) , (4 , 5) , . . . , (N −
+
+2, N − 1) at their second arrivals. Their costs O1, O 2 satisfy 
+
+O1 + O2 = ( N + 1) c + ∑
+
+> i<N
+
+xi + ∆ .
+
+Indeed every adjacent arrival gap is charged exactly once, and a pair’s additive waiting and maximum waiting are both that gap. Both schedules use at most two requests per batch. With X = ∑ 
+
+> i<N
+
+xi,ALG OPT ≥ 2( N c + X + xN )(N + 1) c + X + ∆ ≥ 2N c 
+
+(N + 1) c + ∆ .
+
+For fixed N , make ∆ /c arbitrarily small, and then let even N grow. The resulting ratios approach two. For a deterministic algorithm, these release times can be fixed before presenting the input. 
+
+## A.3 An oblivious randomized lower bound 
+
+The fixed-location special case also gives a randomized obstruction for capacitated LAD. The following lower bound concerns pure multiplicative guarantees, as in Section 2. 
+
+Theorem A.4. For cardinality capacity k, every randomized online algorithm has ratio at least 
+
+k
+
+1 + ( k − 1)(1 − e−1)
+
+against an oblivious adversary, already at one location. Consequently a competitive constant uniform in k is at least e/ (e − 1) . The same constant lower-bounds the arbitrary-size model. 
+
+23 Proof. We normalize the setup cost to one. When all requests fit together, any algorithm can be normalized causally to clear all pending requests when its simulated original execution serves the oldest pending request. This oldest request has not previously been served by the simulation: otherwise a normalized clearance would already have removed it. The new batch has no larger maximum age than that distinct simulated batch, and costs no more. Other simulated actions can be ignored. This also normalizes offline schedules to consecutive groups. We write gi = ai+1 − ai for successive arrival gaps. A normalized algorithm cuts a gap at a timeout zi if no arrival intervenes. A cut contributes 1 + zi to its total cost; an uncut gap contributes 
+
+gi. The final contribution is 1 + zn. The setup in the final contribution and the setups at cuts count exactly the physical batches, while the remaining terms partition their waiting times. Offline chooses each cut independently, obtaining OPT = 1 + ∑
+
+> i<n
+
+min {gi, 1}. (A.1) For the lower bound, the input has n = k requests, starts at zero, and has n − 1 independent rate-one exponential arrival gaps. This input distribution is independent of the algorithm’s randomness. Conditional on the past, its prospective no-arrival timeout z is independent of the next gap G. For every z ∈ [0 , ∞] the expected gap contribution is 
+
+E[min {G, z }] + Pr( G > z ) = 1 .
+
+The final contribution is at least one, and hence E[ALG] ≥ n, whereas (A.1) gives E[OPT] = 1 + ( n − 1)(1 − e−1). A guarantee on every fixed input must also hold after averaging over this independent distribution, proving the displayed ratio. Letting k grow gives the uniform bound. For arbitrary sizes, n requests of size 1 /n give the same bound as n grows. 
+
+# B Analysis of the independent-class baseline 
+
+Section 3.1 defines the algorithm and gives its matching lower-bound instance. Here we prove the upper bound. 
+
+Proof of Proposition 3.1. Fix an offline batch with maximum rounded radius R and arrival span ∆. If it contains nx requests of radius x, its restriction can be served together at its last arrival for at most x + ∆, or as singletons at their arrivals for cost nxx. Each restriction fits in one batch, giving total cost at most ∑
+
+> x≤R
+
+min {x + ∆ , n xx} ≤ ∑ 
+
+> x≤Rxdyadic
+
+min {x + ∆ , kx }.
+
+If ∆ = 0, this sum is at most 2 R. Otherwise the radii x ≤ ∆/k contribute at most 2∆ by geometric summation. There are at most ⌈log 2 k⌉ + 1 dyadic radii in (∆ /k, ∆], each contributing at most 2∆. Radii x > ∆ contribute at most ∑ 
+
+> x≤R
+
+2x ≤ 4R. The sum is at most (2 ⌈log 2 k⌉ + 4)( R + ∆). Applying these restrictions to all offline batches gives a feasible comparison schedule for each class. The factor-two TCP guarantee from Proposition A.2 and the factor-two radius rounding therefore give the claimed competitive ratio. 
+
+# C Proof of capacity transfer for additive delay and deadlines 
+
+We derive the capacity-transfer bounds discussed in Section 1.1 for additive waiting costs and deadlines. For a rooted-tree batch B, let pr be the length of request r’s root path. Order requests 24 by a depth-first traversal and cut this order at a uniformly chosen residue modulo k. An edge used by ne > 0 requests appears in an expected 1 + ( ne − 1) /k pieces. Summing over edges bounds the service cost by (1 − 1/k )f (B) + 1
+
+k
+
+> ∑
+> r∈B
+
+pr.
+
+For sizes normalized to capacity one, serve requests larger than 1 /2 separately. Group the others by their cumulative start positions in shifted intervals of length 1 /2. Each group fits, and an edge is used by at most 1 + 2 ∑ 
+
+> r∈Be
+
+sr groups in expectation, where Be contains its small requests. Large requests cost at most twice their volume charge. The resulting bound is f (B) + 2 ∑ 
+
+> r∈B
+
+srpr.Choosing the cheapest offset makes both constructions deterministic. Only polynomially many candidates are needed: an already feasible batch need not be cut, and otherwise there are k < |B|
+
+unit offsets. For arbitrary sizes, the partition changes only when a shifted boundary crosses a cumulative start position, giving at most |B| breakpoints. Let SA, D A be the service and additive waiting costs of the virtual schedule. Set α = 1 − 1/k 
+
+and write V = ∑ 
+
+> r
+
+pr/k for capacity k, or V = ∑ 
+
+> r
+
+srpr for sizes. Every feasible batch pays at least its volume charge, so V ≤ S∗ for any capacitated comparator with service cost S∗ and waiting cost 
+
+D∗. Keeping all service times therefore gives ALG ≤ αS A + DA + V or ALG ≤ SA + DA + 2 V, 
+
+respectively. An uncapacitated ratio R immediately yields competitive ratios R + 1 and R + 2, respectively. With deadlines, DA = D∗ = 0, giving ( αR + 1) S∗ for capacity k. For additive waiting, run the baseline with service costs scaled by α, whenever it supports this scaling: ALG ≤ R(αS ∗ + D∗) + S∗ ≤ max {R, αR + 1 }(S∗ + D∗).
+
+All partitions use only the current virtual batch. A capacity-feasible advised schedule is also a valid comparator, so these inequalities transfer both consistency and robustness. 
+
+# D Supporting proofs for the online-advice algorithm 
+
+Section 4 gives the algorithm, the residual-advice argument, and the competitive bounds. This appendix proves the packing and budget lemmas used there, verifies completion and implementation, and proves the robustness lower bound. 
+
+## D.1 Packing procedures and scores 
+
+Proof of Lemma 4.2. For (4.4), the procedure sorts requests by qr = max {xr, w r(t)} and groups consecutive k requests. For every z, the number of groups whose maximum q exceeds z is  
+
+> ⌈
+
+|{ r : qr > z }| 
+
+k
+
+> ⌉
+
+≤ 
+
+> ⌈
+
+|{ r : xr > z }| 
+
+k
+
+> ⌉
+
++ 
+
+> ⌈
+
+|{ r : wr(t) > z }| 
+
+k
+
+> ⌉
+
+.
+
+Integrating bounds the sum of group maxima of q by S(P ) + D(P, t ). Each actual batch costs at most twice its maximum q.For (4.5), let L denote the set {r ∈ P : xr ≤ ηw r(t)}. The procedure packs L by nonincreasing age and P \ L by nonincreasing radius, using groups of size at most k in both cases. On L, the maximum radius of a group is at most η times its maximum age. On the complement, its maximum age is at most 1 /η times its maximum radius. The resulting cost is at most (1 + η)D(L, t ) + (1 + 1 /η )S(P \ L), which is bounded by (4.5). 25 Algorithm 6 Clearing pending requests at an advice switch  
+
+> 1:
+
+function SortPack (P, v, k ) 
+
+> 2:
+
+Sort P by nonincreasing vr, breaking ties by request identity.  
+
+> 3:
+
+return consecutive groups of k requests, with a shorter last group if needed  
+
+> 4:
+
+function PackValue (P, v, k ) 
+
+> 5:
+
+return ∑
+
+> G∈SortPack (P,v,k )
+
+max  
+
+> r∈G
+
+vr 
+
+> 6:
+
+function Clear (P, t, mode , η ) 
+
+> 7:
+
+wr ← t − ar for r ∈ P 
+
+> 8:
+
+if mode = ordinary then  
+
+> 9:
+
+Π ← SortPack (P, max {x, w }, k ) 
+
+> 10:
+
+else  
+
+> 11:
+
+L ← { r ∈ P : xr ≤ ηw r} 
+
+> 12:
+
+Π ← SortPack (L, w, k ) ∪ SortPack (P \ L, x, k ) 
+
+> 13:
+
+Serve every nonempty G ∈ Π at t; remove its members from physical pending. Algorithm 6 implements the two clearance procedures. 
+
+Proof of Lemma 4.3. Arrivals and waiting only increase packing values. Subadditivity at a service of G gives 
+
+D(PX , t ) ≤ max  
+
+> r∈G
+
+wr(t) + D(PX \ G, t ), S(PX ) ≤ max  
+
+> r∈G
+
+xr + S(PX \ G).
+
+The increase in pX therefore pays for the total decrease of S + D. To bound HX , we restrict all future services of X to PX (t). These restrictions form a feasible partition of the current virtual pending set. Their total future cost is at least the service cost plus the current-age cost of this partition, which is at least S(PX (t)) + D(PX (t), t ). For (4.7), we partition P using restrictions of the past services of B, together with a partition of 
+
+PB (t) minimizing service cost. Past service costs are at most pB (t), and restriction cannot increase them. This proves the bound even when P contains requests that B has already served. 
+
+## D.2 Block budgets and geometric sums 
+
+Proof of Lemma 4.6. Restrictions of source services cannot increase cost, and hence FJ is at most the source’s paid-cost increment during the block. Just before a source-changing event, the old active score is still within its cap; the event causing a jump has not been committed. Monotonicity under subsets gives D(PJ , t J ) ≤ D(PX , t J ) and S(PJ ) ≤ S(PX ). For A, these facts bound FJ + D(PJ , t J )by bJ , proving (4.12). For B, apply (4.4) and bound paid cost plus twice S + D by twice the old cap δb J . The same bounds hold without exit cleanup for the final block. 
+
+Proof of Lemma 4.7. Once A is ineligible at a level, monotonicity of HA prevents it from becoming eligible there again. Thus B → A requires a higher level. The same observation proves the distinctness claims, including when a block spans several levels without a cleanup. Whenever a level is selected for B, preference for A implies b ≤ HA ≤ CA. This remains true for the last level of a B block: each same-source level increase again tests A first. Each sum in (4.13) is therefore a sum of distinct dyadic levels at most CA, and is at most 2 CA. They are two separate sums and will have separate coefficients in the cost bound. 26 Initially b0 = 2 S(J) ≤ 2CB . Every subsequent level is twice a level where both eligibility tests failed, and hence HB ≥ δb at that failed level. Since HB ≤ CB and δ ≤ 1, this proves (4.14). The final assertion is a geometric sum. 
+
+## D.3 Completion and implementation 
+
+We finish the proof of Theorem 4.1 by verifying completion and online computation. On a finite input, CB is finite, and hence (4.14) permits only finitely many levels and source changes. A final 
+
+B block completes because B does. A final A block with a request pending forever would have unbounded D(PA, t ), exhausting its finite cap. Hence all requests are eventually served without an end-of-input signal. The cost bounds can first be applied to every finite prefix of physical actions, and hence this completion argument does not assume either bound circularly. Both packing values and both cleanups require only sorting. For fixed PX , ages have a fixed order and D(PX , t ) is affine with slope ⌈| PX |/k ⌉. Timers therefore use only current requests. Discrete jumps use the newly revealed event and the current source states; intermediate ineligible dyadic levels can be skipped directly. Under rational input encoding, including ε, the number of levels and the arithmetic overhead are polynomial whenever B is polynomially simulable. Malformed events are charged to the advice input length; as usual, event streams are locally finite. 
+
+## D.4 Proof of the robustness lower bound 
+
+Proof of Theorem 4.8. We normalize the setup cost to one. The adversary releases the first request at time zero and advises its immediate singleton service. After the algorithm serves request i, the adversary waits δi > 0 before releasing request i + 1, again with immediate singleton advice. The construction stops after request k. Consistency forces the algorithm to serve each request even if no others arrive. Let xi denote the wait of request i, and write X = ∑ 
+
+> i<k
+
+xi. On the input stopped after k − 1requests, advice costs k − 1, while the algorithm costs at least ( k − 1) + X. Since future advice is not revealed, its execution through these services is identical to that on the full input. Hence 
+
+X ≤ ε(k − 1). On the full input, online cost is at least k + X. All requests fit together, and hence serving them at the final arrival costs at most 1 + X + ∆, where ∆ = ∑ 
+
+> i<k
+
+δi. For ∆ < k − 1, the function ( k + X)/(1 + X + ∆) decreases in X. Letting ∆ ↓ 0 proves (4.15); k = 1 is immediate. Letting k → ∞ gives the stated lower bounds on robustness uniform in capacity. 
+
+# E Proof of the arbitrary-size LAD extension 
+
+We prove the guarantee stated in Section 3.9. 
+
+Proof of Corollary 3.8. Under the preprocessing of Section 3.9, every closed small-item bin has load greater than K/ 2, since the rejected item has size at most K/ 2. Large-item singleton batches also have load greater than K/ 2. Each preprocessed batch at radius y costs at most 2 y. If P is the set of preprocessed requests, then ALG pre ≤ 4
+
+K
+
+> ∑
+> r∈P
+
+sryr.
+
+The residual cohort has total size at most K, even if its cardinality is arbitrarily large. For the weighted path load defined in Section 3.9, the same integration argument gives    
+
+> ∑
+> rassigned to u
+
+sr ≤ K; whole cohorts, and hence indivisible requests, remain intact. Service times and the bound 3 Ru are unchanged. 27 The weighted certificates are 
+
+βr = srRu
+
+K , γr = sryv
+
+Mv
+
+for an own-cohort request of a heavy root v. 
+
+All other requests receive zero γ weight. If a heavy root has Mv = 0, we assign its whole weight yv
+
+to one designated request in the cohort that created it. Such a root is top-level: with a selected ancestor, a zero-mass cohort adds nothing to a feasible path load and is accepted. Thus it cannot occur among the nonmaximal heavy roots in the certificate proof. For any feasible offline batch B, we write αB = K−1 ∑ 
+
+> r∈B\P
+
+sr ≤ 1. Its preprocessed mass is at most K(1 − αB ). The proofs of Lemmas 3.4 and 3.5 now give 
+
+> ∑
+> r∈B
+
+βr ≤ DB + (2 + αB )YB , ∑
+
+> r∈B
+
+γr ≤ DB + (2 + αB /θ )YB .
+
+Indeed, the integral over each maximal represented home is unchanged; the remaining terms are bounded by the total size αB K in place of a request count. Immediate child-root intervals are still disjoint, and hence Lemma 3.6 charges each request at most βr/(1 − θ). Combining these bounds with preprocessing gives exactly (3.3). The deterministic and random-scale conclusions follow with the same constants. The operations use cohort packing, tree ancestry, and arithmetic on revealed data; no optimum bin packing is required. Algorithm 7 replaces only the cohort preprocessing and the load units in Algorithm 2. It retains the final nonempty bin even when its load is exactly K.
+
+Algorithm 7 Weighted cohort preprocessing for the path-load algorithm 
+
+Require: Home cohort Q of width y, revealed at b; capacity K 
+
+> 1:
+
+Serve every r ∈ Q with sr > K/ 2 as a singleton at b. 
+
+> 2:
+
+T ← ∅ 
+
+> 3:
+
+for remaining requests r in a fixed order do  
+
+> 4:
+
+if ∑ 
+
+> q∈T
+
+sq + sr > K then  
+
+> 5:
+
+Serve T at b; T ← ∅. 
+
+> 6:
+
+T ← T ∪ { r} 
+
+> 7:
+
+if T̸ = ∅ then  
+
+> 8:
+
+Pass T as one residual cohort to Algorithm 2.  
+
+> 9:
+
+Use Mv = ∑ 
+
+> r∈T
+
+sr and replace k by K in every path-load term.  
+
+> 10:
+
+Leave assignments, ancestor selection, and root service times unchanged.  
+
+> 11:
+
+Retain a nonempty zero-load residual cohort; nonemptiness is not a load test. 
+
+# References 
+
+[1] Yasemin Aksoy and S. Selcuk Erenguc. Multi-item inventory models with co-ordinated replen-ishments: A survey. Int. J. Oper. Prod. Manag. , 8(1):63–73, 1988. [2] Yossi Azar and Noam Touitou. General framework for metric optimization problems with delay or with deadlines. In Proc. FOCS , pages 60–71, 2019. [3] Marcin Bienkowski, Martin Böhm, Jaroslaw Byrka, Marek Chrobak, Christoph Dürr, Lukáš Folwarczný, Łukasz Jeż, Jiří Sgall, Nguyen Kim Thang, and Pavel Veselý. Online algorithms for multilevel aggregation. Oper. Res. , 68(1):214–232, 2020. 28 [4] Marcin Bienkowski, Martin Böhm, Jaroslaw Byrka, Marek Chrobak, Christoph Dürr, Lukáš Folwarczný, Łukasz Jeż, Jiří Sgall, Nguyen Kim Thang, and Pavel Veselý. New results on multi-level aggregation. Theor. Comput. Sci. , 861:133–143, 2021. [5] Marcin Bienkowski, Jaroslaw Byrka, Marek Chrobak, Łukasz Jeż, Dorian Nogneng, and Jiří Sgall. Better approximation bounds for the joint replenishment problem. In Proc. SODA , pages 42–54, 2014. [6] Marcin Bienkowski, Jaroslaw Byrka, Marek Chrobak, Łukasz Jeż, Jiří Sgall, and Grzegorz Stachowiak. Online control message aggregation in chain networks. In Proc. WADS , pages 133–145, 2013. [7] Jannis Blauth, Vera Traub, and Jens Vygen. Improving the approximation ratio for capacitated vehicle routing. arXiv:2011.05235, 2020. [8] Carlos Brito, Elias Koutsoupias, and Shailesh Vaya. Competitive analysis of organization networks or multicast acknowledgement: how much to wait? In Proc. SODA , pages 627–635, 2004. [9] Niv Buchbinder, Moran Feldman, Joseph (Seffi) Naor, and Ohad Talmon. O(depth)-competitive algorithm for online multi-level aggregation. In Proc. SODA , pages 1235–1244, 2017. [10] Niv Buchbinder, Tracy Kimbrel, Retsef Levi, Konstantin Makarychev, and Maxim Sviridenko. Online make-to-order joint replenishment model: Primal dual competitive algorithms. In Proc. SODA , pages 952–961, 2008. [11] José R. Correa and Nicole Megow. Clique partitioning with value-monotone submodular cost. 
+
+Discrete Optim. , 15:26–36, 2015. [12] Daniel R. Dooly, Sally A. Goldman, and Stephen D. Scott. On-line analysis of the TCP acknowledgment delay problem. J. ACM , 48(2):243–273, 2001. [13] Michele Flammini, Gianpiero Monaco, Luca Moscardelli, Hadas Shachnai, Mordechai Shalom, Tami Tamir, and Shmuel Zaks. Minimizing total busy time in parallel scheduling with application to optical networks. Theor. Comput. Sci. , 411(40–42):3553–3562, 2010. [14] Takuro Fukunaga, Afshin Nikzad, and R. Ravi. Deliver or hold: Approximation algorithms for the periodic inventory routing problem. In Proc. APPROX/RANDOM , pages 209–225, 2014. [15] Suresh K. Goyal and Ahmet T. Satir. Joint replenishment inventory control: deterministic and stochastic models. Eur. J. Oper. Res. , 38(1):2–13, 1989. [16] Dev Joneja. The joint replenishment problem: new heuristics and worst case performance bounds. Oper. Res. , 38(4):711–723, 1990. [17] Shahin Kamali and Alejandro López-Ortiz. Efficient online strategies for renting servers in the cloud. In Proc. SOFSEM , pages 277–288, 2015. [18] Anna R. Karlin, Claire Kenyon, and Dana Randall. Dynamic TCP acknowledgement and other stories about e/ (e − 1). In Proc. STOC , pages 502–509, 2001. [19] Sanjeev Khanna, Joseph Seffi Naor, and Dan Raz. Control message aggregation in group communication protocols. In Proc. ICALP , pages 135–146. Springer, 2002. [20] Yusen Li, Xueyan Tang, and Wentong Cai. On dynamic bin packing for resource allocation in the cloud. In Proc. SPAA , pages 2–11, 2014. 29 [21] Yusen Li, Xueyan Tang, and Wentong Cai. Dynamic bin packing for on-demand cloud resource allocation. IEEE Trans. Parallel Distrib. Syst. , 27(1):157–170, 2016. [22] Young-San Lin and Alex Turoczy. Improved and parameterized algorithms for online multi-level aggregation. In Proc. SWAT , pages 31:1–31:17, 2026. [23] Tianhang Lu, Runtian Ren, and Shengcai Liu. Online bin packing with per-bin maximum delay. arXiv:2609.29589, 2026. [24] Tianhang Lu, Runtian Ren, and Shengcai Liu. Online covering with maximum delay under subadditive service costs. arXiv:2609.32675, 2026. [25] Tianhang Lu, Runtian Ren, Shengcai Liu, and Ke Tang. Learning-augmented and randomized algorithms for line aggregation with delays. arXiv:2607.27807, 2026. [26] Tianhang Lu, Runtian Ren, Shengcai Liu, and Ke Tang. Online multi-level aggregation with per-batch maximum delay. arXiv:2608.06796, 2026. [27] Mathieu Mari, Michał Pawłowski, Runtian Ren, and Piotr Sankowski. Online multi-level aggregation with delays and stochastic arrivals. In Proc. ISAAC , pages 49:1–49:20, 2024. [28] Jeremy McMahan. A D-competitive algorithm for the multilevel aggregation problem with deadlines. arXiv:2108.04422, 2021. [29] George B. Mertzios, Mordechai Shalom, Ariella Voloshin, Prudence W. H. Wong, and Shmuel Zaks. Optimizing busy time on parallel machines. Theor. Comput. Sci. , 562:524–541, 2015. [30] Tim Nonner. Capacitated max-batching with interval graph compatibilities. Theor. Comput. Sci. , 613:79–93, 2016. [31] Runtian Ren and Xueyan Tang. Busy-time scheduling on heterogeneous machines. In Proc. IPDPS , pages 306–315, 2020. [32] Runtian Ren, Xueyan Tang, Yusen Li, and Wentong Cai. Competitiveness of dynamic bin packing for online cloud server allocation. IEEE/ACM Trans. Netw. , 25(3):1324–1331, 2017. [33] Steven S. Seiden. A guessing game and randomized online algorithms. In Proc. STOC , pages 592–601, 2000. [34] Mordechai Shalom, Ariella Voloshin, Prudence W. H. Wong, Fencol C. C. Yung, and Shmuel Zaks. Online optimization of busy time on parallel machines. Theor. Comput. Sci. , 560:190–206, 2014. [35] Xueyan Tang, Yusen Li, Runtian Ren, and Wentong Cai. On first fit bin packing for online cloud server allocation. In Proc. IPDPS , pages 323–332, 2016. [36] Jingyang Zhao and Mingyu Xiao. Improved approximation algorithms for capacitated vehicle routing with fixed capacity. In Proc. MFCS , pages 93:1–93:19, 2025. 30

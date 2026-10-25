@@ -1,0 +1,4913 @@
+Title: Learning While Scheduling Jobs under Context-Dependent Service Rates: An Anytime Rate-Optimal Algorithm
+
+URL Source: https://arxiv.org/pdf/2610.06006v1
+
+Published Time: Tue, 06 Oct 2026 02:36:43 GMT
+
+Number of Pages: 54
+
+Markdown Content:
+# Learning While Scheduling Jobs under Context-Dependent Service Rates: An Anytime Rate-Optimal Algorithm 
+
+Seoungbin Bae 1 Dabeen Lee 21Department of Industrial & Systems Engineering, KAIST 
+
+> 2
+
+Department of Mathematical Sciences, Seoul National University 
+
+sbbae31@kaist.ac.kr, dabeenl@snu.ac.kr 
+
+Abstract 
+
+We study contextual queueing bandits, where a learner schedules jobs while learning unknown service rates modeled by logistic functions of job-server features. Performance is measured by queue length regret, the expected excess queue length at round t relative to an oracle that knows the service rates. Existing decaying-regret guarantees either have a suboptimal decay rate or require a known fixed horizon. They also assume context-wise slack and a strictly positive minimum eigenvalue of the feature covariance. In this paper, we propose WISE (Widest Interval Selection with Elimination), achieving rate-optimal ˜O(t−1/2) queue length regret at every sufficiently large time without knowing the horizon. We assume capacity slack, meaning that expected incoming workload under best-server service is below service capacity, and impose no covariance lower bound. Our analysis uses a workload potential measuring the expected service attempts needed by waiting jobs on their best servers. Its drift on nonempty rounds combines a negative term ensured by capacity slack with errors from suboptimal service choices. Then an elliptical potential count bounds how often WISE selects wide confidence intervals, thereby limiting the number of rounds with large service errors. We also sharpen the arrival-rate dependence of an existing lower bound and make its dependence on feature dimension and server count explicit. We prove another lower bound that quantifies the increase in regret as the normalized capacity slack decreases; to our knowledge, this is the first such lower bound for CQB. Simulations show small regret even when context-wise slack fails. 
+
+# 1 Introduction 
+
+Queueing systems play an important role in cloud computing (Vilaplana et al., 2014), call centers (Koole and Mandelbaum, 2002), and services using large language models (LLMs) (Lee et al., 2024a; Mitzenmacher and Shahout, 2025). Scheduling in these systems requires accounting for two characteristics. First, service rates are often difficult to predict a priori and estimated from observed service outcomes. Second, jobs have different contexts, and the service rate of a job depends on both the job itself and the server assigned to it. For example, an LLM’s probability of successfully answering a query depends on the query’s specifications and the model’s capabilities. Queueing bandits provide a framework for learning unknown service rates while scheduling jobs (Krishnasamy et al., 2021; Choudhury et al., 2021; Stahlbuhk et al., 2021). Scheduling decisions determine both which jobs are served and which service outcomes are observed to estimate these rates. Performance is measured by queue length regret , the expected excess queue length relative 1arXiv:2610.06006v1 [cs.LG] 5 Oct 2026 to an oracle that knows the service rates. A (queue length) regret bound that converges to zero implies that the learner’s expected queue length approaches that of the oracle. Contextual queueing bandits (CQB) extend this framework to incorporate job-specific contexts (Bae et al., 2026a). Earlier work on queueing bandits considers context-independent service rates (Krishnasamy et al., 2021) or a fixed set of queue features (Kim and Oh, 2024). In contrast, CQB allows each job to have its own feature vector. The departure rate is assumed to follow a logistic model of job-server features (Bae et al., 2026a), as in logistic bandits (Filippi et al., 2010; Faury et al., 2020; Jun et al., 2021). This allows scheduling decisions to reflect heterogeneous jobs and servers. Bae et al. (2026a) establish the first decaying queue length regret bound for CQB, of order 
+
+> ˜
+
+O(t−1/4). Bae et al. (2026b) obtain an anytime regret bound of the same order. Bae and Lee (2026a) improve the rate to ˜O(t−1/2), which is optimal up to logarithmic factors, for a fixed horizon 
+
+t known in advance. However, the earlier results on CQB have the following three limitations. First, they either have a suboptimal rate (Bae et al., 2026a,b) or require advance knowledge of the horizon (Bae et al., 2026a; Bae and Lee, 2026a). Cloud and LLM services operate over an indefinite horizon and must maintain stable queues throughout operation, motivating an anytime horizon-free algorithm. Second, all three results require a context-wise slack condition (Bae et al., 2026a,b; Bae and Lee, 2026a): the best service rate exceeds the arrival rate by a uniform positive gap for every context, regardless of how frequently it arrives. A natural relaxation is to require capacity slack : the expected incoming workload under best-server service is below the system’s service capacity. Third, the results also require that the minimum eigenvalue of the feature covariance is strictly positive. This condition fails when similar jobs have features concentrated in a lower-dimensional subspace. Motivated by these limitations, we develop an anytime horizon-free algorithm with a rate-optimal regret bound under minimal assumptions. Instead of a context-wise slack condition, we assume capacity slack stated in Assumption 2. Moreover, the result does not require a positive lower bound on the minimum eigenvalue of the feature covariance. Our contributions are summarized as follows. • We propose WISE (Widest Interval Selection with Elimination), which eliminates job-server pairs that cannot be optimal and selects the widest remaining confidence interval. It achieves anytime horizon-free queue length regret of order ˜O(t−1/2) without knowing the normalized capacity slack ϵ. The guarantee holds under capacity slack without a covariance lower bound, allowing both difficult job contexts and features confined to a lower-dimensional subspace. • We refine the Ω( λt −1/2) lower bound of Bae and Lee (2026a) by proving a round of order Ω(min {λ, min {d, log K}√λ/t }). This sharpens the dependence on the arrival rate λ and makes the dependence on the feature dimension d and the number of servers K explicit. • We prove another lower bound of order Ω(min {ϵ−2, min {d, log K}/(ϵ2√t)}). To our knowledge, this is the first lower bound for CQB that captures the increase in regret as the normalized capacity slack ϵ decreases. This quantifies how service errors persisting for Θ( ϵ−2) rounds increase the difficulty of learning while scheduling. • We compare WISE with seven baselines in simulations with capacity slack, including settings that violate context-wise slack. Varying slow-job service probabilities and the normalized capacity slack shows how these conditions affect queue length regret. WISE attains small regret even when some contexts violate context-wise slack. 2Our analysis for WISE uses two main ideas. First, we replace queue length with a workload potential based on the expected service attempts needed by waiting jobs on their best servers (Gamarnik and Stolyar, 2012). On nonempty rounds, capacity slack gives a negative workload drift term plus an error term from suboptimal service choices, even when queue length itself has positive drift. Second, under valid confidence bounds, WISE’s elimination and widest interval selection link large departure rate gaps to wide selected intervals. The elliptical potential count (Abbasi-Yadkori et al., 2011; Kim et al., 2022) limits such selections without a covariance lower bound. Combined with workload drift, this makes long periods without an empty queue unlikely. When a new job arrives after an empty round, WISE serves it using the most uncertain candidate server. We use these observations to bound uncertainty under the arrival distribution, then combine recent empty rounds with confidence interval intersections to control the expected departure rate gap at each sufficiently large time. 
+
+# 2 Problem Setting 
+
+2.1 Queueing System and Queue Length Regret 
+
+We consider a queueing system with contextual jobs, a single queue and K servers indexed by [K] = {1, . . . , K }. Let Xt be the multiset of waiting job contexts in X at the beginning of round 
+
+t, with Q(t) = |X t| and X1 = ∅. In a nonempty round, the agent selects a job xt ∈ X t and a server kt ∈ [K]. The service probability is p(x, k ) = μ(⟨ϕ(x, k ), θ∗⟩), where μ(z) = (1 + e−z )−1,
+
+ϕ : X × [K] → Rd is a known measurable feature map, and θ∗ ∈ Rd is unknown. Let Ft contain the history before the service outcome, including the chosen pair and the agent’s randomization. The departure indicator satisfies D(t) | F t ∼ Bern( p(xt, k t)) when Q(t) > 0, and D(t) = 0 otherwise. After service, a job arrives with indicator A(t) ∼ Bern( λ), λ ∈ (0 , 1), and context Xt ∼ D . The arrival pairs are independent across rounds, A(t) is independent of Xt, and ( A(t), X t) is independent of Gt = Ft ∨ σ(D(t)). The context is observed when A(t) = 1. The queue evolves as 
+
+Xt+1 = Xt \ { xt : D(t) = 1 } ∪ { Xt : A(t) = 1 }, Q(t + 1) = Q(t) + A(t) − D(t).
+
+Our goal is to minimize queue length regret against an oracle that knows the service probabilities and chooses a job-server pair with maximum service probability p(x, k ) in its own queue (Krishnasamy et al., 2021; Bae et al., 2026a). Write Qπ(t) = |X πt | for the queue length under policy π, and Q∗(t)for the oracle queue length, with arrivals shared across policies. The queue length regret is 
+
+Rπt = E[Qπ(t) − Q∗(t)]. We omit the learner’s policy superscript and write Xt, Q(t), and Rt. We seek a single policy whose regret vanishes at every sufficiently large time t, without being given 
+
+t. For the learner’s queue, define ( x∗ 
+
+> i
+
+, k ∗ 
+
+> i
+
+) ∈ arg max x∈X i,k ∈[K] p(x, k ) and write ϕi = ϕ(xi, k i), 
+
+ϕ∗ 
+
+> i
+
+= ϕ(x∗ 
+
+> i
+
+, k ∗ 
+
+> i
+
+), setting both features to zero when Q(i) = 0. This best pair may differ from the oracle’s choice because the two queues may contain different jobs. 
+
+2.2 Weaker Assumptions 
+
+We weaken the two strong conditions used for queue length analyses in previous CQB works (Bae et al., 2026a,b; Bae and Lee, 2026a); we replace context-wise slack by capacity slack and remove the covariance lower bound. The following assumes standard logistic boundedness and i.i.d. contexts (Jun et al., 2021; Yu and Oh, 2026). 3Assumption 1. We have: 1. For every ( x, k ) ∈ X × [K], ∥ϕ(x, k )∥2 ≤ 1. For some known constant 
+
+S > 0, θ∗ ∈ B := {θ ∈ Rd : ∥θ∥2 ≤ S}.
+
+2. Let κ−1 = ˙ μ(−S) = ˙ μ(S). Also, let p = μ(−S) and p = μ(S). 
+
+3. The contexts of the arriving jobs are sampled i.i.d. from an unknown distribution D.Then p ≤ p(x, k ) ≤ p and ˙ μ(⟨ϕ(x, k ), θ⟩) ≥ 1/κ for θ ∈ B . Next, we impose a capacity slack condition based on the expected incoming workload. Let the best service probability of a context x
+
+be p∗(x) = max k∈[K] μ(⟨ϕ(x, k ), θ∗⟩). 
+
+Assumption 2 (Capacity slack) . The (normalized) capacity slack is positive: 
+
+ϵ := 1 − λEX∼D [1 /p ∗(X)] > 0.
+
+The quantity 1 /p ∗(x) is the expected number of service attempts needed to complete a job with context x on a best server. Hence, ρ = λEX∼D [1 /p ∗(X)] is the traffic intensity when jobs are served by their best servers. Let μeff = ( EX∼D [1 /p ∗(X)]) −1 be the corresponding effective service rate. Then ϵ = 1 − ρ = ( μeff − λ)/μ eff . Thus, Assumption 2 is the contextual form of the classical load condition ρ < 1, equivalently capacity slack μeff − λ > 0. We use normalized capacity slack for the parameter ϵ. This condition concerns the system’s load under best-server service; stability of the learner’s queue depends on its scheduling policy. 
+
+Remark 3 (Remark on Assumption 2) . The decaying regret bounds in previous works (Bae et al., 2026a,b; Bae and Lee, 2026a) require context-wise slack: there exists ϵ0 > 0 such that p∗(x) ≥ λ + ϵ0
+
+for every x ∈ X . Here, ϵ0 is a positive lower bound on the service-rate gap p∗(x) − λ across contexts. Our condition is weaker than this since 1 − λEX∼D [1 /p ∗(X)] ≥ 1 − λ/ (λ + ϵ0) = ϵ0/(λ + ϵ0) > 0. Capacity slack allows contexts with p∗(x) < λ , so even the best available decision can give positive queue length drift. Our first idea measures the expected service attempts required by waiting jobs. For this workload potential, capacity slack gives a negative drift term independent of the selected context. The remaining term is controlled by the departure rate gap. We elaborate this in Section 3.2. 
+
+Remark 4 (Remark on Assumption 1-3) . The previous works assume that the minimum eigenvalue of the context covariance is positive, i.e., λmin (EX∼D [ 1 
+
+> K
+> ∑
+> k∈[K]
+
+ϕ(X, k )ϕ(X, k )⊤]) > 0. We relax this condition, thereby allowing more general context distributions, e.g., a distribution supported on a low-dimensional subspace. However, without the condition, random exploration does not give the same uniform control of estimation error. Instead, we use the elliptical potential count, which holds for the observed feature sequence, to control workload and then the departure rate gap at a specified time. We elaborate this in Section 3.3. 
+
+# 3 Challenges and Main Ideas 
+
+In this section, we present two main ideas for addressing the challenges in achieving anytime rate-optimal queue length regret under the weaker assumptions: (i) we design new workload potentials that yield negative drift under capacity slack, and (ii) we use the elliptical potential count to control the number of rounds with a large departure rate gap, thereby enabling learning without a covariance lower bound. In Section 3.1, we first explain why previous analyses require stronger assumptions. Then, in Sections 3.2 and 3.3, we show how we address each corresponding difficulty. 43.1 Negative Drift under Strong Assumptions 
+
+A key step in previous analyses of decaying queue length regret is to establish negative drift, 
+
+E[Q(t + 1) − Q(t) | F t] < 0, thus queue length decreases in expectation on these rounds. Define the departure rate gap gt = μ(⟨ϕ∗ 
+
+> t
+
+, θ∗⟩) − μ(⟨ϕt, θ∗⟩), with gt = 0 when Q(t) = 0. Let D∗(t) | F t ∼
+
+Bern( μ(⟨ϕ∗ 
+
+> t
+
+, θ∗⟩)) be the departure indicator for the best pair in the learner’s queue. Then 
+
+E[Q(t + 1) − Q(t) | F t] = E[A(t) − D∗(t) | F t] + E[D∗(t) − D(t) | F t]= λ − μ(⟨ϕ∗ 
+
+> t
+
+, θ∗⟩)   
+
+> ︸︷︷ ︸
+> ≤− ϵ0,context-wise slack
+
++ μ(⟨ϕ∗ 
+
+> t
+
+, θ∗⟩) − μ(⟨ϕt, θ∗⟩)   
+
+> ︸︷︷ ︸
+> =gt,departure rate gap
+
+.
+
+Context-wise slack (see Remark 3) makes the first term at most −ϵ0. A covariance lower bound (see Remark 4) allows random exploration to reduce uncertainty in every feature direction. Therefore, after sufficient exploration, the learner can reduce the departure rate gap gt below ϵ0 for all subsequent decisions. Combining the two terms gives negative queue length drift. However, neither conclusion follows under our assumptions. First, under capacity slack, the first term is not guaranteed to be negative, even for the best decision. Second, without a covariance lower bound, random exploration does not give the same uniform control of uncertainty. In the next subsection, we address the first difficulty by studying the drift of a new potential in place of Q(t). 
+
+3.2 Workload Drift under Capacity Slack 
+
+Our first idea is to define a workload potential that measures the expected number of service attempts 
+
+required by the waiting jobs. A job with context x requires 1 /p ∗(x) service attempts on average on a best server. Define the normalized workload and its update by 
+
+W (t) = p ∑
+
+> x∈X t
+
+1
+
+p∗(x) , W (t + 1) = W (t) + pA (t)
+
+p∗(Xt) − pD (t)
+
+p∗(xt) .
+
+The departure term is defined as zero when Q(t) = 0. Since pQ (t) ≤ W (t), workload bounds also control queue length. A service attempt on a best server removes expected workload p∗(x) p/p ∗(x) = p
+
+for every context x. On a nonempty round, 
+
+E[W (t + 1) − W (t) | F t] = λp EX∼D [1 /p ∗(X)] − p p (xt, k t)/p ∗(xt)= −ϵp   
+
+> ︸︷︷︸
+> Assumption 2: ϵ > 0
+
++ p(p∗(xt) − p(xt, k t))/p ∗(xt)  
+
+> ︸︷︷ ︸
+> ≤gt
+
+. (1) Capacity slack makes the first term negative for every selected job. The second term is at most gt
+
+because p ≤ p∗(xt) ≤ p(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+). Consequently, gt < ϵp gives negative workload drift. It remains to control gt without a covariance lower bound. 
+
+3.3 Learning with Elliptical Potential Count 
+
+Our second idea is to use the elliptical potential count to control the departure rate gap E[gt] at a specified time. The elliptical potential count (Lemma 10) is a consequence of the well-known elliptical potential lemma (Lemma 11 of Abbasi-Yadkori et al., 2011, Lemma 21), which says that we cannot choose too many feature vectors that are far from, or uncertain with respect to, the previously observed feature vectors. We use the count to bound the number of rounds with a large departure rate gap, and show that learning is possible without a covariance lower bound: 5Lemma 5. For an absolute constant C > 0 and every t satisfying (13) and (51), 
+
+E[gt] ≤ Cϵ −5/2p−2βt log t
+
+> √
+
+λd log( e/λ )/t. 
+
+We now explain the main ideas behind the proof of Lemma 5. 
+
+Coarse learning over an interval. (1) gives negative drift when gi < ϵp . But without a covariance lower bound, direct control of gi for every round is hard. Instead, we focus on the number of rounds with a large departure rate gap over an interval . Suppose our algorithm gives confidence intervals [ pi(x, k ), p i(x, k )] that contain the true service probabilities p(x, k ) with high probability, thereby gives gi ≤ 2wi ≤ βi−1∥ϕi∥V−1
+
+> i−1
+
+. We call wi(x, k ) = pi(x, k ) − pi(x, k ) the width and write wi = wi(xi, k i) for the selected pair. Here βi = O(√d log i) is the confidence radius, and 
+
+Vi = κI + ∑ij=1 ϕj ϕ⊤ 
+
+> j
+
+. For an interval of length ℓ = t2 − t1 + 1 and 0 < r ≤ 1, the elliptical potential count gives t2∑
+
+> i=t1
+
+1 {wi > r } ≤ dβ 2
+
+> t2
+
+2r2 log(1 + ℓ/ (dκ )) . (2) Write ∆ W (i) = W (i + 1) − W (i). If the interval consists of nonempty rounds, summing (1) gives 
+
+W (t2 + 1) − W (t1) ≤ − ϵp ℓ +
+
+> t2∑
+> i=t1
+
+gi +
+
+> t2∑
+> i=t1
+> (
+
+∆W (i) − E[∆ W (i) | F i])
+
+≤ − ϵp ℓ/ 2 + 
+
+> t2∑
+> i=t1
+
+1
+
+> {
+
+gi > ϵp/ 2
+
+> }
+
++
+
+> t2∑
+> i=t1
+> (
+
+∆W (i) − E[∆ W (i) | F i]). (3) The second inequality uses gi ≤ ϵp/ 2 + 1 {gi > ϵp/ 2}. Since gi ≤ 2wi, (2) with r = ϵp/ 4 bounds the second term on the right-hand side. The last term is the sum of martingale differences, so the Azuma-Hoeffding inequality (Lemma 23) bounds the last term by √8ℓ log(1 /δ ). Therefore, on a sufficiently long nonempty interval, the linear decrease −ϵp ℓ/ 2 dominates both terms (Lemma 11-(ii)). If this decrease exceeds the initial workload W (t1), this implies that the queue must empty at some round in the interval. This gives an upper bound of order O(dβ 2 
+
+> t
+
+log t/ (ϵp )3) on the length of nonempty intervals, and a bound on the workload W (t) at a specified time (Lemma 12). 
+
+Fine learning from arrivals after empty rounds. The coarse analysis limits the number of rounds with a large departure rate gap, but does not locate those rounds. To control E[gt], we now bound the probability that a newly arriving job has uncertainty. Define a candidate server as one that is not ruled out as best for the job. Define 
+
+zi(r) = PX∼D (∃k ∈ [K] : k is a candidate for X at i, wi(X, k ) > r ) .zi(r) measures the probability that a newly arriving job at round i has high uncertainty. Unlike previous works, which control the largest uncertainty over all possible contexts with a covariance lower bound, we only control the uncertainty under the arrival distribution D.We first connect zi(r) to the actual number of rounds with selected width greater than r, which is also bounded by the elliptical potential count. Assume the intervals are nested on [ t1, t 2 + 1], remain unchanged on empty rounds, and we select the widest candidate. If Q(i) = 0 and A(i) = 1, the new 6job is alone in round i + 1. Whenever its context has a candidate wider than r, the selected interval is also wider than r. Independence of the arrival gives P(wi+1 > r | F i) ≥ λz i(r)1 {Q(i) = 0 }.Taking expectations, summing, and applying (2) yields the upper bound of 
+
+λE
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)1 {Q(i) = 0 }
+
+ ≤ E
+
+
+
+> t2+1
+
+∑
+
+> i=t1+1
+
+1 {wi > r }
+
+ ≤ dβ 2
+
+> t2+1
+
+2r2 log(1 + ℓ/ (dκ )) . (4) Here, what we actually need is an upper bound on E[zt2 (r)]. Therefore, we need to account for nonempty rounds when Q(i)̸ = 0. On an empty round, we have E[∆ W (i) | F i] ≤ (1 − ϵ)p. Hence we extend (1) to every empty/nonempty round as E[∆ W (i) | F i] ≤ − ϵp + gi + p1 {Q(i) = 0 }. Since 0 ≤ gi ≤ 1, we have gi ≤ ϵp/ 2 + 1 {gi > ϵp/ 2}, which gives 
+
+ϵp/ 2 ≤ p1 {Q(i) = 0 } − E[∆ W (i) | F i] + 1
+
+{
+
+gi > ϵp/ 2
+
+}
+
+.
+
+We multiply by zi(r), sum, and take expectations to use (4). Since zi(r) is known at round i,
+
+E[zi(r)E[∆ W (i) | F i]] = E[zi(r)∆ W (i)]. Therefore, we have 
+
+ϵp 
+
+2 E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)
+
+ ≤ p E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)1 {Q(i) = 0 }
+
+ − E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)∆ W (i)
+
+
+
++ E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)1
+
+{
+
+gi > ϵp/ 2
+
+} .
+
+For the first and third terms on the right-hand side, we apply (4) and the elliptical potential count with zi(r) ≤ 1, respectively. For the rest of the terms, we assume monotonicity, zi−1(r) ≥ zi(r). We later show that our interval intersection procedure in Algorithm 1 can guarantee this property within each epoch. Then, for the second term on the right-hand side, 
+
+−
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)∆ W (i) = zt1 (r)W (t1) − zt2 (r)W (t2 + 1) −
+
+> t2
+
+∑
+
+> i=t1+1
+
+(zi−1(r) − zi(r)) W (i) ≤ W (t1). (5) Also, for the left-hand side, ℓz t2 (r) ≤ ∑t2 
+
+> i=t1
+
+zi(r). Then, we have 
+
+ϵp ℓ 
+
+2 E[zt2 (r)] ≤ p E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)1 {Q(i) = 0 }
+
+ + E[W (t1)] + E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+1
+
+{
+
+gi > ϵp/ 2
+
+} . (6) Dividing both sides by ϵp ℓ/ 2 gives the desired upper bound of E[zt2 (r)] (Lemma 13). Next, we need to connect the uncertainty of a new job sampled from D to that of the currently selected pair. The difficulty is that the job selected at time t is not an independent sample from 
+
+D, so we cannot write Pr( wt > r ) = E[zt(r)]. Instead, we return to the job’s arrival time to use independence. First, suppose the queue was empty at some round in [ t − ℓ, t − 1]. Then every job remaining at time t must have arrived after that empty round. Therefore, the currently selected job arrived in one of the rounds t−ℓ, t −ℓ+1 , . . . , t −1. The interval intersection assumed above ensures that if the current width is greater than r, then that server’s width was also greater than r just after arrival and it was a candidate at that time. Thus, the job satisfied the event of zi(r). Independence of 7the arrival and its context gives Pr( A(i − 1) = 1 , X i−1 has a wide candidate at time i) = λ E[zi(r)]. Taking a union bound over the possible arrival times t − ℓ, . . . , t − 1 gives (see the proof of Lemma 14) 
+
+P(wt > r ) ≤ λ
+
+> t∑
+> i=t−ℓ+1
+
+E[zi(r)] + P(the job selected at t arrived before t − ℓ). (7) We bound the first term using (6) and the second term using the fact that busy periods are short with high probability, as shown in the coarse learning analysis. Finally, using the fact that 
+
+E[gt] = ∫ 10 Pr( gt > r ) dr with gt ≤ 2wt we obtain the desired result. The assumptions made in this section are guaranteed by Algorithm 1 and elaborated in Section 4. 
+
+# 4 Algorithm 
+
+We propose WISE (Widest Interval Selection with Elimination), shown in Algorithm 1. The algorithm estimates service probabilities, intersects their confidence intervals, and selects the widest interval among pairs that have not been eliminated. We estimate the unknown parameter by regularized logistic maximum likelihood, ̂
+
+θt = arg min  
+
+> θ∈B
+> {t∑
+> i=1
+> [
+
+−D(i) log μ(⟨ϕi, θ⟩) − (1 − D(i)) log (1 − μ(⟨ϕi, θ⟩))] + ∥θ∥22/2
+
+> }
+
+. (8) With Vt = κI + ∑ti=1 ϕiϕ⊤ 
+
+> i
+
+, define βt by 
+
+βt = ( κ/ 2) 
+
+> √
+
+d log(1 + t/ (dκ )) + 4 log( t + 1) + √κS. (9) 
+
+Intersecting confidence intervals. Within each epoch, intersecting confidence intervals makes their widths and zi(r) nonincreasing. This is the property used in (5) and in comparing a job’s current width with its width at arrival. From the estimates, form 
+
+Ii(x, k ) = [ μ(
+
+> 〈
+
+ϕ(x, k ),̂ θi
+
+> 〉
+
+− βi∥ϕ(x, k )∥V−1
+
+> i
+
+), μ (
+
+> 〈
+
+ϕ(x, k ),̂ θi
+
+> 〉
+
++ βi∥ϕ(x, k )∥V−1
+
+> i
+
+)] ∩ [p, p ].
+
+We restart the intersection at epoch boundaries to prevent an invalid interval from affecting all later decisions. With U0 ∼ Unif(0 , 1) drawn once, set 
+
+τ0 = 1 , τm = ⌈2m−1+ U0 ⌉, mt = max {m : τm ≤ t}. (10) At an epoch boundary, start from It−1(x, k ). Within the epoch, intersect this interval with each new confidence interval. If the intersection becomes empty, set both endpoints to the midpoint of the last nonempty intersection and keep them fixed until the next epoch, preserving nesting. Estimation retains all observations across epochs. The random shift bounds the probability of a reset shortly before any specified time (34). 8Algorithm 1 WISE (Widest Interval Selection with Elimination) 
+
+input d, K, S, ϕ
+
+initialize V 0 ← κI,̂ θ0 ← 0, β0 ← √κS , U0 ∼ Unif(0 , 1), I0(x, k ) ← [p, p ] 
+
+> 1:
+
+for t = 1 , 2, . . . do  
+
+> 2:
+
+Determine mt and τmt by (10) // current epoch  
+
+> 3:
+
+if Xt̸ = ∅ then  
+
+> 4:
+
+for (x, k ) ∈ X t × [K] do  
+
+> 5:
+
+J ← I τmt −1(x, k ) 
+
+> 6:
+
+for i = τmt , . . . , t − 1 do  
+
+> 7:
+
+if J ∩ I i(x, k ) = ∅ then  
+
+> 8:
+
+J ← { (min J + max J )/2} and break // freeze until the next epoch  
+
+> 9:
+
+end if  
+
+> 10:
+
+J ← J ∩ I i(x, k ) // intersect confidence intervals  
+
+> 11:
+
+end for  
+
+> 12:
+
+[pt(x, k ), p t(x, k )] ← J  
+
+> 13:
+
+end for  
+
+> 14:
+
+Zt ← { (x, k ) ∈ X t × [K] : pt(x, k ) ≥ max (x′,k ′)∈X t×[K] pt(x′, k ′)} // elimination  
+
+> 15:
+
+(xt, k t) ∈ arg max (x,k )∈Z t [pt(x, k ) − pt(x, k )] // widest interval selection  
+
+> 16:
+
+Serve ( xt, k t) and observe D(t) 
+
+> 17:
+
+Vt ← Vt−1 + ϕtϕ⊤ 
+
+> t
+
+, update ̂ θt by (8), βt by (9)  
+
+> 18:
+
+else  
+
+> 19:
+
+Vt ← Vt−1,̂ θt ←̂ θt−1, update βt by (9) // when queue is empty  
+
+> 20:
+
+end if  
+
+> 21:
+
+end for Elimination and widest interval selection. The candidate set Zt retains pairs whose upper bound is at least the largest lower bound in the queue. Selecting the widest candidate gives gt ≤ 2wt
+
+(Lemma 9-(ii)), so the elliptical potential count bounds the number of rounds with a large departure rate gap. For a job arriving alone, a candidate wider than r also guarantees an observation of width greater than r, giving the relation in (4). These are the two properties used in Section 3.3. Appendix A compares the purpose and guarantees of this rule with previous widest interval selection algorithms. 
+
+# 5 Main Results 
+
+5.1 Upper Bound 
+
+Theorem 6. Under Assumptions 1 and 2, there exist an absolute constant C1 > 0 and a threshold 
+
+t0 satisfying the conditions in (60) such that, for every t ≥ t0, the WISE algorithm satisfies 
+
+Rt ≤ C1ϵ−9/2p−4βt log 2 t
+
+√
+
+λd log( e/λ )/t. 
+
+Since βt = O(√d log t), the WISE algorithm attains ˜O(t−1/2) queue length regret at every sufficiently large time without knowing t.9Proof sketch. Here C may depend on d, κ, S, p , but not on ϵ, λ, t , and may increase between inequal-ities. Let πi follow the learner through round i and the oracle afterwards, with queue length Qπi (j)at round j. The coupling of Bae et al. (2026a) (Lemma 16) gives Rt ≤ ∑t−1 
+
+> i=1
+
+E[giqi,t ], where gi is the departure rate gap in Section 3.1 and, for gi > 0, 
+
+qi,t = P(Qπi (t) − Qπi−1 (t) = 1 | F i, Q πi (i + 1) − Qπi−1 (i + 1) = 1 ).
+
+Set qi,t = 0 when gi = 0. The conditioning event is a service failure under πi and a success under 
+
+πi−1 at round i. Thus qi,t measures whether the resulting extra job still affects queue length at t.On this event, X πi−1 
+
+> j
+
+⊆ X πi 
+
+> j
+
+for j ≥ i + 1. Therefore, 
+
+Qπi (j) = 0 for some j ∈ [i + 1 , t ] =⇒ Qπi (t) = Qπi−1 (t).
+
+The workload of Qπi at i + 1 is at most W (i) + 1. Its oracle decisions give workload drift at most −ϵ/C until Qπi empties. If W (i) + 1 is small compared with the remaining t − i rounds, Azuma-Hoeffding (Lemma 23) bounds the probability that Qπi (j) > 0 throughout [ i + 1 , t ]. This gives (Lemma 17) 
+
+E[qi,t ] ≤ P(W (i) + 1 > ϵ (t − i)/C ) + e−ϵ2(t−i)/C . (11) Since 0 ≤ gi, q i,t ≤ 1, we can bound E[giqi,t ] by either E[qi,t ] or E[gi]. We use the former for the first two intervals and the latter for the last. We choose t − τ1,t = Θ(log 2 t/ϵ 4) and t − τ2,t = Θ(log t/ϵ 2). 
+
+First interval ( 1 ≤ i ≤ τ1,t ). The workload bound of order log 2 i/ϵ 3 suffices here because we choose 
+
+τ1,t so that ϵ(t−i)/C ≥ C log 2 i/ϵ 3 +1. Thus the probability in (11) is at most P(W (i) > C log 2 i/ϵ 3). For i > ϵt/C , Lemma 12-(ii), using (3), bounds this by C/ (ϵ2i2). For smaller i, W (i) + 1 ≤ i
+
+makes the original probability zero. Summing these probabilities and the exponential terms gives 
+
+∑τ1,t  
+
+> i=1
+
+E[giqi,t ] ≤ C/ (ϵ3t). 
+
+Second interval ( τ1,t < i ≤ τ2,t ). Now ϵ(t − i)/C can be smaller than C log 2 i/ϵ 3 + 1, so Lemma 12-(ii) no longer suffices. The learning bounds in (6) and (7) give the tail (Lemma 15-(ii)), valid for every z ≥ 0, P(W (i) > z ) ≤ Ce −ϵz/C /ϵ 2 + C(ϵ + λ) log 7 i/ (ϵ10 i). Applying it with z = ϵ(t − i)/C − 1 bounds the probability in (11). Summing over O(log 2 t/ϵ 4) rounds gives 
+
+∑τ2,t  
+
+> i=τ1,t +1
+
+E[giqi,t ] ≤ C/ (ϵ4t) + C(ϵ + λ) log 9 t/ (ϵ14 t). 
+
+Third interval ( τ2,t < i < t ). A service error just before t can still affect Q(t), so we bound the departure rate gap directly using E[giqi,t ] ≤ E[gi]. Applying Lemma 5 over the remaining 
+
+O(log t/ϵ 2) rounds gives the leading term in the theorem. The conditions in (60) bound the first two contributions by that term. See Section B for the full proof and cutoff choices. 
+
+5.2 Lower Bounds 
+
+We prove lower bounds for two questions. Theorem 7 determines how fast regret can decay with 
+
+t when the normalized capacity slack is bounded away from zero. Theorem 8 shows how a small normalized capacity slack increases regret. For Theorem 7, we sharpen the λ dependence in Bae and Lee (2026a) by counting service observations. In our construction, jobs require O(1) expected service attempts, giving O(λt )10 Figure 1: Queue length regret averaged over ten runs, with ±2 sample standard deviations and 25-round smoothing. Columns use normalized capacity slack ϵ = 0 .05 , 0.1, 0.15. Rows use pointwise, average ( q = 0 .15), and average ( q = 0 .50) distributions, where q = PX∼D (p∗(X) < λ ). observations in expectation. Service probabilities separated by order min {1, 1/√λt } can therefore remain hard to distinguish. An independent arrival before the last decision forces service with probability λ, giving a regret lower bound of order λ min {1, 1/√λt } = min {λ, √λ/t }. See Section C for the full construction, including d and K.
+
+Theorem 7. There is an absolute constant C0 ≥ 1 such that for every d ≥ 2, K ≥ 2, λ ∈ (0 , 1/4], and t ≥ 3, there is a finite family V of problem instances with S = 1 /4 and normalized capacity slack ϵ = 1 − 2λ ≥ 1/2 for which every algorithm π satisfies sup 
+
+> ν∈V
+
+Rπt (ν) ≥ C−10 min {λ, min {d, log K}
+
+> √
+
+λ/t }.
+
+Together with Theorem 6, this establishes rate-optimality in t up to logarithmic factors. For Theorem 8, a small normalized capacity slack lets service errors persist for Θ( ϵ−2) rounds. In our construction, λ = 1 /4 and the best service probability is p∗ = λ/ (1 −ϵ). Since p∗−λ = λϵ/ (1 −ϵ) = Θ( ϵ), a queue with Θ( ϵ−1) jobs takes Θ( ϵ−2) rounds to empty in expectation. Take q0 = Θ( ϵ−1)and ℓ = Θ( ϵ−2) as in Lemma 18. With constant probability, Qπ(i) ≥ q0. A service error on this event leaves Qπi (i + 1) = Qπi−1 (i + 1) + 1, and this extra job remains for ℓ rounds with probability at least 1 /2 even under the best server. Consequently, Rπt (ν) ≥ (1 /2) ∑t−1 
+
+> i=t−ℓ
+
+Eν [gi1 {Qπ(i) ≥
+
+q0}]. Averaging each expectation over the constructed instances gives a lower bound of order min {1, min {d, log K}/√t}. Summing over ℓ = Θ( ϵ−2) rounds gives the ϵ−2 factor. See Section D for the proof. 
+
+Theorem 8. There is an absolute constant C0 ≥ 1 such that for every d, K ≥ 2, 0 < ϵ ≤ 1/8, and 
+
+t ≥ 64 ϵ−2, there is a finite family Vϵ of problem instances with λ = 1 /4, S = 2, and normalized capacity slack ϵ for which every algorithm π satisfies sup 
+
+> ν∈V ϵ
+
+Rπt (ν) ≥ C−10 ϵ−2 min {1, min {d, log K}/√t}.
+
+11 6 Experiments 
+
+We evaluate WISE with and without context-wise slack. We compare it with implementations of CQB-Opt and CQB-ϵ (Bae et al., 2026a), CQB-η-2 (Bae and Lee, 2026a), ACQB (Bae et al., 2026b), Q-UCB and Q-ThS (Krishnasamy et al., 2021), and uniformly random selection. We use d = 5, K = 10, λ = 0 .6, ∥ϕ(x, k )∥2 = 5, and one shared parameter with ∥θ∗∥2 = S = 10. All distributions have the same normalized capacity slack within each column. The pointwise distribution satisfies context-wise slack, whereas the two average distributions increase both the frequency and the size of violations. All contextual algorithms use constrained regularized logistic estimates, a fixed confidence or sampling radius β = 100, and an initial design matrix V0 = 5 I5,with input κ = 100. We run each setting 10 times for 2000 rounds. WISE has the smallest mean queue length regret over rounds 1-2000 in five of the nine settings and the second-smallest in the remaining four. Its average regret over rounds 1500-2000 is below 1 in all nine settings, including those without context-wise slack. Implementation and distribution details are in Section F. 
+
+# References 
+
+Yasin Abbasi-Yadkori, Dávid Pál, and Csaba Szepesvári. Improved algorithms for linear stochastic bandits. Advances in neural information processing systems , 24, 2011. Marc Abeille, Louis Faury, and Clément Calauzènes. Instance-wise minimax-optimal algorithms for logistic bandits. In International Conference on Artificial Intelligence and Statistics , pages 3691–3699. PMLR, 2021. Peter Auer. Using confidence bounds for exploitation-exploration trade-offs. Journal of machine learning research , 3(Nov):397–422, 2002. Seoungbin Bae and Dabeen Lee. Algorithm for contextual queueing bandits with rate-optimal queue length regret. arXiv preprint arXiv:2606.09668 , 2026a. Seoungbin Bae and Dabeen Lee. Logistic bandits with ˜O(√dT ) regret without context diversity assumptions. arXiv preprint arXiv:2604.22161 , 2026b. Seoungbin Bae, Garyeong Kang, and Dabeen Lee. Queue length regret bounds for contextual queueing bandits. arXiv preprint arXiv:2601.19300 , 2026a. Seoungbin Bae, Junyoung Son, and Dabeen Lee. Learning to route and schedule llms from user retrials via contextual queueing bandits. arXiv preprint arXiv:2602.02061 , 2026b. Xu Cai, Selwyn Gomes, and Jonathan Scarlett. Lenient regret and good-action identification in gaussian process bandits. In International Conference on Machine Learning , pages 1183–1192. PMLR, 2021. Tuhinangshu Choudhury, Gauri Joshi, Weina Wang, and Sanjay Shakkottai. Job dispatching policies for queueing systems with unknown service rates. In Proceedings of the Twenty-second International Symposium on Theory, Algorithmic Foundations, and Protocol Design for Mobile Networks and Mobile Computing , pages 181–190, 2021. 12 Wei Chu, Lihong Li, Lev Reyzin, and Robert Schapire. Contextual bandits with linear payoff functions. In Proceedings of the fourteenth international conference on artificial intelligence and statistics , pages 208–214. JMLR Workshop and Conference Proceedings, 2011. Emile Contal, David Buffoni, Alexandre Robicquet, and Nicolas Vayatis. Parallel gaussian process optimization with upper confidence bound and pure exploration. In Joint European Conference on Machine Learning and Knowledge Discovery in Databases , pages 225–240. Springer, 2013. Shi Dong, Tengyu Ma, and Benjamin Van Roy. On the performance of thompson sampling on logistic bandits. In Conference on Learning Theory , pages 1158–1160. PMLR, 2019. Louis Faury, Marc Abeille, Clément Calauzènes, and Olivier Fercoq. Improved optimistic algorithms for logistic bandits. In International Conference on Machine Learning , pages 3052–3060. PMLR, 2020. Louis Faury, Marc Abeille, Kwang-Sung Jun, and Clément Calauzènes. Jointly efficient and optimal algorithms for logistic bandits. In International Conference on Artificial Intelligence and Statistics ,pages 546–580. PMLR, 2022. Sarah Filippi, Olivier Cappe, Aurélien Garivier, and Csaba Szepesvári. Parametric bandits: The generalized linear case. Advances in neural information processing systems , 23, 2010. Daniel Freund, Thodoris Lykouris, and Wentao Weng. Quantifying the cost of learning in queueing systems. Advances in Neural Information Processing Systems , 36:6532–6544, 2023. David Gamarnik and Alexander L Stolyar. Multiclass multiserver queueing system in the halfin– whitt heavy traffic regime: Asymptotics of the stationary distribution. Queueing Systems , 71(1): 25–51, 2012. Alkis Gotovos. Active learning for level set estimation. 2013. Shogo Iwazaki and Shion Takeno. Improved regret analysis in gaussian process bandits: Optimality for noiseless reward, rkhs norm, and non-stationary variance. arXiv preprint arXiv:2502.06363 ,2025. Kwang-Sung Jun, Lalit Jain, Blake Mason, and Houssam Nassif. Improved confidence bounds for the linear logistic model and applications to bandits. In International Conference on Machine Learning , pages 5148–5157. PMLR, 2021. Jung-hun Kim and Min-hwan Oh. Queueing matching bandits with preference feedback. Advances in Neural Information Processing Systems , 37:64649–64702, 2024. Wonyoung Kim, Kyungbok Lee, and Myunghee Cho Paik. Double doubly robust thompson sampling for generalized linear contextual bandits. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 37, pages 8300–8307, 2023. Yeoneung Kim, Insoon Yang, and Kwang-Sung Jun. Improved regret analysis for variance-adaptive linear bandits and horizon-free linear mixture mdps. Advances in Neural Information Processing Systems , 35:1060–1072, 2022. 13 Ger Koole and Avishai Mandelbaum. Queueing models of call centers: An introduction. Annals of Operations Research , 113(1):41–59, 2002. Subhashini Krishnasamy, Ari Arapostathis, Ramesh Johari, and Sanjay Shakkottai. On learning the cμ rule in single and parallel server networks. arXiv preprint arXiv:1802.06723 , 2018. Subhashini Krishnasamy, Rajat Sen, Ramesh Johari, and Sanjay Shakkottai. Learning unknown service rates in queues: A multiarmed bandit approach. Operations research , 69(1):315–330, 2021. Jiung Lee, Hongseok Namkoong, and Yibo Zeng. Design and scheduling of an ai-based queueing system. arXiv preprint arXiv:2406.06855 , 2024a. Junghyun Lee, Se-Young Yun, and Kwang-Sung Jun. A unified confidence sequence for generalized linear models, with applications to bandits. arXiv preprint arXiv:2407.13977 , 2024b. Lihong Li, Yu Lu, and Dengyong Zhou. Provably optimal algorithms for generalized linear contextual bandits. In International Conference on Machine Learning , pages 2071–2080. PMLR, 2017. Zihan Li and Jonathan Scarlett. Gaussian process bandit optimization with few batches. In 
+
+International Conference on Artificial Intelligence and Statistics , pages 92–107. PMLR, 2022. Thodoris Lykouris and Wentao Weng. Learning to defer in congested systems: the ai-human interplay. arXiv preprint arXiv:2402.12237 , 2024. Chenkai Ma, Keqin Chen, and Jonathan Scarlett. Batched kernelized bandits: Refinements and extensions. arXiv preprint arXiv:2603.12627 , 2026. Michael Mitzenmacher. Scheduling with predictions and the price of misprediction. arXiv preprint arXiv:1902.00732 , 2019. Michael Mitzenmacher and Rana Shahout. Queueing, predictions, and large language models: Challenges and open problems. Stochastic Systems , 15(3):195–219, 2025. Michael J Neely, Scott T Rager, and Thomas F La Porta. Max weight learning algorithms for scheduling in unknown environments. IEEE Transactions on Automatic Control , 57(5):1179–1191, 2012. Ziv Scully, Isaac Grosof, and Michael Mitzenmacher. Uniform bounds for scheduling with job size estimates. arXiv preprint arXiv:2110.00633 , 2021. Thomas Stahlbuhk, Brooke Shrader, and Eytan Modiano. Learning algorithms for scheduling in wireless networks with unknown channel statistics. Ad Hoc Networks , 85:131–144, 2019. doi: 10.1016/j.adhoc.2018.10.006. URL https://www.mit.edu/~modiano/papers/CV_J_118.pdf .Thomas Stahlbuhk, Brooke Shrader, and Eytan Modiano. Learning algorithms for minimizing queue length regret. IEEE Transactions on Information Theory , 67(3):1759–1781, 2021. Yanan Sui, Alkis Gotovos, Joel Burdick, and Andreas Krause. Safe exploration for optimization with gaussian processes. In International conference on machine learning , pages 997–1005. PMLR, 2015. 14 Jordi Vilaplana, Francesc Solsona, Ivan Teixidó, Jordi Mateo, Francesc Abella, and Josep Rius. A queuing theory model for cloud computing. The Journal of Supercomputing , 69(1):492–507, 2014. Mevan Wijewardena, Kamiar Asgari, and Michael J Neely. Bandit-based rate adaptation for a single-server queue. arXiv preprint arXiv:2512.12016 , 2025. Zixian Yang, R Srikant, and Lei Ying. Learning while scheduling in multi-server systems with unknown statistics: Maxweight with discounted ucb. In International Conference on Artificial Intelligence and Statistics , pages 4275–4312. PMLR, 2023. Sanghoon Yu and Min-hwan Oh. Practical and optimal algorithm for linear contextual bandits with rare parameter updates. arXiv preprint arXiv:2606.00984 , 2026. Yu-Jie Zhang and Masashi Sugiyama. Online (multinomial) logistic bandit: Improved regret and constant computation cost. Advances in Neural Information Processing Systems , 36:29741–29782, 2023. 15 A Additional Related Work 
+
+Queueing systems and learning. Queueing systems model service allocation in call centers and computing platforms (Koole and Mandelbaum, 2002; Vilaplana et al., 2014). Queueing bandits address scheduling when service rates are unknown and must be learned from service outcomes (Krishnasamy et al., 2021; Choudhury et al., 2021; Stahlbuhk et al., 2021). Their guarantees include queue length regret at a given time (Krishnasamy et al., 2021), cumulative queue length or holding-cost regret (Stahlbuhk et al., 2021; Krishnasamy et al., 2018), and the maximum increase in time-averaged queue length due to learning (Freund et al., 2023). The ˜O(t−1) guarantee of Krishnasamy et al. (2021) depends on a fixed difference between the best and second-best service rates, whereas our lower bounds allow this difference to decrease with t. Contextual extensions assign a fixed feature to each queue (Kim and Oh, 2024) or allow heterogeneous contexts for individual jobs (Bae et al., 2026a,b; Bae and Lee, 2026a). For the latter setting, existing bounds decay as ˜O(t−1/4) without horizon knowledge (Bae et al., 2026b) or as ˜O(t−1/2) with a known horizon (Bae and Lee, 2026a). These results require context-wise slack and a covariance lower bound. We replace context-wise slack by capacity slack and remove the covariance lower bound. Other learning approaches for queueing systems study MaxWeight scheduling and stability under unknown service rates (Neely et al., 2012; Stahlbuhk et al., 2019; Yang et al., 2023; Wijewardena et al., 2025), scheduling with predicted service times or job classes (Mitzenmacher, 2019; Scully et al., 2021; Lee et al., 2024a; Mitzenmacher and Shahout, 2025), and learning when to defer decisions to congested human reviewers (Lykouris and Weng, 2024). 
+
+Logistic bandits. Our service model connects CQB to logistic bandits, which model binary feedback through a logistic function of action features and an unknown parameter. Following the generalized linear bandit formulation of Filippi et al. (2010), subsequent work improves the dependence on curvature and derives instance-dependent regret bounds (Faury et al., 2020; Abeille et al., 2021; Lee et al., 2024b). Related directions include sharper confidence bounds for finite-action problems (Li et al., 2017; Jun et al., 2021), computationally efficient updates (Faury et al., 2022; Zhang and Sugiyama, 2023), and Thompson sampling (Dong et al., 2019; Kim et al., 2023). Bae and Lee (2026b) remove the assumption of a positive lower bound on the minimum eigenvalue of the context covariance matrix. These works study cumulative reward regret, whereas our analysis requires a bound on the expected departure rate gap at each specified time. 
+
+Elimination algorithms. Elimination algorithms use confidence bounds to discard actions that cannot be optimal. In Auer’s framework, exploration selects a remaining action whose confidence width exceeds a prescribed threshold (Auer, 2002; Chu et al., 2011; Li et al., 2017; Jun et al., 2021). Related methods for Gaussian process optimization select the action with the largest posterior variance, either in combination with UCB (Contal et al., 2013) or after eliminating suboptimal actions (Cai et al., 2021; Li and Scarlett, 2022; Iwazaki and Takeno, 2025; Ma et al., 2026). Confidence interval intersections also appear in level-set estimation and safe optimization (Gotovos, 2013; Sui et al., 2015). The BLCE algorithm of Yu and Oh (2026) explores by selecting xi ∈ arg max x∈C i ∥x∥H−1
+
+> i−1
+
+among surviving candidates Ci, where Hi = I + ∑ij=1 xj x⊤ 
+
+> j
+
+. For ℓ exploration rounds with ∥x∥2 ≤ 1and a fixed elimination rule, their analysis gives E[max x∈C ℓ+1 ∥x∥2
+
+> H−1
+> ℓ
+
+] ≤ ℓ−1 ∑ℓi=1 E[∥xi∥2
+
+> H−1
+> i−1
+
+] ≤
+
+(2 d/ℓ ) log(1 + ℓ/d ), where Cℓ+1 comes from a fresh i.i.d. context set. The first inequality uses context independence and the selection rule, and the second follows from the elliptical potential lemma. 16 This analysis does not directly apply to CQB because the set of waiting jobs depends on past service decisions and departures, so the first inequality cannot be justified by context independence. We instead combine observations after empty rounds with workload bounds and interval intersections to control E[gt] (Section 3.3). 
+
+# B Proof of Theorem 6 
+
+We first prove the lemmas used to bound E[giqi,t ] and then prove Theorem 6 in Section B.6. Through-out this section, C4 denotes a positive absolute constant and may increase between inequalities. Set 
+
+C2 = 64 /(ϵp )3, C3 = 128 /(ϵp )2, and 
+
+ℓ0,t = ⌈C2dβ 2 
+
+> t
+
+log t⌉, ℓ1,t = ⌈C3 log t⌉. (12) These lengths are used only in the proof. We use the conditions 
+
+t ≥ 3, t ≥ C4dβ 2 
+
+> t
+
+log t
+
+(ϵp )3 , (13) with a sufficiently large absolute C4.
+
+B.1 Proofs of Lemmas 9 and 10 
+
+We use the filtration Ft in Section 2, including U0. For t ≥ 0, define 
+
+Ct = {θ ∈ B :
+
+∥∥∥θ −̂ θt
+
+∥∥∥Vt ≤ βt}.
+
+Recall that wt(x, k ) = pt(x, k ) − pt(x, k ). Write wt = wt(xt, k t) when Q(t) > 0 and wt = 0 otherwise. Lemma 9 gives confidence bounds and relates gt to wt. Lemma 10 bounds the number of rounds with wt > r .
+
+Lemma 9. 
+
+(i) For every t1 ≥ 1, conditional on U0,
+
+P(∃t ≥ t1 : θ∗ /∈ C t | U0) ≤ (t1 + 1) −2. (14) (ii) If θ∗ ∈ C i for every i = τmt − 1, . . . , t − 1, then 
+
+pt(x, k ) ≤ p(x, k ) ≤ pt(x, k ) for all ( x, k ) ∈ X × [K], gt ≤ 2wt.
+
+B.1.1 Proof of Lemma 9 
+
+Proof. We first prove part (i). Fix U0. Define 
+
+ηi = (D(i) − μ(⟨ϕi, θ∗⟩))1 {Q(i) > 0}, Gt =
+
+> t
+
+∑
+
+> i=1
+
+ηiϕi.
+
+Lemma 20 gives ∥∥∥̂ θt − θ∗∥∥∥Vt ≤ κ∥Gt∥V−1
+
+> t
+
++ √κS. 
+
+17 By the conditional Bernoulli service law and Hoeffding’s lemma (Lemma 22), E[ηi | F i] = 0 and 
+
+E[ezη i | F i] ≤ ez2/8 for every z ∈ R. Theorem 1 of Abbasi-Yadkori et al. (2011) (Lemma 19), with initial matrix κI and noise parameter 1 /2, gives, with probability at least 1 − δ, simultaneously for all t ≥ 1, 
+
+∥Gt∥V−1
+
+> t
+
+≤ 12
+
+√
+
+log det Vt
+
+det( κI) + 2 log(1 /δ ) ≤ 12
+
+√
+
+d log(1 + t/ (dκ )) + 2 log(1 /δ ). (15) The second inequality follows from the arithmetic-geometric mean inequality and ∑ti=1 ∥ϕi∥22 ≤ t.Set δ = ( t1 + 1) −2. Applying (15) gives, with probability at least 1 − δ, simultaneously for every 
+
+i ≥ t1,
+
+∥∥∥̂ θi − θ∗∥∥∥Vi ≤ κ
+
+2
+
+√
+
+d log(1 + i/ (dκ )) + 4 log( t1 + 1) + √κS ≤ βi.
+
+The last inequality follows from i ≥ t1 and (9). Thus θ∗ ∈ C i for every i ≥ t1, proving part (i). We next prove part (ii), first showing that p(x, k ) ∈ [pt(x, k ), p t(x, k )]. If θ∗ ∈ C i and i ≥ 1, then 
+
+|
+
+〈
+
+ϕ(x, k ),̂ θi − θ∗〉
+
+| ≤ ∥ ϕ(x, k )∥V−1
+
+> i
+
+∥∥∥̂ θi − θ∗∥∥∥Vi ≤ βi∥ϕ(x, k )∥V−1
+
+> i
+
+.
+
+The first inequality follows from Cauchy-Schwarz, and the second follows from the definition of Ci.By the definition of Ii(x, k ), we have p(x, k ) ∈ I i(x, k ). Also p(x, k ) ∈ I 0(x, k ) = [ p, p ]. Therefore, 
+
+p(x, k ) ∈
+
+> t−1
+
+⋂ 
+
+> i=τmt−1
+
+Ii(x, k ) = [ pt(x, k ), p t(x, k )] .
+
+In particular, none of these intersections is empty. Suppose Q(t) > 0. To prove gt ≤ 2wt, we first show that ( x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) ∈ Z t. We have 
+
+pt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) ≥ p(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) ≥ max  
+
+> (x,k )∈X t×[K]
+
+pt(x, k ).
+
+Thus ( x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) ∈ Z t, and 
+
+gt = p(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) − p(xt, k t)
+
+≤ pt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) − pt(xt, k t)= wt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) + pt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) − pt(xt, k t)
+
+≤ wt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) + pt(xt, k t) − pt(xt, k t) ≤ 2wt,
+
+where the first inequality follows from p(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) ≤ pt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) and p(xt, k t) ≥ pt(xt, k t), the second follows from pt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) ≤ pt(xt, k t) since ( xt, k t) ∈ Z t, and the last follows from wt(x∗ 
+
+> t
+
+, k ∗ 
+
+> t
+
+) ≤ wt by Algorithm 1. For Q(t) = 0, gt = wt = 0. 
+
+Lemma 10. For 1 ≤ t1 ≤ t2, 0 < r ≤ 1, and ℓ = t2 − t1 + 1, 
+
+> t2
+
+∑
+
+> i=t1
+
+1 {wi > r } ≤ dβ 2
+
+> t2
+
+2r2 log(1 + ℓ/ (dκ )) on every sample path. 18 B.1.2 Proof of Lemma 10 
+
+Proof. For i ≥ 2, Algorithm 1 gives [pi(x, k ), p i(x, k )] ⊆ I i−1(x, k ) if wi(x, k ) > 0.
+
+If an intersection is empty, Algorithm 1 sets pi(x, k ) = pi(x, k ), so wi(x, k ) = 0. For wi(x, k ) > 0, ˙μ ≤ 1/4 gives 
+
+wi(x, k ) ≤ μ(
+
+〈
+
+ϕ(x, k ),̂ θi−1
+
+〉
+
++ βi−1∥ϕ(x, k )∥V−1
+
+> i−1
+
+)
+
+− μ(
+
+〈
+
+ϕ(x, k ),̂ θi−1
+
+〉
+
+− βi−1∥ϕ(x, k )∥V−1
+
+> i−1
+
+)
+
+≤ βi−1
+
+2 ∥ϕ(x, k )∥V−1
+
+> i−1
+
+. (16) The same bound holds if wi(x, k ) = 0. Since Vi−1 ⪰ κI + ∑i−1 
+
+> j=t1
+
+ϕj ϕ⊤ 
+
+> j
+
+and ∥ϕi∥2 ≤ 1, Lemma 11 of Abbasi-Yadkori et al. (2011) (Lemma 21), applied to ϕt1 , . . . , ϕt2 with initial matrix κI, gives 
+
+> t2
+
+∑
+
+> i=t1
+
+∥ϕi∥2
+
+> V−1
+> i−1
+
+≤ 2d log(1 + ℓ/ (dκ )) . (17) Combining (16) and (17) gives 
+
+> t2
+
+∑
+
+> i=t1
+
+1 {wi > r } ≤ 1
+
+r2
+
+> t2
+
+∑
+
+> i=t1
+
+w2
+
+> i
+
+≤ β2
+
+> t2
+
+4r2
+
+> t2
+
+∑
+
+> i=t1
+
+∥ϕi∥2
+
+> V−1
+> i−1
+
+≤ dβ 2
+
+> t2
+
+2r2 log(1 + ℓ/ (dκ )) ,
+
+where the second inequality uses βi−1 ≤ βt2 .
+
+B.2 Proofs of Lemmas 11 and 12 
+
+Lemma 11 bounds the change in workload on a nonempty interval. We use this bound in Lemma 12 to show that Q(i) = 0 for some i ∈ [t3 − ℓ0,t , t 3] with high probability. 
+
+Lemma 11. 
+
+(i) Under any policy, |W (i + 1) − W (i)| ≤ 1, and 
+
+E[W (i + 1) − W (i) | F i] ≤ − ϵp + gi if Q(i) > 0.
+
+(ii) Under Algorithm 1, fix 1 ≤ t1 ≤ t2, ℓ = t2 − t1 + 1, and δ ∈ (0 , 1). With conditional probability at least 1 − δ given Ft1 , if Q(i) > 0 and the waiting intervals contain their true service probabilities for every i ∈ [t1, t 2], then 
+
+W (t2 + 1) − W (t1) ≤ − ϵp ℓ/ 2 + 8dβ 2
+
+> t2
+
+ϵ2p2 log(1 + ℓ/ (dκ )) + 
+
+√
+
+8ℓ log(1 /δ ).
+
+19 B.2.1 Proof of Lemma 11 
+
+Proof. We first prove part (i). Write ∆ W (i) = W (i + 1) − W (i). By the definition of W (i), ∆W (i) = pA (i)
+
+p∗(Xi) − pD (i)
+
+p∗(xi) , |∆W (i)| ≤ 1,
+
+where the departure term is zero when Q(i) = 0. The inequality follows because each term belongs to [0 , 1]. When Q(i) > 0, 
+
+E[∆ W (i) | F i] = λp EX∼D [1 /p ∗(X)] − p p (xi, k i)/p ∗(xi)= −ϵp + pp∗(xi)
+
+(p∗(xi) − p(xi, k i))
+
+≤ − ϵp + gi
+
+≤ − ϵp/ 2 + 1
+
+{
+
+gi > ϵp/ 2
+
+}
+
+.
+
+The first equality follows from the arrival and service laws, and the second follows from Assumption 2. The first inequality uses p ≤ p∗(xi) ≤ p(x∗ 
+
+> i
+
+, k ∗ 
+
+> i
+
+), and the second uses 0 ≤ gi ≤ 1. We next prove part (ii). We write 
+
+W (t2 + 1) − W (t1) = 
+
+> t2
+
+∑
+
+> i=t1
+
+E[∆ W (i) | F i] + 
+
+> t2
+
+∑
+
+> i=t1
+
+(∆W (i) − E[∆ W (i) | F i]).
+
+We first bound the first sum. The proof of Lemma 9-(ii) gives gi ≤ 2wi whenever the intervals contain their true service probabilities. Therefore, on the event in part (ii), 
+
+> t2
+
+∑
+
+> i=t1
+
+E[∆ W (i) | F i] ≤ − ϵp ℓ/ 2 + 
+
+> t2
+
+∑
+
+> i=t1
+
+1
+
+{
+
+wi > ϵp/ 4
+
+}
+
+≤ − ϵp ℓ/ 2 + 8dβ 2
+
+> t2
+
+ϵ2p2 log(1 + ℓ/ (dκ )) , (18) where the second inequality follows from Lemma 10 with r = ϵp/ 4. For the second sum, since 
+
+|∆W (i) − E[∆ W (i) | F i]| ≤ 2, the Azuma-Hoeffding inequality (Lemma 23) gives 
+
+P
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+(∆W (i) − E[∆ W (i) | F i]) >
+
+√
+
+8ℓ log(1 /δ )
+
+∣∣∣∣∣∣ Ft1
+
+ ≤ δ. 
+
+Combining this probability bound with (18) proves part (ii). 
+
+Lemma 12. Let ℓ0,t be defined in (12). If t satisfies (13), every t3 ∈ [t/ 3, t ] satisfies (i) P(Q(i) > 0 for all i ∈ [t3 − ℓ0,t , t 3] | U0) ≤ C4
+
+ϵ2p2t2 .
+
+(ii) P(W (t3) > ℓ 0,t | U0) ≤ C4
+
+ϵ2p2t2 .
+
+(iii) E[W (t3) | U0] ≤ ℓ0,t + C4
+
+ϵ2p2t .
+
+The bounds hold uniformly in U0.20 B.2.2 Proof of Lemma 12 
+
+Proof. We first prove part (i). Fix U0, and set 
+
+t1 = ⌊ϵp t 3/64 ⌋, t2 = ⌊t3/2⌋, E0,t =
+
+> t
+
+⋂
+
+> j=⌊ϵp t/ 1024 ⌋
+
+{θ∗ ∈ C j }.
+
+We bound P(Ec0,t | U0) separately. On E0,t , we consider two cases depending on whether the queue is empty at some round in [ t1, t 2]. If it is, we bound the probability that the queue is nonempty for 
+
+ℓ0,t consecutive rounds after an empty round. Taking C4 ≥ 1536 in (13) gives t ≥ C4 and 
+
+ℓ0,t ≤ 64 dβ 2 
+
+> t
+
+log t
+
+(ϵp )3 + 1 ≤ 64 t/C 4 + 1 ≤ t/ 24 + 1 ≤ t/ 12 . (19) To see why these two bounds suffice, suppose that Q(i) > 0 for every i ∈ [t3 − ℓ0,t , t 3]. By (19), 
+
+t2 + ℓ0,t ≤ t3/2 + t/ 12 ≤ 3t3/4 ≤ t3. Either Q(i) > 0 for all i ∈ [t1, t 2], or an empty round occurs in [ t1, t 2]. In the latter case, the last empty round j = max {i ∈ [t1, t 3] : Q(i) = 0 } satisfies 
+
+j ∈ [t1, t 3 − ℓ0,t ] and Q(i) > 0 for all i ∈ [j + 1 , j + ℓ0,t ]. The union bound therefore gives 
+
+P(Q(i) > 0 for all i ∈ [t3 − ℓ0,t , t 3] | U0)
+
+≤ P(Ec0,t | U0)
+
+︸ ︷︷ ︸
+
+> I1
+
++ P(E0,t ∩ { Q(i) > 0 for all i ∈ [t1, t 2]} | U0)
+
+︸ ︷︷ ︸
+
+> I2
+
++
+
+> t3−ℓ0,t
+
+∑
+
+> j=t1
+
+P(E0,t ∩ { Q(j) = 0 , Q (i) > 0 for all i ∈ [j + 1 , j + ℓ0,t ]} | U0)
+
+︸ ︷︷ ︸
+
+> I3
+
+. (20) We bound I1, I 2, I 3 in turn. For I1, Lemma 9-(i) gives 
+
+I1 ≤ (⌊ϵp t/ 1024 ⌋ + 1) −2 ≤ 1024 2
+
+ϵ2p2t2 . (21) To bound I2, we argue by contradiction. On the event defining I2, the queue is nonempty throughout [ t1, t 2]. We apply Lemma 11-(ii) on [ t1, t 2 − 1] with W (t1) ≤ t1 and show that its upper bound on W (t2) is negative. Thus I2 is bounded by the probability that the bound in Lemma 11-(ii) fails. We first verify its confidence condition. By Lemma 9-(ii), it suffices to show that τmi − 1, . . . , i − 1 lie in the range defining E0,t . We verify this for every i ∈ [t1, t ], so that the same confidence condition also holds on the intervals used to bound I3. We have 
+
+τmi − 1 ≥ i/ 2 − 1 ≥ ϵp t 3/128 − 3/2 ≥ ϵp t/ 384 − 3/2 ≥ ϵp t/ 1024 .
+
+The first inequality follows from i < τ mi+1 ≤ 2τmi by (10), the second from i ≥ t1 ≥ ϵp t 3/64 − 1, the third from t3 ≥ t/ 3, and the last follows by taking C4 ≥ 1024, since (13) gives ϵp t ≥ C4.Consequently, [τmi − 1, i − 1] ⊆ [⌊ϵp t/ 1024 ⌋, t ] for every i ∈ [t1, t ].
+
+21 On E0,t , we therefore have θ∗ ∈ C j for every j = τmi − 1, . . . , i − 1. Applying Lemma 9-(ii) gives 
+
+pi(x, k ) ≤ p(x, k ) ≤ pi(x, k ) for all ( x, k ) ∈ X × [K], i ∈ [t1, t ].
+
+Thus the confidence bounds required by Lemma 11-(ii) hold for both applications below. Since t3 ≥ t/ 3 ≥ 10, we have 8dβ 2
+
+> t
+
+ϵ2p2 log t ≤ 8ϵp t C4
+
+≤ 24 ϵp t 3
+
+C4
+
+≤ ϵp t 3/64 , (22) 
+
+t2 − t1 ≥ t3/2 − 1 − ϵp t 3/64 ≥ 31 t3/64 − 1 ≥ 3t3/8, t2 − t1 ≤ t3, (23) where we use (13), t ≤ 3t3, ϵp ≤ 1, and the definitions of t1, t 2.Applying Lemma 11-(ii) to [ t1, t 2 − 1] with δ = exp( −ϵ2p2t3/512) gives, on E0,t ∩ { Q(i) >
+
+0 for all i ∈ [t1, t 2]},
+
+W (t2) ≤ W (t1) − ϵp 
+
+2 (t2 − t1) + 8dβ 2
+
+> t
+
+ϵ2p2 log t + ϵp 
+
+8
+
+√
+
+(t2 − t1)t3
+
+≤ ϵp t 3
+
+64 − 3ϵp t 3
+
+16 + ϵp t 3
+
+64 + ϵp t 3
+
+8= − ϵp t 3
+
+32 < 0,
+
+except on an event of probability at most δ conditional on Ft1 , where the second inequality follows from W (t1) ≤ t1 ≤ ϵp t 3/64 and (22) and (23). This contradicts W (t2) ≥ 0. Thus the event defining 
+
+I2 has conditional probability at most δ given Ft1 . Taking conditional expectations given U0, we obtain 
+
+I2 = E[P(E0,t ∩ { Q(i) > 0 for all i ∈ [t1, t 2]} | F t1 ) | U0]
+
+≤ e−ϵ2p2t3/512 ≤ t−2. (24) The last inequality follows from 
+
+ϵ2p2t3
+
+512 ≥ ϵ2p2t
+
+1536 ≥ C4dβ 2 
+
+> t
+
+log t
+
+1536 ϵp ≥ 2 log t, 
+
+where we use t3 ≥ t/ 3, (13), dβ 2 
+
+> t
+
+≥ 16 log t, and C4 ≥ 1536. To bound I3, fix j ∈ [t1, t 3 − ℓ0,t ]. If Q(j) = 0, then W (j + 1) ≤ 1. We again argue by contradiction using Lemma 11-(ii), this time on [ j + 1 , j + ℓ0,t − 1]. We show that its upper bound on W (j + ℓ0,t ) is negative when δ = t−3. Hence each term is at most t−3, and summing over j gives 
+
+I3 ≤ t−2. For this application of Lemma 11-(ii), we use 8dβ 2
+
+> t
+
+ϵ2p2 log(1 + ℓ0,t /(dκ )) ≤ 8dβ 2
+
+> t
+
+ϵ2p2 log t ≤ ϵp ℓ 0,t 
+
+8 , (25) 
+
+ℓ0,t ≥ 64 dβ 2 
+
+> t
+
+log t
+
+(ϵp )3 ≥ 1024 log 2 t
+
+(ϵp )3 ≥ 384 log tϵ2p2 ≥ 16 
+
+ϵp . (26) The first inequality in (25) uses (19) and dκ ≥ 1, and the second follows from (12). In (26), the first inequality follows from the definition of ℓ0,t , and the second uses dβ 2 
+
+> t
+
+≥ 16 log t by (9) and κ ≥ 4. The last two inequalities use t ≥ 3 and ϵp ≤ 1. 22 Applying Lemma 11-(ii) to [ j + 1 , j + ℓ0,t − 1] with δ = t−3 gives, on E0,t ∩ { Q(j) = 0 , Q (i) >
+
+0 for all i ∈ [j + 1 , j + ℓ0,t ]},
+
+W (j + ℓ0,t ) ≤ W (j + 1) − ϵp 
+
+2 (ℓ0,t − 1) + 8dβ 2
+
+> t
+
+ϵ2p2 log(1 + ℓ0,t /(dκ )) +
+
+√
+
+24( ℓ0,t − 1) log t
+
+≤ 1 − ϵp 
+
+2 (ℓ0,t − 1) + ϵp ℓ 0,t 
+
+8 + ϵp ℓ 0,t 
+
+4= 1 + ϵp/ 2 − ϵp ℓ 0,t /8
+
+≤ − 1/2 < 0,
+
+except on an event of probability at most t−3 conditional on Fj+1 . The second and last inequalities follow from W (j + 1) ≤ 1 on {Q(j) = 0 }, (25) and (26), and ϵp ≤ 1. This contradicts W (j + ℓ0,t ) ≥ 0. Thus the event in each term of I3 has conditional probability at most t−3 given Fj+1 . Taking conditional expectations given U0, we obtain 
+
+P(E0,t ∩ { Q(j) = 0 , Q (i) > 0 for all i ∈ [j + 1 , j + ℓ0,t ]} | U0)= E[P(E0,t ∩ { Q(j) = 0 , Q (i) > 0 for all i ∈ [j + 1 , j + ℓ0,t ]} | F j+1 ) | U0]
+
+≤ t−3. (27) Summing (27) over j gives 
+
+I3 ≤ (t3 − ℓ0,t − t1 + 1) t−3 ≤ t−2, (28) Substituting (21), (24), and (28) into (20), we obtain 
+
+P(Q(i) > 0 for all i ∈ [t3 − ℓ0,t , t 3] | U0)
+
+≤ 1024 2
+
+ϵ2p2t2 + 2 t−2 ≤ C4
+
+ϵ2p2t2 ,
+
+where the last inequality follows by taking C4 ≥ 1024 2 + 2. This proves part (i). For part (ii), if Q(j) = 0 for some j ∈ [t3 − ℓ0,t , t 3], then 
+
+W (t3) = W (j) + 
+
+> t3−1
+
+∑
+
+> i=j
+
+∆W (i) ≤ t3 − j ≤ ℓ0,t ,
+
+where the first inequality follows from W (j) = 0 and Lemma 11-(i). Therefore, 
+
+P(W (t3) > ℓ 0,t | U0)
+
+≤ P(Q(i) > 0 for all i ∈ [t3 − ℓ0,t , t 3] | U0)
+
+≤ C4
+
+ϵ2p2t2 ,
+
+where the last inequality follows from part (i). For part (iii), we have 
+
+E[W (t3) | U0] ≤ ℓ0,t + tP(W (t3) > ℓ 0,t | U0) ≤ ℓ0,t + C4
+
+ϵ2p2t ,
+
+where the first inequality uses 0 ≤ W (t3) ≤ t, and the second follows from part (ii). 23 B.3 Proofs of Lemmas 13 to 15 
+
+Recall that ∆ W (i) = W (i + 1) − W (i) and Gi = Fi ∨ σ(D(i)). The arrival ( A(i), X i) is independent of Gi. For r > 0, define 
+
+zi(r) = PX∼D 
+
+(
+
+∃k ∈ [K] : pi(X, k ) ≥ max  
+
+> k′
+
+pi(X, k ′), wi(X, k ) > r 
+
+)
+
+. (29) 
+
+Lemma 13. Under Algorithm 1, fix U0, 1 ≤ t1 ≤ t2, ℓ = t2 − t1 + 1, and 0 < r ≤ 1. Suppose the nonempty, Fi-measurable intervals satisfy [pi+1 (x, k ), p i+1 (x, k )] ⊆ [pi(x, k ), p i(x, k )] for all ( x, k ) ∈ X × [K], i ∈ [t1, t 2],
+
+and remain unchanged when Q(i) = 0. Then 
+
+E[zt2 (r) | U0] ≤ 2
+
+ϵp ℓ 
+
+( p dβ 2
+
+> t2+1
+
+2λr 2 log(1 + ℓ/ (dκ )) + E[W (t1) | U0]+ E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+1
+
+{
+
+gi > ϵp/ 2
+
+} ∣∣∣∣∣∣ U0
+
+ .
+
+B.3.1 Proof of Lemma 13 
+
+Proof. Fix U0. We first express E[zt2 (r) | U0] in terms of three quantities and then bound them separately. The variables zi(r) are Fi-measurable. If x, k satisfy the inequalities in (29) at i + 1, then 
+
+pi(x, k ) ≥ pi+1 (x, k ) ≥ max  
+
+> k′
+
+pi+1 (x, k ′) ≥ max  
+
+> k′
+
+pi(x, k ′),wi(x, k ) ≥ wi+1 (x, k ) > r. 
+
+Thus zi+1 (r) ≤ zi(r) and ℓz t2 (r) ≤ ∑t2 
+
+> i=t1
+
+zi(r). By Lemma 11-(i) and E[∆ W (i) | F i] = (1 − ϵ)p when Q(i) = 0, 
+
+E[∆ W (i) | F i] ≤ − ϵp + gi + p1 {Q(i) = 0 }≤ − ϵp/ 2 + p1 {Q(i) = 0 } + 1
+
+{
+
+gi > ϵp/ 2
+
+}
+
+.
+
+The second inequality uses gi ≤ ϵp/ 2 + 1 {gi > ϵp/ 2}. Multiplying by zi(r), summing, and taking expectations conditional on U0 gives 
+
+ϵp ℓ 
+
+2 E[zt2 (r) | U0] ≤ ϵp 
+
+2 E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)
+
+∣∣∣∣∣∣ U0
+
+
+
+≤ p E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)1 {Q(i) = 0 }
+
+∣∣∣∣∣∣ U0
+
+︸ ︷︷ ︸
+
+> I1
+
++ E
+
+−
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)∆ W (i)
+
+∣∣∣∣∣∣ U0
+
+︸ ︷︷ ︸
+
+> I2
+
++ E
+
+
+
+> t2
+
+∑
+
+> i=t1
+
+zi(r)1
+
+{
+
+gi > ϵp/ 2
+
+} ∣∣∣∣∣∣ U0
+
+︸ ︷︷ ︸
+
+> I3
+
+. (30) 24 Here we use the tower rule 
+
+E[zi(r)∆ W (i) | U0] = E[zi(r)E[∆ W (i) | F i] | U0] ,
+
+which holds because zi(r) is Fi-measurable and σ(U0) ⊆ F i. We bound I1, I 2, I 3 in turn. To bound I1, we count arrivals after empty rounds that have a candidate server with width greater than r. Their expected number conditional on U0 is λI 1/p . We show that each such arrival gives wi+1 > r , so that Lemma 10 bounds I1.On {Q(i) = 0 , A (i) = 1 }, we have Xi+1 = {Xi}. The intervals at rounds i and i + 1 are equal by assumption. Thus Algorithm 1 gives 
+
+wi+1 = max  
+
+> k∈[K]:
+> pi(Xi,k )≥max k′pi(Xi,k ′)
+
+wi(Xi, k ).
+
+Consequently, 
+
+E[1 {wi+1 > r } | F i]
+
+≥ P
+
+ Q(i) = 0 , A (i) = 1 ,
+
+∃k ∈ [K] : pi(Xi, k ) ≥ max  
+
+> k′
+
+pi(Xi, k ′), w i(Xi, k ) > r 
+
+∣∣∣∣∣∣ Fi
+
+
+
+= λ1 {Q(i) = 0 } PX∼D 
+
+(
+
+∃k ∈ [K] : pi(X, k ) ≥ max  
+
+> k′
+
+pi(X, k ′), w i(X, k ) > r 
+
+)
+
+= λz i(r)1 {Q(i) = 0 }.
+
+The first equality follows from the independence of A(i), Xi, and Fi, and the second follows from (29). Taking expectations conditional on U0 and summing gives 
+
+I1 = p
+
+> t2
+
+∑
+
+> i=t1
+
+E[zi(r)1 {Q(i) = 0 } | U0]
+
+≤ pλ
+
+> t2
+
+∑
+
+> i=t1
+
+E[E[1 {wi+1 > r } | F i] | U0]= pλ E
+
+
+
+> t2+1
+
+∑
+
+> i=t1+1
+
+1 {wi > r }
+
+∣∣∣∣∣∣ U0
+
+
+
+≤ p dβ 2
+
+> t2+1
+
+2λr 2 log(1 + ℓ/ (dκ )) , (31) where the second equality follows from the tower rule and a change of summation index, and the last inequality follows from Lemma 10. To bound I2, summation by parts gives 
+
+I2 = E[zt1 (r)W (t1) | U0] − E[zt2 (r)W (t2 + 1) | U0]
+
+− E
+
+
+
+> t2
+
+∑
+
+> i=t1+1
+
+(zi−1(r) − zi(r)) W (i)
+
+∣∣∣∣∣∣ U0
+
+
+
+≤ E[W (t1) | U0],
+
+25 where the inequality follows from 0 ≤ zi(r) ≤ 1, zi−1(r) ≥ zi(r), and W (i) ≥ 0. For I3, zi(r) ≤ 1gives I3 ≤ E[∑t2 
+
+> i=t1
+
+1 {gi > ϵp/ 2} | U0]. Substituting (31) and the bounds on I2, I 3 into (30) and dividing by ϵp ℓ/ 2 proves the result. Taking expectations over U0 gives the same bound without conditioning. For use in the next two proofs, define 
+
+E1,i =
+
+> i−1
+
+⋂ 
+
+> j=τmi−1
+
+{θ∗ ∈ C j }.
+
+Lemma 14. For every t satisfying (13), every 0 < r ≤ 1, every 2 ≤ ℓ ≤ t/ 8, and every event E,
+
+P(wt > r, E) ≤ C4ℓ dβ 2 
+
+> t
+
+log 2 tt
+
+[ 1
+
+ϵr 2 + λ
+
+(ϵp )4
+
+]
+
++ P(E, Q (t) > 0, the job selected at t arrived before t − ℓ).
+
+B.3.2 Proof of Lemma 14 
+
+Proof. We bound P(wt > r, E) by comparing the width of ( xt, k t) at round t with its width just after xt arrived. To use the interval intersections, both rounds must be in the same epoch. We therefore separate jobs arriving before t − ℓ and the event t − τmt + 1 ≤ 2ℓ. In the remaining case, every possible arrival round t − ℓ, . . . , t − 1 is in the current epoch. Thus 
+
+P(wt > r, E) ≤ P(t − τmt + 1 ≤ 2ℓ)
+
+︸ ︷︷ ︸
+
+> I1
+
++ P(wt > r, the selected job arrived at or after t − ℓ, t − τmt + 1 > 2ℓ)︸ ︷︷ ︸
+
+> I2
+
++ P(E, Q (t) > 0, the selected job arrived before t − ℓ). (32) We bound I1 and I2 in turn. The term I1 is the probability that the current epoch contains at most 2 ℓ rounds up to t. We will show that I1 ≤ 4ℓ/ (t log 2) using the uniform shift U0. To do so, we first express the number of rounds 
+
+t − τmt + 1 in terms of U0. By (10), mt = 1 + ⌊log 2 t − U0⌋. Define U = log 2 t − (mt − 1 + U0) ∈ [0 , 1), so that 
+
+τmt = ⌈2mt−1+ U0 ⌉ = ⌈t2−U ⌉.
+
+To remove the ceiling, set Y = 1 − 2−U . Then tY = t − 2mt−1+ U0 is the elapsed time from the epoch start before rounding, and 
+
+tY < t − τmt + 1 ≤ tY + 1 . (33) Thus I1 ≤ P(Y ≤ 2ℓ/t ). We compute this probability by first finding the distribution of U . Since 
+
+U = log 2 t − U0 − ⌊ log 2 t − U0⌋ and U0 ∼ Unif(0 , 1), for 0 ≤ u ≤ 1, 
+
+P(U ≤ u) = 
+
+∫ log 2 t 
+
+> log 2t−1
+
+1 {z − ⌊ z⌋ ≤ u} dz 
+
+=
+
+∫ 1log 2 t−⌊ log 2 t⌋
+
+1 {z ≤ u} dz +
+
+∫ log 2 t−⌊ log 2 t⌋
+
+> 0
+
+1 {z ≤ u} dz = u, 
+
+26 where we split the first integral at ⌊log 2 t⌋ and subtract the integer part on each interval. Hence 
+
+U ∼ Unif(0 , 1). For 0 ≤ y ≤ 1/2, 
+
+P(Y ≤ y) = P(U ≤ − log 2(1 − y)) = − log(1 − y)log 2 .
+
+Hence Y has density fY (y) = 1 /((1 − y) log 2) ≤ 2/ log 2 on [0 , 1/2], and 
+
+I1 ≤ P(Y ≤ 2ℓ/t ) = 
+
+∫ 2ℓ/t 
+
+> 0
+
+fY (y) dy ≤ 4ℓt log 2 . (34) The first inequality follows from (33), and the last uses fY (y) ≤ 2/ log 2 and 2 ℓ/t ≤ 1/4. The term I2 is the probability that wt > r , the selected job arrived at or after t − ℓ, and the current epoch contains more than 2 ℓ rounds up to t. To bound it, we show that, just after xt arrived, server kt already had width greater than r and an upper bound at least as large as every lower bound for xt. We can then sum over the possible arrival rounds and apply Lemma 13 to bound 
+
+E[zi(r) | U0]. Suppose the event in I2 holds, and let i − 1 be the arrival round of xt. Then A(i − 1) = 1, 
+
+Xi−1 = xt, and 
+
+τmt < t − 2ℓ + 1 < t − ℓ + 1 ≤ i ≤ t. 
+
+Thus i and t are in the same epoch. For the pair ( xt, k t) selected at t, we have 
+
+pi(xt, k t) ≥ pt(xt, k t) ≥ max  
+
+> k′
+
+pt(xt, k ′) ≥ max  
+
+> k′
+
+pi(xt, k ′),wi(xt, k t) ≥ wt > r. 
+
+The first and third inequalities follow from [ pt(x, k ), p t(x, k )] ⊆ [pi(x, k ), p i(x, k )], and the second follows from ( xt, k t) ∈ Z t. Substituting Xi−1 = xt gives 
+
+A(i − 1) = 1 , pi(Xi−1, k t) ≥ max  
+
+> k′
+
+pi(Xi−1, k ′), wi(Xi−1, k t) > r. 
+
+These inequalities hold for at least one i ∈ [t − ℓ + 1 , t ] whenever the event in I2 occurs. The union bound therefore gives 
+
+I2 ≤
+
+> t
+
+∑
+
+> i=t−ℓ+1
+
+P
+
+ A(i − 1) = 1 , t − τmt + 1 > 2ℓ, 
+
+∃k ∈ [K] : pi(Xi−1, k ) ≥ max  
+
+> k′
+
+pi(Xi−1, k ′), w i(Xi−1, k ) > r 
+
+
+
+= λ
+
+> t
+
+∑
+
+> i=t−ℓ+1
+
+E[zi(r)1 {t − τmt + 1 > 2ℓ}]= λ
+
+> t
+
+∑
+
+> i=t−ℓ+1
+
+EU0 [E[zi(r) | U0]1 {t − τmt + 1 > 2ℓ}] . (35) The first equality follows from independence of ( A(i − 1) , X i−1) and Gi−1, since the bounds pi(x, k ), 
+
+pi(x, k ) and U0 are Gi−1-measurable. The second equality follows from the tower rule, since 
+
+1 {t − τmt + 1 > 2ℓ} depends only on U0.We now bound E[zi(r) | U0] using Lemma 13. Fix U0, set m = mt, and let τm < i ≤ t.We will use this lemma on [ τm, i − 1], so we need to bound E[∑i−1 
+
+> j=τm
+
+1 {gj > ϵp/ 2} | U0] and 27 E[W (τm) | U0]. We first verify its two interval conditions. Within epoch m, Algorithm 1 gives [pj+1 (x, k ), p j+1 (x, k )] ⊆ [pj (x, k ), p j (x, k )] for every ( x, k ) and j ∈ [τm, i − 1]. When Q(j) = 0, ̂
+
+θj and Vj are unchanged, while βj ≥ βj−1. Thus Ij (x, k ) ⊇ I j−1(x, k ), and the intersection is unchanged. By Lemma 9-(ii), 
+
+1
+
+{
+
+gj > ϵp/ 2
+
+}
+
+≤ 1
+
+{
+
+wj > ϵp/ 4
+
+}
+
++ 1
+
+{
+
+Ec1,j 
+
+}
+
+.
+
+Summing over j = τm, . . . , i − 1 and taking expectations conditional on U0 gives 
+
+E
+
+
+
+> i−1
+
+∑
+
+> j=τm
+
+1
+
+{
+
+gj > ϵp/ 2
+
+} ∣∣∣∣∣∣ U0
+
+
+
+≤ E
+
+
+
+> i−1
+
+∑
+
+> j=τm
+
+1
+
+{
+
+wj > ϵp/ 4
+
+} ∣∣∣∣∣∣ U0
+
+ +
+
+> i−1
+
+∑
+
+> j=τm
+
+P(Ec1,j | U0)
+
+≤ 8dβ 2
+
+> t
+
+ϵ2p2 log(1 + ( i − τm)/(dκ )) + ( i − τm)P(∃j′ ≥ τm − 1 : θ∗ /∈ C j′ | U0)
+
+≤ 8dβ 2
+
+> t
+
+ϵ2p2 log(1 + ( i − τm)/(dκ )) + i − τm
+
+τ 2
+
+> m
+
+≤ 8dβ 2 
+
+> t
+
+log tϵ2p2 + 2
+
+t ≤ C4dβ 2 
+
+> t
+
+log tϵ2p2 . (36) The second inequality follows from Lemma 10 with r = ϵp/ 4, βi−1 ≤ βt, and 
+
+Ec1,j = {∃ j′ ∈ [τm − 1, j − 1] : θ∗ /∈ C j′ } ⊆ {∃ j′ ≥ τm − 1 : θ∗ /∈ C j′ },
+
+since every j ∈ [τm, i − 1] is in epoch m. The third inequality follows from Lemma 9-(i) with 
+
+t1 = τm − 1. The fourth uses τm > t/ 2, i ≤ t, and dκ ≥ 1. The last uses dβ 2 
+
+> t
+
+log t ≥ 1 and ϵp ≤ 1. Since t/ 2 < τ m ≤ t, Lemma 12-(iii) gives 
+
+E[W (τm) | U0] ≤ ℓ0,t + C4
+
+ϵ2p2t ≤ C4dβ 2 
+
+> t
+
+log t
+
+(ϵp )3 . (37) Since U0 is fixed, τm is fixed, and we obtain 
+
+E[zi(r) | U0] ≤ E[zi−1(r) | U0]
+
+≤ 2
+
+ϵp (i − τm)
+
+( p dβ 2
+
+> i
+
+2λr 2 log(1 + ( i − τm)/(dκ )) + E[W (τm) | U0]+ E
+
+
+
+> i−1
+
+∑
+
+> j=τm
+
+1
+
+{
+
+gj > ϵp/ 2
+
+} ∣∣∣∣∣∣ U0
+
+
+
+≤ 2
+
+ϵp (i − τm)
+
+( p dβ 2 
+
+> t
+
+log t
+
+2λr 2 + C4dβ 2 
+
+> t
+
+log t
+
+(ϵp )3 + C4dβ 2 
+
+> t
+
+log t
+
+(ϵp )2
+
+)
+
+= dβ 2 
+
+> t
+
+log ti − τm
+
+( 1
+
+ϵλr 2 + 2C4
+
+(ϵp )4 + 2C4
+
+(ϵp )3
+
+)
+
+≤ C4dβ 2 
+
+> t
+
+log ti − τm
+
+[ 1
+
+ϵλr 2 + 1(ϵp )4
+
+]
+
+, (38) 28 where the first inequality follows from zi(r) ≤ zi−1(r), and the second from Lemma 13 on [ τm, i − 1]. The third inequality follows from (36) and (37), βi ≤ βt, and log(1 + ( i − τm)/(dκ )) ≤ log t. The last inequality uses ϵp ≤ 1, increasing C4.We next sum over the possible arrival rounds in (35). On {t − τmt + 1 > 2ℓ}, every i ∈ [t − ℓ + 1 , t ]satisfies 
+
+i − τmt ≥ t − τmt + 1 − ℓ > t − τmt + 1 2 .
+
+Thus (38) bounds all terms in the sum using the same denominator t − τmt + 1. We obtain 
+
+I2 ≤ λ
+
+> t
+
+∑
+
+> i=t−ℓ+1
+
+EU0 [E[zi(r) | U0]1 {t − τmt + 1 > 2ℓ}]
+
+≤ C4λdβ 2 
+
+> t
+
+log t
+
+( 1
+
+ϵλr 2 + 1(ϵp )4
+
+) t∑
+
+> i=t−ℓ+1
+
+EU0
+
+[ 1 {t − τmt + 1 > 2ℓ}
+
+t − τmt + 1 
+
+]
+
+= C4ℓ dβ 2 
+
+> t
+
+log t
+
+( 1
+
+ϵr 2 + λ
+
+(ϵp )4
+
+)
+
+EU0
+
+[ 1 {t − τmt + 1 > 2ℓ}
+
+t − τmt + 1 
+
+]
+
+. (39) The first inequality is (35). The second follows from (38) and the preceding inequality, increasing 
+
+C4 to absorb the factor 2. The equality follows because the sum has ℓ identical terms. It remains to bound the expectation in (39). Since t − τmt + 1 = t − ⌈ t(1 − Y )⌉ + 1 = ⌊tY ⌋ + 1, we have 
+
+EU0
+
+[ 1 {t − τmt + 1 > 2ℓ}
+
+t − τmt + 1 
+
+]
+
+=
+
+∫ 1/20
+
+1 {⌊ ty ⌋ + 1 > 2ℓ}⌊ty ⌋ + 1 fY (y) dy 
+
+≤
+
+∫ 1/2(2 ℓ−1) /t 
+
+fY (y)
+
+⌊ty ⌋ + 1 dy 
+
+≤ 1
+
+t
+
+∫ 1/2(2 ℓ−1) /t 
+
+fY (y)
+
+y dy 
+
+≤ 2
+
+t log 2 
+
+∫ 1/2(2 ℓ−1) /t 
+
+dy y
+
+= 2
+
+t log 2 log 
+
+( t
+
+4ℓ − 2
+
+)
+
+≤ 2 log tt log 2 . (40) The first inequality follows from {⌊ ty ⌋ + 1 > 2ℓ} ⊆ { ty > 2ℓ − 1}. The second inequality follows from ⌊ty ⌋ + 1 > ty , and the third from fY (y) ≤ 2/ log 2. The last inequality follows from ℓ ≥ 2. Substituting (40) into (39) gives 
+
+I2 ≤ C4ℓ dβ 2 
+
+> t
+
+log 2 tt
+
+( 1
+
+ϵr 2 + λ
+
+(ϵp )4
+
+)
+
+.
+
+Substituting this bound and (34) into (32), and using ϵ, r ≤ 1 and dβ 2 
+
+> t
+
+log 2 t ≥ 1, proves the result. 29 Lemma 15. Let t satisfy (13), set t1 = t − ℓ0,t − ℓ1,t and t2 = t − ℓ1,t , and define 
+
+E2,t = {Q(j) = 0 for some j ∈ [t1, t 2]} ∩ 
+
+> t
+
+⋂
+
+> i=t1
+
+(E1,i ∩ { wi ≤ ϵp/ 4}).
+
+Then the following hold. (i) P(Ec2,t ) ≤ C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t .
+
+(ii) For every z ≥ 0, 
+
+P(W (t) > z ) ≤ C4
+
+ϵ2p2 e−ϵpz/ 2 + C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t .
+
+(iii) For every 2 ≤ ℓ ≤ ℓ1,t ,
+
+P(E2,t , the job selected at t arrived before t − ℓ) ≤ C4
+
+ϵ2p2 e−ℓ/C 3 .
+
+(iv) P(Q(t) > 0, E2,t ) ≤ C4λϵ2p2 .
+
+B.3.3 Proof of Lemma 15 
+
+Proof. We first prove parts (i) and (ii). Splitting {W (t) > z } according to whether E2,t holds gives 
+
+P(W (t) > z ) ≤ P(Ec2,t )
+
+︸ ︷︷ ︸
+
+> I1
+
++ P(W (t) > z, E2,t )
+
+︸ ︷︷ ︸
+
+> I2
+
+. (41) We bound I1 and I2 in turn. The term I1 is the probability that either no empty round occurs in [ t1, t 2], or E1,i fails or 
+
+wi > ϵp/ 4 at some i ∈ [t1, t ]. We bound these two probabilities separately. The union bound gives 
+
+I1 ≤ P(Q(j) > 0 for all j ∈ [t1, t 2]) + 
+
+> t
+
+∑
+
+> i=t1
+
+P(Ec1,i or wi > ϵp/ 4) .
+
+For the first term, 
+
+P(Q(j) > 0 for all j ∈ [t1, t 2]) = EU0 [P(Q(j) > 0 for all j ∈ [t1, t 2] | U0)] ≤ C4
+
+ϵ2p2t2 .
+
+The equality follows from the tower rule. The inequality follows from Lemma 12-(i) with t3 ← t2,since t1 = t2 − ℓ0,t and t2 ∈ [t/ 3, t ]. For the sum, Lemma 14 bounds P(wi > ϵp/ 4) in terms of the probability that the selected job arrived before i − ℓ0,i . Such a job must remain in the queue throughout [ i − ℓ0,i , i ], so this last probability is bounded by Lemma 12-(i). We first check that these 30 lemmas apply. By (13), t1 ≥ 3t/ 4. Choose the absolute constant in that condition large enough to apply Lemmas 12 and 14 at every i ∈ [t1, t ], with 2 ≤ ℓ0,i ≤ i/ 8. We obtain 
+
+P(Ec1,i or wi > ϵp/ 4) 
+
+≤ P(Ec1,i ) + P(wi > ϵp/ 4) 
+
+≤ C4(i + 1) −2 + C4ℓ0,i dβ 2 
+
+> i
+
+log 2 ii
+
+( 1
+
+ϵ3p2 + λ
+
+(ϵp )4
+
+)
+
++ P(Q(j) > 0 for all j ∈ [i − ℓ0,i , i ]) 
+
+≤ C4
+
+ϵ2p2i2 + C4(dβ 2 
+
+> i
+
+)2 log 3 i
+
+(ϵp )3i
+
+( 1
+
+ϵ3p2 + λ
+
+(ϵp )4
+
+)
+
+≤ C4(ϵp 2 + λ)( dβ 2 
+
+> i
+
+)2 log 3 i
+
+(ϵp )7i . (42) The second inequality follows from Lemma 9-(i), averaged over U0 with τmi > i/ 2, and Lemma 14 with t ← i, r = ϵp/ 4, and ℓ = ℓ0,i . The third inequality follows from Lemma 12-(i) with ( t, t 3) ← (i, i ), averaged over U0, and ℓ0,i ≤ C4dβ 2 
+
+> i
+
+log i/ (ϵp )3. The last uses ϵp 2 + λ ≥ (ϵp )2, dβ 2 
+
+> i
+
+≥ 1, and log i ≥ 1. Substituting (42) into the sum gives 
+
+I1 ≤ C4
+
+ϵ2p2t2 +
+
+> t
+
+∑
+
+> i=t1
+
+C4(ϵp 2 + λ)( dβ 2 
+
+> i
+
+)2 log 3 i
+
+(ϵp )7i
+
+≤ C4
+
+ϵ2p2t2 + C4(ℓ0,t + ℓ1,t + 1)( ϵp 2 + λ)( dβ 2 
+
+> t
+
+)2 log 3 t
+
+(ϵp )7t
+
+≤ C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t . (43) The second inequality follows from i ≥ t1 ≥ 3t/ 4, βi ≤ βt, and t − t1 + 1 = ℓ0,t + ℓ1,t + 1. The last uses ℓ0,t + ℓ1,t + 1 ≤ C4dβ 2 
+
+> t
+
+log t/ (ϵp )3 and ϵp 2 + λ ≥ (ϵp )2.This proves part (i). We next bound I2 for part (ii). On E2,t , there is an empty round j ∈ [t1, t 2], so W (j) = 0. Starting from this round, we use negative workload drift on subsequent nonempty rounds to bound the probability that W (t) > z . We first obtain a bound for every t3 ∈ [t2, t ], since part (iii) also uses the workload at t3 = t − ℓ. To average over the possible choices of j, we use the first empty round in [ t1, t 2]. For j ∈ [t1, t 2], define 
+
+E3,j = {Q(j) = 0 , Q (i) > 0 for all i ∈ [t1, j − 1] }.
+
+These events are disjoint, so ∑t2 
+
+> j=t1
+
+P(E3,j ) ≤ 1. We will obtain the same conditional probability bound for every j and use this inequality when averaging over the first empty round. On nonempty rounds, the negative drift requires E1,i and wi ≤ ϵp/ 4. Define the first round at which one of these conditions fails by 
+
+τf,j = inf {i ≥ j : Ec1,i occurs or wi > ϵp/ 4}.
+
+31 For every t3 ∈ [t2, t ], we have 
+
+P(W (t3) > z, E2,t ) = 
+
+> t2
+
+∑
+
+> j=t1
+
+P(W (t3) > z, E2,t , E3,j )
+
+≤
+
+> t2
+
+∑
+
+> j=t1
+
+P(W (t3) > z, τ f,j > t 3, E3,j )=
+
+> t2
+
+∑
+
+> j=t1
+
+E[1 {E 3,j }P(W (t3) > z, τ f,j > t 3 | F j )] . (44) The first equality follows because the events E3,j are disjoint and their union contains E2,t . The inequality follows from E2,t ∩ E 3,j ⊆ { τf,j > t 3}. The last equality follows from the tower rule and 
+
+E3,j ∈ F j .Fix j ∈ [t1, t 2]. To bound the conditional probability in (44), set Zi = eϵpW (i)/21 {τf,j > i } for 
+
+i ≥ j. On {Q(j) = 0 }, we will show that 
+
+E[Zt3 | F j ] ≤ C4
+
+ϵ2p2 for every t3 ∈ [t2, t ],
+
+and then apply Markov’s inequality. Since Zi = 0 for i ≥ τf,j , it suffices to consider rounds before 
+
+τf,j . We first bound E[Zi+1 | F i] separately for W (i) > 0 and W (i) = 0. On {W (i) > 0, τ f,j > i },Lemma 11-(i) and Lemma 9-(ii) give 
+
+E[∆ W (i) | F i] ≤ − ϵp + gi ≤ − ϵp + 2 wi ≤ − ϵp/ 2. (45) We subtract the conditional mean of ∆ W (i) to apply Hoeffding’s lemma. We have 
+
+E[eϵp ∆W (i)/2 | F i]= e(ϵp/ 2) E[∆ W (i)|F i]E
+
+[
+
+e(ϵp/ 2)(∆ W (i)−E[∆ W (i)|F i]) ∣∣∣ Fi
+
+]
+
+≤ e(ϵp/ 2) E[∆ W (i)|F i]eϵ2p2/8
+
+≤ e−ϵ2p2/4+ ϵ2p2/8 = e−ϵ2p2/8. (46) The first inequality follows from Hoeffding’s lemma (Lemma 22) with z = ϵp/ 2 and −1 ≤ ∆W (i) ≤ 1. The second inequality follows from (45). On {W (i) = 0 }, we have W (i + 1) ≤ 1. Hence 
+
+E[Zi+1 | F i] ≤ 1 {τf,j > i }E[eϵpW (i+1) /2 | F i]
+
+≤ e−ϵ2p2/8Zi1 {W (i) > 0} + eϵp/ 21 {τf,j > i, W (i) = 0 }≤ e−ϵ2p2/8Zi + eϵp/ 2.
+
+The first inequality follows from {τf,j > i + 1 } ⊆ { τf,j > i } ∈ F i. The second inequality follows from (46) on {W (i) > 0} and W (i + 1) ≤ 1 on {W (i) = 0 }. Taking conditional expectations given Fj
+
+gives, for i ≥ j,
+
+E[Zi+1 | F j ] = E[E[Zi+1 | F i] | F j ]
+
+≤ e−ϵ2p2/8E[Zi | F j ] + eϵp/ 2.
+
+32 The equality follows from the tower rule. By induction on t3 − j, on {Q(j) = 0 } we obtain 
+
+E[Zt3 | F j ] ≤ e−ϵ2p2(t3−j)/8Zj + eϵp/ 2
+
+> t3−j−1
+
+∑
+
+> i=0
+
+e−ϵ2p2i/ 8
+
+≤ e−ϵ2p2(t3−j)/8 + eϵp/ 2
+
+> t3−j−1
+
+∑
+
+> i=0
+
+e−ϵ2p2i/ 8
+
+≤ 1 + eϵp/ 2
+
+1 − e−ϵ2p2/8 ≤ C4
+
+ϵ2p2 .
+
+The second inequality follows from Zj ≤ 1 on {Q(j) = 0 }. The last inequality uses 1 −e−z ≥ z/ (1+ z)and 0 < ϵp ≤ 1. On {Q(j) = 0 },
+
+P(W (t3) > z, τ f,j > t 3 | F j ) = P(Zt3 > e ϵpz/ 2 | F j )
+
+≤ e−ϵpz/ 2E[Zt3 | F j ]
+
+≤ C4
+
+ϵ2p2 e−ϵpz/ 2, (47) where the first inequality follows from Markov’s inequality. Substituting (47) into (44) gives, for every t3 ∈ [t2, t ], 
+
+P(W (t3) > z, E2,t ) ≤ C4
+
+ϵ2p2 e−ϵpz/ 2
+
+> t2
+
+∑
+
+> j=t1
+
+P(E3,j )
+
+≤ C4
+
+ϵ2p2 e−ϵpz/ 2. (48) The last inequality follows because the events E3,j are disjoint. Taking t3 = t in (48) bounds I2.Substituting this bound and (43) into (41) proves part (ii). We next prove part (iii). If the job selected at t arrived before t − ℓ, it is present throughout [t − ℓ, t ], so the queue cannot be empty in this interval. We separate the cases W (t − ℓ) > ϵp ℓ/ 4and W (t − ℓ) ≤ ϵp ℓ/ 4. We bound P(W (t − ℓ) > ϵp ℓ/ 4, E2,t ) by (48). In the second case, on E2,t , the conditional mean increments over this nonempty interval sum to at most −ϵp ℓ/ 2. For the workload to remain nonnegative, the sum of ∆ W (i) − E[∆ W (i) | F i] must therefore be at least ϵp ℓ/ 4. We bound this probability by the Azuma-Hoeffding inequality. Indeed, for 2 ≤ ℓ ≤ ℓ1,t , on E2,t with the job selected at t arriving before t − ℓ and W (t − ℓ) ≤ ϵp ℓ/ 4, (45) gives 
+
+> t−1
+
+∑
+
+> i=t−ℓ
+
+(∆ W (i) − E[∆ W (i) | F i]) = W (t) − W (t − ℓ) −
+
+> t−1
+
+∑
+
+> i=t−ℓ
+
+E[∆ W (i) | F i]
+
+≥ − ϵp ℓ/ 4 + ϵp ℓ/ 2 = ϵp ℓ/ 4.
+
+33 It follows that 
+
+P(E2,t , the job selected at t arrived before t − ℓ)
+
+≤ P(W (t − ℓ) > ϵp ℓ/ 4, E2,t )+ P
+
+
+
+> t−1
+
+∑
+
+> i=t−ℓ
+
+(∆ W (i) − E[∆ W (i) | F i]) ≥ ϵp ℓ/ 4
+
+
+
+≤ C4
+
+ϵ2p2 e−ϵ2p2ℓ/ 8 + e−ϵ2p2ℓ/ 128 ≤ C4
+
+ϵ2p2 e−ℓ/C 3 , (49) where the second inequality follows from (48) with t − ℓ ∈ [t2, t ] and the Azuma-Hoeffding inequality (Lemma 23). The last inequality uses C3 = 128 /(ϵp )2. In particular, taking ℓ = ℓ1,t = ⌈C3 log t⌉
+
+bounds (49) by C4/(ϵ2p2t). Finally, we prove part (iv). We obtain the factor λ by using the arrival immediately after the last empty round. On {Q(t) > 0} ∩ E 2,t , let j = max {i ∈ [t1, t − 1] : Q(i) = 0 }. Then A(j) = 1 and 
+
+Q(i) > 0 for every i ∈ [j + 1 , t ]. We will bound the probability of remaining nonempty from j + 1 to 
+
+t by an exponential function of t − j and sum over j. We have 
+
+P(Q(t) > 0, E2,t )
+
+≤
+
+> t−1
+
+∑
+
+> j=t1
+
+P(Q(j) = 0 , A (j) = 1 , Q (i) > 0 for all i ∈ [j + 1 , t ], E2,t 
+
+)
+
+=
+
+> t−1
+
+∑
+
+> j=t1
+
+E[1 {Q(j) = 0 , A (j) = 1 }P(E2,t , Q (i) > 0 for all i ∈ [j + 1 , t ] | F j+1 
+
+)] . (50) The equality follows from the tower rule and {Q(j) = 0 , A (j) = 1 } ∈ F j+1 .Fix j ∈ [t1, t − 1]. On {Q(j) = 0 , A (j) = 1 }, we have W (j + 1) ≤ 1. We bound the conditional probability in (50) by 2 e−ϵ2p2(t−j)/128 . As in part (iii), remaining nonempty forces the sum of ∆ W (i) − E[∆ W (i) | F i] to be large enough to offset the negative drift. We first consider 
+
+t − j ≥ 1 + 4 /(ϵp ). If Q(i) > 0 for every i ∈ [j + 1 , t ] and E2,t holds, then 
+
+> t−1
+
+∑
+
+> i=j+1
+
+(∆ W (i) − E[∆ W (i) | F i]) = W (t) − W (j + 1) −
+
+> t−1
+
+∑
+
+> i=j+1
+
+E[∆ W (i) | F i]
+
+≥ − 1 + ϵp (t − j − 1) /2 ≥ ϵp (t − j − 1) /4.
+
+The first inequality follows from W (t) ≥ 0, W (j + 1) ≤ 1, and (45). The second follows from 
+
+t − j − 1 ≥ 4/(ϵp ). Consequently, on {Q(j) = 0 , A (j) = 1 },
+
+P(E2,t , Q (i) > 0 for all i ∈ [j + 1 , t ] | F j+1 
+
+)
+
+≤ P
+
+
+
+> t−1
+
+∑
+
+> i=j+1
+
+(∆ W (i) − E[∆ W (i) | F i]) ≥ ϵp (t − j − 1) /4
+
+∣∣∣∣∣∣ Fj+1 
+
+
+
+≤ e−ϵ2p2(t−j−1) /128 
+
+≤ 2e−ϵ2p2(t−j)/128 .
+
+34 The second inequality follows from the Azuma-Hoeffding inequality (Lemma 23) and |∆W (i) −
+
+E[∆ W (i) | F i]| ≤ 2. The last uses eϵ2p2/128 ≤ 2. For t − j < 1 + 4 /(ϵp ), we instead bound the conditional probability by 1. Since 0 < ϵp ≤ 1, we have 
+
+P(E2,t , Q (i) > 0 for all i ∈ [j + 1 , t ] | F j+1 
+
+)
+
+≤ 1 ≤ 2e−ϵ2p2(t−j)/128 .
+
+Thus this bound holds for every j ∈ [t1, t − 1]. Substituting into (50) gives 
+
+P(Q(t) > 0, E2,t ) ≤ 2
+
+> t−1
+
+∑
+
+> j=t1
+
+e−ϵ2p2(t−j)/128 P(Q(j) = 0 , A (j) = 1) 
+
+≤ 2λ
+
+> t−1
+
+∑
+
+> j=t1
+
+e−ϵ2p2(t−j)/128 
+
+≤ 2λeϵ2p2/128 − 1
+
+≤ C4λϵ2p2 .
+
+The second inequality follows from P(Q(j) = 0 , A (j) = 1) = λP(Q(j) = 0) ≤ λ, since A(j) is independent of Fj . The last inequality uses ez − 1 ≥ z.
+
+B.4 Proof of Lemma 5 
+
+Proof. Suppose t satisfies (13) and 
+
+t ≥ C4ϵ(ϵp 2 + λ)2(dβ 2 
+
+> t
+
+)5 log 6 tλ(ϵp )16 log( e/λ ) . (51) Let E2,t be defined in Lemma 15. Since 0 ≤ gt ≤ 1, we have 
+
+E[gt] = E[gt1 {E 2,t }] + E[gt1
+
+{
+
+Ec2,t 
+
+}
+
+]
+
+≤
+
+∫ 10
+
+P(gt > z, E2,t ) dz 
+
+︸ ︷︷ ︸
+
+> I1
+
++ P(Ec2,t )
+
+︸ ︷︷ ︸
+
+> I2
+
+. (52) We first bound I2 by Lemma 15-(i), 
+
+I2 ≤ C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t .
+
+To bound I1, we use two bounds on P(gt > z, E2,t ). For large z, we combine Lemma 14 with Lemma 15-(iii). For small z, we use Lemma 15-(iv) to obtain a bound independent of z. We then choose where to split the integral to balance the two contributions. We first obtain the bound for large z. We distinguish whether the job selected at t arrived at or after t − ℓ, or before t − ℓ. Applying Lemma 14 with r = z/ 2 leaves the probability of the second 35 case on E2,t as a separate term. We bound this probability using Lemma 15-(iii). For 0 < z ≤ 1 and 2 ≤ ℓ ≤ ℓ1,t ≤ t/ 8, we have 
+
+P(gt > z, E2,t ) ≤ P(wt > z/ 2, E2,t )
+
+≤ C4ℓ dβ 2 
+
+> t
+
+log 2 tt
+
+( 4
+
+ϵz 2 + λ
+
+(ϵp )4
+
+)
+
++ P(E2,t , the job selected at t arrived before t − ℓ)
+
+≤ C4ℓ dβ 2 
+
+> t
+
+log 2 tt
+
+( 4
+
+ϵz 2 + λ
+
+(ϵp )4
+
+)
+
++ C4
+
+ϵ2p2 e−ℓ/C 3 . (53) The first inequality follows from Lemma 9-(ii) on E2,t , the second from Lemma 14 with r = z/ 2, and the last from Lemma 15-(iii). The first term in the last line of (53) increases linearly with 
+
+ℓ. The last term bounds the probability that the selected job arrived before t − ℓ and decreases exponentially with ℓ. We choose ℓ as a function of z to control both terms. For this choice, write the term containing z−2 as 4C4ℓ dβ 2 
+
+> t
+
+log 2 tϵtz 2 = 4C4ℓa t
+
+z2 , at = dβ 2 
+
+> t
+
+log 2 tϵt .
+
+We choose ℓ so that e−ℓ/C 3 ≤ at/z 2. This bounds the exponential term in (53) by a multiple of 
+
+at/z 2, without taking ℓ larger than needed. If z < √at, then at/z 2 > 1, so the term 4 C4ℓa t/z 2
+
+already exceeds 1. We therefore use this bound for √at ≤ z ≤ 1, where log( z2/a t) ≥ 0, and set 
+
+ℓ = max {2, ⌈C3 log( z2/a t)⌉} .
+
+Since at ≥ 1/t and ℓ1,t = ⌈C3 log t⌉, we have 2 ≤ ℓ ≤ ℓ1,t and 
+
+ℓ ≤ 2 + C3 log( z2/a t), e−ℓ/C 3 ≤ at/z 2.
+
+We use these inequalities for the terms containing z−2 and e−ℓ/C 3 , and ℓ ≤ ℓ1,t for the term containing 
+
+λ. Substituting into (53) with C3 = 128 /(ϵp )2 gives 
+
+P(gt > z, E2,t ) ≤ C4at
+
+ϵ2p2z2
+
+(1 + log( z2/a t)) + C4λdβ 2 
+
+> t
+
+log 3 t
+
+(ϵp )6t . (54) For small z, we instead use the fact that gt > z requires Q(t) > 0. This gives a bound proportional to λ that does not increase as z decreases. For every z > 0, 
+
+P(gt > z, E2,t ) = P(gt > z, Q (t) > 0, E2,t )
+
+≤ P(Q(t) > 0, E2,t ) ≤ C4λϵ2p2 . (55) The equality follows from gt = 0 when Q(t) = 0, and the last inequality follows from Lemma 15-(iv). 36 We now integrate (55) over (0 , z 0) and (54) over [ z0, 1]. We require √at ≤ z0 < 1 so that (54) applies throughout [ z0, 1]. We have 
+
+I1 =
+
+∫ z0
+
+> 0
+
+P(gt > z, E2,t ) dz +
+
+∫ 1
+
+> z0
+
+P(gt > z, E2,t ) dz 
+
+≤
+
+∫ z0
+
+> 0
+
+C4λϵ2p2 dz +
+
+∫ 1
+
+> z0
+
+[ C4at(1 + log( z2/a t)) 
+
+ϵ2p2z2 + C4λdβ 2 
+
+> t
+
+log 3 t
+
+(ϵp )6t
+
+]
+
+dz 
+
+= C4λz 0
+
+ϵ2p2 + C4at
+
+ϵ2p2
+
+∫ 1
+
+> z0
+
+1 + log( z2/a t)
+
+z2 dz + C4λdβ 2 
+
+> t
+
+log 3 t
+
+(ϵp )6t (1 − z0)
+
+≤ C4λz 0
+
+ϵ2p2 + C4at
+
+ϵ2p2
+
+∫ ∞
+
+> z0
+
+1 + log( z2/a t)
+
+z2 dz + C4λdβ 2 
+
+> t
+
+log 3 t
+
+(ϵp )6t
+
+= C4
+
+ϵ2p2
+
+[
+
+λz 0 + at
+
+z0
+
+(3 + log( z20 /a t))]
+
++ C4λdβ 2 
+
+> t
+
+log 3 t
+
+(ϵp )6t . (56) The second equality integrates the terms that do not depend on z over intervals of lengths z0 and 1 − z0. For the last equality, 
+
+∫ ∞
+
+> z0
+
+1 + log( z2/a t)
+
+z2 dz =
+
+[
+
+− 3 + log( z2/a t)
+
+z
+
+]∞
+
+> z0
+
+= 3 + log( z20 /a t)
+
+z0
+
+.
+
+We now choose z0 in (56). The term λz 0 comes from the integral over (0 , z 0). The term 
+
+at(3 + log( z20 /a t)) /z 0 bounds the integral over [ z0, 1]. Increasing z0 increases the first term and decreases the second. To bound both terms by the same order, choose 
+
+λz 0 = at log( e/λ )
+
+z0
+
+, z0 =
+
+√
+
+at log( e/λ )/λ. 
+
+This choice satisfies z0 ≥ √at and, by (51), z0 < 1. The factor log( e/λ ) also bounds 3 + log( z20 /a t)up to a numerical constant, since 3 + log( z20 /a t) = 2 + log log( e/λ ) + log( e/λ ) ≤ 3 log( e/λ ).
+
+Consequently, 
+
+λz 0 + at
+
+z0
+
+(3 + log( z20 /a t)) ≤ λz 0 + 3at log( e/λ )
+
+z0
+
+= 4 
+
+√
+
+λa t log( e/λ ).
+
+Substituting into (56) gives 
+
+I1 ≤ C4
+
+ϵ2p2
+
+√
+
+λa t log( e/λ ) + C4λdβ 2 
+
+> t
+
+log 3 t
+
+(ϵp )6t .
+
+Substituting the bounds on I1 and I2 into (52) gives 
+
+E[gt] ≤ C4βt log tϵ5/2p2
+
+√
+
+λd log( e/λ )/t + C4λdβ 2 
+
+> t
+
+log 3 t
+
+(ϵp )6t + C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t
+
+≤ C4βt log tϵ5/2p2
+
+√
+
+λd log( e/λ )/t + C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t . (57) 37 The first inequality uses the definition of at. The second follows from ϵp ≤ 1, dβ 2 
+
+> t
+
+≥ 1, and log t ≥ 1. It remains to bound the second term in (57) by the first. The condition (51) gives (ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t ≤ βt log tϵ5/2p2
+
+√
+
+λd log( e/λ )/t. 
+
+Thus (57) proves Lemma 5 after increasing the absolute constant. 
+
+B.5 Proof of Lemma 17 
+
+We relate the departure rate gaps to Rt by comparing policies whose decision rules differ at only one round. For each round, this separates the probability that only the oracle completes a job from the probability that the resulting queue length difference remains at t. For i = 0 , . . . , t − 1, let πi follow the learner through round i and the oracle afterwards. Then Qπ0 (t) = Q∗(t) and 
+
+Qπt−1 (t) = Q(t). We compare πi with πi−1, whose decision rules differ only at round i. All queues start empty and share arrivals, contexts, algorithmic randomization, and independent service variables Uj ∼ Unif(0 , 1). A service attempt with probability p succeeds if Uj ≤ p. The oracle orders jobs by decreasing p∗(x) and breaks ties by arrival time. Repeated contexts correspond to distinct jobs. At the beginning of round i, we have X πi 
+
+> i
+
+= X πi−1 
+
+> i
+
+= Xi. Write pi = p(xi, k i) and p∗ 
+
+> i
+
+= p(x∗ 
+
+> i
+
+, k ∗ 
+
+> i
+
+), with both zero when Q(i) = 0. Then gi = p∗ 
+
+> i
+
+− pi. Define 
+
+qi,t = P(Qπi (t) − Qπi−1 (t) = 1 | F i, p i < U i ≤ p∗
+
+> i
+
+) if gi > 0, qi,t = 0 if gi = 0 .
+
+The event pi < U i ≤ p∗ 
+
+> i
+
+has conditional probability gi given Fi. On this event, πi−1 completes a job and πi does not, so Qπi (i + 1) − Qπi−1 (i + 1) = 1. The quantity qi,t is the conditional probability that this queue length difference is still 1 at round t. The following lemma bounds Rt by summing 
+
+E[giqi,t ] over these comparisons. 
+
+Lemma 16 (Bae et al. 2026a, Appendices B.1-B.2) . For every 1 ≤ i < t and j ≥ i + 1, Qπi (j) −
+
+Qπi−1 (j) ∈ {− 1, 0, 1}. This difference is nonpositive unless pi < U i ≤ p∗ 
+
+> i
+
+. On that event, 
+
+X πi−1 
+
+> j
+
+⊆ X πi 
+
+> j
+
+, Qπi (j) = 0 =⇒ X πi 
+
+> j′
+
+= X πi−1 
+
+> j′
+
+for every j′ ≥ j. 
+
+Consequently, 
+
+Rt =
+
+> t−1
+
+∑
+
+> i=1
+
+E[Qπi (t) − Qπi−1 (t)] ≤
+
+> t−1
+
+∑
+
+> i=1
+
+E[giqi,t ].
+
+The cited coupling uses the service probabilities and the common priority order. It therefore applies under Assumptions 1 and 2 without a covariance lower bound or context-wise slack. For the last inequality, we have 
+
+E[Qπi (t) − Qπi−1 (t) | F i]
+
+≤ P(Qπi (t) − Qπi−1 (t) = 1 , p i < U i ≤ p∗ 
+
+> i
+
+| F i
+
+)
+
+= ( p∗ 
+
+> i
+
+− pi)qi,t = giqi,t .
+
+The equality follows from the definition of qi,t and P(pi < U i ≤ p∗ 
+
+> i
+
+| F i) = p∗ 
+
+> i
+
+− pi. Taking expectations and summing over i gives the result. The next lemma bounds qi,t using W (i) and t − i, so that contributions from early rounds can be small even when gi is large. 38 Lemma 17. For every 1 ≤ i < t ,
+
+qi,t ≤ 1
+
+{
+
+W (i) + 1 > ϵp (t − i)/32 
+
+}
+
++ e−ϵ2p2(t−i)/128 .
+
+Proof. If gi = 0, the result follows from qi,t = 0. Set ℓ = t − i. Since qi,t ≤ 1, it suffices to consider 
+
+W (i) + 1 ≤ ϵpℓ/ 32. Condition on Fi and pi < U i ≤ p∗ 
+
+> i
+
+. By Lemma 16, X πi−1 
+
+> j
+
+⊆ X πi 
+
+> j
+
+for j ≥ i + 1. If 
+
+Qπi (j) = 0 for some j ∈ [i + 1 , t ], both queues are empty at j. They then use the same oracle rule, arrivals, and service variables, so Qπi (t) = Qπi−1 (t). Therefore, the difference in the definition of qi,t 
+
+can be 1 only if Qπi (j) > 0 for every j ∈ [i + 1 , t ]. We bound this probability using the negative workload drift under the oracle. Define 
+
+W πi (j) = p ∑ 
+
+> x∈X πij
+
+1/p ∗(x), τ = inf {j ≥ i + 1 : W πi (j) = 0 }.
+
+On {pi < U i ≤ p∗ 
+
+> i
+
+}, service fails at round i and an arrival adds at most one unit of workload, so 0 < W πi (i + 1) ≤ W (i) + 1. It follows that {Qπi (t) − Qπi−1 (t) = 1 } ⊆ { τ > t }, and 
+
+qi,t ≤ P(τ > t | F i, p i < U i ≤ p∗ 
+
+> i
+
+). (58) Let F+ 
+
+> j
+
+contain the coupled history before service at j. For j ≥ i + 1, policy πi serves each chosen job x on a best server. On {j < τ },
+
+E[W πi (j + 1) − W πi (j) | F + 
+
+> j
+
+] = λp EX∼D [1 /p ∗(X)] − p∗(x)p/p ∗(x) = −ϵp, (59) where the last equality follows from Assumption 2. Also, |W πi (j + 1) − W πi (j)| ≤ 1. On {τ > t }, the conditional means in (59) sum to −ϵp (ℓ − 1). The initial workload is at most 
+
+W (i) + 1 ≤ ϵpℓ/ 32. We will show that remaining nonempty until t therefore requires the sum of the mean-zero workload increments to exceed ϵpℓ/ 4, and bound this probability by the Azuma-Hoeffding inequality. We write, on {τ > t },
+
+W πi (t) = W πi (i + 1) − ϵp (ℓ − 1) + Mt,
+
+where 
+
+Mj =
+
+> j−1
+
+∑
+
+> j′=i+1
+
+1 {j′ < τ }( W πi (j′ + 1) − W πi (j′) + ϵp ), i + 1 ≤ j ≤ t. 
+
+The indicator restricts the sum to j′ < τ , where (59) applies. Hence 
+
+E[Mj+1 − Mj | F + 
+
+> j
+
+] = 1 {j < τ }(E[W πi (j + 1) − W πi (j) | F + 
+
+> j
+
+] + ϵp ) = 0 .
+
+Hence Mj is a martingale with Mi+1 = 0 and |Mj+1 − Mj | ≤ 2. On {τ > t },
+
+Mt = W πi (t) − W πi (i + 1) + ϵp (ℓ − 1) 
+
+> −ϵpℓ/ 32 + ϵp (ℓ − 1) ≥ ϵpℓ/ 4,
+
+where the first inequality follows from W πi (t) > 0 and W πi (i + 1) ≤ W (i) + 1 ≤ ϵpℓ/ 32. Therefore, 
+
+P(τ > t | F +
+
+> i+1
+
+) ≤ P(Mt > ϵpℓ/ 4 | F +
+
+> i+1
+
+)
+
+≤ exp 
+
+(
+
+− ϵ2p2ℓ2
+
+128( ℓ − 1) 
+
+)
+
+≤ e−ϵ2p2ℓ/ 128 .
+
+39 The second inequality follows from the Azuma-Hoeffding inequality (Lemma 23) with ℓ−1 increments bounded by 2. Substituting into (58) gives 
+
+qi,t ≤ P(τ > t | F i, p i < U i ≤ p∗ 
+
+> i
+
+)= E
+
+[
+
+P(τ > t | F +
+
+> i+1
+
+)
+
+∣∣∣ Fi, p i < U i ≤ p∗
+
+> i
+
+]
+
+≤ e−ϵ2p2ℓ/ 128 ,
+
+where the equality follows from the tower rule. Combining this bound with qi,t ≤ 1 when W (i) + 1 >ϵpℓ/ 32 proves the lemma. 
+
+B.6 Proof of Theorem 6 
+
+Proof. Take t ≥ t0 ≥ 3, where t0 is chosen so that, for every t ≥ t0,
+
+t ≥ C4dβ 2 
+
+> t
+
+log t
+
+(ϵp )4 , t ≥ C4ϵ(ϵp 2 + λ)2(dβ 2 
+
+> t
+
+)7 log 6 tλ(ϵp )20 log( e/λ ) . (60) By (9), β2 
+
+> t
+
+= O(log t). Hence both conditions in (60) hold for all sufficiently large t, with t0
+
+polynomial in d, κ, S, λ −1, ϵ −1, p −1 up to logarithmic factors. By Lemma 16, 
+
+Rt ≤
+
+> t−1
+
+∑
+
+> i=1
+
+E[giqi,t ]=
+
+> τ1,t
+
+∑
+
+> i=1
+
+E[giqi,t ]
+
+︸ ︷︷ ︸
+
+> I1
+
++
+
+> τ2,t
+
+∑
+
+> i=τ1,t +1
+
+E[giqi,t ]
+
+︸ ︷︷ ︸
+
+> I2
+
++
+
+> t−1
+
+∑
+
+> i=τ2,t +1
+
+E[giqi,t ]
+
+︸ ︷︷ ︸
+
+> I3
+
+, (61) where 
+
+τ1,t = t − ⌈ 32( ℓ0,t + 1) /(ϵp )⌉, τ2,t = t − ℓ1,t − 1.
+
+The first condition in (60) ensures 1 ≤ τ1,t < τ 2,t < t , τ1,t ≥ t/ 2, and (13) at every i > ϵp t/ 96. The second ensures (51) at every i ≥ t/ 2. Since 0 ≤ gi, q i,t ≤ 1, we can bound E[giqi,t ] by either E[qi,t ]or E[gi]. We use Lemma 17 to bound E[qi,t ] in I1, I 2, and Lemma 5 to bound E[gi] in I3.For I1, since gi ≤ 1, Lemma 17 gives 
+
+I1 ≤
+
+> τ1,t
+
+∑
+
+> i=1
+
+P(W (i) + 1 > ϵp (t − i)/32) + 
+
+> τ1,t
+
+∑
+
+> i=1
+
+e−ϵ2p2(t−i)/128 . (62) We first bound the first sum in (62). For i ≤ ϵp t/ 96, we use W (i) ≤ Q(i) ≤ i − 1, which gives 
+
+W (i) + 1 ≤ i ≤ ϵp t/ 96 ≤ ϵp (t − i)/32 .
+
+Thus these indices contribute zero to the first sum in (62). For ϵp t/ 96 < i ≤ τ1,t , we use Lemma 12-(ii), which bounds P(W (i) > ℓ 0,i | U0). To apply this result, we compare ϵp (t − i)/32 with ℓ0,i + 1. 
+
+ℓ0,i + 1 ≤ ℓ0,t + 1 ≤ ϵp (t − τ1,t )/32 ≤ ϵp (t − i)/32 .
+
+40 The first inequality follows from the monotonicity of βi, and the second from the definition of τ1,t .Thus W (i) + 1 > ϵp (t − i)/32 implies W (i) > ℓ 0,i , and we obtain 
+
+> τ1,t
+
+∑
+
+> i=1
+
+P(W (i) + 1 > ϵp (t − i)/32) 
+
+≤ ∑
+
+> ϵp t/ 96 <i ≤τ1,t
+
+P(W (i) > ℓ 0,i )= ∑
+
+> ϵp t/ 96 <i ≤τ1,t
+
+EU0 [P(W (i) > ℓ 0,i | U0)] 
+
+≤ C4
+
+ϵ2p2
+
+∑
+
+> ϵp t/ 96 <i ≤τ1,t
+
+i−2 ≤ C4
+
+(ϵp )3t .
+
+The equality follows from the tower rule, and the last inequality uses ∑ 
+
+> i>ϵp t/ 96
+
+i−2 ≤ C4/(ϵp t ). We next bound the second sum in (62). For any 1 ≤ j ≤ t − ℓ1,t ,
+
+> j
+
+∑
+
+> i=1
+
+e−ϵ2p2(t−i)/128 = e−ϵ2p2(t−j)/128 
+
+> j−1
+
+∑
+
+> i=0
+
+e−ϵ2p2i/ 128 
+
+≤ e−ϵ2p2(t−j)/128 
+
+1 − e−ϵ2p2/128 
+
+≤ C4
+
+ϵ2p2 e−ϵ2p2ℓ1,t /128 ≤ C4
+
+ϵ2p2t . (63) The second inequality uses t − j ≥ ℓ1,t and 1 /(1 − e−ϵ2p2/128 ) ≤ C4/(ϵp )2. The last follows from 
+
+ℓ1,t ≥ 128 log t/ (ϵp )2. Applying (63) with j = τ1,t and substituting both bounds into (62) gives 
+
+I1 ≤ C4
+
+(ϵp )3t . (64) For I2, the threshold ϵp (t − i)/32 − 1 can be smaller than ℓ0,i , so the comparison used to apply Lemma 12-(ii) in I1 is no longer guaranteed. We instead use Lemma 15-(ii), which bounds 
+
+P(W (i) > z ) for every z ≥ 0. Every index in I2 satisfies i ≥ t/ 2 and ϵp (t − i)/32 − 1 ≥ 0. Taking 
+
+z = ϵp (t − i)/32 − 1 gives 
+
+P(W (i) + 1 > ϵp (t − i)/32) 
+
+≤ C4
+
+ϵ2p2 e−ϵp (ϵp (t−i)/32 −1) /2 + C4(ϵp 2 + λ)( dβ 2 
+
+> i
+
+)3 log 4 i
+
+(ϵp )10 i
+
+≤ C4
+
+ϵ2p2 e−ϵ2p2(t−i)/128 + C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t .
+
+The second inequality uses i−1 ≤ 2/t , βi ≤ βt, and eϵp/ 2 ≤ e1/2. To sum the second term, which does not depend on i, we use 
+
+τ2,t − τ1,t = ⌈32( ℓ0,t + 1) /(ϵp )⌉ − ℓ1,t − 1 ≤ 32( ℓ0,t + 1) 
+
+ϵp ≤ C4dβ 2 
+
+> t
+
+log t
+
+(ϵp )4 . (65) 41 The last inequality follows from (12). Since τ2,t = t − ℓ1,t − 1, (63) with j = τ2,t gives 
+
+> τ2,t
+
+∑
+
+> i=τ1,t +1
+
+e−ϵ2p2(t−i)/128 ≤
+
+> τ2,t
+
+∑
+
+> i=1
+
+e−ϵ2p2(t−i)/128 ≤ C4
+
+ϵ2p2t .
+
+Combining this bound with (65), we obtain 
+
+I2 ≤
+
+> τ2,t
+
+∑
+
+> i=τ1,t +1
+
+P(W (i) + 1 > ϵp (t − i)/32) + 
+
+> τ2,t
+
+∑
+
+> i=τ1,t +1
+
+e−ϵ2p2(t−i)/128 
+
+≤ C4
+
+ϵ2p2
+
+> τ2,t
+
+∑
+
+> i=τ1,t +1
+
+e−ϵ2p2(t−i)/128 + C4(τ2,t − τ1,t )( ϵp 2 + λ)( dβ 2 
+
+> t
+
+)3 log 4 t
+
+(ϵp )10 t
+
+≤ C4
+
+(ϵp )4t + C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)4 log 5 t
+
+(ϵp )14 t . (66) The first inequality follows from Lemma 17 and gi ≤ 1. For I3, the remaining t − i rounds can be too few for Qπi and Qπi−1 to become equal by t. We therefore use qi,t ≤ 1 and bound E[gi] by Lemma 5. There are only ℓ1,t indices in this interval. 
+
+I3 ≤
+
+> t−1
+
+∑
+
+> i=τ2,t +1
+
+E[gi]
+
+≤
+
+> t−1
+
+∑
+
+> i=τ2,t +1
+
+C4βi log iϵ5/2p2
+
+√
+
+λd log( e/λ )/i 
+
+≤ C4ℓ1,t βt log tϵ5/2p2
+
+√
+
+λd log( e/λ )/t 
+
+≤ C4βt log 2 tϵ9/2p4
+
+√
+
+λd log( e/λ )/t. (67) The third inequality uses i ≥ t/ 2, βi ≤ βt, and t − 1 − τ2,t = ℓ1,t . The last follows from ℓ1,t ≤
+
+C4 log t/ (ϵp )2. Substituting (64), (66), and (67) into (61) gives 
+
+Rt ≤ C4
+
+(ϵp )3t + C4
+
+(ϵp )4t + C4(ϵp 2 + λ)( dβ 2 
+
+> t
+
+)4 log 5 t
+
+(ϵp )14 t
+
++ C4βt log 2 tϵ9/2p4
+
+√
+
+λd log( e/λ )/t. (68) The first two terms are bounded by the third term, since 1(ϵp )3t ≤ 1(ϵp )4t ≤ (ϵp 2 + λ)( dβ 2 
+
+> t
+
+)4 log 5 t
+
+(ϵp )14 t ,
+
+where we use ϵp 2 + λ ≥ (ϵp )2, ϵp ≤ 1, and dβ 2 
+
+> t
+
+, log t ≥ 1. By the second condition in (60), (ϵp 2 + λ)( dβ 2 
+
+> t
+
+)4 log 5 t
+
+(ϵp )14 t ≤ βt log 2 tϵ9/2p4
+
+√
+
+λd log( e/λ )/t. 
+
+Substituting these bounds into (68) proves Theorem 6 with an absolute C1.42 C Proof of Theorem 7 
+
+Proof. Fix an algorithm π. We construct instances in which the best server is specified by a vector of signs. We will relate the departure rate gap to the number of incorrect coordinates in the chosen server’s sign vector. Let d0 = min {d − 1, ⌊log 2 K⌋} , p0 = μ(−1/4), and 
+
+η = min {1/8, √p0 d0/(2 √λt )}.
+
+There is one context x0. Index 2 d0 servers by sign vectors u = ( u1, . . . , u d0 ) ∈ {− 1, +1 }d0 and instances by v = ( v1, . . . , v d0 ) ∈ {− 1, +1 }d0 . Here ua and va are the ath coordinates of u and v,and ku denotes the server indexed by u. For coordinate vectors e0, . . . , ed0 ∈ Rd, define 
+
+ϕ(x0, k u) = 1
+
+√2
+
+e0 + 1
+
+√d0
+
+> d0
+
+∑
+
+> a=1
+
+uaea
+
+ , (69) 
+
+θv = √2
+
+−ηe0 + η
+
+√d0
+
+> d0
+
+∑
+
+> a=1
+
+vaea
+
+ . (70) If K > 2d0 , the remaining servers duplicate these servers and retain their sign vectors. Define the Hamming distance dH(u, v) = ∑d0 
+
+> a=1
+
+1 {ua̸ = va}, the number of coordinates at which the two sign vectors differ. Then 
+
+⟨ϕ(x0, k u), θv⟩ = −η + ηd0
+
+> d0
+
+∑
+
+> a=1
+
+uava = − 2ηd0
+
+dH(u, v),
+
+∥ϕ(x0, k u)∥22 = 1 , ∥θv∥22 = 4 η2 ≤ 1/16 , −1/4 ≤ ⟨ ϕ(x0, k u), θv⟩ ≤ 0.
+
+Thus u = v gives the best server, with service probability p∗(x0) = 1 /2, and every server has service probability at least p0. The restriction η ≤ 1/8 ensures the parameter bound above. The second bound on η will give a KL divergence of at most 1 /8 between the history distributions of instances differing in one coordinate. The instances satisfy Assumptions 1 and 2 with S = 1 /4 and normalized capacity slack ϵ = 1 − 2λ ≥ 1/2. Write νv for the instance defined by (70), and Pv, Ev for its probability and expectation. We first show that Rπt (νv) ≥ Ev[gt−1]. To isolate the service error at round t − 1, let π′ follow π
+
+through round t − 2 and use the best server in round t − 1. Couple the queues using the same arrivals and uniform random variables Ui ∼ Unif(0 , 1), independent across rounds and of arrivals. Under this coupling, Qπ′
+
+(t) ≥ Q∗(t). Also, π and π′ coincide through round t − 2, so Qπ(t − 1) = Qπ′
+
+(t − 1). Write pt−1 = 1 /2 − gt−1. Therefore, 
+
+Rπt (νv) = Ev[Qπ(t) − Q∗(t)] 
+
+≥ Ev[Qπ(t) − Qπ′
+
+(t)] = Ev[1 {Q(t − 1) > 0, p t−1 < U t−1 ≤ 1/2}]
+
+= Ev[gt−1]. (71) The last equality follows from P(Q(t − 1) > 0, p t−1 < U t−1 ≤ 1/2 | F t−1) = gt−1. To obtain an instance with large regret, we lower-bound the average over all 2 d0 instances. By (71), sup 
+
+> v
+
+Rπt (νv) ≥ 12d0
+
+∑
+
+> v
+
+Rπt (νv) ≥ 12d0
+
+∑
+
+> v
+
+Ev[gt−1].
+
+43 We bound this average by pairing instances that differ in one coordinate. The learner cannot choose the correct sign with high probability in both instances of each pair. We first bound the number of service observations available for distinguishing these instances. Let N (t − 2) = ∑t−2 
+
+> i=1
+
+1 {Q(i) > 0}.Then, 
+
+p0Ev[N (t − 2)] ≤ Ev
+
+[t−2∑
+
+> i=1
+
+D(i)
+
+]
+
+= Ev
+
+[t−2∑
+
+> i=1
+
+A(i)
+
+]
+
+− Ev[Q(t − 1)] ≤ λt, (72) where the first inequality follows from pi ≥ p0 on nonempty rounds, the equality uses Q(1) = 0, and the last inequality uses Q(t − 1) ≥ 0. For a ∈ [d0], let v(a) be v with coordinate a flipped. Let Pv 
+
+> t−2
+
+be the law of the history through service in round t − 2, including policy randomization but excluding A(t − 2). We will condition on 
+
+A(t − 2) = 1 to ensure that the queue is nonempty at the last decision. Independence of this arrival leaves Pv 
+
+> t−2
+
+unchanged under that conditioning. For z1, z 2 ∈ R, we have 
+
+DKL 
+
+(Bern( μ(z1)) ∥ Bern( μ(z2)) ) = log 1 + ez2
+
+1 + ez1 − μ(z1)( z2 − z1)=
+
+∫ z2
+
+> z1
+
+(μ(z) − μ(z1)) dz 
+
+≤ 14
+
+∫ max {z1,z 2}
+
+> min {z1,z 2}
+
+|z − z1| dz 
+
+= ( z1 − z2)2/8, (73) where the first equality follows from the Bernoulli relative entropy formula, the second uses  
+
+> ddz
+
+log(1 + ez ) = μ(z), and the inequality follows because μ is 1 /4-Lipschitz. For every server, 
+
+|⟨ ϕ(x0, k ), θv − θv(a)
+
+⟩| = 2 η/d 0. By Lemma 24, we have 
+
+DKL (Pv
+
+> t−2
+
+∥Pv(a) 
+
+> t−2
+
+)= Ev
+
+[t−2∑
+
+> i=1
+
+1 {Q(i) > 0}DKL 
+
+(
+
+Bern( μ(⟨ϕi, θv⟩)) 
+
+∥∥∥ Bern( μ(
+
+〈
+
+ϕi, θv(a) 〉
+
+)) 
+
+)]
+
+≤ Ev
+
+[t−2∑
+
+> i=1
+
+1 {Q(i) > 0} 18
+
+( 2ηd0
+
+)2]
+
+= η2
+
+2d20
+
+Ev[N (t − 2)] 
+
+≤ λtη 2
+
+2p0d20
+
+≤ 18 .
+
+The first equality follows because, given the same history, only the distribution of D(i) depends on 
+
+v. The first inequality follows from (73), the second follows from (72), and the last follows from 
+
+η ≤ √p0d0/(2 √λt ). Pinsker’s inequality (Lemma 25) therefore gives 
+
+∥∥∥Pv 
+
+> t−2
+
+− Pv(a)
+
+> t−2
+
+∥∥∥TV ≤
+
+√ 12 DKL (Pv
+
+> t−2
+
+∥Pv(a) 
+
+> t−2
+
+) ≤ 14 .
+
+On A(t − 2) = 1, we have Q(t − 1) > 0. Let ut−1 be the sign vector of the chosen server, with ath coordinate ut−1,a . To compare its distribution in the two instances, let Ht−2 denote the history with 44 law Pv
+
+> t−2
+
+, and define fa(h) = Pπ(ut−1,a = +1 | Ht−2 = h, A (t − 2) = 1). Here the probability is over the algorithm’s randomization after observing the history h and the arrival. The same algorithm is used in both instances, so fa is the same function in both and 0 ≤ fa(h) ≤ 1. Since A(t − 2) is independent of Ht−2, the tower rule gives Pv(ut−1,a = +1 | A(t − 2) = 1) = Ev[fa(Ht−2)], and the same identity holds under v(a). The correct sign in coordinate a is opposite in the two instances. For va = +1, we have 
+
+Pv(ut−1,a ̸ = va | A(t − 2) = 1) + Pv(a)
+
+(ut−1,a ̸ = v(a) 
+
+> a
+
+| A(t − 2) = 1) = 1 − Pv(ut−1,a = +1 | A(t − 2) = 1) + Pv(a)
+
+(ut−1,a = +1 | A(t − 2) = 1) = 1 − Ev[fa(Ht−2)] + Ev(a)
+
+[fa(Ht−2)] 
+
+≥ 1 −
+
+∥∥∥Pv 
+
+> t−2
+
+− Pv(a)
+
+> t−2
+
+∥∥∥TV ≥ 3/4.
+
+The first inequality follows from Lemma 25 applied to fa, since 0 ≤ fa ≤ 1. Summing over the 2 d0−1
+
+pairs in each coordinate yields 12d0
+
+∑
+
+> v
+
+Ev[dH(ut−1, v) | A(t − 2) = 1] = 12d0
+
+> d0
+
+∑
+
+> a=1
+
+∑
+
+> v
+
+Pv(ut−1,a ̸ = va | A(t − 2) = 1) 
+
+≥ 12d0
+
+> d0
+
+∑
+
+> a=1
+
+2d0−1 · 34 = 3d0
+
+8 . (74) On A(t − 2) = 1, we have 
+
+gt−1 = p∗ 
+
+> t−1
+
+− pt−1 = 12 − μ(− 2ηd0
+
+dH(ut−1, v)) =
+
+∫ 0
+
+> −2ηd H(ut−1,v)/d 0
+
+˙μ(z) dz 
+
+≥
+
+∫ 0
+
+> −2ηd H(ut−1,v)/d 0
+
+˙μ(1 /4) dz 
+
+= 2 ˙ μ(1 /4) ηd0
+
+dH(ut−1, v),
+
+where the inequality follows from ˙ μ(z) ≥ ˙μ(1 /4) for −1/4 ≤ z ≤ 0. Thus 12d0
+
+∑
+
+> v
+
+Ev[gt−1] ≥ λ
+
+2d0
+
+∑
+
+> v
+
+Ev[gt−1 | A(t − 2) = 1] 
+
+≥ 2λ ˙μ(1 /4) ηd0
+
+· 12d0
+
+∑
+
+> v
+
+Ev[dH(ut−1, v) | A(t − 2) = 1] 
+
+≥ 3 ˙ μ(1 /4) 4 λη, (75) where the first inequality uses gt−1 ≥ 0 and P(A(t − 2) = 1) = λ, the second uses the preceding bound on gt−1, and the last follows from (74). Combining (71) and (75) and substituting the 45 definition of η gives sup 
+
+> v
+
+Rπt (νv) ≥ 12d0
+
+> ∑
+> v
+
+Rπt (νv)
+
+≥ 3 ˙ μ(1 /4) 4 λη 
+
+= 3 ˙ μ(1 /4) 4 min {λ/ 8, √p0 d0
+
+> √
+
+λ/t/ 2}.
+
+Since d − 1 ≥ d/ 2 and ⌊log 2 K⌋ ≥ log K/ 2, we have d0 ≥ min {d, log K}/2. Choosing a sufficiently large absolute constant C0 proves the theorem. 
+
+# D Proof of Theorem 8 
+
+We first prove two properties of the queue under the best server. They will allow us to add the effects of service errors over the last Θ( ϵ−2) rounds in the proof of Theorem 8. 
+
+Lemma 18. Let 0 < ϵ ≤ 1/8, λ = 1 /4, and p∗ = λ/ (1 − ϵ). Consider a queue with Bernoulli arrivals of mean λ and service probability p∗ on nonempty rounds. Arrivals and service outcomes are independent, with arrivals after service. Let 
+
+q0 = ⌈5/(8 ϵ)⌉ + 1 , t0 =
+
+> ⌈
+
+60 /ϵ 2⌉
+
+, ℓ =
+
+> ⌊
+
+1/(16 ϵ2)
+
+> ⌋
+
+.
+
+(i) If Q(1) = 0, then P(Q(i) ≥ q0) ≥ 1/20 for every i ≥ t0.(ii) If Q(1) ≥ q0 − 1, then P(Q(j) > 0 for every j ∈ [1 , ℓ + 1]) ≥ 1/2. 
+
+Proof. We first prove (i). Let ϖ be the stationary distribution, with probability mass function ϖ(q). If the initial queue length satisfies P(Q(1) = q) = ϖ(q) for every q ≥ 0, then P(Q(j) = q) = ϖ(q) at every round j. We write Q(1) ∼ ϖ for this initialization and call the resulting queue a stationary queue. Write Pq, Eq for probability and expectation when Q(1) = q, and Pϖ, Eϖ when Q(1) ∼ ϖ.Define τ0 = inf {j ≥ 1 : Q(j) = 0 }.Couple Q with Q(1) = 0 and Qϖ with Qϖ(1) ∼ ϖ, using the same arrivals A(j) and uniform random variables Uj ∼ Unif(0 , 1). Since Q(1) = 0 ≤ Qϖ(1), this coupling gives Q(j) ≤ Qϖ(j) for every j. Once Qϖ becomes zero, both queues are zero and agree thereafter. Thus the probability that they differ at round i is at most Pϖ(τ0 > i ), and 
+
+P0(Q(i) ≥ q0) ≥ Pϖ(Q(i) ≥ q0) − Pϖ(τ0 > i )= Pϖ(Q(1) ≥ q0)  
+
+> ︸︷︷ ︸
+> I1
+
+− Pϖ(τ0 > i )  
+
+> ︸︷︷ ︸
+> I2
+
+,
+
+where the last equality follows from stationarity. We show that I1 ≥ 1/10 and I2 ≤ 1/20 for i ≥ t0.To bound I1, we compute ϖ. For q ≥ 1, the transition probabilities from q to q − 1 and q + 1 are p∗(1 − λ) and (1 − p∗)λ, respectively. From q = 0, the probability of moving to q = 1 is λ. The balance equations between adjacent queue lengths are 
+
+ϖ(0) λ = ϖ(1) p∗(1 − λ),ϖ(q)(1 − p∗)λ = ϖ(q + 1) p∗(1 − λ), q ≥ 1.
+
+46 Together with ∑∞ 
+
+> q=0
+
+ϖ(q) = 1, these give 
+
+ϖ(0) = 1 − λ/p ∗ = ϵ, 
+
+Pϖ(Q(1) ≥ q) = (1 − ϵ)
+
+( (1 − p∗)λp∗(1 − λ)
+
+)q−1
+
+= (1 − ϵ)
+
+(
+
+1 − ϵ
+
+1 − λ
+
+)q−1
+
+, q ≥ 1. (76) Therefore, 
+
+I1 ≥ 78 exp 
+
+(
+
+− 2ϵ
+
+1 − λ
+
+( 58ϵ + 1 
+
+)) 
+
+≥ 78 e−2 > 110 ,
+
+where the first inequality follows from log(1 − z) ≥ − 2z for z ∈ [0 , 1/2], ϵ/ (1 − λ) ≤ 1/6, and 
+
+q0 − 1 ≤ 5/(8 ϵ) + 1. The second inequality follows from 2 ϵ(5 /(8 ϵ) + 1) /(1 − λ) = 5 /3 + 8 ϵ/ 3 ≤ 2. To bound I2, we bound Eϖ[τ0 − 1] and apply Markov’s inequality. We first show that Eq[τ0 − 1] ≤
+
+q/ (p∗ϵ) and then average over Q(1) ∼ ϖ. Before τ0, E[Q(i + 1) − Q(i) | F i] = λ − p∗ = −p∗ϵ. For every j ≥ 1, 
+
+Eq[Q(τ0 ∧ j)] = q +
+
+> j−1
+
+∑
+
+> i=1
+
+Eq[1 {i < τ 0}(Q(i + 1) − Q(i))] = q − p∗ϵ
+
+> j−1
+
+∑
+
+> i=1
+
+Pq(i < τ 0)= q − p∗ϵ Eq[( τ0 ∧ j) − 1] ,
+
+where the second equality follows by conditioning on Fi, and the last uses ∑j−1 
+
+> i=1
+
+1 {i < τ 0} =(τ0 ∧ j) − 1. Since Q(τ0 ∧ j) ≥ 0, we have Eq[( τ0 ∧ j) − 1] ≤ q/ (p∗ϵ). Letting j → ∞ gives 
+
+Eq[τ0 − 1] = lim  
+
+> j→∞
+
+Eq[( τ0 ∧ j) − 1] ≤ qp∗ϵ .
+
+By (76), 
+
+Eϖ[Q(1)] = 
+
+> ∞
+
+∑
+
+> q=1
+
+Pϖ(Q(1) ≥ q)= (1 − ϵ)
+
+> ∞
+
+∑
+
+> q=1
+
+(
+
+1 − ϵ
+
+1 − λ
+
+)q−1
+
+= (1 − λ)(1 − ϵ)
+
+ϵ .
+
+Conditioning on Q(1) and applying the bound for each q yields 
+
+Eϖ[τ0 − 1] = 
+
+> ∞
+
+∑
+
+> q=0
+
+ϖ(q)Eq[τ0 − 1] 
+
+≤ 1
+
+p∗ϵ
+
+> ∞
+
+∑
+
+> q=0
+
+qϖ (q)= Eϖ[Q(1)] 
+
+p∗ϵ = 3(1 − ϵ)2
+
+ϵ2 .
+
+47 For i ≥ t0, we have 
+
+I2 ≤ Eϖ[τ0 − 1] 
+
+i − 1 ≤ 3(1 − ϵ)2
+
+60 − ϵ2 ≤ 120 ,
+
+where the first inequality follows from Markov’s inequality, the second follows from i ≥ 60 /ϵ 2,and the last follows from 60(1 − ϵ)2 ≤ 60 − ϵ2. Combining the bounds for I1 and I2 gives 
+
+P0(Q(i) ≥ q0) ≥ I1 − I2 ≥ 1/20, proving (i). We next prove (ii). Suppose Q(1) ≥ q0 −1. Since {Q(j) > 0 for every j ∈ [1 , ℓ +1] } = {τ0 > ℓ +1 },it suffices to show that P(τ0 ≤ ℓ + 1) ≤ 1/2. Before τ0, E[Q(i + 1) − Q(i) | F i] = −p∗ϵ. Subtracting these conditional expectations from the increments up to τ0 gives 
+
+Mj =
+
+> j
+
+∑
+
+> i=1
+
+1 {i < τ 0}(Q(i + 1) − Q(i) + p∗ϵ), M0 = 0 .
+
+We have E[Mj − Mj−1 | F j ] = 0 and |Mj − Mj−1| ≤ 2. On {τ0 ≤ ℓ + 1 },
+
+Mℓ = Mτ0−1 = −Q(1) + p∗ϵ(τ0 − 1) ≤ − 58ϵ + 27 ϵ 116 ϵ2 = − 17 28 ϵ ,
+
+where the first equality follows from 1 {i < τ 0} = 0 for i ≥ τ0, the second follows from Q(τ0) = 0, and the inequality uses p∗ ≤ 2/7 and τ0 − 1 ≤ ℓ. Therefore, 
+
+P(τ0 ≤ ℓ + 1) = P
+
+(
+
+τ0 ≤ ℓ + 1 , M ℓ ≤ − 17 28 ϵ
+
+)
+
+≤ P
+
+(
+
+Mℓ − M0 ≤ − 17 28 ϵ
+
+)
+
+≤ exp 
+
+(
+
+− (17 /(28 ϵ)) 2
+
+8ℓ
+
+)
+
+< 1/2,
+
+where the first equality uses Mℓ ≤ − 17 /(28 ϵ) on {τ0 ≤ ℓ + 1 }. The second inequality follows from the Azuma-Hoeffding inequality (Lemma 23) with cj = 2 and z = 17 /(28 ϵ), and the last inequality uses ℓ ≤ 1/(16 ϵ2). Thus P(Q(j) > 0 for every j ∈ [1 , ℓ + 1]) ≥ 1/2. 
+
+Proof of Theorem 8. Fix an algorithm π. We use one context x0 and the features in (69), with 
+
+d0 = min {d − 1, ⌊log 2 K⌋} . If K > 2d0 , let the remaining servers duplicate these servers. Set 
+
+λ = 1 /4, p∗ = λ/ (1 − ϵ), z∗ = log( p∗/(1 − p∗)) , η = min {1/8, d 0/√t}/20 ,
+
+and define 
+
+θv = √2
+
+(z∗ − η)e0 + η
+
+√d0
+
+> d0
+
+∑
+
+> a=1
+
+vaea
+
+ , v ∈ {− 1, +1 }d0 .
+
+Then 
+
+⟨ϕ(x0, k u), θv⟩ = z∗ − 2ηd0
+
+dH(u, v), max  
+
+> k
+
+μ(⟨ϕ(x0, k ), θv⟩) = p∗. (77) Since p∗ ∈ [1 /4, 2/7], |z∗| ≤ log 3, and η ≤ 1/160, 
+
+∥θv∥22 = 2 ((z∗ − η)2 + η2) ≤ 2((log 3 + 1 /160) 2 + (1 /160) 2) < 4.
+
+48 The instances satisfy Assumptions 1 and 2 with S = 2 and normalized capacity slack 1 − λ/p ∗ = ϵ.Write νv for each instance and Pv, Ev for its probability and expectation. Let q0, t 0, ℓ be as in Lemma 18. We will sum the contributions from the last ℓ = Θ( ϵ−2) rounds. For i = 0 , . . . , t − 1, let πi follow π through round i and use the best server thereafter. Since 
+
+Qπ0 (t) = Q∗(t) and Qπt−1 (t) = Qπ(t), 
+
+Rπt (νv) = 
+
+> t−1
+
+∑
+
+> i=1
+
+Ev[Qπi (t) − Qπi−1 (t)] . (78) For i ∈ [t − ℓ, t − 1], we will show that 
+
+Ev[Qπi (t) − Qπi−1 (t)] ≥ 12 Ev[gi1 {Qπ(i) ≥ q0}].
+
+Write gi = p∗ − pi. Couple the queues using the same arrivals A(j) and uniform random variables 
+
+Uj ∼ Unif(0 , 1). In round i, both queues have length Qπ(i), but πi and πi−1 use service probabilities 
+
+pi and p∗, respectively. After round i, both queues use p∗. Under this coupling, Qπi (j) ≥ Qπi−1 (j)for j ≥ i + 1. Define Ei = {Qπ(i) ≥ q0, p i < U i ≤ p∗}. On Ei, service succeeds under πi−1 and fails under πi.Hence, 
+
+Qπi−1 (i + 1) = Qπ(i) − 1 + A(i) ≥ q0 − 1, Qπi (i + 1) = Qπi−1 (i + 1) + 1 .
+
+On Ei, if Qπi−1 (j) > 0 for every j ∈ [i + 1 , t ], then both queues have the same departures, so 
+
+Qπi (t) − Qπi−1 (t) = 1. Since this difference is nonnegative on every sample path, 
+
+Qπi (t) − Qπi−1 (t) ≥ 1 {E i}1 {Qπi−1 (j) > 0 for every j ∈ [i + 1 , t ]}.
+
+Since Qπi−1 (i + 1) ≥ q0 − 1 on Ei and t − i − 1 ≤ ℓ, Lemma 18-(ii) gives, on Ei,
+
+Pv(Qπi−1 (j) > 0 for every j ∈ [i + 1 , t ] | F i ∨ σ(Ui, A (i))) ≥ 1/2.
+
+Taking expectations and applying the tower rule gives 
+
+Ev[Qπi (t) − Qπi−1 (t)] 
+
+≥ Ev[1 {E i}1 {Qπi−1 (j) > 0 for every j ∈ [i + 1 , t ]}]= Ev[1 {E i}Pv(Qπi−1 (j) > 0 for every j ∈ [i + 1 , t ] | F i ∨ σ(Ui, A (i)))] 
+
+≥ 12 Pv(Ei) = 12 Ev[gi1 {Qπ(i) ≥ q0}],
+
+where the last equality follows from P(pi < U i ≤ p∗ | F i) = p∗ − pi = gi. Since Qπi (t) − Qπi−1 (t) ≥ 0for every i, (78) gives 
+
+Rπt (νv) ≥
+
+> t−1
+
+∑
+
+> i=t−ℓ
+
+Ev[Qπi (t) − Qπi−1 (t)] 
+
+≥ 12
+
+> t−1
+
+∑
+
+> i=t−ℓ
+
+Ev[gi1 {Qπ(i) ≥ q0}]. (79) 49 Averaging (79) over v gives sup 
+
+> v
+
+Rπt (νv) ≥ 12d0
+
+∑
+
+> v
+
+Rπt (νv)
+
+≥ 12
+
+> t−1
+
+∑
+
+> i=t−ℓ
+
+12d0
+
+∑
+
+> v
+
+Ev[gi1 {Qπ(i) ≥ q0}].
+
+Fix i ∈ [t − ℓ, t − 1]. We bound the inner sum by comparing instances that differ in one coordinate. Let ui be the sign vector of the chosen server ki, setting kj = 1 whenever Q(j) = 0. Let Pv 
+
+> i
+
+be the joint distribution of (( kj , D (j), A (j)) i−1
+
+> j=1
+
+, k i) under algorithm π in instance νv. For a ∈ [d0], let v(a)
+
+be v with coordinate a flipped. For va = +1, we have 
+
+Pv(Qπ(i) ≥ q0, u i,a ̸ = va) + Pv(a)
+
+(Qπ(i) ≥ q0, u i,a ̸ = v(a) 
+
+> a
+
+)= Pv(Qπ(i) ≥ q0) − Pv(Qπ(i) ≥ q0, u i,a = +1) + Pv(a)
+
+(Qπ(i) ≥ q0, u i,a = +1) 
+
+≥ Pv(Qπ(i) ≥ q0) −
+
+∥∥∥Pv 
+
+> i
+
+− Pv(a)
+
+> i
+
+∥∥∥TV . (80) The inequality follows from the definition of total variation applied to {Qπ(i) ≥ q0, u i,a = +1 }. We bound the first term on the right-hand side below by 1 /20 and the second term above by 1 /40. For the first term, t ≥ 64 /ϵ 2 gives t − ℓ ≥ (64 − 1/16) /ϵ 2 ≥ 60 /ϵ 2 + 1 ≥ t0. Since Qπ(i) ≥ Q∗(i), applying Lemma 18-(i) gives 
+
+Pv(Qπ(i) ≥ q0) ≥ Pv(Q∗(i) ≥ q0) ≥ 1/20 , i ≥ t0.
+
+For the second term, flipping coordinate a gives |⟨ ϕ(x0, k ), θv − θv(a)
+
+⟩| = 2 η/d 0. By the chain rule for relative entropy (Lemma 24), 
+
+DKL (Pv 
+
+> i
+
+∥Pv(a) 
+
+> i
+
+)= Ev
+
+
+
+> i−1
+
+∑
+
+> j=1
+
+1 {Q(j) > 0}DKL 
+
+(
+
+Bern( μ(⟨ϕj , θv⟩)) 
+
+∥∥∥ Bern( μ(
+
+〈
+
+ϕj , θv(a) 〉
+
+)) 
+
+)
+
+≤ Ev
+
+
+
+> i−1
+
+∑
+
+> j=1
+
+1 {Q(j) > 0} 18
+
+( 2ηd0
+
+)2
+
+
+
+≤ tη 2
+
+2d20
+
+≤ 1800 ,
+
+where the first inequality follows from (73), the second uses i ≤ t, and the last uses η ≤ d0/(20 √t). Pinsker’s inequality (Lemma 25) then gives 
+
+∥∥∥Pv 
+
+> i
+
+− Pv(a)
+
+> i
+
+∥∥∥TV ≤
+
+√ 12 DKL (Pv 
+
+> i
+
+∥Pv(a) 
+
+> i
+
+) ≤ 140 .
+
+Substituting both bounds into (80) gives 
+
+Pv(Qπ(i) ≥ q0, u i,a ̸ = va) + Pv(a)
+
+(Qπ(i) ≥ q0, u i,a ̸ = v(a) 
+
+> a
+
+) ≥ 120 − 140 = 140 .
+
+50 Summing over 2 d0−1 pairs per coordinate gives 12d0
+
+∑
+
+> v
+
+Ev[1 {Qπ(i) ≥ q0}dH(ui, v)] = 12d0
+
+> d0
+
+∑
+
+> a=1
+
+∑
+
+> v
+
+Pv(Qπ(i) ≥ q0, u i,a ̸ = va)
+
+≥ 12d0
+
+> d0
+
+∑
+
+> a=1
+
+2d0−1
+
+40 = d0
+
+80 . (81) On {Qπ(i) ≥ q0}, (77) gives 
+
+gi = p∗ − pi = μ(z∗) − μ(z∗ − 2ηd0
+
+dH(ui, v)) =
+
+∫ z∗
+
+> z∗−2ηd H(ui,v)/d 0
+
+˙μ(z) dz 
+
+≥ 2ηd0(2 + e2 + e−2) dH(ui, v),
+
+where the inequality follows from Assumption 1-2 with S = 2. Taking expectations and applying (81) gives 12d0
+
+∑
+
+> v
+
+Ev[gi1 {Qπ(i) ≥ q0}] ≥ 2ηd0(2 + e2 + e−2) · d0
+
+80 = η
+
+40(2 + e2 + e−2) . (82) Substituting (82) into (79) yields sup 
+
+> v
+
+Rπt (νv) ≥ 12
+
+> t−1
+
+∑
+
+> i=t−ℓ
+
+12d0
+
+∑
+
+> v
+
+Ev[gi1 {Qπ(i) ≥ q0}]
+
+≥ ℓη 
+
+80(2 + e2 + e−2)
+
+≥ 151200(2 + e2 + e−2) min {1/(8 ϵ2), d 0/(ϵ2√t)},
+
+where the last inequality uses ℓ ≥ 1/(32 ϵ2) and η = min {1/8, d 0/√t}/20. Since d0 ≥ min {d, log K}/2, choosing a sufficiently large absolute constant C0 proves the theorem. 
+
+# E Auxiliary Lemmas 
+
+Lemma 19 (Theorem 1, Abbasi-Yadkori et al. 2011) . Let {F i}i≥1 be a filtration, ϕi ∈ Rd be 
+
+Fi-measurable, and ηi be Fi+1 -measurable. Suppose that, for some σ > 0 and every z ∈ R,
+
+E[ezη i | F i] ≤ eσ2z2/2. For a fixed positive definite matrix V0, define Vt = V0 + ∑ti=1 ϕiϕ⊤ 
+
+> i
+
+. For every δ ∈ (0 , 1), with probability at least 1 − δ, simultaneously for all t ≥ 0, 
+
+∥∥∥∥∥
+
+> t
+
+∑
+
+> i=1
+
+ηiϕi
+
+∥∥∥∥∥
+
+> 2
+> V−1
+> t
+
+≤ σ2
+
+(
+
+log det Vt
+
+det V0
+
++ 2 log(1 /δ )
+
+)
+
+.
+
+51 Lemma 20. Under Assumption 1, let ̂ θt be the regularized maximum likelihood estimator in (8), and define 
+
+Gt =
+
+> t
+
+∑
+
+> i=1
+
+(D(i) − μ(⟨ϕi, θ∗⟩))ϕi.
+
+Then, for every t ≥ 0, we have 
+
+∥∥∥̂ θt − θ∗∥∥∥Vt ≤ κ∥Gt∥V−1
+
+> t
+
++ √κS. 
+
+Proof. Let ft be the objective in (8), and write ∆t =̂ θt − θ∗. For every θ ∈ B , we have 
+
+∇ft(θ) = θ +
+
+> t
+
+∑
+
+> i=1
+
+(μ(⟨ϕi, θ⟩) − D(i))ϕi,
+
+∇2ft(θ) = I +
+
+> t
+
+∑
+
+> i=1
+
+˙μ(⟨ϕi, θ⟩)ϕiϕ⊤ 
+
+> i
+
+⪰ Vt/κ, 
+
+where the inequality follows from Assumption 1. Since ̂ θt minimizes ft over B and θ∗ ∈ B ,
+
+⟨∆t, ∇ft(̂ θt)⟩ ≤ 0. Therefore, 
+
+∥∆t∥2 
+
+> Vt
+
+/κ ≤
+
+∫ 10
+
+∆⊤ 
+
+> t
+
+∇2ft(θ∗ + z∆t)∆t dz 
+
+=
+
+〈
+
+∆t, ∇ft(̂ θt) − ∇ ft(θ∗)
+
+〉
+
+≤ ⟨ ∆t, Gt − θ∗⟩≤ ∥ ∆t∥Vt
+
+(∥Gt∥V−1
+
+> t
+
++ ∥θ∗∥V−1
+
+> t
+
+)
+
+≤ ∥ ∆t∥Vt
+
+(∥Gt∥V−1
+
+> t
+
++ S/ √κ),
+
+where the first inequality follows from θ∗ + z∆t ∈ B for z ∈ [0 , 1] and ∇2ft(θ) ⪰ Vt/κ on B, the second inequality follows from ⟨∆t, ∇ft(̂ θt)⟩ ≤ 0 and ∇ft(θ∗) = θ∗ − Gt, the third inequality follows from Cauchy-Schwarz and the triangle inequality, and the last inequality follows from Vt ⪰ κI and 
+
+∥θ∗∥2 ≤ S. Dividing by ∥∆t∥Vt /κ gives the result when ∆t̸ = 0. The result is immediate when 
+
+∆t = 0. 
+
+Lemma 21 (Lemma 11, Abbasi-Yadkori et al. 2011) . Let V0 be positive definite and ϕ1, . . . , ϕt ∈ Rd.Define Vi = V0 + ∑ij=1 ϕj ϕ⊤ 
+
+> j
+
+. Then 
+
+> t
+
+∑
+
+> i=1
+
+min {1, ∥ϕi∥2
+
+> V−1
+> i−1
+
+} ≤ 2 log det Vt
+
+det V0
+
+.
+
+In particular, if V0 = κI, κ ≥ 1, and ∥ϕi∥2 ≤ 1 for every i, then 
+
+> t
+
+∑
+
+> i=1
+
+∥ϕi∥2
+
+> V−1
+> i−1
+
+≤ 2d log(1 + t/ (dκ )) .
+
+Lemma 22 (Hoeffding’s lemma) . Let Y be a random variable with a ≤ Y ≤ b almost surely, and let G be a sigma-field. For every z ∈ R,
+
+E
+
+[
+
+ez(Y −E[Y |G ]) | G 
+
+]
+
+≤ ez2(b−a)2/8.
+
+52 Lemma 23 (Azuma-Hoeffding inequality) . Let {F i}i≥1 be a filtration and ηi be Fi+1 -measurable with E[ηi | F i] = 0 and |ηi| ≤ ci, where ci > 0 are constants. For 1 ≤ t1 ≤ t2 and z ≥ 0, 
+
+P
+
+ max 
+
+> t1≤j≤t2
+> j
+
+∑
+
+> i=t1
+
+ηi ≥ z
+
+∣∣∣∣∣∣ Ft1
+
+ ≤ exp 
+
+(
+
+− z2
+
+2 ∑t2 
+
+> i=t1
+
+c2
+
+> i
+
+)
+
+.
+
+The same bound holds for min t1≤j≤t2
+
+∑ji=t1 ηi ≤ − z and for either tail of the terminal sum ∑t2 
+
+> i=t1
+
+ηi.
+
+Lemma 24 (Chain rule for relative entropy) . Let P, Q be probability laws of ( Y1, . . . , Y t) with regular conditional laws Pi(· | Y1, . . . , Y i−1) and Qi(· | Y1, . . . , Y i−1), respectively. Then 
+
+DKL (P ∥Q) = 
+
+> t
+
+∑
+
+> i=1
+
+EP
+
+[DKL 
+
+(Pi(· | Y1, . . . , Y i−1)∥Qi(· | Y1, . . . , Y i−1))] ,
+
+where the i = 1 term uses the marginal laws of Y1.
+
+Lemma 25 (Pinsker’s inequality) . For probability measures P, Q on the same measurable space, define ∥P − Q∥TV = sup E |P (E) − Q(E)|, where the supremum is over measurable events. For every measurable function f with 0 ≤ f ≤ 1, 
+
+|EP [f ] − EQ[f ]| ≤ ∥ P − Q∥TV ≤
+
+√
+
+DKL (P ∥Q)/2.
+
+# F Experimental Details 
+
+Experimental setup. We use d = 5, K = 10, λ = 0 .6, T = 2000, and one parameter θ∗ with 
+
+∥θ∗∥2 = 10, shared by all servers and settings. Each job has K independently sampled features, and jobs are independent. The rows of Figure 1 use q = P(p∗(X) < λ ) = 0 , 0.15 , 0.50, and the columns use ϵ = 0 .05 , 0.1, 0.15. For each server, we sample a service probability from a low interval with probability q1/K and a high interval otherwise. The low intervals are [0 .57 , 0.59] for q = 0 .15 and [0 .54 , 0.58] for q = 0 .50. Each high interval has width 0 .02 and lies above λ. Within each interval, we sample uniformly from 256 equally spaced midpoints. Thus P(p∗(X) < λ ) = q. We choose the high-interval center by bisection so that λE[1 /p ∗(X)] = 1 − ϵ.For each sampled probability p, set 
+
+ϕ = log( p/ (1 − p)) 10 u +
+
+√
+
+25 − log 2(p/ (1 − p)) 100 v, u = θ∗/10 ,
+
+where v is a unit vector orthogonal to u. Then ∥ϕ∥2 = 5 and μ(⟨ϕ, θ∗⟩) = p. We draw v uniformly from 64 fixed directions. 
+
+Implementation. All five contextual algorithms use β = 100 and the constrained logistic MLE in (8) with S = 10. For widths and sampling, Vt = V0 + ∑ti=1 ϕiϕ⊤ 
+
+> i
+
+, with V0 = 5 I5 for all five contextual algorithms. • WISE uses Algorithm 1 with probability bounds [ μ(−50) , μ (50)]. 53 • CQB-Opt (Bae et al., 2026a) maximizes μ(⟨ϕ(x, k ),̂ θt−1⟩) + β∥ϕ(x, k )∥V−1
+
+> t−1
+
+over waiting pairs. • CQB-ϵ (Bae et al., 2026a) explores newly arrived jobs using round-robin servers for the first 200 rounds, then a uniformly random server with probability T −1/2. Otherwise, it uses the CQB-Opt rule. • CQB-η-2 (Bae and Lee, 2026a) explores newly arrived jobs using a uniformly random server for t ≤ 0.3T and with probability 0 .3 for 0 .3T < t ≤ 0.7T . It uses the CQB-Opt rule whenever it does not explore, including throughout 0 .7T < t ≤ T .• ACQB (Bae et al., 2026b) draws five parameter samples from N (̂θt−1, β 2V−1
+
+> t−1
+
+), shared across all pairs, and maximizes the sampled service probability. After an arrival, with probability (t + 1) −1/2, it instead serves the new job with a round-robin server. • Q-UCB and Q-ThS (Krishnasamy et al., 2021) serve the earliest arrival. Q-UCB maximizes the empirical success rate plus 
+
+> √
+
+log 2(max {t, 2})/(2 Nk), where Nk counts attempts on server 
+
+k and unobserved servers have infinite index. Q-ThS maximizes a draw from each server’s Beta posterior with Beta(1 , 1) prior. Both choose a uniformly random server with probability min {1, 3K log 2(max {t, 2})/t }.• Random chooses a uniformly random waiting job and server. 
+
+Results. We use ten runs with initially empty queues. Within each run, all algorithms and the oracle share arrivals, features, and service uniforms. The parameter and feature distributions are fixed across runs. Figure 1 reports the mean of Qπ(t) − Q∗(t) and ±2 sample standard deviations, each smoothed with a 25-round moving average. 
+
+Use of Generative-AI Tools 
+
+The authors developed the workload potential and the analysis based on the elliptical potential count. GPT-5.6 Sol assisted the authors in designing Algorithm 1 and establishing the properties required for this analysis. It also assisted with manuscript polishing, reference exploration, and simulation code development. The authors take responsibility for the final arguments and presentation. 54

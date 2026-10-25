@@ -1,0 +1,596 @@
+Title: Holistic Buoyancy-Driven Cloud Native Resource Management
+
+URL Source: https://arxiv.org/pdf/2610.26160v1
+
+Published Time: Tue, 20 Oct 2026 02:36:55 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+> 1
+
+# Holistic Buoyancy-Driven Cloud Native Resource Management 
+
+Oliver Larsson ,Thijs Metsch , Cristian Klein , Erik Elmroth ,
+
+Abstract —Efficient resource management is a challenge in multi-tenant cloud environments as workloads compete for shared resources such as last-level cache and memory bandwidth, whose congestion can change dynamically as workload composi-tion and resource demands evolve. Existing resource management approaches often rely on static resource requirements or prior workload profiling, limiting their ability to respond to changing resource contention as required in the cloud. In this paper, we leverage workload buoyancy, a runtime framework for capturing workload sensitivity to individual resources and application-level performance, to enable adaptive scheduling and resource management. We propose a holistic approach that incorporates buoyancy into workload scheduling, node-local resource allo-cation, and workload rescheduling throughout the workload lifecycle. We implement our approach as a Kubernetes-native prototype and evaluate it on a multi-node cluster using diverse cloud workloads under varying levels of resource contention. In a high-congestion scenario, our approach increases the percentage of workloads satisfying their SLOs from 7.74% to 87.8% on average compared with the Kubernetes baseline, while reducing resource congestion, the severity of SLO violations, and cluster fragmentation using limited rescheduling. 
+
+Index Terms —Cloud Computing, Resource Management, Workload Scheduling, Resource Contention, Multi-Tenancy, Workload Buoyancy 
+
+I. I NTRODUCTION 
+
+The rapid growth of AI and other compute-intensive work-loads is increasing the demand for computing infrastructure, making efficient utilization of cloud compute clusters increas-ingly important. Cloud providers must therefore maximize the utilization of their available hardware without violating the performance expectations of their tenants. This is challenging because the performance of a workload depends not only on the resources allocated to it, but also on contention for shared system resources such as last-level cache (LLC), and other interactions between co-located workloads [1], [2]. This creates a fundamental conflict between the goals of involved stakeholders. Application owners , who primarily care about meeting the performance requirements of their work-loads, generally allocate more resources than they consume in order to provide sufficient performance headroom. On the 
+
+Funding for this project was provided by the eSSENCE Programme under the Swedish Government’s Strategic Research Initiative. Experiments presented in this paper were carried out using the Grid’5000 testbed, supported by a scientific interest group hosted by Inria and including CNRS, RENATER and several Universities as well as other organizations (see https://www.grid5000.fr). Oliver Larsson, Cristian Klein, and Erik Elmroth are with the Department of Computing Science, Ume˚ a University, SE-90187 Ume˚ a, Sweden (e-mail: olars@cs.umu.se; cklein@cs.umu.se; elmroth@cs.umu.se). Thijs Metsch is unaffiliated, Germany (e-mail: tmetsch@engjoy.eu). 
+
+other hand, resource owners seek to consolidate workloads and maximize the utilization of their hardware. To do so, they commonly overcommit their clusters and sell more capacity than is physically available [3]. While overcommitment can improve resource utilization, it also increases the likelihood of contention as more workloads compete for the same shared resources. Consequently, application owners often compensate for this unpredictable performance by allocating even more resources, beyond their actual requirements, reducing the effective utilization of the cluster and creating a vicious cycle of overprovisioning and overcommitment that originates from the conflicting goals of the stakeholders. Previous work has demonstrated that resource allocation and isolation techniques can mitigate the effects of such contention [4], [5], [6]. However, such techniques generally do not consider contention over individual system resources or the conflicting goals of stakeholders. Furthermore, cloud environments are inherently dynamic: workloads are continu-ously added and removed, and their resource demands change over time. Consequently, resource management decisions that are effective at one point in time may become suboptimal as workload behavior and contention patterns change. Failing to account for these dynamics can result in cluster fragmentation and resource stranding, reducing cluster utilization and poten-tially requiring rescheduling to recover stranded capacity [7]. Effective resource management therefore requires the re-source owner to understand not only how much of each re-source a workload has been allocated, but also how workloads interact with, and are affected by, contention for any given shared system resource. The workload buoyancy monitoring framework provides such insights by defining metrics that quantify the resource contention experienced by workloads [8]. These metrics provide a basis for identifying workload sen-sitivity to resource contention and for understanding how contention evolves as workloads compete for cluster resources. We argue that this information can be used to improve cluster resource management by incorporating observed workload congestion into scheduling, rescheduling, and resource allo-cation decisions. In this paper, we investigate how workload buoyancy can be leveraged to improve the utilization and performance of cloud compute clusters. We propose a holistic three-component resource management approach that uses buoyancy metrics to inform (i) workload scheduling, (ii) rescheduling of ex-isting workloads, and (iii) dynamic node-local allocation of resources such as CPU and LLC. Together, these mechanisms allow the resource owner to adapt resource placement and allocation to observed contention while respecting the resource arXiv:2610.26160v1 [cs.DC] 19 Oct 2026 2
+
+requirements and performance constraints of tenant workloads. Specifically, we make the following contributions:  
+
+> •
+
+We propose a resource management approach that lever-ages workload buoyancy metrics to inform scheduling, rescheduling, and dynamic node-local resource allocation in cloud compute clusters.  
+
+> •
+
+We demonstrate that incorporating workload congestion into resource management decisions can substantially improve workload service-level objective (SLO) com-pliance while reducing resource contention and cluster fragmentation.  
+
+> •
+
+We implement a proof-of-concept prototype of the pro-posed approach and evaluate it in a Kubernetes-based cloud environment. Our evaluation demonstrates that the proposed approach substantially improves SLO compliance under high resource congestion. Compared with a Kubernetes baseline, the ap-proach increases the average percentage of workloads oper-ating within their SLOs from 7.74% to 87 .8% , while simulta-neously reducing the magnitude of SLO violations when they occur. These results demonstrate the potential of workload-level congestion information as a signal for resource manage-ment in dynamic, multi-tenant cloud environments. II. R ELATED WORK 
+
+Resource management in the cloud has been extensively studied across workload scheduling, resource allocation, per-formance interference, and runtime adaptation. We focus on two areas most closely related to our approach: application-aware scheduling and rescheduling, and runtime resource management and isolation. 
+
+1) Application-Aware Scheduling and Rescheduling: 
+
+Application-aware scheduling incorporates information about workload behavior or application-level performance into place-ment and resource-management decisions. Quality of service (QoS) and quality of experience (QoE) aware approaches use application-level performance insights to guide workload placement and allocation [9], [10], while other approaches use predicted workload behavior to make proactive scheduling decisions [11]. Runtime resource utilization has similarly been used to improve cluster-level scheduling decisions [12], [13]. However, resource utilization does not necessarily indicate the performance impact of contention on a workload. Workload buoyancy addresses this limitation by combining application-level performance with resource sensitivity, and has previously been shown to improve workload placement [14]. In this work, we extend this approach beyond initial placement to also inform runtime resource management and rescheduling. 
+
+2) Runtime Resource Management and Isolation: Runtime resource management approaches adapt resource allocations or enforce isolation based on workload requirements and system state. Many approaches rely on workload profiling and resource models [15], [16], while optimization-based methods can identify efficient resource allocations through iterative exploration [4], [17]. Other approaches instead use runtime resource utilization [6] or application-level performance met-rics [18] to dynamically adjust allocations. Hardware-level isolation mechanisms can further mitigate interference by controlling access to shared resources [19]. These approaches demonstrate the benefits of runtime adaptation, but typically focus on resource allocation or isolation within a node and do not coordinate such decisions with cluster-level workload placement. 
+
+3) Summary: In contrast, our approach uses workload buoyancy as a common runtime signal for both workload performance and resource sensitivity. We use this information to coordinate initial scheduling, node-local resource allocation, and rescheduling, allowing resource-management decisions to adapt to changing workload composition and resource contention without requiring prior workload profiling. III. B ACKGROUND 
+
+Resource management in a multi-tenant cloud environment requires the resource owner to allocate resources and place workloads while accounting for both resource capacity and workload performance. Resource requests and utilization pro-vide information about how resources are allocated and con-sumed, but do not necessarily indicate how resource contention affects workload performance. This distinction is particularly important for shared system resources such as the LLC, where workloads can interfere with one another despite having sufficient allocated capacity. 
+
+A. Resource Management and Workload Observability 
+
+Application owners generally provision workloads with suf-ficient resource headroom to tolerate variations in demand and resource contention, and in some cases, to “draw in” enough system resources such as LLC or memory bandwidth as they are generally not explicitly allocatable. Resource owners, in contrast, seek to consolidate workloads to maximize hardware utilization. These objectives can conflict when increasing uti-lization through overcommitment causes additional contention and consequently degrades workload performance. The resource owner is ultimately responsible for deciding how workloads are placed and how resources are allocated. However, resource owners typically have limited visibility into the performance characteristics and resource sensitivity of tenant workloads. Infrastructure-level measurements such as resource requests and utilization describe resource consump-tion, but provide limited information about whether a workload is sensitive to contention or whether contention is causing it to violate its SLO. Prior work has demonstrated that application-level perfor-mance information and resource characteristics can improve both node-local resource management [16], [18] and cluster-level scheduling [9], [10], [11]. Similarly, identifying the resources that constrain individual workloads can improve resource allocation and placement decisions [6], [12], [14]. However, obtaining and maintaining this information is challenging in dynamic multi-tenant environments. 
+
+B. Challenges of Runtime Resource Characterization 
+
+Detailed workload characterization often requires applica-tion profiling to model resource requirements and interactions 3
+
+between different resources [15], [16], [20]. However, such profiles may become inaccurate as workloads change their behavior or are deployed alongside different workloads. Moreover, a workload’s performance depends not only on its own resource requirements but also on the workloads with which it is colocated. A resource profile obtained in isolation may therefore provide an incomplete picture of the congestion experienced in a shared environment. As the workload composition of a node changes, the same workload may experience different levels of resource contention even when its own resource demand remains unchanged. Together, these characteristics make continuous workload characterization impractical in general-purpose cloud envi-ronments. Effective resource management instead requires runtime observability that captures the relationship between workload performance, resource sensitivity, and resource con-tention without relying on extensive prior profiling. 
+
+C. Workload Buoyancy 
+
+The workload buoyancy framework addresses these observ-ability challenges by providing an abstraction that can be leveraged by both application owners and resource owners. It is a runtime representation of workload sensitivity to re-source contention [8]. Rather than relying solely on resource utilization or requiring prior application profiling, workload buoyancy combines system-level resource observations with application-level service-level indicators (SLI) to characterize the performance headroom available to workloads. Buoyancy models resource sensitivity at multiple levels of abstraction. At the hardware-resource level, resource scores 
+
+are computed for resources of interest, such as CPU, LLC, memory bandwidth, and I/O. A resource score is a value in the range [0 , 1] representing the sensitivity of an application to a particular resource, where 0 indicates low sensitivity and 1
+
+indicates high sensitivity. At the application level, a buoyancy score is derived from the application’s resource scores and application-level SLIs. The buoyancy score lies in the range 
+
+(−∞ , 1] and represents the performance headroom available to the application. Intuitively, a workload with high buoyancy can tolerate additional resource pressure, whereas a workload with low buoyancy is more susceptible to performance degradation. A negative buoyancy score indicates that the workload is cur-rently violating its SLO. Finally, a node-level buoyancy score 
+
+aggregates the buoyancy of workloads executing on a node. This provides a workload-centric indication of the performance headroom of the node and can be used to reason about the effects of adding, removing, or reallocating workloads as the node’s workload composition changes. The three levels at which buoyancy is computed are illustrated in Fig. 1. For a more detailed description of the buoyancy framework, we refer the reader to the original work by Larsson et al. [8]. The resulting metrics provide complementary information for resource management. Resource scores characterize the re-sources to which individual workloads are sensitive, workload buoyancy captures the performance headroom of individual workloads, and node-level buoyancy provides an aggregate view of the performance headroom of colocated workloads.              
+
+> Resource-Level Sensitivity Workload-Level Headroom Node-Level Headroom
+> Workload 1  CPU RCPU ,1
+> LLC RLLC ,1
+> MBW RMBW ,1
+> · · · · · ·
+> Buoyancy Score B1Node n
+> Node-Level Buoyancy Bn
+> Workload 2  CPU RCPU ,2
+> LLC RLLC ,2
+> MBW RMBW ,2
+> · · · · · ·
+> Buoyancy Score B2
+> Fig. 1: Resource scores, buoyancy scores, and node-level buoyancy scores at different context levels.
+
+Together, these signals allow resource-management decisions to account for both workload characteristics and the current workload composition of a node. In this work, we use these signals as inputs to three resource-management mechanisms: workload scheduling, run-time rescheduling, and dynamic node-local resource alloca-tion. While buoyancy metrics have been shown to quantify the performance headroom of workloads and nodes with respect to individual resources [8], their use in improving holistic, cluster-wide resource management while respecting the goals of involved stakeholders has not been previously explored. IV. P ROBLEM STATEMENT 
+
+Resource owners must continuously make resource-management decisions despite incomplete knowledge of work-load behavior and changing resource contention. Resource requests and utilization provide information about resource allocation and consumption, but do not directly indicate the sensitivity of workloads to contention or the performance impact of colocating workloads. Workload buoyancy provides runtime information that can bridge this gap by relating workload performance to sensitivity across individual system resources in an extensible and future-proof manner. We therefore consider the problem of incorporating workload buoyancy into resource-management decisions in dynamic, multi-tenant cloud environments. The resource-management approach should use runtime buoyancy insights to account for both the current and expected effects of resource contention while adapting to changes in workload composition and resource demand. More specifically, the approach should provide three com-plementary capabilities: 1) Contention-aware scheduling: When a new workload is deployed, use the buoyancy of existing workloads and the resource sensitivity of the new workload to select a placement that minimizes the expected impact of resource contention. 2) Runtime rescheduling: Detect changes in workload congestion and identify placements that cause harmful contention, allowing workloads to be rescheduled when their current placement becomes detrimental to perfor-mance or cluster efficiency. 4New Arrival Scheduling Node Assignment Filtering Scoring Resource Mgmt Monitor Allocation Adjustment Rescheduling Eviction 
+
+> Fig. 2: Overview of the proposed buoyancy-aware resource management approach. Scheduling uses node-level buoyancy to guide initial workload placement. Resource management continuously adjusts resource allocations, while rescheduling changes workload placement when local resource man-agement cannot resolve resource pressure.
+
+3) Dynamic resource allocation: Adapt node-local re-source allocations according to the resource sensitivity and performance requirements of colocated workloads, reducing contention while making use of otherwise underutilized resources. These mechanisms should operate without requiring prior profiling of individual workloads and should adapt as work-loads enter, leave, or change their resource behavior. The overall objective is to improve workload SLO compliance and cluster resource utilization while reducing harmful resource contention and resource fragmentation. V. S OLUTION DESIGN 
+
+Our solution consists of three logically independent com-ponents that use workload buoyancy to make resource man-agement decisions at different stages of the workload lifecy-cle: scheduling , resource management , and rescheduling . The components are designed to operate independently of the un-derlying cloud platform or orchestrator. Their responsibilities and decision-making policies are defined in terms of workload-and node-level state, allowing the policies to be implemented using platform-specific mechanisms. Fig. 2 provides an overview of the proposed approach. When a new workload is submitted, the scheduling compo-nent uses node-level buoyancy to guide its placement. Once workloads are running, the resource management component 
+
+continuously monitors the workloads on each node and adjusts their resource allocations based on their observed buoyancy and resource scores. If resource pressure cannot be resolved through local resource allocation, the rescheduling component 
+
+selects a workload to move away from the affected node. The workload is then returned to the scheduling process, where it can be placed on another node based on the current state of the cluster. The three components therefore form a feedback loop. Scheduling determines the initial placement of workloads, resource management adapts resource allocations as workload behavior changes, and rescheduling changes workload place-ment when local resource management is insufficient. This enables resource management decisions to adapt continuously to changes in workload composition and resource demand. The design assumes that workload and node buoyancy metrics, as defined by the workload buoyancy framework [8], are available to the resource management components. We denote the buoyancy score of workload w as Bw and the buoyancy score of node n as Bn. Similarly, Rr,w denotes the resource score of workload w for resource r, while Rr,n 
+
+denotes the resource score of node n for resource r.The remainder of this section describes the decision-making policies of the three components. Platform-specific mecha-nisms used to realize these policies are described in Sec-tion VI. 
+
+A. Scheduling Component 
+
+The scheduling component guides the orchestrator in se-lecting a node for newly submitted workloads. Its objective is to avoid placing workloads on nodes that are already ex-periencing resource pressure and to prefer nodes with greater performance headroom to accommodate additional workload demand. The scheduling component follows a two-stage process consisting of filtering and scoring . During filtering, candidate nodes are evaluated to determine which nodes are feasible for scheduling. During scoring, the feasible nodes are ranked according to their suitability. The orchestrator then selects the highest-ranked node for workload placement. An important design choice is that the scheduling compo-nent uses the node-level buoyancy of candidate nodes rather than requiring a detailed prediction of the interaction between a new workload and the workloads already executing on each node. Node-level buoyancy provides an aggregate indication of the performance headroom available on a node and therefore allows placement decisions to be made without prior profiling of the workload being scheduled. 
+
+1) Filtering: We use node-level buoyancy as an indicator of the ability of a node to accommodate additional workload de-mand. Previous work has shown that node-level buoyancy can be used to produce less congested workload distributions [14]. Let N denote the set of nodes in the cluster. We define a filtering function F as 
+
+F (n) = 
+
+(
+
+true , Bn ≥ 0.1,
+
+false , otherwise . (1) A node is therefore considered feasible if its current buoyancy score is at least 0.1. This threshold was experimentally selected to exclude nodes whose existing workloads have limited performance headroom that would make them breach their performance targets if additional workloads were placed on them. Such nodes are thus considered unsuitable for accom-modating additional resource demand. 
+
+2) Scoring: After filtering, feasible nodes are ranked ac-cording to their buoyancy. We define a scoring function S
+
+that assigns higher scores to nodes with greater buoyancy. This encourages the scheduler to place new workloads on 5
+
+nodes with greater performance headroom, spreading work-loads across available nodes according to their ability to accommodate additional resource demand. The exact range of the scoring function depends on the requirements of the underlying orchestrator. In general, the buoyancy score is mapped to the scoring range supported by the orchestrator. In our implementation, we map the buoyancy scores to integer scores in the range [0 , 10] ; the corresponding implementation is described in Section VI. For the purposes of the design, we define the score as 
+
+S(n) = 
+
+(
+
+⌈10 Bn⌉, Bn > 0,
+
+0, otherwise . (2) Because Bn ∈ (−∞ , 1] , this formulation produces scores in the range [0 , 10] while preserving the ordering of nodes with positive buoyancy. The exact scaling factor is an implementa-tion parameter and does not affect the underlying scheduling policy. 
+
+B. Resource Management Component 
+
+The resource management component continuously adapts the resource allocations of workloads executing on each node. It operates as a feedback controller that observes workload performance headroom and resource sensitivity and uses this information to redistribute resources between workloads. The component attempts to achieve two complementary ob-jectives. First, it should provide additional resources to work-loads experiencing performance pressure. Second, it should reclaim resources from workloads with sufficient performance headroom so that these resources can be used by other workloads. If the controller cannot resolve resource pressure through local reallocation, it notifies the rescheduling compo-nent which in turn takes rescheduling action. Our prototype controls two resources: CPU cores and last-level cache (LLC) capacity. The design is not inherently limited to these resources and can be extended to other resources for which suitable resource scores and allocation mechanisms are available. The resource management con-troller periodically evaluates all workloads executing on its node. At each iteration, it obtains their current buoyancy and resource scores, classifies the workloads according to their performance headroom, and performs resource adjustments based on the resulting classification. Resource reductions may be performed for workloads with substantial headroom, while at most one workload experiencing resource pressure is given additional resources during each iteration. An overview is shown in Fig. 3. 
+
+1) Workload Classification: As a first step, workloads are classified according to their buoyancy scores. We use three categories whose thresholds were experimentally selected to reflect the performance headroom of workloads:  
+
+> •
+
+At risk: Workloads with Bw < 0.1 are considered to be at risk of violating, or are already violating, their performance targets.  
+
+> •
+
+Stable: Workloads with 0.1 ≤ Bw ≤ 0.3 are considered to have limited performance headroom.              
+
+> Observe State Iteration Start Classify Workloads
+> At Risk
+> Bw<0.1
+> Stable
+> 0.1≤Bw≤0.3
+> With Margin
+> 0.3< B w
+> Classification Reclaim Resources From Workloads Resource Reduction Select Lowest
+> BwWorkload Increase Resource Allocation Increase Resources Successful Not Successful Notify Rescheduler Reschedule If Needed
+> Fig. 3: High-level operation of the node-local resource management controller. The controller observes workload state, classifies workloads according to buoyancy, reclaims resources where possible, and attempts to increase re-sources for workloads experiencing performance pressure. If local resource reallocation cannot resolve the pressure, rescheduling is triggered.
+> •
+
+With margin: Workloads with Bw > 0.3 are consid-ered to have substantial performance headroom and are candidates for resource reduction. The controller first attempts to reclaim resources from work-loads classified as with margin . It then attempts to increase the resource allocation of the workload with the lowest buoyancy score among those classified as at risk . Only one workload is given additional resources during each controller iteration. This gives the affected workload and the other workloads on the node time to respond to the allocation change before another increase is performed. A parallel may be drawn to the additive increase and multiplicative decrease (AIMD) algorithm used in TCP congestion control [21]. Limiting resource increases to one workload per iteration also reduces the likelihood of unnecessary allocation changes. Increasing the resources of one workload may change the resource pressure experienced by other workloads because they share the same underlying resources. Consequently, an increase that resolves the pressure of one workload may indirectly improve the buoyancy of other workloads. If the controller cannot increase the resources available to the work-load with the lowest buoyancy, local resource management is considered insufficient to resolve the observed resource pres-sure. The controller then signals the rescheduling component. The resulting control loop is shown in Algorithm 1. 
+
+2) Resource Reduction: Workloads classified as with mar-gin are candidates for resource reduction. The controller reduces at most one resource allocation for each workload during an iteration. The resource selected for reduction is the resource for which the workload’s resource score has the smallest relative difference from the corresponding node-level 6
+
+Algorithm 1 Resource Management Controller  
+
+> 1:
+
+n ← node hosting the resource management controller  
+
+> 2:
+
+W ← workloads on node n 
+
+> 3:
+
+for each iteration do  
+
+> 4:
+
+atRisk, stable, withMargin ← classifyWorkloads( W ) 
+
+> 5:
+
+for each workload w in withMargin do  
+
+> 6:
+
+tryDecreaseResources( w) 
+
+> 7:
+
+end for  
+
+> 8:
+
+wlow ← lowestBuoyancyWorkload(atRisk)  
+
+> 9:
+
+increased ← false  
+
+> 10:
+
+if wlow ̸ = null then  
+
+> 11:
+
+increased ← tryIncreaseResources( wlow ) 
+
+> 12:
+
+end if  
+
+> 13:
+
+if not increased then  
+
+> 14:
+
+signalReschedulingComponent( n) 
+
+> 15:
+
+end if  
+
+> 16:
+
+end for 
+
+resource score. For each resource r, we define 
+
+∆r = Rr,w − Rr,n 
+
+Rr,n 
+
+. (3) The resource with the smallest ∆r is selected for reduction, provided that the workload is not already at the minimum allocation for that resource. This comparison is intended to identify resources for which the workload is relatively less sensitive than the resource characteristics represented at the node level. Importantly, the resource score represents workload sensitivity to a resource rather than its resource allocation or consumption directly. Consequently, the resource management policy uses resource scores to determine which allocation changes are likely to be least harmful rather than interpreting them as direct measures of resource demand. The resource reduction procedure is shown in Algorithm 2. 
+
+Algorithm 2 Subroutine: tryDecreaseResources  
+
+> 1:
+
+w ← workload to decrease resources for  
+
+> 2:
+
+n ← node hosting workload w 
+
+> 3:
+
+for each resource r in {CPU, LLC } do  
+
+> 4:
+
+∆r ← Rr,w −Rr,n  
+
+> Rr,n
+> 5:
+
+end for  
+
+> 6:
+
+rdecrease ← resource with the lowest ∆r 
+
+> 7:
+
+if rdecrease is not at its minimum allocation then  
+
+> 8:
+
+decreaseResourceAllocation( w, rdecrease ) 
+
+> 9:
+
+end if 
+
+3) Resource Increase: When a workload is classified as at risk , the workload with the lowest buoyancy score is selected for resource increase. The controller prioritizes resources according to the relative difference between the workload’s resource score and the corresponding node-level resource score. For each resource r, we compute 
+
+∆r = Rr,w − Rr,n 
+
+Rr,n 
+
+. (4) Resources are considered in descending order of ∆r . This prioritizes resources for which the workload exhibits greater sensitivity relative to the corresponding node-level resource score. For each resource, the controller first checks whether unal-located capacity is available on the node. If sufficient capacity is available, the workload’s allocation is increased directly. If no unallocated capacity is available, the controller attempts to reclaim part of the resource allocation from another workload on the node. Candidate workloads are considered in ascending order of their resource score for the resource being allocated. A workload is eligible for resource reduction if it has a lower re-source score than the workload requiring additional resources and is not already at its minimum possible allocation. 1 This prioritizes transferring resources from workloads that are less sensitive to a resource to workloads more sensitive to it. Because resource scores for a given resource are computed the same way on a given node, they can be directly compared when selecting candidate workloads. The complete resource-increase procedure is shown in Algorithm 3. 
+
+Algorithm 3 Subroutine: tryIncreaseResources  
+
+> 1:
+
+w ← workload to increase resources for  
+
+> 2:
+
+n ← node hosting workload w 
+
+> 3:
+
+W ← workloads on node n 
+
+> 4:
+
+for each resource r in {CPU, LLC } do  
+
+> 5:
+
+∆r ← Rr,w −Rr,n  
+
+> Rr,n
+> 6:
+
+end for  
+
+> 7:
+
+tryIncreaseOrder ← resources sorted by ∆r descending  
+
+> 8:
+
+for each resource r in tryIncreaseOrder do  
+
+> 9:
+
+if unallocated resources of r are available then  
+
+> 10:
+
+increaseResourceAllocation( w, r) 
+
+> 11:
+
+return true  
+
+> 12:
+
+end if  
+
+> 13:
+
+Wasc ← workloads in W sorted by Rr,w ascending  
+
+> 14:
+
+for each workload wother in Wasc do  
+
+> 15:
+
+if wother ̸ = w and Rr,w other < R r,w then  
+
+> 16:
+
+if wother is not at minimum allocation of r then  
+
+> 17:
+
+decreaseResourceAllocation( wother , r) 
+
+> 18:
+
+increaseResourceAllocation( w, r) 
+
+> 19:
+
+return true  
+
+> 20:
+
+end if  
+
+> 21:
+
+end if  
+
+> 22:
+
+end for  
+
+> 23:
+
+end for  
+
+> 24:
+
+return false 
+
+C. Rescheduling Component 
+
+The rescheduling component provides a mechanism for resolving resource pressure that cannot be addressed through local resource allocation. It is triggered when the resource management component is unable to provide additional re-sources to a workload experiencing low buoyancy. When triggered, the rescheduling component evaluates the workloads executing on the affected node and selects one workload to move away from the node. The selected workload 
+
+> 1E.g., for LLC, the minimum possible allocation is a single cache way. 7
+
+is removed from the node and returned to the orchestrator’s scheduling process. The workload can then be placed on another node using the current buoyancy characteristics of the cluster. The workload selected for rescheduling is the workload with the lowest buoyancy score on the affected node. This prioritizes workloads with the least performance headroom and provides an opportunity to relieve the pressure experienced by the workload most affected by the current placement. Only one workload is rescheduled in response to a re-source management event. Following the migration, the re-source management component is given time to observe the resulting workload composition and resource characteristics before another rescheduling action is initiated. This prevents repeated rescheduling actions in response to transient changes in resource pressure and allows the effects of a placement change to propagate through the node. The rescheduling component is logically distinct from the resource management component, even though the two operate closely together. The resource management component is responsible for deciding whether local resource allocation is sufficient, while the rescheduling component is responsible for resolving situations where local allocation is insufficient. VI. I MPLEMENTATION DETAILS 
+
+The cloud native ecosystem, centered around Kubernetes, 2
+
+has become a widely adopted platform for deploying and man-aging applications in cloud environments. While the solution design is independent of any particular platform or orchestra-tor, we implement our approach as a Kubernetes-native system to leverage Kubernetes’ extensibility and existing workload-management mechanisms. The three logical components are implemented using dif-ferent Kubernetes mechanisms according to their respective responsibilities. The scheduling component is implemented as a Kubernetes scheduler plugin, the resource management component as a node-local Kubernetes controller deployed as a DaemonSet, and the rescheduling logic as part of the resource management controller. 
+
+A. Kubernetes Integration 1) Scheduling: The scheduling component is implemented as a Kubernetes scheduler plugin. The plugin implements the filtering and scoring policies described in Section V-A and integrates them directly into the Kubernetes scheduling process. During scheduling, the plugin is invoked for candidate nodes and determines whether each node satisfies the buoyancy-based filtering criterion. For feasible nodes, the plugin calcu-lates a score based on the node’s buoyancy. These scores are then provided to the Kubernetes scheduler, which combines them with the scores of other configured scheduling plugins according to the scheduler configuration [7]. 
+
+> 2https://kubernetes.io/
+
+Kubernetes expects scheduler plugin scores to be repre-sented as positive integers. We therefore scale the buoyancy-based score as described in Section V-A2 to the range com-patible with the Kubernetes scheduler. The scaling does not change the ordering of candidate nodes and consequently does not alter the underlying scheduling policy. 
+
+2) Resource Management: The resource management com-ponent is implemented as a Kubernetes controller. A separate controller instance runs on each worker node and manages the resource allocations of the Pods executing on that node. The controller periodically queries the current state of the Pods and their corresponding buoyancy and resource scores. It then applies the control policy described in Section V-B. Because the controller operates independently on each node, resource-management decisions are based on the local workload com-position and resource state rather than requiring a centralized resource-management controller. 
+
+3) Rescheduling: The rescheduling component is logically separate from resource management but is integrated into the node-local resource management controller in our implementa-tion. This integration is motivated by the fact that rescheduling decisions are triggered by node-local resource pressure and use the same workload and resource state already collected by the resource management controller. When the resource management controller determines that local resource allocation cannot resolve the resource pressure, it invokes the rescheduling logic. The controller selects a workload according to the policy described in Section V-C and deletes the corresponding Pod through the Kubernetes API. For workloads managed by a higher-level Kubernetes con-troller, such as a Deployment or StatefulSet, deletion of the Pod causes the higher-level controller to create a replacement Pod. The replacement Pod is subsequently placed through the normal Kubernetes scheduling process and is therefore subject to the buoyancy-aware scheduling plugin. This implementation effectively closes the feedback loop between rescheduling and scheduling: resource pressure can cause a workload to leave a node, after which the replacement workload is placed using the current state of the cluster. 
+
+B. Dynamic CPU Allocation 
+
+We use CPU core pinning together with dynamic CPU allocation to provide predictable CPU resource isolation while allowing allocations to change at runtime. CPU allocation is implemented using the static policy of the Kubernetes CPU Manager together with the InPlacePodVerticalScaling feature. At the time of writing, the static CPU Manager policy and 
+
+InPlacePodVerticalScaling are incompatible in the upstream Kubernetes release. We therefore use a patched version of Kubernetes based on an upstream pull request that enables the two features to operate together [22]. The resource management controller modifies Pod CPU allocations through the Kubernetes Pod resize sub-resource. The CPU Manager then handles the corresponding allocation of CPU cores to the Pod. Because CPU allocations are expressed in integer numbers of cores when using the static CPU Manager policy, each allocation change corresponds to 8             
+
+> TABLE I: Experimental platform node hardware configuration.
+> Component Specification CPU Model Intel Xeon Gold 5320
+> Operating System Debian 12.2 (kern. 6.1)
+> Sockets 2
+> CPU Cores (Physical / Logical) 52 / 104
+> Frequency (Base / Max Turbo) 2.2 GHz / 3.4 GHz
+> L1 Cache per Core (Inst / Data) 48 KiB / 32 KiB
+> L2 Cache per Core 1280 KiB
+> LLC per Socket 39 MiB, 12 ways
+> Memory (Capacity / Speed) 384 GiB / 2933 MT/s
+> Memory (Channels / Bus Width) 6 / 8 Bytes
+> Storage NVME SSD
+> Network 25 Gbps
+
+an increase or decrease of at least one full CPU core. CPU pinning ensures that allocated cores remain dedicated to the corresponding Pod. This provides stronger CPU isolation than relying solely on proportional CPU scheduling and is impor-tant for reducing interference and improving the predictability of the resource-management actions. 
+
+C. Dynamic LLC Allocation 
+
+We manage LLC allocation using Intel Resource Director Technology (RDT) and the resctrl file system [23]. Intel RDT provides cache allocation through class of service (COS) configurations. A COS specifies an LLC allocation policy, and processes are assigned to a COS to enforce the correspond-ing allocation. Because Kubernetes does not natively expose the required resctrl functionality, we implement a node-local 
+
+resctrl agent as a DaemonSet. The agent monitors Kubernetes annotations and translates them into resctrl configurations. A node annotation defines the LLC allocation associated with each COS, while a Pod annotation determines the COS to which the Pod’s container processes are assigned. The number of available COSs and LLC cache ways is limited by the underlying hardware and varies between pro-cessor generations and models [19]. Consequently, assigning a dedicated COS to every workload is not generally possible. Our implementation therefore assigns a dedicated COS only to workloads classified as at risk . Workloads in the other states remain in the default COS and share cache ways that have not been exclusively allocated. Once a Pod is assigned to a dedicated COS, it remains associated with that COS until it is evicted from the node. This ensures that the cache allocation remains stable between resource-management iterations and avoids repeatedly changing the underlying resctrl configura-tion. VII. E XPERIMENTAL SETUP 
+
+We evaluate our approach using a Kubernetes cluster de-ployed on the Grid’5000 testbed infrastructure. 3 On this hard-ware, we deploy a cluster configured to emulate a cloud envi-ronment representative of a real-world deployment. The cluster comprises 11 nodes with identical hardware configurations, as summarized in TABLE I.      
+
+> 3https://www.grid5000.fr/ TABLE II: Workloads used in the evaluation.
+> Workload Description
+> nginx Web server
+> moses Statistical machine translation engine
+> img-dnn Deep neural network image classification
+> xapian Search engine
+
+The nodes are assigned to three roles: one node serves as the Kubernetes control plane, five worker nodes host the application workloads, and the remaining five nodes generate application load. This separation of concerns ensure there is no additional resource contention created locally on the nodes under test from load generation or control-plane operations. Each worker node runs a local buoyancy agent that monitors resource usage and computes resource and buoyancy scores for both the node and the workloads running on it. A central Prometheus 4 time-series database runs on the control-plane node and collects and aggregates the metrics required by the scheduling and rescheduling components. 
+
+A. Workload Selection 
+
+To understand how our solution performs when controlling a cluster hosting workloads of different characteristics, we select a set of workloads that represent a diverse range of resource usage patterns. TABLE II lists the workloads used in our evaluation. Nginx is a web server that is widely used in cloud environments and represent a common lightweight cloud workload. Moses, img-dnn and xapian are part of the TailBench benchmark suite [24] and represent more resource-intensive workloads. All load generation is performed from the load generator nodes using a custom open-loop [25] load generator that collects and exposes metrics which are then aggregated by Prometheus. Each workload Pod is deployed alongside one or more load generator instances whose load and reported metrics only correspond to that that specific workload instance. Nginx serves 10 6 static HTML pages, each 1KiB in size. These pages are queried using a Zipf distribution. Moses, img-dnn, and xapian from the open-source Tailbench suite were converted into long-running services and containerized. Load for these workloads was generated using the same configuration as in the original benchmark with respect to input data, request distribution and problem space sizing. Sizing experiments were performed to determine appropri-ate performance targets for each workload. These were carried out by deploying a workload in isolation, allocating it 6 cores, and varying the load over time to identify a “knee” in the performance curve similar to previous studies [4], [5], [14]. The load was set to 80% of the knee load and the SLO was set to 150% of the 99 th percentile tail latency measured at the knee load. The results of the sizing experiments are summarized in TABLE III. It is worth noting that this information is strictly used for experiment configuration and sizing and no profiling or prior knowledge of the workloads is used by the proposed resource management mechanisms.           
+
+> 4https://prometheus.io/ 9
+> TABLE III: Results of the workload sizing experiments.
+> Workload Base Load (RPS) P99 SLO (ms)
+> nginx 40000 41 .87
+> moses 1360 14 .31
+> img-dnn 1440 14 .72
+> xapian 1200 27 .62
+
+VIII. E VALUATION 
+
+In the process of evaluating the effectiveness of our solution, we ask a series of questions that we answer experimentally: 1) How does the proposed solution affect the performance of workloads across a dynamic Kubernetes environment? 2) Is the resource utilization of a cluster improved by our proposed solution? 3) Is our solution able to reduce resource fragmentation across a cluster? 4) How large are the rescheduling overheads introduced by our solution? To answer these questions, we start by designing exper-iments as described in Section VIII-A. We then answer questions by examining the results of our experiments in Section VIII-B. 
+
+A. Experiment Design 
+
+We design our experiments on top of the Kubernetes-based platform described in Section VII. All experiments are first run on a default Kubernetes configuration without our solution enabled to gather a baseline. They are later repeated with our solution enabled to evaluate its impact on the performance of workloads, resource utilization, resource fragmentation, and rescheduling overheads. All experiments are controlled by an automated script that is executed on the cluster’s control plane node. Our main experiment consists of repeatedly deploying work-loads at set time intervals. Every 15 seconds, 5 workloads (matching the number of worker nodes) are randomly se-lected from the set of workloads described in Section VII-A and deployed to the cluster alongside their respective load generators. Once created, we let the Kubernetes attempt to place the workloads onto suitable worker nodes. Should no node be available for a workload and scheduling fails, the workload is simply discarded and deleted. This workload creation process continues for 10 minutes. Once stopped, the cluster is given 3 minutes to stabilize before cluster state information is gathered and performance metrics are collected. By repeating this experiment, we can ensure a varied and unpredictable workload composition on the cluster, which allows us to evaluate the performance of our solution under different conditions and workload compositions. 
+
+B. Experimental Results and Discussion 
+
+This section presents the results of our experiments and discusses their implications. All results are collected from 25 repetitions for each configuration.                    
+
+> -40000 -30000 -20000 -10000 0SLO Slack (%)
+> SLO Slack
+> -500 -400 -300 -200 -100 0100 SLO Slack (%)
+> SLO Slack (Scaled)
+> -20.0 -17.5 -15.0 -12.5 -10.0 -7.5 -5.0 -2.5 0.0 Buoyancy Score
+> Buoyancy Score
+> Default Buoyancy
+> Fig. 4: SLO slack percentages and buoyancy scores for workload deployed in the cluster. It is clear that our buoyancy-based solution reduces the number of workloads that are in violation of their SLOs while also reducing the size of any violations that do occur.
+
+1) Workload Performance Impact: We first examine the performance results of workloads deployed in the cluster, presented in Fig. 4. The figure shows the SLO slack per-centages and buoyancy scores for workloads deployed in the cluster. The SLO slack percentage is a generalized metric that indicates how well a workload is performing relative to its SLO. If Kactual is the current value of a workload KPI metric and KSLO is the target value of that KPI, then the SLO slack percentage is given by 
+
+KSLO − Kactual 
+
+KSLO 
+
+, (5) where a positive value indicates that the workload is perform-ing better than its SLO and has slack to spare, while a negative value indicates that the workload is performing worse than its SLO and is in violation. The results from Fig. 4 show that our buoyancy based solution keeps most of the workloads within their performance targets as indicated by a positive SLO slack percentage. Still, some workloads experience SLO violations, which is expected given the dynamic nature of the workload composition and their dynamic load patterns. It is notable that the size of the SLO violations is much greater in the default configuration than in our buoyancy-based configuration. Thus, in answer to question 1, we conclude that our solution is able to improve the performance of workloads in a dynamic Kubernetes envi-ronment. 
+
+2) Resource Utilization Impact: To understand the impact of our solution on resource utilization, we examine the alloca-tion results presented in Fig. 5. We see that the default config-uration, which does not have any rescheduling mechanisms, is able to consistently allocate close to 100% of the available 10           
+
+> 70 80 90 100 CPU Cores Allocated (%)
+> Allocated CPU
+> 020 40 60 80 100 Allocated CPU Cores Within SLO (%)
+> CPU Within SLO
+> Default Buoyancy Default Buoyancy
+> Fig. 5: The percentage of available CPU cores on worker nodes allocated to workloads and the percentage of currently allocated cores that are assigned to workloads that are compliant with their SLOs at the time of measurement.
+
+CPU cores on the worker nodes. This is to be expected as Kubernetes will admit workloads as long as there are CPU and memory resources available at the time of scheduling. Our solution is not as consistent, but it is able to allocate a similar amount of CPU cores on average. It is notable that some data points show a lower allocation percentage, which is due to the fact that our solution may evict workloads from nodes to improve the performance of other workloads if it could not do so by locally adjusting resource allocations. This is a trade-off that our solution makes to ensure that workloads are able to meet their SLOs and these cores may be allocated to other workloads that are more compatible with the node’s current resource congestion. Even so, the percentage of those cores that are assigned to workloads running within their SLOs is much higher in our solution than in the default configuration, 
+
+87 .8% compared to 7.74% in the default configuration on average. We also recall the fact that the size of the SLO violations is much greater in the default configuration than in our buoyancy-based configuration. To answer question 2, the results indicate a small decrease in resource utilization as measured by allocated CPU cores, but a significant increase in the percentage of those allocated cores that are assigned to workloads that are compliant with their SLOs. 
+
+3) Resource Fragmentation Effects: Previous studies have shown that fragmentation can happen in Kubernetes clusters over time and that this can lead to stranded resources and poor resource utilization [7]. Our solution is designed to counter the effect through resource insights and rescheduling actions. By observing the node-level buoyancy scores presented in Fig. 6, we can gain a high-level understanding of the resource pressures that exist on each worker node in the cluster. We see that the default configuration displays much larger variance in node-level buoyancy scores than our solution, which indicates that some nodes are under high resource pres-sure while others are under comparatively low pressure. This is a clear indication that workloads that compete over the same resources are being scheduled onto the same nodes, leading to severe resource congestion and cluster fragmentation. The node-level buoyancy scores observed for our solution are much more consistent across nodes and iterations, which indicates that workloads are better distributed across the cluster accord-ing to their resource requirements and the current resource pressures on each node. This is further supported by the resource scores presented in Fig. 7, where individual resource scores for CPU, LLC, and MBW are shown for each worker node in the cluster. For both CPU and MBW, our solution displays lower resource scores than the default configuration, which indicates that these resources experience less congestion. The difference being the LLC score which is much higher in our solution than in the default configuration. This is due to the fact that the LLC resource score gives a better indication of the actual resource pressure if workloads are separated into their own COSs, which only happens for a workload that is classified as at risk in our solution, and never happens in the default configuration. With this in mind, we can conclude that our solution is able to reduce resource fragmentation across the cluster and improve the distribution of workloads across nodes, which answers question 3. 
+
+4) Rescheduling Overheads: Finally, we examine the rescheduling overheads introduced by our solution. By observ-ing the number of rescheduling actions taken by our solution, we can gain an understanding of the overheads required to maintain the performance of workloads in the cluster. The results are presented in Fig. 8 and display the total number of evictions performed by our solution from the start from the experiment at the time of measurement. As there is no rescheduling in the default configuration, the number of rescheduling actions is 0.We see that the number of rescheduling actions taken by our solution is relatively low. The median number of rescheduling actions is 3.00 , however, some iterations show a much higher number of rescheduling actions. This is to be expected due to the fact that workloads are randomly selected for deployment and some configurations will be less compatible with the current resource pressures on the nodes than others, and brings the average number of rescheduling actions to 11 .0 across all iterations. This higher number of rescheduling actions does indicate a higher overhead, however, they are still infrequent enough in comparison to the total number of workloads deployed in the cluster to be considered low. Furthermore, the variation in rescheduling actions indicate that our solution is able to adapt to the current workload composition and resource pressures on the nodes, even as the workload dynamics evolve. Thus, in answer to question 4, we conclude that the rescheduling overheads introduced by our solution are low and do not greatly impact the performance of workloads in the cluster. 
+
+C. Threats to Validity 
+
+Even though we have taken utmost care to ensure the validity of our results, there are some threats to their validity which we discuss here. 
+
+1) Internal Threats: The internal threats to our study stem from the limitations of our available resources and the design of our experiments. We have taken care to ensure that our 11               
+
+> node-0 node-1 node-2 node-3 node-4 node-0 node-1 node-2 node-3 node-4
+> -175
+> -150
+> -125
+> -100
+> -75
+> -50
+> -25
+> 0Node Buoyancy Score
+> Node-level Buoyancy Scores
+> Default Buoyancy
+> node-0 node-1 node-2 node-3 node-4
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> 0.5 Node Buoyancy Score
+> Node-level Buoyancy Scores (Scaled)
+
+Fig. 6: Node-level buoyancy scores for each worker node in the cluster. The node-level buoyancy score is a weighted average of the buoyancy scores of all workloads running on the node, where the workload buoyancies are computed from the resource scores and application-level metrics of each workload.  
+
+> node-0
+> node-1
+> node-2
+> node-3
+> node-4
+> node-0
+> node-1
+> node-2
+> node-3
+> node-4
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0 Resource Score (CPU)
+> Node-level CPU Scores
+> node-0
+> node-1
+> node-2
+> node-3
+> node-4
+> node-0
+> node-1
+> node-2
+> node-3
+> node-4
+> Resource Score (LLC)
+> Node-level LLC Scores
+> node-0
+> node-1
+> node-2
+> node-3
+> node-4
+> node-0
+> node-1
+> node-2
+> node-3
+> node-4
+> Resource Score (MBW)
+> Node-level MBW Scores
+> Default Buoyancy
+
+Fig. 7: Resource scores for each worker node in the cluster for CPU, LLC, and MBW across the two configurations. The resource score resembles the utilization of a resource, where a score of 1 indicates that the resource is fully utilized and a score of 0 indicates that the resource is completely idle.     
+
+> 010 20 30 40 Evictions
+> Rescheduling Actions Taken
+> Buoyancy
+
+Fig. 8: Total number of rescheduling actions taken by our controller at the time of measurement. As there is no rescheduling in the default configuration, the number of rescheduling actions is 0.
+
+experiments emulate a realistic cloud environment. However, we have not been able to verify our approach in a real production cloud environment. The selection of our workloads is designed to represent a wide range of different types of cloud native applications with different resource behavior. It is possible that other workloads may exhibit different behavior, in ways that we have not captured in our experiments. Finally, our experiments are conducted on a set of nodes with a homogeneous hardware configuration. It is possible that other hardware configurations may exhibit different be-havior, for example due to variations in functionality between platforms and hardware generations [26]. 
+
+2) External Threats: Following the internal threats, we also identify some threats to the continued validity of our study beyond our control. Our solution relies on hardware counters to compute resource and buoyancy scores, and on the availability of cache allocation features to control the cache allocation of workloads. These features vary between hardware platforms and generations, and may be removed or changed in future hardware. If no alternative features are available, our solution may not be applicable in future hardware. Similarly, the cloud native nature of our implementation builds upon a number of current software, such as Kubernetes, Prometheus, and Telegraf. These platforms and technologies are under active development, and may change in ways that break our implementation. The foundational design of our solution is not dependent on any specific software, however, and can be adapted to future platforms and functionality. IX. C ONCLUSION 
+
+In this paper, we have presented a holistic scheduling and resource management solution that leverages resource congestion and application-level insights to create a more efficient and balanced execution environment for compute clusters. By leveraging the workload buoyancy framework, we supply resource owners the necessary insights to make informed decisions about resource allocation and scheduling that balances the needs of both the applications and the underlying infrastructure. Through extensive evaluation in a Kubernetes environment, we have demonstrated that our ap-proach increases the percentage of workloads operating within 12 
+
+their SLOs from 7.74% to 87 .8% on average in a high conges-tion scenario compared to the baseline while simultaneously reducing the size of violations when they occur. We show that our approach reduces resource congestion and cluster fragmentation while only taking a small amount of corrective rescheduling actions. ACKNOWLEDGMENTS 
+
+Generative AI (including ChatGPT and Copilot) was used to improve the readability and language in the preparation of this work. The authors remain solely responsible for its contents. REFERENCES [1] A. Abedi and T. Brecht, “Conducting repeatable experiments in highly variable cloud computing environments,” in Proceedings of the 8th ACM/SPEC on International Conference on Performance Engineering ,ACM, Apr. 17, 2017. DOI : 10.1145/3030207.3030229 [2] J. Freischuetz, K. Kanellis, B. Kroth, and S. Venkataraman, “TUNA: Tuning unstable and noisy cloud applications,” in Proceedings of the Twentieth European Conference on Computer Systems , ACM, Mar. 30, 2025. DOI : 10.1145/3689031.3717480 [3] N. Bashir, N. Deng, K. Rzadca, D. Irwin, S. Kodak, and R. Jnagal, “Take it to the limit: Peak prediction-driven resource overcommitment in datacenters,” in Proceedings of the Sixteenth European Conference on Computer Systems , ACM, 2021. DOI : 10.1145/3447786.3456259 [4] S. Chen, C. Delimitrou, and J. F. Mart´ ınez, “PARTIES: QoS-Aware Resource Partitioning for Multiple Interactive Services,” in Proceed-ings of the Twenty-Fourth International Conference on Architectural Support for Programming Languages and Operating Systems , ACM, 2019. DOI : 10.1145/3297858.3304005 [5] T. Patel and D. Tiwari, “CLITE: Efficient and QoS-Aware Co-Location of Multiple Latency-Critical Jobs for Warehouse Scale Computers,” in IEEE International Symposium on High Performance Computer Architecture (HPCA) , 2020. DOI : 10.1109/HPCA47549.2020.00025 [6] R. Chen, H. Shi, Y. Li, X. Liu, and G. Wang, “OLPart: Online learning based resource partitioning for colocating multiple latency-critical jobs on commodity computers,” in Eighteenth European Conference on Computer Systems (EuroSys) , May 2023. DOI : 10 . 1145 / 3552326 . 3567490 [7] O. Larsson, C. Klein, and E. Elmroth, “The impact of directed pod eviction on kubernetes resource utilization,” in IEEE International Conference on Service-Oriented System Engineering (SOSE) , Jul. 2023. DOI : 10.1109/SOSE58276.2023.00016 [8] O. Larsson, T. Metsch, C. Klein, and E. Elmroth, Workload buoyancy: Keeping apps afloat by identifying shared resource bottlenecks , Feb. 2026. DOI : 10.48550/arXiv.2602.22852 arXiv: 2602.22852[cs]. [9] G. F. Da Silva, F. Brasileiro, R. Lopes, F. Morais, M. Carvalho, and D. Turull, “QoS-driven scheduling in the cloud,” Journal of Internet Services and Applications , 2020. DOI : 10.1186/s13174-020-00129-0 [10] M. Carvalho and D. F. Macedo, “QoE-aware container scheduler for co-located cloud environments,” in IFIP/IEEE International Sympo-sium on Integrated Network Management (IM) , May 2021. [11] P. Giannakopoulos, B. van Knippenberg, K. C. Joshi, N. Calabretta, and G. Exarchakos, “Performance-aware scheduling and load balancing for edge/cloud systems,” in IEEE International Conference on Cloud Engineering (IC2E) , Sep. 2025. DOI : 10.1109/IC2E65552.2025.00047 [12] X. Zhang, L. Li, Y. Wang, E. Chen, and L. Shou, “Zeus: Improving resource efficiency via workload colocation for massive kubernetes clusters,” IEEE Access , Jul. 2021. DOI : 10 . 1109 / ACCESS . 2021 . 3100082 [13] P. Aindala, K. Shivakumar, P. Haripriya, R. Sivakumar, R. K. Donthi, and S. K. Medishetti, “AVOA: Energy and resource aware schedul-ing through cloud environment,” in 5th International Conference on Pervasive Computing and Social Networking (ICPCSN) , May 2025, pp. 506–513. DOI : 10.1109/ICPCSN65854.2025.11035432 [14] O. Larsson, T. Metsch, C. Klein, and E. Elmroth, Beyond the lim-its: Flexible and congestion-aware cluster scheduling for the cloud ,Aug. 10, 2026. DOI : 10 . 48550 / arXiv . 2608 . 09308 arXiv: 2608 . 09308[cs.DC]. [15] J. Park, S. Park, and W. Baek, “CoPart: Coordinated partitioning of last-level cache and memory bandwidth for fairness-aware workload consolidation on commodity servers,” in Fourteenth European Con-ference on Computer Systems (EuroSys) , Mar. 2019. DOI : 10 . 1145 / 3302424.3303963 [16] L. Zhao et al., “Rhythm: Component-distinguishable workload deploy-ment in datacenters,” in Fifteenth European Conference on Computer Systems (EuroSys) , Apr. 2020. DOI : 10.1145/3342195.3387534 [17] R. B. Roy, T. Patel, and D. Tiwari, “SATORI: Efficient and fair resource partitioning by sacrificing short-term benefits for long-term gains,” in ACM/IEEE 48th Annual International Symposium on Com-puter Architecture (ISCA) , Jun. 2021, pp. 292–305. DOI : 10 . 1109 / ISCA52012.2021.00031 [18] O. Larsson, T. Metsch, C. Klein, and E. Elmroth, “ESTHER: Application-first hardware-level QoS-enforcement for cloud native environments,” in IEEE 18th International Conference on Cloud Com-puting (CLOUD) , Jul. 2025. DOI : 10.1109/CLOUD67622.2025.00018 [19] O. Larsson, T. Metsch, C. Klein, and E. Elmroth, “Hardware-level QoS enforcement features: Technologies, use cases, and research challenges,” ACM Comput. Surv. , vol. 58, no. 6, 145:1–145:35, Dec. 17, 2025. DOI : 10.1145/3774317 [20] D. Byrne, A survey of miss-ratio curve construction techniques , Apr. 2018. DOI : 10.48550/arXiv.1804.01972 arXiv: 1804.01972[cs]. [21] D.-M. Chiu and R. Jain, “Analysis of the increase and decrease algorithms for congestion avoidance in computer networks,” Computer Networks and ISDN Systems , vol. 17, no. 1, pp. 1–14, Jun. 10, 1989. 
+
+> DOI
+
+: 10.1016/0169-7552(89)90019-6 [22] S. Salloumis and C. Guo, 
+
+[FG:InPlacePodVerticalScalingExclusiveCPUs] Fix Static CPU management policy alongside InPlacePodVerticalScaling , Pull Request #129719, 2026. Accessed: Aug. 21, 2026. [Online]. Available: https://github.com/kubernetes/kubernetes/pull/129719 [23] F. Yu, T. Luck, and V. Shivappa. “User interface for resource control feature (resctrl),” The Linux Kernel documentation, Accessed: Aug. 21, 2026. [Online]. Available: https://docs.kernel.org/filesystems/resctrl. html [24] H. Kasture and D. Sanchez, “Tailbench: A benchmark suite and evaluation methodology for latency-critical applications,” in IEEE International Symposium on Workload Characterization (IISWC) , Sep. 2016. DOI : 10.1109/IISWC.2016.7581261 [25] B. Schroeder, A. Wierman, and M. Harchol-Balter, “Open versus closed: A cautionary tale,” presented at the Proceedings of the 3rd Conference on Networked Systems Design & Implementation, May 1, 2006. [26] P. Sohal, M. Bechtel, R. Mancuso, H. Yun, and O. Krieger, “A closer look at intel resource director technology (RDT),” in Proceedings of the 30th International Conference on Real-Time Networks and Systems ,ACM, Jun. 7, 2022, pp. 127–139. DOI : 10.1145/3534879.3534882
